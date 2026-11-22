@@ -171,6 +171,13 @@ export const AgentApprovalSchema = Schema.Struct({
   at: Schema.NullOr(Schema.DateTimeUtc),
   callId: Schema.String,
   channelIds: Schema.Array(Schema.String),
+  // The comment or review the change answers or acts on, as the workspace
+  // holds it: who wrote it (the name they show, else their handle) and the
+  // start of its text, about 500 characters. Null for a change that names
+  // none, or one the person may not read. Never the agent's words.
+  inReplyTo: Schema.NullOr(
+    Schema.Struct({ author: Schema.String, text: Schema.String })
+  ),
   postId: Schema.NullOr(Schema.String),
   state: AgentApprovalStateSchema,
   // The text the change sends, whole: a post's, or a reply's.

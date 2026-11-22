@@ -70,11 +70,25 @@ export const AgentApprovalStateSchema = Schema.Literals([
 
 export type AgentApprovalState = typeof AgentApprovalStateSchema.Type;
 
+/** The comment or review a change answers: who wrote it, and its start. */
+export const InReplyToSchema = Schema.Struct({
+  author: Schema.String,
+  text: Schema.String,
+});
+
+export type InReplyTo = typeof InReplyToSchema.Type;
+
 /** A change that waits for the person, from the call's own parameters. */
 export const AgentApprovalSchema = Schema.Struct({
   at: Schema.NullOr(Schema.DateTimeUtc),
   callId: Schema.String,
   channelIds: Schema.Array(Schema.String),
+  // The comment or review the change answers or acts on, as the workspace
+  // holds it; null for none. An approval kept before it was read decodes
+  // with none.
+  inReplyTo: Schema.NullOr(InReplyToSchema).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(null))
+  ),
   postId: Schema.NullOr(Schema.String),
   state: AgentApprovalStateSchema,
   text: Schema.NullOr(Schema.String),

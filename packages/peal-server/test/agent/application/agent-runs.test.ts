@@ -115,6 +115,11 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         const roles = first?.content.map(({ role }) => role);
 
         assert.deepStrictEqual(roles, ["system", "user"]);
+
+        // Anthropic caches the tools and the rules, the same every round.
+        assert.deepStrictEqual(first?.content[0]?.options, {
+          anthropic: { cacheControl: { type: "ephemeral" } },
+        });
       }).pipe(Effect.provide(agentTest()))
   );
 
@@ -278,6 +283,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
             at: approval?._tag === "approval" ? approval.approval.at : null,
             callId: "call-schedule",
             channelIds: ["0190f0e0-0000-7000-8000-00000000c001"],
+            inReplyTo: null,
             postId,
             state: "pending",
             text: "Our spring launch is here.",
@@ -380,10 +386,13 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
           at: null,
           callId: "call-reply",
           channelIds: [],
+          // The comment it answers, as the inbox holds it: never the
+          // model's words.
+          inReplyTo: { author: "Ada", text: "Love the new colours!" },
           postId: null,
           state: "pending",
           text: "Thank you!",
-          threadId: null,
+          threadId: "thread-1",
           tool: "reply_to_comment",
         },
       });

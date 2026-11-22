@@ -33,6 +33,7 @@ const approval: AgentApproval = {
   at: null,
   callId: "call-2",
   channelIds: ["channel-1"],
+  inReplyTo: null,
   postId: "post-1",
   state: "pending",
   text: "Our spring sale starts today.",

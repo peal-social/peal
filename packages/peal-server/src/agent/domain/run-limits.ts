@@ -40,6 +40,9 @@ export const maxToolResultLength = 12_000;
 /** The most of an answer's text a chat keeps. */
 export const maxAnswerLength = 40_000;
 
+/** The most of a comment's or review's text an approval quotes. */
+export const maxQuotedLength = 500;
+
 /** The most of an item's text a card shows. */
 export const maxExcerptLength = 280;
 

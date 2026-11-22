@@ -68,7 +68,15 @@
 - Cards and approvals come from the tools' answers and the calls'
   parameters (`agent-cards.ts`, `agent-approvals.ts`, read leniently with
   `tool-items.ts`), and a call that names a post reads it for its
-  approval: never from the model's words. An answer continues in the same
+  approval, one that names a comment or a review reads it too
+  (`AgentToolbox.subjectOf`, through the engagement context's
+  `EngagementInbox.comment` and `EngagementReviews.review`, as the person
+  may read it) for the approval's `threadId` and `inReplyTo` (its author's
+  shown name, else handle, and the first 500 characters): never from the
+  model's words.
+- Each round's system message carries Anthropic's cache breakpoint
+  (`cachedPrefix`), so the tools and the rules, the same every round,
+  are read from its cache after the first; other providers ignore it. An answer continues in the same
   message after an approval (`started` with its id and a null
   `userMessageId`); a message sent while changes wait makes them
   `expired`, and the model reads that they were not made.
