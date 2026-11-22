@@ -470,6 +470,10 @@ export interface AgentChatRecord {
     }[];
     readonly createdAt: DateTime.Utc;
     readonly id: string;
+    readonly media: readonly {
+      readonly id: string;
+      readonly name: string | null;
+    }[];
     readonly outcome: string | null;
     readonly rating: string | null;
     readonly role: string;

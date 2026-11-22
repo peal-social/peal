@@ -3,6 +3,7 @@ import { Schema } from "effect";
 import {
   AgentApprovalSchema,
   AgentCardSchema,
+  AgentMediaSchema,
   AgentOutcomeSchema,
   AgentRatingSchema,
   AgentStepSchema,
@@ -23,6 +24,8 @@ export class AgentMessage extends Schema.Class<AgentMessage>(
   // How long the agent worked on it; none for the person's.
   durationMs: Schema.Option(Schema.Int),
   id: AgentMessageIdSchema,
+  // The files the person attached; none on the agent's answers.
+  media: Schema.Array(AgentMediaSchema),
   outcome: Schema.Option(AgentOutcomeSchema),
   rating: Schema.Option(AgentRatingSchema),
   role: Schema.Literals(["user", "assistant"]),

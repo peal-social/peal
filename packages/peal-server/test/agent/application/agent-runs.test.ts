@@ -43,7 +43,9 @@ const newChat = (person: Person) =>
   AgentDesk.use((desk) => desk.createChat(person.actor));
 
 const send = (person: Person, chatId: string, text: string) =>
-  AgentDesk.use((desk) => desk.send(person.actor, chatId, text, asked)).pipe(
+  AgentDesk.use((desk) =>
+    desk.send(person.actor, chatId, text, [], asked)
+  ).pipe(
     Effect.flatMap(Stream.runCollect),
     Effect.provideService(CurrentMember, person.member)
   );
@@ -620,7 +622,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         yield* script([silence]);
 
         const first = yield* AgentDesk.use((desk) =>
-          desk.send(person.actor, chat.id, "Think hard", asked)
+          desk.send(person.actor, chat.id, "Think hard", [], asked)
         ).pipe(
           Effect.flatMap((events) => Stream.runCollect(Stream.take(events, 1))),
           Effect.provideService(CurrentMember, person.member)
@@ -738,7 +740,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
       );
 
       const refusal = yield* AgentDesk.use((desk) =>
-        desk.send(person.actor, chat.id, "Hello", asked)
+        desk.send(person.actor, chat.id, "Hello", [], asked)
       ).pipe(Effect.flip);
 
       assert.strictEqual(refusal._tag, "ChatBusy");
@@ -766,7 +768,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
       const chat = yield* newChat(person);
 
       const refusal = yield* AgentDesk.use((desk) =>
-        desk.send(person.actor, chat.id, "   \n ", asked)
+        desk.send(person.actor, chat.id, "   \n ", [], asked)
       ).pipe(Effect.flip);
 
       assert.deepInclude(refusal, { _tag: "MessageRejected", reason: "empty" });
@@ -811,7 +813,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         const chat = yield* newChat(person);
 
         const refusal = yield* AgentDesk.use((desk) =>
-          desk.send(person.actor, chat.id, "Hello", asked)
+          desk.send(person.actor, chat.id, "Hello", [], asked)
         ).pipe(
           Effect.provideService(CurrentMember, person.member),
           Effect.flip
@@ -874,7 +876,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         );
 
         const refusal = yield* AgentDesk.use((desk) =>
-          desk.send(person.actor, chat.id, "More", asked)
+          desk.send(person.actor, chat.id, "More", [], asked)
         ).pipe(
           Effect.provideService(CurrentMember, person.member),
           Effect.flip
@@ -904,7 +906,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
       });
 
       const refusal = yield* AgentDesk.use((desk) =>
-        desk.send(person.actor, chat.id, "Hello", asked)
+        desk.send(person.actor, chat.id, "Hello", [], asked)
       ).pipe(Effect.provideService(CurrentMember, person.member), Effect.flip);
 
       assert.strictEqual(refusal._tag, "AgentModelOff");

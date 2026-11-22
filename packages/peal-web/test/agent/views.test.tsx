@@ -50,6 +50,7 @@ const answer = (fields: Partial<AgentMessage>): AgentMessage => ({
   createdAt: at,
   durationMs: null,
   id: "m2",
+  media: [],
   outcome: null,
   rating: null,
   role: "assistant",

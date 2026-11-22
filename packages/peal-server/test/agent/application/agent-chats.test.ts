@@ -48,7 +48,7 @@ const newChat = (person: Person) =>
 
 const send = (person: Person, chatId: string, text: string) =>
   desk
-    .use((agent) => agent.send(person.actor, chatId, text, asked))
+    .use((agent) => agent.send(person.actor, chatId, text, [], asked))
     .pipe(
       Effect.flatMap(Stream.runCollect),
       Effect.provideService(CurrentMember, person.member)
@@ -179,7 +179,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
               .pipe(Effect.flip),
             desk
               .use((agent) =>
-                agent.send(colleague.actor, chat.id, "Hello", asked)
+                agent.send(colleague.actor, chat.id, "Hello", [], asked)
               )
               .pipe(Effect.flip),
             desk

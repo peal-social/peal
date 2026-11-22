@@ -456,6 +456,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 createdAt: answerCreatedAt,
                 durationMs: Option.some(tookMs),
                 id: answerId,
+                media: [],
                 outcome: Option.some(outcome),
                 rating: Option.none(),
                 role: "assistant",
@@ -758,6 +759,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                   approvals,
                   cards: before.cards,
                   createdAt: before.createdAt,
+                  media: before.media,
                   durationMs: before.durationMs,
                   id: before.id,
                   outcome: before.outcome,
@@ -774,7 +776,11 @@ export const LanguageModelAgentRunsLive = Layer.effect(
           // The person's message: the changes that still waited are not
           // made (the model reads so, the person sees them expire), and
           // the message is kept.
-          const messageTaken = (text: string, userId: AgentMessage["id"]) =>
+          const messageTaken = (
+            text: string,
+            media: AgentMessage["media"],
+            userId: AgentMessage["id"]
+          ) =>
             Effect.gen(function* taken() {
               const expired = Option.match(asking, {
                 onNone: () => [],
@@ -810,7 +816,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 yield* keptWith(before, approvals);
               }
 
-              history = withUserMessage(history, text);
+              history = withUserMessage(history, text, media);
 
               yield* chats.save(
                 chat.chat.id,
@@ -820,6 +826,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                   createdAt: yield* DateTime.now,
                   durationMs: Option.none(),
                   id: userId,
+                  media,
                   outcome: Option.none(),
                   rating: Option.none(),
                   role: "user",
@@ -900,7 +907,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
             });
 
             if (input._tag === "message" && Option.isSome(userMessageId)) {
-              yield* messageTaken(input.text, userMessageId.value);
+              yield* messageTaken(input.text, input.media, userMessageId.value);
             }
 
             if (input._tag === "answer") {

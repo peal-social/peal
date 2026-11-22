@@ -1,6 +1,7 @@
 import { Effect, Option, Schema } from "effect";
 import { Prompt } from "effect/ai";
 
+import type { AgentMedia } from "#agent/domain/agent-parts.ts";
 import { forModel } from "#agent/domain/tool-result.ts";
 
 // What the model reads of a chat: the person's messages, the agent's text
@@ -54,12 +55,32 @@ const resultPart = ({ callId, encoded, isFailure, tool }: CallResult) =>
 /** The person's message, after the history. */
 export const withUserMessage = (
   history: Prompt.Prompt,
-  text: string
+  text: string,
+  media: readonly AgentMedia[] = []
 ): Prompt.Prompt =>
   Prompt.concat(
     history,
     Prompt.fromMessages([
-      Prompt.userMessage({ content: [Prompt.textPart({ text })] }),
+      Prompt.userMessage({
+        content: [
+          Prompt.textPart({ text }),
+          // The files it attaches, as data beside it: which they are,
+          // never their bytes.
+          ...(media.length === 0
+            ? []
+            : [
+                Prompt.textPart({
+                  text: JSON.stringify({
+                    attachments: media.map(({ id, kind, name }) => ({
+                      kind,
+                      mediaId: id,
+                      name,
+                    })),
+                  }),
+                }),
+              ]),
+        ],
+      }),
     ])
   );
 

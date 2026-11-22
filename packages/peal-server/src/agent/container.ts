@@ -5,6 +5,7 @@ import { AgentRecords } from "#agent/application/agent-records.ts";
 import { AgentRetentionCron } from "#agent/infrastructure/crons.ts";
 import { DrizzleAgentChatsLive } from "#agent/infrastructure/drizzle-agent-chats.ts";
 import { LanguageModelAgentRunsLive } from "#agent/infrastructure/language-model-agent-runs.ts";
+import { LibraryAttachedFilesLive } from "#agent/infrastructure/library-attached-files.ts";
 
 export { AgentDesk } from "#agent/application/agent-desk.ts";
 
@@ -26,10 +27,12 @@ export const AgentCronsLive = AgentRetentionCron;
  * The agent's use cases: the person's chats, and runs on effect/ai with
  * the writing assistant's model (AgentModelAccess, WritingAssistant). The
  * composition root brings `Drizzle`, `Ids`, the assistant's services, and
+ * the media context's MediaLibrary (the files a message attaches), and
  * the AgentToolbox and AgentLanguageModels it builds from the MCP
  * endpoint's tools and the assistant's provider packages.
  */
 export const AgentDeskLive = AgentDesk.layer.pipe(
   Layer.provide(LanguageModelAgentRunsLive),
+  Layer.provide(LibraryAttachedFilesLive),
   Layer.provide(DrizzleAgentChatsLive)
 );

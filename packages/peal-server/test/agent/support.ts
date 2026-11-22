@@ -8,8 +8,11 @@ import { AgentRecords } from "#agent/application/agent-records.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
 import { DrizzleAgentChatsLive } from "#agent/infrastructure/drizzle-agent-chats.ts";
 import { LanguageModelAgentRunsLive } from "#agent/infrastructure/language-model-agent-runs.ts";
+import { LibraryAttachedFilesLive } from "#agent/infrastructure/library-attached-files.ts";
 import { AgentModelAccess } from "#assistant/application/agent-model-access.ts";
 import { DrizzleAssistantUsageLive } from "#assistant/infrastructure/drizzle-assistant-usage.ts";
+import { MediaAssetNotFound } from "#media/application/media-asset-not-found.ts";
+import { MediaLibrary } from "#media/application/media-library.ts";
 import { Ids } from "#shared/application/ids.ts";
 import type { MeteredUsage } from "#shared/application/metered-usage.ts";
 import { Actor } from "#shared/domain/access.ts";
@@ -22,6 +25,7 @@ import {
 } from "#test/agent/fake-agent-model.ts";
 import { FakeToolboxLive } from "#test/agent/fake-tools.ts";
 import { allowanceOf, assistantTest } from "#test/assistant/support.ts";
+import { MediaTestLive, storageSettings } from "#test/media/support.ts";
 import type { FakeMetersLedger } from "#test/shared/support.ts";
 import { fakeMeters } from "#test/shared/support.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
@@ -41,6 +45,12 @@ export type { Round } from "#test/agent/fake-agent-model.ts";
 
 export { FakeTools, postId } from "#test/agent/fake-tools.ts";
 
+// No file is anyone's: every attached id is not found.
+const NoMediaLibrary = Layer.mock(MediaLibrary, {
+  getMedia: (_actor, assetId) =>
+    Effect.fail(new MediaAssetNotFound({ assetId })),
+});
+
 /**
  * The agent as the server wires it, on the fake model and tools, the
  * assistant's real allowances (`dailyRequests` a day off billing, or the
@@ -52,14 +62,28 @@ export const agentTest = ({
   meters = fakeMeters({ allowed: Option.none() }),
   metered = false,
   model = "fake",
+  files = false,
 }: {
+  /**
+   * The media library behind the files a message attaches: the real one,
+   * on the test store, or one that holds none. Its outbound guard resolves
+   * no name, so a test of a workspace's own provider takes none.
+   */
+  readonly files?: boolean;
   readonly dailyRequests?: number;
   readonly meters?: Layer.Layer<MeteredUsage | FakeMetersLedger>;
   readonly metered?: boolean;
   readonly model?: "fake" | "off";
-} = {}) =>
-  Layer.mergeAll(AgentDesk.layer, AgentRecords.layer).pipe(
+} = {}) => {
+  const media = files
+    ? MediaTestLive.pipe(Layer.provide(storageSettings))
+    : NoMediaLibrary;
+
+  return Layer.mergeAll(AgentDesk.layer, AgentRecords.layer).pipe(
     Layer.provide(LanguageModelAgentRunsLive),
+    // The files a message attaches, read from the media library.
+    Layer.provide(LibraryAttachedFilesLive),
+    Layer.provideMerge(media),
     Layer.provideMerge(DrizzleAgentChatsLive),
     Layer.provide(
       AgentModelAccess.layer.pipe(
@@ -76,6 +100,7 @@ export const agentTest = ({
     Layer.provideMerge(FakeAgentModelLive),
     Layer.provideMerge(assistantTest({ dailyRequests, meters, metered, model }))
   );
+};
 
 /** Someone in a workspace, as the API's WorkspaceAccess gives them. */
 export interface Person {
