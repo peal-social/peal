@@ -554,6 +554,42 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
       }).pipe(Effect.provide(agentTest()))
   );
 
+  it.effect(
+    "sends started then failed, and nothing else, when the first round is refused",
+    () =>
+      Effect.gen(function* refusedAtOnce() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+
+        yield* script([
+          fails(new AiError.AuthenticationError({ kind: "InvalidKey" })),
+        ]);
+
+        const events = yield* send(person, chat.id, "Hello");
+
+        assert.deepStrictEqual(tags(events), ["started", "failed"]);
+        assert.deepStrictEqual(ended(events), {
+          _tag: "failed",
+          reason: "providerRefused",
+        });
+
+        // The answer is kept, empty, as failed.
+        const kept = yield* detail(person, chat.id);
+
+        assert.deepStrictEqual(
+          kept.messages.map(({ outcome, role, text: said }) => [
+            role,
+            said,
+            Option.getOrNull(outcome),
+          ]),
+          [
+            ["user", "Hello", null],
+            ["assistant", "", "failed"],
+          ]
+        );
+      }).pipe(Effect.provide(agentTest()))
+  );
+
   it.effect("refuses a second run while one holds the chat", () =>
     Effect.gen(function* busy() {
       const person = yield* freshPerson;

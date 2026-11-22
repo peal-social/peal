@@ -1,5 +1,5 @@
 import { Effect, flow, Layer, Option, Schema, Stream } from "effect";
-import { Tool, Toolkit } from "effect/ai";
+import { LanguageModel, Tool, Toolkit } from "effect/ai";
 import { CurrentMember } from "peal-contract";
 
 import {
@@ -8,11 +8,16 @@ import {
   draftFreeTools,
 } from "#agent/domain/agent-toolset.ts";
 import type { AgentToolName } from "#agent/domain/agent-toolset.ts";
+import {
+  advertisedObject,
+  JsonObjectSchema,
+} from "#agent/infrastructure/advertised-schema.ts";
 import { AgentToolbox } from "#agent/infrastructure/agent-toolbox.ts";
 import type { AgentTool } from "#agent/infrastructure/agent-toolbox.ts";
 import { PealToolsLive } from "#app/mcp/handlers.ts";
 import { toolRefusedCode } from "#app/mcp/recorded-calls.ts";
 import { changingTools, contentTools } from "#app/mcp/server.ts";
+import { ToolRefused } from "#app/mcp/tool-refused.ts";
 import { PealTools } from "#app/mcp/tools.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { recordToolCall } from "#workspace/api/activity-recording.ts";
@@ -29,12 +34,32 @@ const decodePostNamed = Schema.decodeUnknownOption(
   Schema.Struct({ postId: Schema.String })
 );
 
+const decodeJsonObject = Schema.decodeUnknownSync(JsonObjectSchema);
+
 /**
- * The MCP endpoint's tool of that name, as the agent calls it: its name,
- * description and schemas, so the MCP handlers answer it, its refusals
- * returned to the model instead of failing the run, and the person's
- * approval asked first when `needsApproval` says so. Every name of the
- * agent's toolset is one of the endpoint's tools, which the types check.
+ * The JSON Schema the agent advertises a tool's parameters with: the one
+ * a provider would be sent for the MCP tool itself, outside strict mode,
+ * without what Anthropic refuses (`advertised-schema.ts`).
+ */
+export const advertisedParameters = (name: AgentToolName) =>
+  advertisedObject(
+    decodeJsonObject(
+      Tool.getJsonSchemaFromSchema(PealTools.tools[name].parametersSchema, {
+        transformer: LanguageModel.defaultCodecTransformer,
+      })
+    )
+  );
+
+/**
+ * The MCP endpoint's tool of that name, as the agent calls it: its name
+ * and description, its parameters advertised as `advertisedParameters`
+ * says and handed over as the model sent them, for the MCP tool's own
+ * codec to decode (a call it refuses is refused to the model), its
+ * refusals returned to the model instead of failing the run, the
+ * person's approval asked first when `needsApproval` says so, and not
+ * strict: no provider rewrites its schema into a strict subset. Every
+ * name of the agent's toolset is one of the endpoint's tools, which the
+ * types check.
  */
 export const agentToolOf = (
   name: AgentToolName,
@@ -42,15 +67,14 @@ export const agentToolOf = (
 ): AgentTool => {
   const tool = PealTools.tools[name];
 
-  return Tool.make(tool.name, {
-    dependencies: [CurrentMember],
+  return Tool.dynamic(tool.name, {
     description: tool.description,
-    failure: tool.failureSchema,
+    failure: ToolRefused,
     failureMode: "return",
     needsApproval,
-    parameters: tool.parametersSchema,
-    success: tool.successSchema,
-  });
+    parameters: advertisedParameters(name),
+    success: Schema.Json,
+  }).annotate(Tool.Strict, false);
 };
 
 /** The post a call names, by its parameters. */
@@ -89,16 +113,13 @@ export const agentToolkit = (
 
 const decodeJson = Schema.decodeUnknownEffect(Schema.Json);
 
-// A call's parameters, decoded by the agent's tool, as the MCP tool reads
-// them: their JSON.
-const encodedParameters = (name: AgentToolName) => {
-  const encode = Schema.encodeUnknownEffect(
-    Schema.toCodecJson(PealTools.tools[name].parametersSchema)
-  );
+const isRefusal = Schema.is(ToolRefused);
 
-  return (params: Tool.Parameters<AgentTool>) =>
-    encode(params).pipe(Effect.flatMap(decodeJson));
-};
+// What the model is told of parameters the MCP tool's codec refused.
+const parametersRefused = new ToolRefused({
+  message:
+    "This tool takes other parameters: read its schema and call it again with the ones it describes.",
+});
 
 /**
  * AgentToolbox on the MCP endpoint's handlers (PealToolsLive), which act
@@ -118,17 +139,26 @@ export const AgentToolboxLive = Layer.effect(
     // A tool's call, answered by the MCP endpoint's handler: its answer,
     // or the refusal it answered, which the agent's tool returns to the
     // model.
+    // The model's parameters go as it sent them, as JSON, and the MCP
+    // tool's own codec decodes them; its answer comes back as JSON.
     const handled = (name: AgentToolName) =>
       flow(
-        encodedParameters(name),
-        Effect.orDie,
+        (params: Tool.Parameters<AgentTool>) => decodeJson(params),
+        Effect.mapError(() => parametersRefused),
         Effect.flatMap((json) => peal.handle(name, json)),
         Effect.flatMap(Stream.runLast),
         Effect.flatMap(
           Option.match({
             onNone: () => Effect.die(`The tool ${name} answered nothing`),
-            onSome: ({ isFailure, result }) =>
-              isFailure ? Effect.fail(result) : Effect.succeed(result),
+            onSome: ({ encodedResult, isFailure, result }) => {
+              if (!isFailure) {
+                return decodeJson(encodedResult).pipe(Effect.orDie);
+              }
+
+              return Effect.fail(
+                isRefusal(result) ? result : parametersRefused
+              );
+            },
           })
         )
       );
