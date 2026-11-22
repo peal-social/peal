@@ -10,6 +10,7 @@ export type StepKind =
   | "comments"
   | "deleting"
   | "drafting"
+  | "editing"
   | "inbox"
   | "media"
   | "messages"
@@ -24,6 +25,7 @@ export type StepKind =
   | "reviews"
   | "saved"
   | "scheduling"
+  | "tagCreating"
   | "tagging"
   | "tags"
   | "unpublishing"
@@ -37,7 +39,11 @@ const byTool = new Map<string, StepKind>([
   ["cancel_post", "deleting"],
   ["channel_analytics", "analytics"],
   ["create_draft", "drafting"],
+  ["create_post", "scheduling"],
+  ["create_tag", "tagCreating"],
   ["discard_draft", "deleting"],
+  ["duplicate_post", "drafting"],
+  ["edit_published_post", "editing"],
   ["get_comment_thread", "comments"],
   ["get_conversation", "messages"],
   ["get_location_reviews", "reviews"],
@@ -101,27 +107,57 @@ export const stepKindOf = (tool: string): StepKind => {
 export type ApprovalKind =
   | "approve"
   | "delete"
+  | "edit"
   | "message"
   | "moderate"
+  | "move"
   | "other"
   | "publish"
+  | "queue"
   | "reply"
   | "requestChanges"
   | "schedule"
-  | "unpublish";
+  | "tag"
+  | "unpublish"
+  | "unschedule";
 
 const approvalKinds: Partial<Record<StepKind, ApprovalKind>> = {
   deleting: "delete",
+  editing: "edit",
   messaging: "message",
   moderating: "moderate",
   publishing: "publish",
   replying: "reply",
   scheduling: "schedule",
+  tagCreating: "tag",
   unpublishing: "unpublish",
 };
 
-/** What a change's tool does, as the approval card says it. */
-export const approvalKindOf = (tool: string): ApprovalKind => {
+// Changes to a scheduled post's time, each said in its own words.
+const postMoves = new Map<string, ApprovalKind>([
+  ["queue_post", "queue"],
+  ["reschedule_post", "move"],
+  ["unschedule_post", "unschedule"],
+]);
+
+/**
+ * What a change's tool does, as the approval card says it: a post made
+ * with no time goes out at once.
+ */
+export const approvalKindOf = (
+  tool: string,
+  at: unknown = undefined
+): ApprovalKind => {
+  if (tool === "create_post" && at === null) {
+    return "publish";
+  }
+
+  const byName = postMoves.get(tool);
+
+  if (byName !== undefined) {
+    return byName;
+  }
+
   if (tool === "approve_post") {
     return "approve";
   }

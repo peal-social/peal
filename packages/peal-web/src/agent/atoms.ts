@@ -1,7 +1,8 @@
 import { DateTime, Effect, Exit, Stream } from "effect";
-import { Atom } from "effect/reactivity";
+import { Atom, Reactivity } from "effect/reactivity";
 import type { AgentEvent } from "peal-contract/agent";
 
+import { changedKeysOf } from "#agent/changed-keys.ts";
 import { PealAgentApi } from "#agent/client.ts";
 import { refusalOf } from "#agent/refusal.ts";
 import { emptyChat, foldChat } from "#agent/run-state.ts";
@@ -133,10 +134,19 @@ export const agentRun = Atom.family((chatId: string) =>
           return;
         }
 
+        // What the run changed elsewhere in the app, read again once it ends.
+        const changed = new Set<string>();
+
         yield* opened.value.pipe(
           Stream.runForEach((event) =>
             Effect.sync(() => {
               dispatch({ _tag: "event", at: now(), event });
+
+              if (event._tag === "card") {
+                for (const key of changedKeysOf(workspaceId, event.card)) {
+                  changed.add(key);
+                }
+              }
             })
           ),
           // A stream that ends before the run did lost its end; once the
@@ -162,7 +172,15 @@ export const agentRun = Atom.family((chatId: string) =>
               // The run moved the chat to the top of the history, and may
               // have named it.
               get.registry.refresh(agentChats(workspaceId));
-            })
+            }).pipe(
+              Effect.andThen(
+                Effect.suspend(() =>
+                  changed.size === 0
+                    ? Effect.void
+                    : Reactivity.invalidate([...changed])
+                )
+              )
+            )
           )
         );
       })

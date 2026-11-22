@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
 import type { AgentChat } from "peal-contract/agent";
 
+import { changedKeysOf } from "#agent/changed-keys.ts";
 import { ageOf, dayGroupsOf, transcriptOf } from "#agent/history.ts";
 import { approvalKindOf, stepKindOf } from "#agent/steps.ts";
 
@@ -138,5 +139,54 @@ describe(approvalKindOf, () => {
       "requestChanges",
       "other",
     ]);
+  });
+
+  it("names every change the agent's toolset asks about in its own words", () => {
+    expect(
+      [
+        "create_post",
+        "reschedule_post",
+        "unschedule_post",
+        "queue_post",
+        "edit_published_post",
+        "create_tag",
+        "discard_draft",
+      ].map((tool) => approvalKindOf(tool, "2026-11-23T07:00:00Z"))
+    ).toStrictEqual([
+      "schedule",
+      "move",
+      "unschedule",
+      "queue",
+      "edit",
+      "tag",
+      "delete",
+    ]);
+
+    // A post made with no time goes out at once.
+    expect(approvalKindOf("create_post", null)).toBe("publish");
+  });
+});
+
+describe(changedKeysOf, () => {
+  it("refreshes the posts' pages after a post, the inbox after a thread", () => {
+    const post = changedKeysOf("w1", {
+      _tag: "post",
+      action: "scheduled",
+      channelIds: [],
+      excerpt: "Hello",
+      postId: "p1",
+      scheduledAt: null,
+    });
+
+    expect(post).toContain("posts");
+    expect(post).toContain("queues:w1");
+    expect(
+      changedKeysOf("w1", {
+        _tag: "thread",
+        action: "replied",
+        excerpt: "Thanks",
+        threadId: "t1",
+      }).some((key) => key.includes("t1"))
+    ).toBe(true);
   });
 });

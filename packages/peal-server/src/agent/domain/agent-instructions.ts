@@ -30,8 +30,17 @@ const rules = [
 export const agentInstructions = (
   now: DateTime.Utc,
   timeZone: TimeZoneId
-): string =>
-  [
+): string => {
+  const zoned = DateTime.setZone(now, timeZoneOf(timeZone));
+  // The offset the person's clock has today, as an instant writes it.
+  const local = DateTime.formatIsoOffset(zoned);
+  const offset = local.endsWith("Z") ? "+00:00" : local.slice(-6);
+  // Today's date on the person's clock, not UTC's.
+  const day = local.slice(0, 10);
+
+  return [
     ...rules,
-    `It is now ${DateTime.formatIsoZoned(DateTime.setZone(now, timeZoneOf(timeZone)))} on the person's clock; their time zone is ${timeZone}.`,
+    `It is now ${DateTime.formatIsoZoned(zoned)} on the person's clock; their time zone is ${timeZone}, at UTC${offset} today.`,
+    `A time the person names is on their clock: 9 am today is ${day}T09:00:00${offset}. Write every instant you send a tool with that offset (or the one their zone has on that day), never with Z, unless their zone is UTC.`,
   ].join("\n\n");
+};

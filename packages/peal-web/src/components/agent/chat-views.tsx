@@ -271,7 +271,7 @@ export const ApprovalCardView = ({
   const format = useFormatter();
   const titleId = useId();
   const { link: AppLink } = links;
-  const kind = approvalKindOf(approval.tool);
+  const kind = approvalKindOf(approval.tool, approval.at);
 
   const when = whenOf(t, format, kind, approval.at);
 
