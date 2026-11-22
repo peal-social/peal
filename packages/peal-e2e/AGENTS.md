@@ -150,6 +150,13 @@
   its close button fit the window, and that closing it gives the focus
   back to the thumbnail. A seeded description has no surrounding spaces,
   which the server refuses to read.
+- `tests/setup-card.e2e.ts` opens a new workspace's home: the setup card
+  with nothing ticked, the free accounts said once Mastodon is ticked, a
+  run that stops at a Mastodon server which does not exist and comes back
+  to Home with its reason, **Start over**, and **Not now** kept across a
+  reload. The chain from one platform's callback to the next sign-in
+  needs a platform to answer, which no run reaches: `test/home/` in the
+  web app covers the run's steps.
 - `tests/two-step.e2e.ts` turns two-step verification on from the account
   page, reading the key written beside the QR code and computing the codes
   an authenticator app would (`tests/support/totp.ts`, RFC 6238), signs in

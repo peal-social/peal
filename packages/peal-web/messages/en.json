@@ -1125,7 +1125,8 @@
     "lost": "This tab does not know which workspace the connection was for. Start it again from the workspace’s channels.",
     "connected": "{handle} is connected.",
     "toChannels": "Back to the channels",
-    "toWorkspaces": "Back to your workspaces"
+    "toWorkspaces": "Back to your workspaces",
+    "continuing": "{handle} is connected. Continuing to {name}…"
   },
   "ConnectLink": {
     "title": "Connect an account",
@@ -1205,7 +1206,9 @@
     "connected": "{count, plural, one {# account is connected.} other {# accounts are connected.}}",
     "cancel": "Back to the channels",
     "retry": "Choose again, or {platform, select, facebook {sign in with Facebook again} instagram {{connection, select, unifiedLogin {sign in again} other {sign in with Facebook again}}} youtube {sign in with Google again} googleBusiness {sign in with Google again} linkedin {sign in with LinkedIn again} other {sign in again}} for a new list.",
-    "startOver": "{platform, select, facebook {Sign in with Facebook again} instagram {{connection, select, unifiedLogin {Sign in again} other {Sign in with Facebook again}}} youtube {Sign in with Google again} googleBusiness {Sign in with Google again} linkedin {Sign in with LinkedIn again} other {Sign in again}}"
+    "startOver": "{platform, select, facebook {Sign in with Facebook again} instagram {{connection, select, unifiedLogin {Sign in again} other {Sign in with Facebook again}}} youtube {Sign in with Google again} googleBusiness {Sign in with Google again} linkedin {Sign in with LinkedIn again} other {Sign in again}}",
+    "skip": "Skip this platform",
+    "continuing": "{count, plural, one {# account connected} other {# accounts connected}}. Continuing to {name}…"
   },
   "InstagramChannels": {
     "title": "Instagram",
@@ -3379,6 +3382,49 @@
         "install": "Install the SDK",
         "call": "Make a first call"
       }
+    }
+  },
+  "SetupCard": {
+    "title": "Set up your channels",
+    "description": "Tick the platforms you post to. Peal opens each sign-in in turn, and where you’re already signed in, it takes one click to allow.",
+    "listLabel": "Platforms to connect",
+    "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Facebook Pages} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} slack {Slack} other {{platform}}}",
+    "linkedinProfile": "LinkedIn profile",
+    "linkedinPage": "LinkedIn pages",
+    "instance": {
+      "label": "Your Mastodon server",
+      "hint": "Such as mastodon.social."
+    },
+    "handle": {
+      "label": "Your Bluesky handle (optional)",
+      "hint": "Such as you.bsky.social. Leave it empty to type it on Bluesky."
+    },
+    "xClosed": "Needs a payment method on the billing page.",
+    "connect": "{count, plural, =0 {Connect} one {Connect # platform} other {Connect # platforms}}",
+    "leaving": "Opening…",
+    "notNow": "Not now",
+    "otherWays": "Websites and chats connect from <link>New channel</link>.",
+    "cost": {
+      "free": "Your first {free, number} accounts are free.",
+      "needsPayment": "Your first {free, number} accounts are free. Past them, Peal asks for a payment method.",
+      "adds": "At one account each, these add {price} a month excl. VAT · {included} with France’s {rate}% VAT. Each page or channel you pick counts as one account."
+    },
+    "status": {
+      "waiting": "Waiting",
+      "connected": "Connected: {handles}",
+      "skipped": "Skipped: no account chosen"
+    },
+    "running": {
+      "description": "Peal stopped here. Continue when you’re ready, or stop and connect the rest later from Channels.",
+      "continue": "Continue with {name}",
+      "stop": "Stop"
+    },
+    "done": {
+      "title": "{connected, plural, =0 {No channel was connected} other {Your channels are set up}}",
+      "summary": "{connected, plural, =0 {Each platform says below what happened. Start over to try again.} one {# account connected{failed, plural, =0 {.} one {. One platform didn’t connect: try it again from Channels.} other {. # platforms didn’t connect: try them again from Channels.}}} other {# accounts connected{failed, plural, =0 {.} one {. One platform didn’t connect: try it again from Channels.} other {. # platforms didn’t connect: try them again from Channels.}}}}",
+      "writePost": "Write a post",
+      "close": "Close",
+      "startOver": "Start over"
     }
   },
   "Webhooks": {

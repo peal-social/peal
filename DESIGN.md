@@ -1250,6 +1250,37 @@ them beside the one open, so the list stays where it was.
   the answer, where it can be changed. The site, the docs and the blog,
   where a visitor has no page of their own to be asked on, ask with the
   consent notice (see [Site](#site)).
+- **Home** holds, under the consent card, the headline (two lines, the
+  second muted) and its cards: connecting channels, connecting an
+  assistant, and the quickstart. A new workspace's Home opens with the
+  **setup card** first, as consent does: a card in the content, never a
+  dialog, a bar or a step-by-step page of its own. It shows while the
+  workspace has no channel and the member may connect one, until they
+  answer **Not now** (this browser remembers it, per workspace), and
+  while a run it started is not done. It has three states:
+  - **Choose.** Its title ("Set up your channels") and one muted line,
+    then one bordered list (as `list`) of the platforms the server signs
+    in to, each row its mark (16 px tile), its name and a checkbox at its
+    end, none ticked: Peal cannot know which accounts someone has. A row
+    that needs a word before its sign-in shows its field under the name
+    once ticked (Mastodon's server, Bluesky's handle, optional). A row
+    the plan refuses (X without a payment method) is disabled, its
+    reason in muted text. Under the list, one muted line on the cost,
+    from the rate card and never a typed figure (nothing where billing
+    is off), then **Connect N platforms** (primary), **Not now**
+    (outline), and a link to New channel for websites and chats.
+  - **Running.** The same rows, each with what it came to: connected
+    with its handles, failed with the reason (`destructive` text, the
+    row untinted), or waiting. Peal goes from one platform's sign-in to
+    the next by itself, naming the next on the callback page before it
+    leaves ("@peal is connected. Continuing to LinkedIn…"). Anything
+    that stops it (a failure, a refusal, a cancelled choice, the Back
+    button) comes back to Home with **Continue with LinkedIn**
+    (primary) and **Stop** (outline). Home never leaves for a platform
+    by itself.
+  - **Done.** One line on how many accounts were connected and on what
+    failed, **Write a post** (primary) and **Close** (outline); when none
+    was, **Start over** (primary) alone, which brings back Choose.
 - **The composer** writes one text with a tab per channel, counts each
   platform's limit, and shows a preview beside it.
 - **Channels** is a list like any other: views (All, Needs reconnecting,

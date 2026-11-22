@@ -13,17 +13,32 @@ import type {
 import { Alert, AlertDescription, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { useChannelErrorText } from "#channels/channel-error-text.ts";
 import { completeConnection, failureOf } from "#channels/channels-api.ts";
 import type { ChannelErrorKey } from "#channels/channels-api.ts";
 import {
+  nextStep,
+  recordStep,
+  runAt,
+  runErrorOf,
+} from "#channels/connect-run.ts";
+import type { ConnectRun } from "#channels/connect-run.ts";
+import {
   forgetConnection,
   pendingWorkspace,
 } from "#channels/pending-connection.ts";
+import { useRunStep } from "#channels/use-run-step.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { AccountPicker } from "#components/channels/account-picker.tsx";
+import { useSetupName } from "#components/home/setup-card-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link, useRouter } from "#i18n/navigation.ts";
 
@@ -74,7 +89,10 @@ interface CompleteConnectionProps {
 }
 
 // Hands what the platform sent back to the server, for the workspace this
-// tab started the connection in, then returns to its channels.
+// tab started the connection in, then returns to its channels. In a run of
+// the home page's setup card, it keeps what came of the sign-in and goes
+// on to the next platform's, naming it, or back to Home when the run is
+// over or stopped (a refusal, here or at the next start).
 export const CompleteConnection = ({
   callback,
   platform,
@@ -85,6 +103,26 @@ export const CompleteConnection = ({
   const router = useRouter();
   const complete = useAtomSet(completeConnection, { mode: "promiseExit" });
   const offerUpgrade = useOfferUpgrade();
+  const nameOf = useSetupName();
+
+  // The line shown while the tab leaves for the run's next platform.
+  const [continuing, setContinuing] = useState<string | null>(null);
+
+  const toHome = useEffectEvent((workspace: string) => {
+    router.replace(workspaceHref(workspace));
+  });
+
+  const runStep = useRunStep({
+    offerUpgrade: false,
+    onRefused: (run) => {
+      router.replace(workspaceHref(run.workspaceId));
+    },
+  });
+
+  // Leaves for the run's next platform, from the effect below.
+  const startNext = useEffectEvent((run: ConnectRun) => {
+    runStep.start(run);
+  });
 
   // Kept with its workspace: the tab forgets the connection once it is back.
   const [failure, setFailure] = useState<{
@@ -129,6 +167,8 @@ export const CompleteConnection = ({
 
       forgetConnection();
 
+      const run = runAt(workspace, platform);
+
       if (exit._tag === "Success") {
         const outcome = exit.value;
 
@@ -143,8 +183,46 @@ export const CompleteConnection = ({
           return;
         }
 
+        if (run !== null) {
+          const after = recordStep(run, platform, {
+            _tag: "connected",
+            handles: [outcome.channel.handle],
+          });
+
+          const next = nextStep(after);
+
+          if (next === null) {
+            toast.success(t("connected", { handle: outcome.channel.handle }));
+            toHome(workspace);
+
+            return;
+          }
+
+          setContinuing(
+            t("continuing", {
+              handle: outcome.channel.handle,
+              name: nameOf(next.platform, next.connection),
+            })
+          );
+          startNext(after);
+
+          return;
+        }
+
         toast.success(t("connected", { handle: outcome.channel.handle }));
         router.replace(workspaceHref(workspace, "/channels"));
+
+        return;
+      }
+
+      if (run !== null) {
+        recordStep(run, platform, {
+          _tag: "failed",
+          error: runErrorOf(
+            Option.getOrElse(failureOf(exit), () => "unknown" as const)
+          ),
+        });
+        toHome(workspace);
 
         return;
       }
@@ -160,6 +238,7 @@ export const CompleteConnection = ({
   }, [
     callback,
     complete,
+    nameOf,
     offerUpgrade,
     platform,
     router,
@@ -167,6 +246,14 @@ export const CompleteConnection = ({
     workspaceHref,
     workspaceId,
   ]);
+
+  if (continuing !== null) {
+    return (
+      <p className="text-muted-foreground text-sm" aria-live="polite">
+        {continuing}
+      </p>
+    );
+  }
 
   if (choice !== null) {
     return (
