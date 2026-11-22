@@ -721,6 +721,8 @@
     },
     "errors": {
       "busy": "Peal is still answering in this chat. Wait for it to finish, or stop it, then send your message again.",
+      "mediaNotFound": "One of the attached files isn't in this workspace's library any more. Take it off and send again.",
+      "mediaNotReady": "One of the attached files is still being checked by the library. Send again in a moment.",
       "chatNotFound": "This chat is gone. It was deleted, or it expired.",
       "chatGone": "This chat couldn't be opened. It was deleted or it expired, or the network failed.",
       "notPending": "This change isn't waiting for an answer anymore, so Peal did nothing. The chat now shows where it stands.",

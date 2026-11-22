@@ -721,6 +721,8 @@
     },
     "errors": {
       "busy": "Peal répond encore dans cette conversation. Attendez qu’il ait fini, ou arrêtez-le, puis renvoyez votre message.",
+      "mediaNotFound": "L’un des fichiers joints n’est plus dans la médiathèque de cet espace de travail. Retirez-le, puis renvoyez votre message.",
+      "mediaNotReady": "L’un des fichiers joints est encore vérifié par la médiathèque. Renvoyez votre message dans un instant.",
       "chatNotFound": "Cette conversation n’existe plus. Elle a été supprimée, ou elle a expiré.",
       "chatGone": "Impossible d’ouvrir cette conversation. Elle a été supprimée ou elle a expiré, ou le réseau a échoué.",
       "notPending": "Cette modification n’attend plus de réponse, donc Peal n’a rien fait. La conversation montre maintenant où elle en est.",

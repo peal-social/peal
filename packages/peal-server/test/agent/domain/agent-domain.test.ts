@@ -248,6 +248,12 @@ describe("the agent's domain", () => {
     );
   });
 
+  it("has the model use attached files by id, and invent no alt text for them", () => {
+    expect(agentInstructions(now, personTimeZone("UTC"))).toContain(
+      "write no alt text for one unless the person gave it"
+    );
+  });
+
   it("has the model speak of what it can do, never of its tools", () => {
     expect(agentInstructions(now, personTimeZone("UTC"))).toContain(
       "Never name a tool or show its parameters"

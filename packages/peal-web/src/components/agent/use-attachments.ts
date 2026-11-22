@@ -2,10 +2,13 @@
 
 import { RegistryContext } from "@effect/atom-react";
 import { AsyncResult } from "effect/reactivity";
+import type { Media } from "peal-contract";
+import { maxAgentMessageMedia } from "peal-contract/agent";
 import type { AgentMedia } from "peal-contract/agent";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 
 import { upload } from "#media/atoms.ts";
+import { mediaItem } from "#posts/attached-media.ts";
 
 /** A file attached to the message being written. */
 export interface Attachment {
@@ -28,7 +31,10 @@ const kindOf = (file: File): AgentMedia["kind"] => {
 };
 
 /** At most this many files a message, as the server takes. */
-export const maxAttachments = 10;
+export const maxAttachments = maxAgentMessageMedia;
+
+// How long the library may take to check a file before it is given up.
+const checkingFor = 2 * 60 * 1000;
 
 /**
  * The files attached to a message: each one added to the workspace's
@@ -48,6 +54,57 @@ export const useAttachments = (workspaceId: string) => {
     },
     [setItems]
   );
+
+  // Ready once the library checked the file: read again every two seconds
+  // while the check is pending, failed when it ends any other way or
+  // takes longer than two minutes.
+  const waitUntilReady = (key: string, media: Media) => {
+    const settled = (status: Media["status"]): boolean => {
+      if (status._tag === "ready") {
+        change(key, { state: "ready" });
+
+        return true;
+      }
+
+      const pending =
+        status._tag === "pending" ||
+        (status._tag === "uploaded" && status.probe === "pending");
+
+      if (!pending) {
+        change(key, { state: "failed" });
+      }
+
+      return !pending;
+    };
+
+    if (settled(media.status)) {
+      return;
+    }
+
+    const item = mediaItem(workspaceId, media.id);
+    const started = Date.now();
+
+    const stopReading = registry.subscribe(item, (result) => {
+      if (AsyncResult.isSuccess(result) && settled(result.value.status)) {
+        stops.current.get(key)?.();
+      }
+    });
+
+    const timer = window.setInterval(() => {
+      if (Date.now() - started > checkingFor) {
+        change(key, { state: "failed" });
+        stops.current.get(key)?.();
+      } else {
+        registry.refresh(item);
+      }
+    }, 2000);
+
+    stops.current.set(key, () => {
+      stopReading();
+      window.clearInterval(timer);
+      stops.current.delete(key);
+    });
+  };
 
   const add = (files: readonly File[]) => {
     const room = maxAttachments - items.length;
@@ -69,8 +126,10 @@ export const useAttachments = (workspaceId: string) => {
 
       const stop = registry.subscribe(atom, (result) => {
         if (AsyncResult.isSuccess(result) && !result.waiting) {
-          change(key, { mediaId: result.value.id, state: "ready" });
           stops.current.get(key)?.();
+          change(key, { mediaId: result.value.id });
+          // A video may still be checked once its bytes are in.
+          waitUntilReady(key, result.value);
         } else if (AsyncResult.isFailure(result) && !result.waiting) {
           change(key, { state: "failed" });
           stops.current.get(key)?.();

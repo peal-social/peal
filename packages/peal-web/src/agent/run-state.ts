@@ -162,7 +162,6 @@ const settleSteps = (message: AgentMessage): AgentMessage => ({
 
 const answerOf = (id: string, at: DateTime.Utc): AgentMessage => ({
   approvals: [],
-  media: [],
   cards: [],
   createdAt: at,
   durationMs: null,

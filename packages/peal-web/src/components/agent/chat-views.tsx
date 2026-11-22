@@ -638,6 +638,10 @@ export const refusalMessage = (
     AgentApprovalNotPending: () => t("errors.notPending"),
     AgentBusy: () => t("errors.busy"),
     AgentChatNotFound: () => t("errors.chatNotFound"),
+    AgentMediaRejected: ({ reason }) =>
+      reason === "notReady"
+        ? t("errors.mediaNotReady")
+        : t("errors.mediaNotFound"),
     AssistantInputRejected: ({ maxLength, reason }) =>
       reason === "empty"
         ? t("errors.empty")
