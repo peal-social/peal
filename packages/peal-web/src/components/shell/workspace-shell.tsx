@@ -5,22 +5,21 @@ import type { Permission } from "peal-contract";
 import type { ReactNode } from "react";
 
 import { chooseWorkspace } from "#auth/choose-workspace.ts";
+import { AgentDock } from "#components/agent/agent-dock.tsx";
+import { AgentPanelProvider } from "#components/agent/agent-panel-context.tsx";
+import { AppLink } from "#components/shell/app-link.tsx";
 import { CommandMenu } from "#components/shell/command-menu.tsx";
 import { CommandScopeProvider } from "#components/shell/command-scope.tsx";
 import { crumbLinkClass, FrameView } from "#components/shell/frame-view.tsx";
 import { ModeSwitch, SidebarView } from "#components/shell/sidebar-view.tsx";
-import type { LinkComponent } from "#components/shell/sidebar-view.tsx";
-import { Link, usePathname } from "#i18n/navigation.ts";
+import { usePathname } from "#i18n/navigation.ts";
 import { crumbHrefOf, navigationOf } from "#shell/navigation.ts";
 import type { Crumb } from "#shell/navigation.ts";
 
-export const AppLink: LinkComponent = ({ children, ...props }) => (
-  <Link {...props}>{children}</Link>
-);
-
 /**
  * The frame of a workspace's pages: its sidebar (PealCreative and PealAPI), the
- * panel's header naming the open page, the bottom bar, and the page's foot.
+ * panel's header naming the open page, the bottom bar with the agent's
+ * place and its panel, and the page's foot.
  */
 export const WorkspaceShell = ({
   actions,
@@ -69,58 +68,64 @@ export const WorkspaceShell = ({
 
   return (
     <CommandScopeProvider>
-      <FrameView
-        actions={
-          <>
-            {actions}
-            <ModeSwitch
-              link={AppLink}
-              mode={navigation.mode}
-              modes={navigation.modes}
-            />
-          </>
-        }
-        breadcrumb={{
-          page: page === null ? null : t(`pages.${page}`),
-          trail: trail.map((crumb) => ({
-            key: crumb,
-            link: (
-              <AppLink
-                href={crumbHrefOf(workspaceSlug, crumb)}
-                className={crumbLinkClass}
-              >
-                {crumbName(crumb)}
-              </AppLink>
-            ),
-          })),
-        }}
-        docsUrl={docsUrl}
-        footer={footer}
-        label={t("label")}
-        split={navigation.split}
-        supportUrl={supportUrl}
-        sidebar={
-          <SidebarView
-            link={AppLink}
-            navigation={navigation}
-            onChooseWorkspace={chooseWorkspace}
-            tools={
-              <CommandMenu
-                docsUrl={docsUrl}
-                permissions={permissions}
-                supportUrl={supportUrl}
-                workspaceId={workspaceId}
-                workspaceSlug={workspaceSlug}
-                workspaces={workspaces}
-              />
-            }
-            workspaceId={workspaceId}
-            workspaces={workspaces}
-          />
-        }
+      <AgentPanelProvider
+        allowed={permissions.includes("assistant:use")}
+        workspaceId={workspaceId}
       >
-        {children}
-      </FrameView>
+        <FrameView
+          agent={<AgentDock permissions={permissions} />}
+          actions={
+            <>
+              {actions}
+              <ModeSwitch
+                link={AppLink}
+                mode={navigation.mode}
+                modes={navigation.modes}
+              />
+            </>
+          }
+          breadcrumb={{
+            page: page === null ? null : t(`pages.${page}`),
+            trail: trail.map((crumb) => ({
+              key: crumb,
+              link: (
+                <AppLink
+                  href={crumbHrefOf(workspaceSlug, crumb)}
+                  className={crumbLinkClass}
+                >
+                  {crumbName(crumb)}
+                </AppLink>
+              ),
+            })),
+          }}
+          docsUrl={docsUrl}
+          footer={footer}
+          label={t("label")}
+          split={navigation.split}
+          supportUrl={supportUrl}
+          sidebar={
+            <SidebarView
+              link={AppLink}
+              navigation={navigation}
+              onChooseWorkspace={chooseWorkspace}
+              tools={
+                <CommandMenu
+                  docsUrl={docsUrl}
+                  permissions={permissions}
+                  supportUrl={supportUrl}
+                  workspaceId={workspaceId}
+                  workspaceSlug={workspaceSlug}
+                  workspaces={workspaces}
+                />
+              }
+              workspaceId={workspaceId}
+              workspaces={workspaces}
+            />
+          }
+        >
+          {children}
+        </FrameView>
+      </AgentPanelProvider>
     </CommandScopeProvider>
   );
 };

@@ -567,6 +567,162 @@
     },
     "remainingMonth": "{remaining, plural, =0 {No requests left this month} one {# request left this month} other {# requests left this month}}"
   },
+  "Agent": {
+    "newChat": "New chat",
+    "placeholder": "Ask Peal…",
+    "panelPlaceholder": "Ask about your posts, channels or comments",
+    "composerLabel": "Message to Peal",
+    "send": "Send",
+    "stop": "Stop",
+    "thinking": "Thinking…",
+    "you": "You",
+    "justNow": "just now",
+    "dateLine": "{day, select, today {Today} yesterday {Yesterday} other {{date}}} {time}",
+    "workedSeconds": "Worked for {seconds, plural, one {# second} other {# seconds}}",
+    "workedMinutes": "Worked for {minutes, plural, one {# minute} other {# minutes}}",
+    "stopped": "You stopped this answer here.",
+    "tooLong": "{count, number} / {max, number} characters",
+    "failedHere": "This answer stopped on an error. Send your message again to retry.",
+    "stepLimit": "Peal used every step one answer gets. Ask it to carry on if there's more to do.",
+    "channels": "Channels",
+    "otherChannels": "{count, plural, one {# other channel} other {# other channels}}",
+    "copy": "Copy the answer",
+    "copied": "Answer copied",
+    "copyFailed": "Couldn't copy to the clipboard.",
+    "rateUp": "Good answer",
+    "rateDown": "Bad answer",
+    "recent": "Recent chats",
+    "retry": "Try again",
+    "welcome": "Welcome to Peal",
+    "welcomeLine": "Ask anything or tell Peal what you need",
+    "examples": {
+      "title": "Get started with some examples",
+      "dismiss": "Hide the examples",
+      "plan": {
+        "title": "Check this week",
+        "line": "See what goes out and which days are empty",
+        "prompt": "What's scheduled this week, and which days have nothing going out?"
+      },
+      "draft": {
+        "title": "Write a draft",
+        "line": "Turn a few words into a draft for your channels",
+        "prompt": "Write a draft for all our channels announcing our next event."
+      },
+      "comments": {
+        "title": "Catch up on comments",
+        "line": "Find the comments still waiting for an answer",
+        "prompt": "Which comments are still waiting for an answer?"
+      }
+    },
+    "add": {
+      "label": "Add files and more",
+      "file": "File",
+      "skill": "Skill",
+      "attachments": "Attached files",
+      "remove": "Remove {name}",
+      "uploading": "Adding {name} to the library…",
+      "failed": "{name} couldn't be added to the library.",
+      "waiting": "Wait until the files are in the library.",
+      "kind": "{kind, select, image {Image} video {Video} other {Document}}",
+      "createSkill": "Create skill…",
+      "skills": "Picked skills",
+      "removeSkill": "Remove the skill {name}",
+      "workspaceSkill": "Workspace",
+      "slashMenu": "Skills",
+      "slashStatus": "{count, plural, =0 {No skill matches. Press Enter to create one.} one {# skill matches. Press Enter to pick it.} other {# skills match. Use the arrow keys, then Enter to pick one.}}"
+    },
+    "groups": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "steps": {
+      "running": "{kind, select, analytics {Reading the analytics…} approvals {Looking at the approvals…} channels {Looking at channels…} comments {Reading comments…} deleting {Deleting…} drafting {Writing the draft…} editing {Editing the published post…} tagCreating {Creating the tag…} inbox {Reading the inbox…} media {Looking at the media library…} messages {Reading messages…} messaging {Sending the message…} moderating {Moderating the comment…} posts {Looking at posts…} publishing {Publishing…} queues {Looking at queues…} replying {Replying…} reviewing {Reviewing the post…} reviews {Reading reviews…} saved {Looking at signatures and channel sets…} scheduling {Scheduling…} tagging {Tagging the post…} tags {Looking at tags…} unpublishing {Unpublishing…} workspace {Looking at the workspace…} skill {Reading a skill…} other {Working…}}",
+      "done": "{kind, select, analytics {Read the analytics} approvals {Looked at the approvals} channels {Looked at channels} comments {Read comments} deleting {Deleted} drafting {Wrote the draft} editing {Edited the published post} tagCreating {Created the tag} inbox {Read the inbox} media {Looked at the media library} messages {Read messages} messaging {Sent the message} moderating {Moderated the comment} posts {Looked at posts} publishing {Published} queues {Looked at queues} replying {Replied} reviewing {Reviewed the post} reviews {Read reviews} saved {Looked at signatures and channel sets} scheduling {Scheduled} tagging {Tagged the post} tags {Looked at tags} unpublishing {Unpublished} workspace {Looked at the workspace} skill {Read a skill} other {Used a tool}}",
+      "refused": "{step} (not allowed)",
+      "failed": "{step} (didn't finish)"
+    },
+    "approval": {
+      "title": "{kind, select, approve {Approve this post} delete {Delete this post} edit {Edit this published post} tag {Create this tag} message {Send this message} moderate {Moderate this comment} move {Move this post} publish {Publish this post} queue {Add this post to its queue} reply {Reply to this comment} requestChanges {Request changes on this post} schedule {Schedule this post} unpublish {Unpublish this post} unschedule {Unschedule this post} other {Make this change}}",
+      "at": "On {at}",
+      "now": "As soon as you approve",
+      "approve": "Approve",
+      "decline": "Decline",
+      "state": "{state, select, approved {Approved} notDone {Approved, not done} declined {Declined} expired {Expired} other {Waiting}}",
+      "inReplyTo": "{author} wrote",
+      "inReplyToSomeone": "The comment",
+      "openPost": "Open the post",
+      "openThread": "Open the comments"
+    },
+    "card": {
+      "post": "{action, select, created {Created post} updated {Updated post} scheduled {Scheduled post} published {Published post} deleted {Deleted post} replied {Replied} other {Post}}",
+      "thread": "{action, select, replied {Replied to a comment} deleted {Deleted a comment} other {Comment}}",
+      "goesOut": "Goes out on {at}"
+    },
+    "menu": {
+      "label": "Chat options",
+      "switch": "Switch chat",
+      "star": "Favourite",
+      "starred": "Favourite",
+      "rename": "Rename",
+      "renameTitle": "Rename the chat",
+      "titleLabel": "Title",
+      "save": "Save",
+      "cancel": "Cancel",
+      "copyMarkdown": "Copy as markdown",
+      "copiedMarkdown": "Chat copied as markdown",
+      "delete": "Delete",
+      "deleteTitle": "Delete this chat?",
+      "deleteLine": "Its messages are deleted for good. Anything Peal did in the workspace stays as it is.",
+      "deleteConfirm": "Delete",
+      "moveToPanel": "Move to panel"
+    },
+    "panel": {
+      "label": "Peal's agent",
+      "minimize": "Minimize",
+      "fullPage": "Open as a page",
+      "close": "Close"
+    },
+    "dock": {
+      "agent": "Agent",
+      "toggle": "Open the agent",
+      "history": "History",
+      "historyEmpty": "No chats yet.",
+      "tabs": "Chats open in the panel",
+      "closeTab": "Close {title}"
+    },
+    "off": {
+      "title": "The agent is off",
+      "noModel": "There's no language model for this workspace yet. An owner or an admin can set up the workspace's own text provider in the assistant settings.",
+      "paymentMethod": "Peal's own model needs a payment method on the billing account. A text provider of the workspace's own works without one.",
+      "settings": "Set up a text provider",
+      "billing": "Add a payment method",
+      "askAdmin": "Ask an owner or an admin of the workspace to turn it on.",
+      "unreachable": "Peal couldn't check whether the agent is on. Try again in a moment."
+    },
+    "errors": {
+      "busy": "Peal is still answering in this chat. Wait for it to finish, or stop it, then send your message again.",
+      "mediaNotFound": "One of the attached files isn't in this workspace's library any more. Take it off and send again.",
+      "mediaNotReady": "One of the attached files is still being checked by the library. Send again in a moment.",
+      "chatNotFound": "This chat is gone. It was deleted, or it expired.",
+      "chatGone": "This chat couldn't be opened. It was deleted or it expired, or the network failed.",
+      "notPending": "This change isn't waiting for an answer anymore, so Peal did nothing. The chat now shows where it stands.",
+      "empty": "Write a message first.",
+      "tooLong": "Your message is longer than the {maxLength, number} characters Peal takes.",
+      "quota": "{dailyLimit, plural, =0 {Your workspace can't send the assistant any requests.} one {Your workspace has used its # assistant request for today. You can ask again from {resetsAt}.} other {Your workspace has used its # assistant requests for today. You can ask again from {resetsAt}.}}",
+      "unavailable": "The agent isn't available on this server.",
+      "forbidden": "Your role doesn't let you use the agent.",
+      "personRequired": "Only you can talk to your agent, signed in to your own account. Staff acting as you, API keys and apps can't.",
+      "ownLimit": "Your workspace sent its own text provider {dailyLimit, number} requests today, the most a day allows. Ask again tomorrow (UTC).",
+      "ownBusy": "Your workspace already has as many requests under way to its own text provider as it may. Nothing was spent. Try again once one has finished.",
+      "paymentMethod": "Peal's agent needs a payment method on the billing account. A text provider of your own works without one.",
+      "paymentFailed": "The billing account's last payment failed, so the agent takes nothing past what's included until it goes through. Update the payment method from the billing page.",
+      "monthUsed": "Your billing account used the {allowed, number} assistant requests it may send this month. You can ask again from {resetsAt}.",
+      "failed": "{reason, select, providerRefused {Your workspace's text provider refused its settings. An owner or an admin can fix them in the assistant settings.} unreachable {The language model couldn't be reached. Try again in a moment.} timedOut {The language model took too long to answer. Try again.} unusableAnswer {The language model's answer couldn't be used. Try again.} allowanceReached {The workspace has used the agent's requests it has for now, so the agent stopped here. See what is left on the billing page.} other {Something went wrong. Try again.}}",
+      "lost": "The answer stopped coming before it ended. Reload the page to see what Peal saved.",
+      "generic": "Something went wrong. Try again.",
+      "skillNotFound": "A skill you picked was deleted or is no longer shared. Take it off and send again."
+    }
+  },
   "AppShell": {
     "productName": "Peal",
     "hostedBy": "Secure connection by {product}"
@@ -3069,6 +3225,8 @@
       "newPost": "New post",
       "post": "Post",
       "home": "Home",
+      "agent": "Agent",
+      "agentChat": "Chat",
       "platforms": "Platforms",
       "articles": "Articles",
       "article": "Article",
@@ -3081,13 +3239,13 @@
       "notifications": "Notifications",
       "notificationSettings": "Notification preferences",
       "newChannel": "New channel",
-      "channelPlatform": "Platform"
+      "channelPlatform": "Platform",
+      "agentSettings": "Agent",
+      "newSkill": "New skill",
+      "skill": "Skill"
     },
     "help": "Help",
-    "shortcuts": "Keyboard shortcuts",
-    "agent": "Agent",
-    "agentSoon": "The agent is coming soon",
-    "history": "History"
+    "shortcuts": "Keyboard shortcuts"
   },
   "CommandMenu": {
     "title": "Command menu",
@@ -5113,7 +5271,8 @@
       "cancel": "Cancel the posts",
       "filter": "Filter the list",
       "approve": "Approve the posts",
-      "requestChanges": "Request changes"
+      "requestChanges": "Request changes",
+      "openAgent": "Open the agent"
     }
   },
   "Lists": {
@@ -5157,5 +5316,56 @@
     "showMore": "Show more",
     "nothingOpen": "Nothing open",
     "nothingOpenHint": "Choose a comment, a review or a conversation in the list."
+  },
+  "AgentSkills": {
+    "new": "New skill",
+    "emptyTitle": "No skills yet",
+    "empty": "A skill is instructions you save for a task you repeat. Pick one in a message by typing / in the agent's composer, and Peal follows it.",
+    "scope": "{scope, select, workspace {Workspace} other {Personal}}",
+    "updated": "Updated {at}",
+    "loadFailed": "Your skills couldn't be read.",
+    "retry": "Try again",
+    "gone": "This skill couldn't be opened. It was deleted, or it's no longer shared with you.",
+    "backToList": "See your skills",
+    "readOnly": "You can use this workspace skill. Only the member who made it, or someone who manages the assistant's settings, can change it.",
+    "form": {
+      "name": "Name",
+      "nameHint": "What you'll type after / to pick it. {max, number} characters at most.",
+      "instructions": "Instructions",
+      "instructionsHint": "What Peal should do, and how, when the skill is picked.",
+      "instructionsCount": "{count, number} / {max, number} characters",
+      "scope": "Who can use it",
+      "personal": "Personal",
+      "personalHint": "Only you can use it.",
+      "workspace": "Workspace",
+      "workspaceHint": "Every member who may use the agent in this workspace can use it.",
+      "save": "Save",
+      "cancel": "Cancel",
+      "nameEmpty": "Give the skill a name.",
+      "nameTooLong": "The name is longer than {max, number} characters.",
+      "instructionsEmpty": "Write what Peal should do.",
+      "instructionsTooLong": "The instructions are longer than {max, number} characters."
+    },
+    "menu": {
+      "label": "Skill options",
+      "useInChat": "Use in chat",
+      "delete": "Delete",
+      "deleteTitle": "Delete this skill?",
+      "deleteLine": "{name} is deleted for everyone who can use it. This can't be undone. Messages that picked it keep its name.",
+      "deleteConfirm": "Delete",
+      "cancel": "Cancel"
+    },
+    "saved": "Skill saved",
+    "created": "Skill created",
+    "deleted": "Skill deleted",
+    "errors": {
+      "nameTaken": "You can already use a skill with this name. Choose another, so / finds the right one.",
+      "tooMany": "You can use {max, number} skills here, the most there can be. Delete one before you make another.",
+      "notEditable": "You can't change this skill: only the member who made it, or someone who manages the assistant's settings, can.",
+      "notFound": "This skill is gone. It was deleted, or it's no longer shared with you.",
+      "forbidden": "Your role doesn't let you use the agent, so you can't save skills.",
+      "unexpected": "The skill couldn't be saved. Try again.",
+      "deleteFailed": "The skill couldn't be deleted. Try again."
+    }
   }
 }

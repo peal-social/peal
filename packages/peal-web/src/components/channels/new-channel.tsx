@@ -27,9 +27,9 @@ import type { Connectable } from "#components/channels/connect-forms.tsx";
 import { PlatformCatalogueView } from "#components/channels/platform-catalogue-view.tsx";
 import type { CatalogueFilter } from "#components/channels/platform-catalogue-view.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { AppLink } from "#components/shell/app-link.tsx";
 import { PageTitle } from "#components/shell/frame-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
-import { AppLink } from "#components/shell/workspace-shell.tsx";
 import { usePathname, useRouter } from "#i18n/navigation.ts";
 
 interface Params {

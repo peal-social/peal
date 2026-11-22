@@ -15,6 +15,7 @@ import {
   auditRetention as adAuditRetention,
   insightRetention,
 } from "#ads/domain/insight-retention.ts";
+import { chatRetentionDays } from "#agent/domain/run-limits.ts";
 import {
   disconnectedKeptFor,
   keptFor,
@@ -76,6 +77,14 @@ describe("the data processing registry", () => {
     );
     expect(assistant?.data.fr).toContain(
       "ou au fournisseur de texte que l’espace de travail a réglé, selon les conditions de ce fournisseur, avec la clé de l’espace de travail, que ce serveur garde chiffrée et supprime avec l’espace de travail"
+    );
+  });
+
+  it("keeps a chat with the agent as long as its retention does, and says no direct message is read for it", () => {
+    expect(retentionPeriods.agentChats.days).toBe(chatRetentionDays);
+    expect(kept("agent")).toContain(`${String(chatRetentionDays)} days`);
+    expect(categoryOf("agent")?.data.en).toContain(
+      "the workspace’s direct messages are never read for it"
     );
   });
 

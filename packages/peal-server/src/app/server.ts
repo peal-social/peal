@@ -16,6 +16,7 @@ import {
   GatedAds,
   PostBoostsLive,
 } from "#ads/container.ts";
+import { AgentRecordsLive } from "#agent/container.ts";
 import {
   AnalyticsApiLive,
   analyticsCollection,
@@ -24,6 +25,7 @@ import {
   PostLikesLive,
   PlatformMetricsReaderLive,
 } from "#analytics/container.ts";
+import { AgentApiLive } from "#app/agent/live.ts";
 import { ApiAnswersLive } from "#app/answers.ts";
 import { ClientErrorsLive } from "#app/client-errors/live.ts";
 import { ClusterLive } from "#app/cluster.ts";
@@ -227,12 +229,13 @@ const ApiLive = HttpApiBuilder.layer(Api).pipe(
 );
 
 /**
- * Every route the server answers: the HTTP API, Better Auth's, the MCP
- * endpoint and the documents that say where they are, each answer with its
- * request id.
+ * Every route the server answers: the HTTP API, the web app's agent
+ * (`AgentApi`, apart from `Api`), Better Auth's, the MCP endpoint and the
+ * documents that say where they are, each answer with its request id.
  */
 export const RoutesLive = Layer.mergeAll(
   ApiLive,
+  AgentApiLive,
   AuthRoutesLive,
   McpLive,
   DiscoveryLive,
@@ -282,7 +285,9 @@ const NoticesContextLive = WebhooksContextLive.pipe(
       Layer.provideMerge(BillingContextsLive),
       Layer.provide(ImpersonationAuditLive),
       Layer.provideMerge(LegalLive),
-      Layer.provideMerge(ActivityContextLive)
+      Layer.provideMerge(ActivityContextLive),
+      // A member who leaves takes their chats with the agent with them.
+      Layer.provide(AgentRecordsLive)
     )
   )
 );
@@ -471,7 +476,8 @@ const SettingsContextLive = WorkspaceSettingsLive.pipe(
       StaffRecordsLive,
       ReviewGateContextLive,
       AdsRoutesContextLive,
-      ShortLinksContextLive
+      ShortLinksContextLive,
+      AgentRecordsLive
     )
   )
 );
@@ -487,7 +493,8 @@ const ErasedContextsLive = Layer.mergeAll(
   StaffRecordsLive,
   ReviewGateContextLive,
   AdsRoutesContextLive,
-  ShortLinksContextLive
+  ShortLinksContextLive,
+  AgentRecordsLive
 );
 
 // The staff console, which reads accounts and workspaces from the workspace
@@ -628,7 +635,8 @@ const ServicesLive = Layer.mergeAll(
   BillingAccountsDeskContextLive,
   AdsRoutesContextLive,
   ShortLinksContextLive,
-  PartnerHealthContextLive
+  PartnerHealthContextLive,
+  AgentRecordsLive
 ).pipe(
   // Product analytics, one for the routes and the contexts: off without
   // PEAL_POSTHOG_KEY.
@@ -722,6 +730,8 @@ export const ContextsLive = Layer.mergeAll(
   ShortLinksContextLive,
   PartnerHealthContextLive,
   WeeklyDigestContextLive,
+  // The agent's chats, which the retention deletes.
+  AgentRecordsLive,
   // Billing's meters and X's pass-through, which the workers' platforms
   // and readers claim on: X's posts and, where the server bills, its reads.
   MetersContextLive,

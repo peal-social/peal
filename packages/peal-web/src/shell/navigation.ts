@@ -16,6 +16,8 @@ export type Section = "posts" | "settings";
 export type Page =
   | "account"
   | "ads"
+  | "agent"
+  | "agentSettings"
   | "home"
   | "platforms"
   | "analytics"
@@ -49,21 +51,33 @@ export type Page =
 
 /** Pages that are not in the sidebar, which the breadcrumb still names. */
 export type Detail =
+  | "agentChat"
   | "article"
   | "channelPlatform"
   | "newArticle"
   | "newChannel"
   | "newPost"
-  | "post";
+  | "newSkill"
+  | "post"
+  | "skill";
 
 /**
  * A step the breadcrumb names before the page, each a link back to it:
- * a section (its first page), Channels, or New channel.
+ * a section (its first page), the agent, the agent's settings, Channels,
+ * or New channel.
  */
-export type Crumb = Section | "articles" | "channels" | "newChannel";
+export type Crumb =
+  | Section
+  | "agent"
+  | "agentSettings"
+  | "articles"
+  | "channels"
+  | "newChannel";
 
 // Where each step of the breadcrumb leads, under /<workspace>.
 const crumbPaths: Readonly<Record<Crumb, string>> = {
+  agent: "/agent",
+  agentSettings: "/settings/agent",
   articles: "/articles",
   channels: "/channels",
   newChannel: "/channels/new",
@@ -110,6 +124,14 @@ const pages: Readonly<Record<Page, PageRule>> = {
     section: "settings",
   },
   ads: { may: needs("ads:read"), mode: "studio", path: "/ads" },
+  agent: { may: needs("assistant:use"), mode: "studio", path: "/agent" },
+  // The person's skills, and the workspace's they may use.
+  agentSettings: {
+    may: needs("assistant:use"),
+    mode: "studio",
+    path: "/settings/agent",
+    section: "settings",
+  },
   analytics: {
     may: needs("analytics:read"),
     mode: "studio",
@@ -281,7 +303,10 @@ const layout: Readonly<
     { group: "partners", pages: ["partner"] },
   ],
   studio: [
-    { group: null, pages: ["home", "channels", "calendar", "posts", "media"] },
+    {
+      group: null,
+      pages: ["home", "agent", "channels", "calendar", "posts", "media"],
+    },
     { group: "engage", pages: ["inbox", "analytics", "ads"] },
   ],
 };
@@ -304,6 +329,7 @@ const sectionPages: Readonly<Record<Section, readonly Page[]>> = {
     "messages",
     "feeds",
     "assistant",
+    "agentSettings",
     "account",
     "notifications",
     "notificationSettings",
@@ -381,6 +407,14 @@ const pageAt = (path: string): PageAt => {
     return { detail: "channelPlatform", page: "channels" };
   }
 
+  if (path === "/settings/agent/skills/new") {
+    return { detail: "newSkill", page: "agentSettings" };
+  }
+
+  if (path.startsWith("/settings/agent/skills/")) {
+    return { detail: "skill", page: "agentSettings" };
+  }
+
   const exact = pageNames.find((page) => pages[page].path === path);
 
   if (exact !== undefined) {
@@ -397,6 +431,10 @@ const pageAt = (path: string): PageAt => {
 
   if (path.startsWith("/posts/")) {
     return { detail: "post", page: "posts" };
+  }
+
+  if (path.startsWith("/agent/")) {
+    return { detail: "agentChat", page: "agent" };
   }
 
   if (path.startsWith("/inbox/")) {
@@ -416,10 +454,13 @@ const trailOf = (
   section: Section | null
 ): readonly Crumb[] => {
   const items: Partial<Record<Detail, readonly Crumb[]>> = {
+    agentChat: ["agent"],
     article: ["posts", "articles"],
     channelPlatform: ["channels", "newChannel"],
     newArticle: ["posts", "articles"],
     newChannel: ["channels"],
+    newSkill: ["settings", "agentSettings"],
+    skill: ["settings", "agentSettings"],
   };
 
   const under = detail === null ? undefined : items[detail];

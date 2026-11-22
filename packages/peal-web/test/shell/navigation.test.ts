@@ -288,4 +288,73 @@ describe(navigationOf, () => {
     expect(elsewhere.mode).toBe("studio");
     expect(elsewhere.breadcrumb).toStrictEqual({ page: null, trail: [] });
   });
+
+  it("lists the agent after Home for those who may use the assistant, a chat under it", () => {
+    const asks: readonly Permission[] = [...owner, "assistant:use"];
+
+    const page = navigationOf({
+      pathname: `${base}/agent`,
+      permissions: asks,
+      workspace,
+    });
+
+    const chat = navigationOf({
+      pathname: `${base}/agent/c1`,
+      permissions: asks,
+      workspace,
+    });
+
+    expect([
+      pagesOf(page).slice(0, 2),
+      page.current,
+      chat.breadcrumb,
+      crumbHrefOf(workspace, "agent"),
+      pagesOf(at("/agent")).includes("agent"),
+    ]).toStrictEqual([
+      ["home", "agent"],
+      "agent",
+      { page: "agentChat", trail: ["agent"] },
+      `${base}/agent`,
+      false,
+    ]);
+  });
+
+  it("puts the agent's settings in Settings for those who may use it, a skill under them", () => {
+    const asks: readonly Permission[] = ["assistant:use"];
+
+    const settings = navigationOf({
+      pathname: `${base}/settings/agent`,
+      permissions: asks,
+      workspace,
+    });
+
+    const crumbs = (path: string) =>
+      navigationOf({
+        pathname: `${base}/settings/agent${path}`,
+        permissions: asks,
+        workspace,
+      }).breadcrumb;
+
+    expect([
+      settings.current,
+      settings.section,
+      settings.breadcrumb,
+      settings.sectionLinks.some(({ page }) => page === "agentSettings"),
+      at("/settings").sectionLinks.some(({ page }) => page === "agentSettings"),
+      crumbs("/skills/new"),
+      crumbs("/skills/s1"),
+      crumbHrefOf(workspace, "agentSettings"),
+      hrefOf(workspace, "agentSettings"),
+    ]).toStrictEqual([
+      "agentSettings",
+      "settings",
+      { page: "agentSettings", trail: ["settings"] },
+      true,
+      false,
+      { page: "newSkill", trail: ["settings", "agentSettings"] },
+      { page: "skill", trail: ["settings", "agentSettings"] },
+      `${base}/settings/agent`,
+      `${base}/settings/agent`,
+    ]);
+  });
 });

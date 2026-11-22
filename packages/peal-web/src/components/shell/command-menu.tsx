@@ -226,6 +226,7 @@ export const CommandMenu = ({
       )}
       <ShortcutSheet
         groups={shortcutGroupsOf({
+          canAskAgent: permissions.includes("assistant:use"),
           canCreate: newPostHref !== null,
           pages: pages.map(({ page }) => page),
         })}
