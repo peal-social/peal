@@ -91,7 +91,7 @@ const notMade = {
 
 // The tools that run only once the person approved them, on any post or a
 // post that is not a draft.
-const asking: ReadonlySet<string> = new Set([
+const askingTools: ReadonlySet<string> = new Set([
   ...approvedTools,
   ...draftFreeTools,
 ]);
@@ -334,17 +334,13 @@ export const LanguageModelAgentRunsLive = Layer.effect(
       });
 
       let history = yield* historyOf(chat.history);
-      const { lastAnswer } = chat;
-
-      // A continuation goes on in the answer that asked; a message starts
-      // one.
-      const continuing = input._tag === "answer" ? lastAnswer : Option.none();
+      const { asking } = chat;
 
       // After an answer, the model is asked again only once nothing else
       // of its round waits.
       const stillWaiting =
         input._tag === "answer"
-          ? Option.match(lastAnswer, {
+          ? Option.match(asking, {
               onNone: () => [],
               onSome: (last) =>
                 pendingOf(last).filter(({ callId }) => callId !== input.callId),
@@ -409,33 +405,18 @@ export const LanguageModelAgentRunsLive = Layer.effect(
             )
           : Option.none();
 
-      const answerId = Option.isSome(continuing)
-        ? continuing.value.id
-        : yield* newId(AgentMessageIdSchema).pipe(
-            Effect.provideService(Ids, ids)
-          );
+      // Every run writes an answer of its own, after the person's earlier
+      // messages: a run after an approval too, which leaves the answer
+      // that asked as it was, but for the approval's state.
+      const answerId = yield* newId(AgentMessageIdSchema).pipe(
+        Effect.provideService(Ids, ids)
+      );
 
-      const answerCreatedAt = Option.isSome(continuing)
-        ? continuing.value.createdAt
-        : yield* DateTime.now;
-
-      const priorDuration = Option.isSome(continuing)
-        ? Option.getOrElse(continuing.value.durationMs, () => 0)
-        : 0;
+      const answerCreatedAt = yield* DateTime.now;
 
       const run = (queue: Queue.Queue<AgentEvent, Cause.Done>) =>
         Effect.gen(function* running() {
-          const draft = yield* Ref.make<AnswerDraft>(
-            Option.match(continuing, {
-              onNone: () => emptyAnswer,
-              onSome: ({ approvals, cards, steps, text }) => ({
-                approvals,
-                cards,
-                steps,
-                text,
-              }),
-            })
-          );
+          const draft = yield* Ref.make<AnswerDraft>(emptyAnswer);
 
           // Every event goes to the person and into the answer.
           const emit = (event: AgentEvent) =>
@@ -473,7 +454,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 approvals: written.approvals,
                 cards: written.cards,
                 createdAt: answerCreatedAt,
-                durationMs: Option.some(priorDuration + tookMs),
+                durationMs: Option.some(tookMs),
                 id: answerId,
                 outcome: Option.some(outcome),
                 rating: Option.none(),
@@ -583,7 +564,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                       tool: part.name,
                     });
 
-                    if (!asking.has(part.name)) {
+                    if (!askingTools.has(part.name)) {
                       yield* emit({
                         _tag: "step",
                         step: yield* stepOf(part.id, "running", part.name),
@@ -765,17 +746,42 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                     Effect.flatMap((title) => emit({ _tag: "title", title }))
                   );
 
+          // An earlier answer, kept with its approvals in their new state.
+          const keptWith = (
+            before: AgentMessage,
+            approvals: AgentMessage["approvals"]
+          ) =>
+            Effect.gen(function* keptBefore() {
+              yield* chats.save(
+                chat.chat.id,
+                new AgentMessage({
+                  approvals,
+                  cards: before.cards,
+                  createdAt: before.createdAt,
+                  durationMs: before.durationMs,
+                  id: before.id,
+                  outcome: before.outcome,
+                  rating: before.rating,
+                  role: before.role,
+                  steps: before.steps,
+                  text: before.text,
+                }),
+                yield* storedHistory(history),
+                yield* DateTime.now
+              );
+            });
+
           // The person's message: the changes that still waited are not
           // made (the model reads so, the person sees them expire), and
           // the message is kept.
           const messageTaken = (text: string, userId: AgentMessage["id"]) =>
             Effect.gen(function* taken() {
-              const expired = Option.match(lastAnswer, {
+              const expired = Option.match(asking, {
                 onNone: () => [],
                 onSome: pendingOf,
               });
 
-              if (expired.length > 0 && Option.isSome(lastAnswer)) {
+              if (expired.length > 0 && Option.isSome(asking)) {
                 history = withResults(
                   history,
                   unansweredCalls(history)
@@ -790,7 +796,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                     }))
                 );
 
-                const before = lastAnswer.value;
+                const before = asking.value;
                 let { approvals } = before;
 
                 for (const approval of expired) {
@@ -801,23 +807,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                   });
                 }
 
-                yield* chats.save(
-                  chat.chat.id,
-                  new AgentMessage({
-                    approvals,
-                    cards: before.cards,
-                    createdAt: before.createdAt,
-                    durationMs: before.durationMs,
-                    id: before.id,
-                    outcome: before.outcome,
-                    rating: before.rating,
-                    role: before.role,
-                    steps: before.steps,
-                    text: before.text,
-                  }),
-                  yield* storedHistory(history),
-                  yield* DateTime.now
-                );
+                yield* keptWith(before, approvals);
               }
 
               history = withUserMessage(history, text);
@@ -845,7 +835,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
           // as they are now, or not, and the model reads which.
           const answerTaken = (callId: string, approved: boolean) =>
             Effect.gen(function* taken() {
-              const asked = lastAnswer.pipe(
+              const asked = asking.pipe(
                 Option.flatMap((last) =>
                   Option.fromUndefinedOr(
                     last.approvals.find(
@@ -861,11 +851,18 @@ export const LanguageModelAgentRunsLive = Layer.effect(
 
               const state = approved ? "approved" : "declined";
 
-              if (Option.isSome(asked)) {
-                yield* emit({
+              // The answered change, on the answer that asked it: sent
+              // first, under its call, and kept there.
+              if (Option.isSome(asked) && Option.isSome(asking)) {
+                yield* Queue.offer(queue, {
                   _tag: "approval",
                   approval: { ...asked.value, state },
                 });
+
+                yield* keptWith(
+                  asking.value,
+                  answered(asking.value.approvals, callId, state)
+                );
               }
 
               if (call !== undefined && approved) {

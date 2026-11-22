@@ -34,7 +34,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
   "the agent's endpoints",
   (it) => {
     it.effect(
-      "streams a run's events, then answers an approval in the same answer",
+      "streams a run's events, then answers an approval in an answer of its own",
       () =>
         Effect.gen(function* streams() {
           const person = yield* freshPerson;
@@ -84,10 +84,15 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           });
 
           assert.deepStrictEqual(
-            detail.messages.map(({ outcome, role }) => [role, outcome]),
+            detail.messages.map(({ approvals, outcome, role }) => [
+              role,
+              outcome,
+              approvals.map(({ state }) => state),
+            ]),
             [
-              ["user", null],
-              ["assistant", "answered"],
+              ["user", null, []],
+              ["assistant", "awaitingApproval", ["approved"]],
+              ["assistant", "answered", []],
             ]
           );
           assert.strictEqual(detail.chat.title, "A chat");

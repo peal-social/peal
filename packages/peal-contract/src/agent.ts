@@ -262,17 +262,22 @@ export type AgentFailure = typeof AgentFailureSchema.Type;
  * What a run sends as it goes, as Server-Sent Events, one JSON event each:
  *
  * - `started`: the person's message (`userMessageId`, null when the run
- *   continues after an approval) and the answer's id. A run that
- *   continues after an approval goes on in the answer that asked for it:
- *   `messageId` is that answer's, whose text, steps, cards and duration
- *   the run's events add to.
+ *   continues after an approval) and the answer's id. Every run writes a
+ *   new answer, after the chat's earlier messages: a run that continues
+ *   after an approval too, whose `messageId` is a new answer's, holding
+ *   its text, the approved call's step and card, and what the model does
+ *   next. The answer that asked keeps what it held.
  * - `text`: the next piece of the answer's text, to append.
  * - `step`: a tool call started, or how it ended (same `callId`).
  * - `card`: an item the agent made or changed.
  * - `approval`: a change that waits for the person's answer; the run ends
  *   after it with `awaitingApproval`. A run that continues after an
  *   answer first sends the answered change again, with its new state
- *   (`approved` or `declined`), under the same `callId`.
+ *   (`approved` or `declined`), under the same `callId`; a message sent
+ *   while changes wait sends each of them again as `expired` first. Such
+ *   a change stays on the answer that asked it, with its state there:
+ *   clients update the card they show by its `callId`, whichever message
+ *   holds it.
  * - `title`: the chat's new title.
  * - `finished`: the run ended, and how; the answer is saved.
  * - `failed`: the run stopped on a failure; what came before is saved.

@@ -17,6 +17,7 @@ import type {
   ChatOwner,
   ExportedChat,
 } from "#agent/application/ports/agent-chats.ts";
+import { pendingOf } from "#agent/domain/agent-approvals.ts";
 import { AgentChat } from "#agent/domain/agent-chat.ts";
 import { AgentMessage } from "#agent/domain/agent-message.ts";
 import { maxTitleLength } from "#agent/domain/run-limits.ts";
@@ -69,6 +70,11 @@ const encodeSteps = Schema.encodeEffect(
 );
 
 const decodeJson = Schema.decodeUnknownEffect(Schema.Json);
+
+// How many of a chat's latest answers are read for one whose changes
+// still wait: each answer to one of them is an answer of its own after
+// it, and a round asks for a few changes, never this many.
+const askingWindow = 50;
 
 // Rows are decoded with the domain's schemas, so one the domain could not
 // have written fails loudly instead of being trusted.
@@ -182,19 +188,22 @@ export const DrizzleAgentChatsLive = Layer.effect(
         );
       });
 
-    const lastAnswerOf = (chatId: string) =>
+    // The latest answer whose changes still wait: the answers after it
+    // continue it, each after the person decided on one of them.
+    const askingOf = (chatId: string) =>
       db
         .select()
         .from(messages)
         .where(and(eq(messages.chatId, chatId), eq(messages.role, "assistant")))
         .orderBy(desc(messages.id))
-        .limit(1)
+        .limit(askingWindow)
         .pipe(
           Effect.orDie,
-          Effect.flatMap((rows) =>
-            rows[0] === undefined
-              ? Effect.succeedNone
-              : messageOf(rows[0]).pipe(Effect.map(Option.some))
+          Effect.flatMap((rows) => Effect.all(rows.map(messageOf))),
+          Effect.map((answers) =>
+            Option.fromUndefinedOr(
+              answers.find((answer) => pendingOf(answer).length > 0)
+            )
           )
         );
 
@@ -219,7 +228,7 @@ export const DrizzleAgentChatsLive = Layer.effect(
                 : Effect.all({
                     chat: chatOf(rows[0]),
                     history: decodeJson(rows[0].history).pipe(Effect.orDie),
-                    lastAnswer: lastAnswerOf(rows[0].id),
+                    asking: askingOf(rows[0].id),
                   }).pipe(Effect.map(Option.some))
             ),
             Effect.withSpan("AgentChats.claim")

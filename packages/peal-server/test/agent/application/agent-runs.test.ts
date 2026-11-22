@@ -300,16 +300,20 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
           "schedule_post"
         );
 
-        // Approved: the same answer goes on, the change is made and kept.
+        // Approved: the change is made and kept, and the run goes on in an
+        // answer of its own, after the one that asked.
         yield* script([says("Scheduled.")]);
 
         const after = yield* answer(person, chat.id, "call-schedule", true);
         const [started] = after;
         const [before] = events;
+        const askedIn = before?._tag === "started" ? before.messageId : "";
+        const goesOnIn = started?._tag === "started" ? started.messageId : "";
 
+        assert.notStrictEqual(goesOnIn, askedIn);
         assert.deepStrictEqual(started, {
           _tag: "started",
-          messageId: before?._tag === "started" ? before.messageId : "",
+          messageId: goesOnIn,
           userMessageId: null,
         });
         assert.deepStrictEqual(tags(after), [
@@ -349,12 +353,37 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
           ({ role }) => role === "assistant"
         );
 
-        assert.lengthOf(assistant, 1);
+        // The answer that asked holds the approval, approved; the next one
+        // the step, the card and the text.
         assert.deepStrictEqual(
-          assistant[0]?.approvals.map(({ state }) => state),
-          ["approved"]
+          assistant.map(({ approvals, cards, id, steps, text: said }) => ({
+            id: String(id),
+            approvals: approvals.map(({ state }) => state),
+            cards: cards.map((made) => made.action),
+            steps: steps.map(({ state, tool }) => [tool, state]),
+            text: said,
+          })),
+          [
+            {
+              approvals: ["approved"],
+              cards: [],
+              id: askedIn,
+              steps: [],
+              text: "",
+            },
+            {
+              approvals: [],
+              cards: ["scheduled"],
+              id: goesOnIn,
+              steps: [["schedule_post", "done"]],
+              text: "Scheduled.",
+            },
+          ]
         );
-        assert.deepStrictEqual(assistant[0]?.outcome, Option.some("answered"));
+        assert.deepStrictEqual(
+          assistant.map(({ outcome }) => Option.getOrNull(outcome)),
+          ["awaitingApproval", "answered"]
+        );
 
         // A change answered once is not answered again.
         const again = yield* AgentDesk.use((desk) =>
@@ -362,6 +391,73 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         ).pipe(Effect.flip);
 
         assert.strictEqual(again._tag, "ApprovalNotPending");
+      }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    "answers each of a round's changes, the first in an answer that still waits",
+    () =>
+      Effect.gen(function* several() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+        const usage = { inputTokens: { total: 1 }, outputTokens: { total: 1 } };
+
+        yield* script([
+          {
+            _tag: "parts",
+            parts: [
+              {
+                id: "call-a",
+                name: "schedule_post",
+                params: { at: "2026-12-01T08:00:00.000Z", postId },
+                type: "tool-call",
+              },
+              {
+                id: "call-b",
+                name: "reply_to_comment",
+                params: { commentId: "c1", text: "Thank you!" },
+                type: "tool-call",
+              },
+              { reason: "tool-calls", type: "finish", usage },
+            ],
+          },
+        ]);
+
+        const waiting = yield* send(person, chat.id, "Handle both");
+
+        assert.deepStrictEqual(
+          waiting.flatMap((event) =>
+            event._tag === "approval" ? [event.approval.callId] : []
+          ),
+          ["call-a", "call-b"]
+        );
+
+        // The first answered: the other still waits, and no model runs.
+        const first = yield* answer(person, chat.id, "call-a", true);
+
+        assert.deepInclude(ended(first), { outcome: "awaitingApproval" });
+
+        yield* script([says("Both done.")]);
+
+        const second = yield* answer(person, chat.id, "call-b", false);
+
+        assert.deepInclude(ended(second), { outcome: "answered" });
+
+        const kept = yield* detail(person, chat.id);
+
+        assert.deepStrictEqual(
+          kept.messages.map(({ approvals, role, text: said }) => [
+            role,
+            said,
+            approvals.map(({ state }) => state),
+          ]),
+          [
+            ["user", "Handle both", []],
+            ["assistant", "", ["approved", "declined"]],
+            ["assistant", "", []],
+            ["assistant", "Both done.", []],
+          ]
+        );
       }).pipe(Effect.provide(agentTest()))
   );
 
@@ -410,6 +506,25 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
       assert.notInclude(
         yield* FakeTools.use((tools) => tools.ran),
         "reply_to_comment"
+      );
+
+      // The declined change stays on the answer that asked; the run goes
+      // on in a new one, with no step or card of it.
+      const kept = yield* detail(person, chat.id);
+
+      assert.deepStrictEqual(
+        kept.messages.map(({ approvals, cards, role, steps, text: said }) => [
+          role,
+          said,
+          approvals.map(({ state }) => state),
+          steps.length,
+          cards.length,
+        ]),
+        [
+          ["user", "Thank them", [], 0, 0],
+          ["assistant", "", ["declined"], 0, 0],
+          ["assistant", "I did not reply.", [], 0, 0],
+        ]
       );
 
       const last = (yield* prompts).at(-1);
