@@ -108,6 +108,10 @@ docker compose --project-name peal --file compose.production.yaml \
 
 Caddy (`self-host/Caddyfile`) envoie `/api/*` et `/.well-known/oauth-*` au serveur, et tout le reste à l’application web. Il attend une réponse 150 secondes, plus longtemps que l’assistant de rédaction et la transmission de l’application web. Définissez `AUTH_IP_HEADERS=x-forwarded-for`, comme le fait le fichier d’exemple.
 
+Chaque service ne rejoint que les réseaux Docker dont il a besoin. Seul le serveur joint Postgres, seul le serveur envoie sa télémétrie au collecteur, et seuls le collecteur et Grafana joignent Loki, Tempo et Prometheus, qui n’ont pas accès à internet. Caddy joint le serveur, l’application web, et le site et la documentation quand vous les servez. Un service que vous ajoutez à la pile, comme un outil de base de données, n’en rejoint aucun tant que vous ne listez pas le réseau qu’il lui faut sous son `networks:`, par exemple `database` pour Postgres.
+
+Après une mise à jour depuis une version sans ces réseaux, Compose laisse derrière lui l’ancien réseau commun. Supprimez-le une fois la pile démarrée : `docker network rm peal_default`.
+
 ### Mettre à jour [#upgrade]
 
 Le serveur applique ses migrations au démarrage. Pour mettre à jour, récupérez une version plus récente du dépôt et lancez les deux mêmes commandes. Compose laisse au serveur ses 75 secondes pour s’arrêter.

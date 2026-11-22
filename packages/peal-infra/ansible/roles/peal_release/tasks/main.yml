@@ -665,6 +665,20 @@
     peal_release_stack.stderr_lines | reject('search', 'collector-wget-[0-9]+ +Started')
     | select('search', '(Started|Recreated|Removed)') | list | length > 0
 
+# The stack's services join networks of their own (compose.production.yaml);
+# a stack started before them leaves Compose's default network behind, which
+# `up` does not remove. Once nothing uses it, it goes; a second release finds
+# none.
+- name: Remove the stack's old shared network
+  ansible.builtin.shell: |
+    set -eu
+    if docker network inspect {{ peal_compose_project }}_default >/dev/null 2>&1; then
+      docker network rm {{ peal_compose_project }}_default >/dev/null
+      echo removed
+    fi
+  register: peal_release_old_network
+  changed_when: peal_release_old_network.stdout == 'removed'
+
 - name: Check the server, the web app, the docs server and the blog on the server
   ansible.builtin.uri:
     url: http://127.0.0.1:{{ item.port }}{{ item.path }}
