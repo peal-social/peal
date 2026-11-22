@@ -54,6 +54,10 @@ const send = (person: Person, chatId: string, text: string) =>
       Effect.provideService(CurrentMember, person.member)
     );
 
+// A chat the person wrote in: one never written in is in no history.
+const writtenChat = (person: Person, text = "Hello") =>
+  newChat(person).pipe(Effect.tap((chat) => send(person, chat.id, text)));
+
 const chatsOf = (person: Person) =>
   desk.use((agent) => agent.chats(person.actor, Option.none()));
 
@@ -78,8 +82,9 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("lists, renames, stars, rates and deletes their own chats", () =>
       Effect.gen(function* own() {
         const person = yield* freshPerson;
-        const first = yield* newChat(person);
+        const first = yield* writtenChat(person);
         const second = yield* newChat(person);
+        const unwritten = yield* newChat(person);
 
         yield* FakeAgentModel.use((model) => model.script([says("Hello.")]));
 
@@ -88,7 +93,12 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
         const page = yield* chatsOf(person);
 
-        // The latest first: the one just written in.
+        // The latest first: the one just written in. A chat nobody wrote
+        // in is in no history.
+        assert.notInclude(
+          page.chats.map(({ id }) => id),
+          unwritten.id
+        );
         assert.deepStrictEqual(
           page.chats.map(({ id }) => id),
           [second.id, first.id]
@@ -152,7 +162,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* others() {
           const person = yield* freshPerson;
-          const chat = yield* newChat(person);
+          const chat = yield* writtenChat(person);
           const colleague = colleagueOf(person);
 
           const refusals = yield* Effect.all([
@@ -263,10 +273,17 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* retention() {
           const person = yield* freshPerson;
-          const old = yield* newChat(person);
-          const recent = yield* newChat(person);
+          const old = yield* writtenChat(person);
+          const recent = yield* writtenChat(person);
+          const unwrittenOld = yield* newChat(person);
+          const unwrittenNew = yield* newChat(person);
           const sql = yield* SqlClient.SqlClient;
           const now = yield* DateTime.now;
+
+          // Made two days ago, and never written in.
+          yield* sql`UPDATE agent.chats SET updated_at = ${DateTime.toDateUtc(
+            DateTime.subtract(now, { days: 2 })
+          )} WHERE id = ${unwrittenOld.id}`;
 
           yield* sql`UPDATE agent.chats SET updated_at = ${DateTime.toDateUtc(
             DateTime.subtract(now, { days: 91 })
@@ -277,10 +294,20 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           const purged = yield* AgentRecords.use((records) => records.purge);
 
-          assert.isAtLeast(purged, 1);
+          assert.isAtLeast(purged, 2);
           assert.deepStrictEqual(
             (yield* chatsOf(person)).chats.map(({ id }) => id),
             [recent.id]
+          );
+
+          // A chat never written in goes a day after it was made.
+          const left = yield* sql<{
+            readonly id: string;
+          }>`SELECT id FROM agent.chats WHERE workspace_id = ${person.workspaceId} ORDER BY id`;
+
+          assert.deepStrictEqual(
+            left.map(({ id }) => id),
+            [recent.id, unwrittenNew.id]
           );
         }).pipe(Effect.provide(agentTest()))
     );
@@ -300,7 +327,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           yield* send(person, mine.id, "Hello");
 
-          const theirs = yield* newChat(colleague);
+          const theirs = yield* writtenChat(colleague);
 
           const exported = yield* AgentRecords.use((records) =>
             records.exportUser(person.userId)

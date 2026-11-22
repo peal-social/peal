@@ -705,6 +705,34 @@ export const LanguageModelAgentRunsLive = Layer.effect(
 
           // The chat's name, after its first answer: the model's few words,
           // else the person's first ones.
+          // Whether the chat has its name, from before or from this run.
+          const titled = yield* Ref.make(Option.isSome(chat.chat.title));
+
+          // A run from a message that ends, however it ends, names a chat
+          // that still has no name after the person's first words, with no
+          // request to the model: told while the stream is open.
+          const namedAnyway = (open: boolean) =>
+            input._tag === "message"
+              ? Ref.get(titled).pipe(
+                  Effect.flatMap((done) => {
+                    if (done) {
+                      return Effect.void;
+                    }
+
+                    const title = fallbackTitle(input.text);
+
+                    return chats
+                      .name(chat.chat.id, title)
+                      .pipe(
+                        Effect.andThen(Ref.set(titled, true)),
+                        Effect.andThen(
+                          open ? emit({ _tag: "title", title }) : Effect.void
+                        )
+                      );
+                  })
+                )
+              : Effect.void;
+
           const named = (model: LanguageModel.LanguageModel, first: string) =>
             Option.isSome(chat.chat.title)
               ? Effect.void
@@ -729,7 +757,11 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                     Effect.map(({ value }) => acceptedTitle(value)),
                     Effect.orElseSucceed(() => Option.none<string>()),
                     Effect.map(Option.getOrElse(() => fallbackTitle(first))),
-                    Effect.tap((title) => chats.name(chat.chat.id, title)),
+                    Effect.tap((title) =>
+                      chats
+                        .name(chat.chat.id, title)
+                        .pipe(Effect.andThen(Ref.set(titled, true)))
+                    ),
                     Effect.flatMap((title) => emit({ _tag: "title", title }))
                   );
 
@@ -899,6 +931,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
             Effect.gen(function* finishing() {
               const message = yield* keep(outcome);
 
+              yield* namedAnyway(true);
               yield* told(outcome);
               yield* Queue.offer(queue, {
                 _tag: "finished",
@@ -910,6 +943,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
           const fail = (reason: AgentFailure) =>
             Effect.gen(function* failing() {
               yield* keep("failed");
+              yield* namedAnyway(true);
               yield* told(reason);
               yield* Queue.offer(queue, { _tag: "failed", reason });
             });
@@ -929,6 +963,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
             // Stopped: what was written is kept.
             Effect.onInterrupt(() =>
               keep("stopped").pipe(
+                Effect.andThen(namedAnyway(false)),
                 Effect.andThen(told("stopped")),
                 Effect.orDie
               )
