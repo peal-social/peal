@@ -151,14 +151,16 @@ export const currentRun = (): ConnectRun | null =>
   );
 
 /**
- * The workspace of the run whose next step is `platform`'s sign-in: what a
- * callback page finishes for, in a tab the run opened, which remembers no
- * connection of its own (`pending-connection.ts`).
+ * The workspace of the run that holds `platform`'s sign-in: what a callback
+ * page finishes for, in a tab the run opened, which remembers no
+ * connection of its own (`pending-connection.ts`). Any step of it, not only
+ * the next: a member who skipped the platform from the step, then finished
+ * its sign-in in the other tab anyway, keeps the account.
  */
 export const runWorkspaceFor = (platform: Platform): string | null => {
   const run = currentRun();
 
-  return run !== null && nextStep(run)?.platform === platform
+  return run !== null && run.steps.some((step) => step.platform === platform)
     ? run.workspaceId
     : null;
 };
