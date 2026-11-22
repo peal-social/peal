@@ -120,11 +120,13 @@ export class ChannelRepository extends Context.Service<
     ) => Effect.Effect<Option.Option<Channel>, DatabaseError>;
     /**
      * Whether any workspace has a channel for the platform account, as
-     * before revoking the grant its channels share.
+     * before revoking the grant its channels share, but those of `except`,
+     * which are going.
      */
     readonly accountInUse: (
       platform: ChannelPlatform,
-      accountId: string
+      accountId: string,
+      except?: readonly ChannelId[]
     ) => Effect.Effect<boolean, DatabaseError>;
     /**
      * The channels of every workspace among those signed in that rest on

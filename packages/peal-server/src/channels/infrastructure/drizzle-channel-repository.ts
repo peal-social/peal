@@ -8,6 +8,7 @@ import {
   isNotNull,
   lt,
   lte,
+  notInArray,
   or,
   sql,
 } from "drizzle-orm";
@@ -211,14 +212,17 @@ export const DrizzleChannelRepository = Layer.effect(
     const client = yield* SqlClient.SqlClient;
 
     return ChannelRepository.of({
-      accountInUse: (platform, accountId) =>
+      accountInUse: (platform, accountId, except = []) =>
         db
           .select({ id: channels.id })
           .from(channels)
           .where(
             and(
               eq(channels.platform, platform),
-              eq(channels.accountId, accountId)
+              eq(channels.accountId, accountId),
+              except.length === 0
+                ? undefined
+                : notInArray(channels.id, [...except])
             )
           )
           .limit(1)
