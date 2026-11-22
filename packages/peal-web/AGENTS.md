@@ -318,6 +318,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   they read in with `TimeZoneLine` (`components/lists/time-zone-line.tsx`,
   `Lists.timeZoneLine`, tested), rendered after hydration: beside the
   calendar's dates, and under the Period on Analytics.
+- The support chat (DESIGN.md, "Support chat"): where `PEAL_CRISP_WEBSITE_ID`
+  names a Crisp website (`#shell/support-chat.ts`, read per request), the
+  workspace layout puts `SupportLauncher` in the bottom bar, which makes
+  peal-ui's `<peal-support>` (placement `menu`: nothing shows) with the
+  person's email, name, id and workspace and the page's language, never
+  while staff act as someone; the account menu's **Support**
+  (`supportChat`) opens the chat through `openSupportChat` and shows the
+  replies waiting (`listenToSupportUnread`). Every sign-out calls
+  `forgetConversation`, so the next person in the browser starts their own.
 - The account menu at the bottom bar's start (`AccountMenuView`, the
   person's avatar with a dot while notices wait unread, and their count
   beside Notifications) polls `GET /api/me/notices/unread` every 30

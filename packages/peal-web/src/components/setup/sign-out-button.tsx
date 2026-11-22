@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
+import { forgetConversation } from "peal-ui/lib/support/crisp";
 import { useTransition } from "react";
 
 import { authClient } from "#auth/client.ts";
@@ -26,6 +27,7 @@ export const SignOutButton = () => {
       if (result.error === null) {
         // Before leaving, so nothing more is measured as the person.
         forgetMeasurement();
+        forgetConversation();
         router.push("/");
         router.refresh();
       } else {

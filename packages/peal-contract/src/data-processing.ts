@@ -83,6 +83,12 @@ export type ProcessingText = Readonly<Record<ProcessingLocale, string>>;
  *   and the blog, and the cookie that follows a visitor who allowed it,
  *   both enforced by the cookies' own lifetime (peal-ui's
  *   `lib/site/consent`);
+ * - `supportConversations`: a conversation in the support chat, at its
+ *   provider (Crisp), from its last message: three years, the period the
+ *   CNIL gives for contacts with customers and prospects; the operator's
+ *   staff delete older ones, as nothing in the server can; and
+ *   `supportCookie`, the cookie that names a visitor's conversation, which
+ *   peal-ui's launcher sets Crisp to keep that long (`lib/support/crisp`);
  * - `serverLogs`, `traces`, `metrics`, `backups`: the production stack
  *   (`packages/peal-docker`: Loki, Tempo, Prometheus, and pgBackRest's
  *   four weekly full backups, which hold deleted data 5 weeks at most).
@@ -124,6 +130,8 @@ export const retentionPeriods = {
   sessionRecordings: { days: 30 },
   shortLinkClicks: { days: 400 },
   siteConsent: { days: 183 },
+  supportConversations: { years: 3 },
+  supportCookie: { days: 183 },
   traces: { days: 14 },
   transferOffers: { days: 7 },
   trialMemory: { years: 2 },
@@ -860,6 +868,37 @@ export const processingRegister: readonly ProcessingCategory[] = [
     source: {
       en: "Your visits, once you allowed it",
       fr: "Vos visites, une fois que vous l’avez autorisé",
+    },
+  },
+  {
+    // Where the operator offers a support chat (PEAL_CRISP_WEBSITE_ID).
+    applies: "always",
+    data: {
+      en: "On a server whose operator offers a support chat, once you open it: the messages and files you and the operator’s staff exchange, when, and the email address you leave there to be answered by email; your IP address, your browser and system, your language, and the page you wrote from; in the app, your name, your email address, your account’s and your workspace’s identifiers; and an identifier of the conversation kept in a cookie of your browser, so that you find it again. Nothing reaches the chat’s provider before you open the chat, unless that cookie remains from a chat you opened before",
+      fr: "Sur un serveur dont l’exploitant propose une discussion d’assistance, une fois que vous l’ouvrez : les messages et les fichiers que vous échangez avec l’équipe de l’exploitant, et quand, et l’adresse e-mail que vous y laissez pour qu’on vous réponde par e-mail ; votre adresse IP, votre navigateur et votre système, votre langue, et la page depuis laquelle vous écrivez ; dans l’application, votre nom, votre adresse e-mail, les identifiants de votre compte et de votre espace de travail ; et un identifiant de la discussion gardé dans un cookie de votre navigateur, pour que vous la retrouviez. Rien ne parvient au prestataire de la discussion avant que vous l’ouvriez, sauf si ce cookie reste d’une discussion que vous avez ouverte auparavant",
+    },
+    id: "supportChat",
+    legalBasis: {
+      en: "Legitimate interests (GDPR Article 6(1)(f)): answering the questions you ask us; for customers, the performance of the contract. The cookie is needed for the chat you asked for (article 82 of the French data protection act)",
+      fr: "Intérêts légitimes (RGPD, article 6, paragraphe 1, point f) : répondre aux questions que vous nous posez ; pour les clients, l’exécution du contrat. Le cookie est nécessaire à la discussion que vous avez demandée (article 82 de la loi Informatique et Libertés)",
+    },
+    name: {
+      en: "Support chat",
+      fr: "Discussion d’assistance",
+    },
+    // The provider keeps it; the operator's staff delete it.
+    operatorSet: true,
+    purposes: {
+      en: "Answer your questions, and help you use the service",
+      fr: "Répondre à vos questions, et vous aider à utiliser le service",
+    },
+    retention: {
+      en: `${years(p.supportConversations.years).en} after the conversation’s last message, at the chat’s provider, then deleted; the cookie ${String(p.supportCookie.days)} days. You can ask for a conversation to be deleted sooner at any time`,
+      fr: `${years(p.supportConversations.years).fr} après le dernier message de la discussion, chez le prestataire de la discussion, puis supprimée ; le cookie ${String(p.supportCookie.days)} jours. Vous pouvez demander à tout moment qu’une discussion soit supprimée plus tôt`,
+    },
+    source: {
+      en: "You, when you write to us in the chat",
+      fr: "Vous, quand vous nous écrivez dans la discussion",
     },
   },
   {

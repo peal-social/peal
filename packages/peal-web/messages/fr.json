@@ -584,7 +584,8 @@
     "app": "Espaces de travail",
     "signOut": "Se déconnecter",
     "signOutFailed": "La déconnexion a échoué. Réessayez.",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "support": "Assistance"
   },
   "NotFoundPage": {
     "title": "Page introuvable",

@@ -6,8 +6,9 @@ import { SiteFooter } from "peal-ui/components/site-footer";
 import { SiteHeader } from "peal-ui/components/site-header";
 
 import { chrome } from "../components/chrome.ts";
-import { indexable, measurement } from "../config.ts";
+import { indexable, measurement, supportWebsite } from "../config.ts";
 import { consentAttributes } from "peal-ui/lib/site/measurement/settings";
+import { supportAttributes } from "peal-ui/lib/support/settings";
 import { repository } from "peal-ui/lib/site/navigation";
 import type { PageLinks } from "peal-ui/lib/site/navigation";
 import { defaultLocale, locales, pageLocale } from "../i18n/locales.ts";
@@ -53,6 +54,16 @@ const consent =
     : consentAttributes(measurement, {
         locale,
         policy: getRelativeLocaleUrl(locale, "privacy"),
+        source: "site",
+      });
+
+// The support chat's launcher, where the build names a Crisp website.
+const support =
+  supportWebsite === undefined
+    ? undefined
+    : supportAttributes(supportWebsite, {
+        locale,
+        placement: "float",
         source: "site",
       });
 ---
@@ -113,8 +124,10 @@ const consent =
          reader scrolls down to it (on view, a first click could come
          before the menu listens). -->
     <SiteFooter client:idle {...footer} />
+    {support !== undefined && <peal-support {...support} />}
     <script>
       import "peal-ui/lib/site/consent/start";
+      import "peal-ui/lib/support/start";
     </script>
   </body>
 </html>

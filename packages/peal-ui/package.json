@@ -13,7 +13,9 @@
   "sideEffects": [
     "**/*.css",
     "./src/lib/site/consent/element.ts",
-    "./src/lib/site/consent/start.ts"
+    "./src/lib/site/consent/start.ts",
+    "./src/lib/support/element.ts",
+    "./src/lib/support/start.ts"
   ],
   "exports": {
     "./brand-marks/*": "./src/brand-marks/*",

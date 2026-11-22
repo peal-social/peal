@@ -327,6 +327,8 @@ services:
       PEAL_DPA_URL:
       # Where to write for more than the largest plan allows.
       PEAL_CONTACT_URL:
+      # The support chat: the Crisp website its launcher opens.
+      PEAL_CRISP_WEBSITE_ID:
       # The web app's measurement: on with the server's, the project token
       # its relay at /pulse relays for, and where it sends.
       PEAL_POSTHOG_WEB:
@@ -366,6 +368,7 @@ services:
         SITE_APP_URL: ${SITE_APP_URL:-}
         SITE_DOCS_URL: ${SITE_DOCS_URL:-}
         SITE_DISCORD_URL: ${SITE_DISCORD_URL:-}
+        SITE_CRISP_WEBSITE_ID: ${SITE_CRISP_WEBSITE_ID:-}
         SITE_POSTHOG_KEY: ${SITE_POSTHOG_KEY:-}
         SITE_POSTHOG_HOST: ${SITE_POSTHOG_HOST:-}
         SITE_POSTHOG_COOKIE_DOMAIN: ${SITE_POSTHOG_COOKIE_DOMAIN:-}
@@ -377,6 +380,7 @@ services:
         DOCS_POSTHOG_COOKIE_DOMAIN: ${DOCS_POSTHOG_COOKIE_DOMAIN:-}
         DOCS_POSTHOG_ENVIRONMENT: ${DOCS_POSTHOG_ENVIRONMENT:-}
         DOCS_PRIVACY_URL: ${DOCS_PRIVACY_URL:-}
+        DOCS_CRISP_WEBSITE_ID: ${DOCS_CRISP_WEBSITE_ID:-}
     ports:
       - 127.0.0.1:${PEAL_SITE_PORT:-4321}:8080
       - 127.0.0.1:${PEAL_DOCS_PORT:-4322}:8081
@@ -405,6 +409,7 @@ services:
         DOCS_POSTHOG_COOKIE_DOMAIN: ${DOCS_POSTHOG_COOKIE_DOMAIN:-}
         DOCS_POSTHOG_ENVIRONMENT: ${DOCS_POSTHOG_ENVIRONMENT:-}
         DOCS_PRIVACY_URL: ${DOCS_PRIVACY_URL:-}
+        DOCS_CRISP_WEBSITE_ID: ${DOCS_CRISP_WEBSITE_ID:-}
     # Node runs as PID 2 under an init, so it stops on SIGTERM.
     init: true
     environment:
@@ -466,6 +471,8 @@ services:
       BLOG_APP_URL:
       BLOG_DOCS_URL:
       BLOG_DISCORD_URL:
+      # The support chat, as the site has it.
+      BLOG_CRISP_WEBSITE_ID:
       # Measurement and the consent notice, as the site has them.
       BLOG_POSTHOG_KEY:
       BLOG_POSTHOG_HOST:

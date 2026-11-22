@@ -1,5 +1,6 @@
 import {
   SITE_APP_URL,
+  SITE_CRISP_WEBSITE_ID,
   SITE_DISCORD_URL,
   SITE_DOCS_URL,
   SITE_POSTHOG_COOKIE_DOMAIN,
@@ -9,6 +10,7 @@ import {
 } from "astro:env/server";
 import { originOf, present, siteLink } from "peal-ui/lib/site/links";
 import { measurementSettings } from "peal-ui/lib/site/measurement/settings";
+import { supportWebsiteId } from "peal-ui/lib/support/settings";
 
 import type { Locale } from "./i18n/locales.ts";
 
@@ -41,6 +43,15 @@ export const appLink = (locale: Locale, path: string): string | undefined =>
 
 /** The Discord server's invitation, or `undefined` when none is set. */
 export const discordUrl = present(SITE_DISCORD_URL);
+
+/**
+ * The Crisp website the support chat opens, when SITE_CRISP_WEBSITE_ID is
+ * set; a value that is set but wrong stops the build.
+ */
+export const supportWebsite = supportWebsiteId(
+  SITE_CRISP_WEBSITE_ID,
+  "SITE_CRISP_WEBSITE_ID"
+);
 
 /**
  * Measurement with PostHog and its consent notice, when SITE_POSTHOG_KEY

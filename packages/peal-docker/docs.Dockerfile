@@ -51,6 +51,7 @@ ARG DOCS_POSTHOG_HOST=""
 ARG DOCS_POSTHOG_COOKIE_DOMAIN=""
 ARG DOCS_POSTHOG_ENVIRONMENT=""
 ARG DOCS_PRIVACY_URL=""
+ARG DOCS_CRISP_WEBSITE_ID=""
 
 # Without a model, Blume builds static files, which the static image serves.
 RUN test -n "$DOCS_ASSISTANT_MODEL" \

@@ -3,6 +3,7 @@ import { originOf, present, siteLink } from "peal-ui/lib/site/links";
 import type { Locale } from "peal-ui/lib/site/locales";
 import { measurementSettings } from "peal-ui/lib/site/measurement/settings";
 import type { MeasurementSettings } from "peal-ui/lib/site/measurement/settings";
+import { supportWebsiteId } from "peal-ui/lib/support/settings";
 
 // The blog's own settings, read from the environment when the server
 // starts (the image carries none). Each is optional: unset or empty turns
@@ -10,6 +11,7 @@ import type { MeasurementSettings } from "peal-ui/lib/site/measurement/settings"
 
 const SettingsSchema = Schema.Struct({
   BLOG_APP_URL: Schema.optional(Schema.String),
+  BLOG_CRISP_WEBSITE_ID: Schema.optional(Schema.String),
   BLOG_DISCORD_URL: Schema.optional(Schema.String),
   BLOG_DOCS_URL: Schema.optional(Schema.String),
   BLOG_POSTHOG_COOKIE_DOMAIN: Schema.optional(Schema.String),
@@ -36,6 +38,8 @@ export interface BlogSettings {
    * pages and its icons: "" (the same origin) when BLOG_SITE_URL is unset.
    */
   readonly site: string;
+  /** The Crisp website the support chat opens, when BLOG_CRISP_WEBSITE_ID is set. */
+  readonly support: string | undefined;
 }
 
 export type BlogEnvironment = typeof SettingsSchema.Type;
@@ -65,6 +69,10 @@ export const blogSettings = (values: BlogEnvironment): BlogSettings => {
       prefix: "BLOG",
     }),
     site: originOf(values.BLOG_SITE_URL) ?? "",
+    support: supportWebsiteId(
+      values.BLOG_CRISP_WEBSITE_ID,
+      "BLOG_CRISP_WEBSITE_ID"
+    ),
   };
 };
 

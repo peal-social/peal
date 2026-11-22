@@ -8,6 +8,7 @@ import { SiteHeader } from "peal-ui/components/site-header";
 import { indexable } from "peal-ui/lib/site/links";
 import { pageLocale } from "peal-ui/lib/site/locales";
 import { consentAttributes } from "peal-ui/lib/site/measurement/settings";
+import { supportAttributes } from "peal-ui/lib/support/settings";
 import { repository } from "peal-ui/lib/site/navigation";
 
 import { chromeProps } from "../chrome.ts";
@@ -60,6 +61,16 @@ const consent =
         policy: `${settings.site}${locale === "en" ? "" : `/${locale}`}/privacy/`,
         source: "blog",
       });
+
+// The support chat's launcher, as the site has it.
+const support =
+  settings.support === undefined
+    ? undefined
+    : supportAttributes(settings.support, {
+        locale,
+        placement: "float",
+        source: "blog",
+      });
 ---
 
 <!doctype html>
@@ -100,8 +111,10 @@ const consent =
     </main>
     <SiteFooter client:idle {...footer} />
     <EmDashBodyEnd page={page} />
+    {support !== undefined && <peal-support {...support} />}
     <script>
       import "peal-ui/lib/site/consent/start";
+      import "peal-ui/lib/support/start";
     </script>
   </body>
 </html>

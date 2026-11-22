@@ -70,6 +70,7 @@ peal_runtime_blog_settings: >-
          'BLOG_APP_URL': peal_static_build_args.SITE_APP_URL | default(''),
          'BLOG_DOCS_URL': peal_static_build_args.SITE_DOCS_URL | default(''),
          'BLOG_DISCORD_URL': peal_static_build_args.SITE_DISCORD_URL | default(''),
+         'BLOG_CRISP_WEBSITE_ID': peal_static_build_args.SITE_CRISP_WEBSITE_ID | default(''),
        })
      | combine({
          'BLOG_POSTHOG_KEY': peal_site_measurement_token,
