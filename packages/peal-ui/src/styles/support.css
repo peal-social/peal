@@ -1,0 +1,201 @@
+/* The support chat (DESIGN.md, "Support chat"): Peal's launcher,
+   `<peal-support>`, and Crisp's window in Peal's colours and type. Plain
+   CSS on the tokens of tokens.css, as the docs do not compile peal-ui's
+   Tailwind classes. */
+
+peal-support {
+  display: contents;
+}
+
+/* A 32 px card at the bottom right, 16 px from the window's edges, the
+   pixel bubble (the site, the blog) or the icon (the docs) inside it. */
+.peal-support {
+  position: fixed;
+  z-index: 50;
+  right: 1rem;
+  bottom: 1rem;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  /* A popover's shadow, as the consent notice has it. */
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 10%),
+    0 2px 4px -2px rgb(0 0 0 / 10%);
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.peal-support:hover {
+  background: var(--accent);
+}
+
+.peal-support:active {
+  transform: translateY(1px);
+}
+
+.peal-support:focus-visible {
+  outline: 3px solid rgb(65 94 238 / 50%);
+  outline-offset: 1px;
+}
+
+/* On the site and the blog, once the margin beside the page's right rail
+   is 3 rem wide (from 78 rem), it stands in that margin, outside the
+   page, centred between the rail and the window's edge. */
+@media (min-width: 78rem) {
+  peal-support:not([data-source="docs"], [data-source="app"])
+    .peal-support[data-placement="float"] {
+    right: var(--peal-support-right);
+  }
+}
+
+/* In the app, it is the bottom bar's last control, as its buttons are. */
+.peal-support[data-placement="bar"] {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* In the app's account menu, Support opens the chat: no launcher shows. */
+.peal-support[data-placement="menu"] {
+  display: none;
+}
+
+.peal-support[data-placement="bar"]:hover,
+.peal-support[data-placement="bar"][aria-expanded="true"] {
+  background: var(--accent);
+}
+
+.peal-support__art {
+  display: block;
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+
+/* Replies waiting: their count on a yellow pixel at the corner. */
+.peal-support__badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  box-sizing: border-box;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  border-radius: 2px;
+  background: var(--sun);
+  color: var(--foreground);
+  font-family: var(--font-geist-mono, ui-monospace, monospace);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
+}
+
+.peal-support__badge[hidden] {
+  display: none;
+}
+
+/* The app's and the docs' launcher: lucide's message-circle at 16 px, in
+   muted text, ink while hovered or open, as the bar's icon buttons are. */
+.peal-support[data-art="icon"] {
+  color: var(--muted-foreground);
+}
+
+.peal-support[data-art="icon"]:hover,
+.peal-support[data-art="icon"][aria-expanded="true"] {
+  color: var(--foreground);
+}
+
+.peal-support__icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+/* Replies waiting, beside the icon: a blue dot at its corner, as the
+   app's account shows unread notifications. */
+.peal-support[data-art="icon"] .peal-support__badge {
+  top: 4px;
+  right: 4px;
+  min-width: 0;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: 2px solid var(--background);
+  border-radius: 9999px;
+  background: var(--brand);
+}
+
+/* While the consent notice asks, it is the one thing that floats. */
+body:has(.peal-consent:not([hidden])) .peal-support[data-placement="float"] {
+  display: none;
+}
+
+/* Crisp's window takes Peal's blue (the brand, its hover and pressed
+   shades, its tint) over the variables Crisp sets on its root, and Geist. */
+.crisp-client {
+  --crisp-color-theme-100: 232, 236, 253 !important;
+  --crisp-color-theme-200: 232, 236, 253 !important;
+  --crisp-color-theme-500: 65, 94, 238 !important;
+  --crisp-color-theme-600: 47, 71, 201 !important;
+  --crisp-color-theme-700: 34, 51, 154 !important;
+  --crisp-color-theme-800: 28, 42, 128 !important;
+  --crisp-color-theme-900: 22, 33, 102 !important;
+  --crisp-color-theme-reverse: 255, 255, 255 !important;
+}
+
+.crisp-client #crisp-chatbox,
+.crisp-client #crisp-chatbox * {
+  font-family:
+    var(--font-geist-sans, ui-sans-serif), system-ui, sans-serif !important;
+}
+
+/* Its window opens 8 px above the launcher, their right edges in line;
+   on a phone it fills the screen, as Crisp lays it out. */
+:root {
+  --peal-support-right: 1rem;
+  --peal-support-bottom: 3.5rem;
+}
+
+@media (min-width: 78rem) {
+  :root:has(peal-support:not([data-source="docs"], [data-source="app"])) {
+    --peal-support-right: calc((100% - 72rem) / 4 - 1rem);
+  }
+}
+
+/* In the app, above the bottom bar (44 px), from the bar's end. */
+:root:has(peal-support[data-placement="bar"]) {
+  --peal-support-right: 0.625rem;
+  --peal-support-bottom: 3.25rem;
+}
+
+/* Opened from the account menu, above it, from the bar's start. */
+:root:has(peal-support[data-placement="menu"]) {
+  --peal-support-left: 0.625rem;
+  --peal-support-right: auto;
+  --peal-support-bottom: 3.25rem;
+}
+
+#crisp-chatbox:not([data-full-view="true"], [data-mobile-view="true"])
+  [data-chat-status] {
+  right: var(--peal-support-right) !important;
+  bottom: var(--peal-support-bottom) !important;
+  left: var(--peal-support-left, auto) !important;
+}
+
+/* Peal's launcher opens and closes the chat: Crisp's own button stays
+   hidden, on every screen. */
+.crisp-client #crisp-chatbox [role="button"][data-maximized] {
+  display: none !important;
+}

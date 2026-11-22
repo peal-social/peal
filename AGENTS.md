@@ -271,6 +271,10 @@ self-hoster needs only Postgres and an S3-compatible store:
   `PEAL_ADS_NETWORKS` names `google` with its own OAuth client (see
   [`src/ads/AGENTS.md`](packages/peal-server/src/ads/AGENTS.md));
 - captcha: Turnstile, off when no key is set;
+- support chat: Crisp, off until a website's id is set
+  (`PEAL_CRISP_WEBSITE_ID` for the app, `SITE_`, `DOCS_` and
+  `BLOG_CRISP_WEBSITE_ID`), loaded only once someone opens it (peal-ui's
+  guide, "The support chat");
 - product analytics: PostHog, off until `PEAL_POSTHOG_KEY` is set, events
   from the server only, ids, enums and counts only (see
   [`packages/peal-server/AGENTS.md`](packages/peal-server/AGENTS.md));

@@ -1,7 +1,7 @@
 "use client";
 
 import { Option } from "effect";
-import { BellIcon, LogOutIcon, UserIcon } from "lucide-react";
+import { BellIcon, LifeBuoyIcon, LogOutIcon, UserIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "peal-ui/components/avatar";
 import { Button } from "peal-ui/components/button";
@@ -15,7 +15,12 @@ import {
   DropdownMenuTrigger,
 } from "peal-ui/components/dropdown-menu";
 import { toast } from "peal-ui/components/toast";
-import { useTransition } from "react";
+import { forgetConversation } from "peal-ui/lib/support/crisp";
+import {
+  listenToSupportUnread,
+  openSupportChat,
+} from "peal-ui/lib/support/events";
+import { useEffect, useState, useTransition } from "react";
 
 import { authClient } from "#auth/client.ts";
 import { useMeasurementSignOut } from "#components/measurement/measurement.tsx";
@@ -28,6 +33,12 @@ interface AccountMenuViewProps {
   readonly email: string;
   readonly image?: string | null;
   readonly name: string;
+  /**
+   * Whether the server names a support chat (DESIGN.md, "Support chat"):
+   * the menu then has Support, which opens it, with the count of replies
+   * waiting, which the avatar's dot shows too.
+   */
+  readonly supportChat?: boolean;
   /**
    * The workspace whose settings hold the person's pages (the one open, or
    * their first): none for someone without any, who has only Sign out.
@@ -63,6 +74,7 @@ const Menu = ({
   email,
   image,
   name,
+  supportChat = false,
   unread,
   workspaceSlug,
 }: AccountMenuViewProps & {
@@ -75,6 +87,9 @@ const Menu = ({
   const [isPending, startTransition] = useTransition();
   const forgetMeasurement = useMeasurementSignOut();
   const count = Option.getOrElse(unread, () => 0);
+  const [supportUnread, setSupportUnread] = useState(0);
+
+  useEffect(() => listenToSupportUnread(setSupportUnread), []);
 
   // Asks Better Auth for the session as pages open and the tab regains
   // focus. That is what extends the session, and renews the copy cached in
@@ -88,6 +103,7 @@ const Menu = ({
       if (result.error === null) {
         // Before leaving, so nothing more is measured as the person.
         forgetMeasurement();
+        forgetConversation();
         router.push("/");
         router.refresh();
       } else {
@@ -114,7 +130,11 @@ const Menu = ({
           }
           aria-label={t("trigger", { count, name })}
         >
-          <AccountAvatar image={image ?? null} name={name} unread={count > 0} />
+          <AccountAvatar
+            image={image ?? null}
+            name={name}
+            unread={count > 0 || supportUnread > 0}
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="top" className="w-60">
           <DropdownMenuGroup>
@@ -138,6 +158,17 @@ const Menu = ({
                 <UserIcon aria-hidden />
                 {account("menu")}
               </DropdownMenuItem>
+              {supportChat ? (
+                <DropdownMenuItem onSelect={openSupportChat}>
+                  <LifeBuoyIcon aria-hidden />
+                  <span className="flex-1">{t("support")}</span>
+                  {supportUnread > 0 ? (
+                    <span className="text-brand-text text-xs font-medium tabular-nums">
+                      {supportUnread}
+                    </span>
+                  ) : null}
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuSeparator />
             </>
           )}

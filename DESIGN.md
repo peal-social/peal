@@ -1025,6 +1025,49 @@ leave after five seconds, six when they offer Undo.
   field, takes it back and says so ("Post moved back to …"). What cannot
   be taken back keeps its confirmation.
 
+### Support chat
+
+**`support-launcher`** — Where the operator names a Crisp website, every
+page of the site, the docs and the blog has a launcher at the bottom
+right that opens the support chat (peal-ui's `<peal-support>`), and the
+app's account menu has Support. Crisp loads only once one is pressed, or for a visitor whose cookie names
+a conversation, so their replies show.
+
+- **Its look**: on the site and the blog, the pixel bubble below; in the
+  docs, lucide's `message-circle` (16 px, stroke 1.75, in
+  `muted-foreground`, ink while hovered or open), replies waiting shown
+  as a 6 px blue dot at its corner, in a 2 px ring of the page's
+  `background`,
+  as the account shows unread notifications.
+- **The pixel bubble**: a 32 px square, its art a speech bubble of 12 by
+  12 cells of 2 px: the mark's blue, a lavender light at its top left, a
+  darker blue edge (`#2F47C9`) toward the bottom right, and three white
+  dots that type, one after the other, in yellow: one wave every four
+  seconds at rest, on while the pointer or focus is on it, fast while the
+  chat loads. Replies waiting turn the dots yellow and show their count
+  on a yellow 14 px tile at its corner (Geist Mono, 10 px, ink); its name
+  says the count. With reduced motion the bubble is still.
+- **On the site and the blog**: a white card, 1 px `border`, `{rounded.md}`,
+  a popover's shadow, 16 px from the window's bottom. From 78 rem up it
+  stands outside the page, centred in the margin between the right rail
+  and the window's edge; narrower, 16 px from the right edge. While the
+  consent notice asks, it hides: the notice is the one thing that floats
+  without being opened. **In the docs**, the same card holding the icon,
+  16 px from the corner.
+- **In the app**: no launcher. The account menu (the avatar at the
+  bottom bar's start) has **Support**, after Account, a `life-buoy` icon,
+  which opens the chat 8 px above the bar, from its start; replies waiting
+  show their count at the row's end in `brand-text`, as Notifications
+  does, and the avatar's blue dot. Never offered while staff act as
+  someone.
+- **The window** is Crisp's, in Peal's blue (`brand`, its hover and pressed
+  shades, the blue tint) and Geist, set over Crisp's variables: it opens
+  8 px above the launcher, their right edges in line (in the app, above
+  the account menu), and fills the
+  screen on a phone. Crisp's own round button never shows: the launcher
+  opens and closes the chat, and, as a popover, Escape or a press outside
+  the window closes it.
+
 ### Lists: filters and display
 
 Every list, grid or calendar narrows and orders what it shows the same
@@ -1455,7 +1498,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   fixed to the bottom right of the window, 16 px from its edges, 30 rem
   wide at most and about 230 px tall; from 1184 px up its right edge
   stands on the page's right rail. It is the only thing on the site that floats without being
-  opened, and it never dims or blocks the page: no backdrop, no focus
+  opened (the support launcher hides while it asks), and it never dims or blocks the page: no backdrop, no focus
   trap, and it takes no focus when it appears. Inside, the pixel cookie
   is the anchor, on the left with its readout under it; beside it a
   title (15 px, 600), three short sentences (14 px: what is counted

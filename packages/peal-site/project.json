@@ -43,6 +43,9 @@
           "env": "SITE_DISCORD_URL"
         },
         {
+          "env": "SITE_CRISP_WEBSITE_ID"
+        },
+        {
           "env": "SITE_POSTHOG_KEY"
         },
         {

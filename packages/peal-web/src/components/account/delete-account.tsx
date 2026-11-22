@@ -16,6 +16,7 @@ import {
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
+import { forgetConversation } from "peal-ui/lib/support/crisp";
 import { useState, useTransition } from "react";
 import type { ReactNode, SubmitEvent } from "react";
 
@@ -125,6 +126,7 @@ export const DeleteAccount = ({
         // The session went with the account: this clears its cookies.
         await authClient.signOut();
         forgetMeasurement();
+        forgetConversation();
         toast.success(t("deleted"));
         router.push("/");
         router.refresh();

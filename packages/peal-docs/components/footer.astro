@@ -6,8 +6,12 @@
 import SiteFooter from "blume/components/layout/SiteFooter.astro";
 
 import { docsConsent } from "./measurement.ts";
+import { docsSupport } from "./support.ts";
 
 const consent = docsConsent(Astro.props.locale);
+
+// The support chat's launcher, where the build names a Crisp website.
+const support = docsSupport(Astro.props.locale);
 ---
 
 <SiteFooter {...Astro.props} />
@@ -21,9 +25,11 @@ const consent = docsConsent(Astro.props.locale);
   )
 }
 {consent !== undefined && <peal-consent {...consent.attributes} />}
+{support !== undefined && <peal-support {...support} />}
 
 <script>
   import "peal-ui/lib/site/consent/start";
+  import "peal-ui/lib/support/start";
 </script>
 
 <style>

@@ -52,3 +52,28 @@ same on all three:
 - `package.json`'s `sideEffects` lists `consent/start.ts` and
   `consent/element.ts`, which run for their effect: without them the
   bundlers drop the import.
+
+## The support chat
+
+- `src/lib/support` is the support chat (DESIGN.md, "Support chat"), the
+  same on the app, the site, the docs and the blog: `<peal-support>`
+  (`launcher.ts`, in its light DOM, styled by `src/styles/support.css`),
+  its pixel bubble for the site and the blog (`launcher-art.ts`, pure
+  frames on a 2D canvas) or lucide's message-circle for the app and the
+  docs (`data-art`), its
+  settings (`settings.ts`: a Crisp website's id, off when unset) and the
+  glue to Crisp (`crisp.ts`). Crisp's script loads only once the launcher
+  is pressed (or `[data-support-open]` is clicked), or for a browser whose
+  cookie names a conversation; nothing else on a page reaches Crisp.
+  `start.ts` is what the site's, the docs' and the blog's layouts load:
+  without a `<peal-support>` it does nothing. The app makes the element
+  itself (`SupportLauncher`) and forgets the conversation at sign-out
+  (`forgetConversation`).
+- Crisp's window takes Peal's colours and Geist through `support.css`,
+  over the variables Crisp sets on `.crisp-client` and the attributes its
+  markup carries (`[data-chat-status]`, `[data-maximized]`), never its
+  hashed class names: check them on a Crisp upgrade, in a browser.
+- The launcher's script imports neither Effect nor peal-contract (gzip:
+  under 4 kB, its styles included). `conversationCookieSeconds` is the
+  registry's `supportCookie`, which a test compares.
+- `sideEffects` lists `support/launcher.ts` and `support/start.ts`.

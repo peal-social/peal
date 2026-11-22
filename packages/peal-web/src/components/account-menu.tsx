@@ -11,8 +11,11 @@ import { Link } from "#i18n/navigation.ts";
 // in, also when that read fails. Their pages open in the settings of the
 // workspace open (`workspaceSlug`), or, outside any, of their first.
 export const AccountMenu = async ({
+  supportChat = false,
   workspaceSlug,
 }: {
+  /** Whether the menu has Support, which opens the support chat. */
+  readonly supportChat?: boolean;
   readonly workspaceSlug?: string;
 }) => {
   const me = await currentUserOrNone();
@@ -32,6 +35,7 @@ export const AccountMenu = async ({
         name={user.name}
         email={user.email}
         image={user.image}
+        supportChat={supportChat}
         workspaceSlug={workspaceSlug ?? workspaces[0]?.slug ?? null}
       />
     ),

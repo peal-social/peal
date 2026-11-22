@@ -740,7 +740,8 @@
     "app": "Workspaces",
     "signOut": "Sign out",
     "signOutFailed": "Signing out failed. Try again.",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "support": "Support"
   },
   "NotFoundPage": {
     "title": "Page not found",

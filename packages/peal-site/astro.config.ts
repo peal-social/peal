@@ -26,6 +26,9 @@ const config = defineConfig({
       // and to withdraw from one, which the app serves, to the foot of
       // every page.
       SITE_APP_URL: optional,
+      // The Crisp website's id, a UUID: adds the support chat's launcher
+      // at the bottom right of every page, which loads Crisp when pressed.
+      SITE_CRISP_WEBSITE_ID: optional,
       // The Discord server's invitation, such as https://discord.gg/…: adds
       // Discord to the header, the Resources menu and the footer.
       SITE_DISCORD_URL: optional,

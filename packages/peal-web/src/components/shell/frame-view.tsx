@@ -269,6 +269,7 @@ export const FrameView = ({
   label,
   sidebar,
   split = false,
+  supportChat = null,
   supportUrl,
 }: {
   /** The account menu, at the bottom bar's start. */
@@ -295,6 +296,12 @@ export const FrameView = ({
   readonly sidebar: ReactNode;
   /** The page is a split view, which places the header and the footer. */
   readonly split?: boolean;
+  /**
+   * The support chat (`SupportLauncher`), which shows nothing: the
+   * account menu's Support opens it. Where the server names a Crisp
+   * website.
+   */
+  readonly supportChat?: ReactNode;
   readonly supportUrl: string | null;
 }) => {
   const t = useTranslations("WorkspaceShell");
@@ -407,6 +414,7 @@ export const FrameView = ({
           <div className="flex items-center gap-1.5 px-2.5 md:w-60">
             {actions}
           </div>
+          {supportChat}
           <div className="flex flex-1 items-center justify-end gap-1 pr-2.5">
             <HelpMenu docsUrl={docsUrl} supportUrl={supportUrl} />
             {agent}

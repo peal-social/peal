@@ -1029,7 +1029,12 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
 
 // The scripts the site's layout loads, gzip: the one loaded up front with
 // what it imports, the notice, and the measurement (peal-ui's guide).
-const budgets = { measurement: 70_000, notice: 10_000, upFront: 2048 };
+const budgets = {
+  measurement: 70_000,
+  notice: 10_000,
+  support: 5000,
+  upFront: 2048,
+};
 
 describe("the site's scripts", () => {
   test("stay within their budgets", () => {
@@ -1071,6 +1076,16 @@ describe("the site's scripts", () => {
       ...named("element.").filter((file) => file.endsWith(".css")),
     ];
 
+    // The support chat's launcher (peal-ui's `support/launcher.ts`), which
+    // the up-front script loads where a page has `<peal-support>`.
+    const launcher = named("launcher.").filter((file) => file.endsWith(".js"));
+
+    const support = [
+      ...launcher,
+      ...outside(launcher.flatMap(staticImports)),
+      ...named("launcher.").filter((file) => file.endsWith(".css")),
+    ];
+
     const start = named("start.");
 
     const measurement = [
@@ -1082,13 +1097,14 @@ describe("the site's scripts", () => {
     const sizes = {
       measurement: gzip([...new Set(measurement)]),
       notice: gzip([...new Set(notice)]),
+      support: gzip([...new Set(support)]),
       upFront: gzip([...new Set(upFront)]),
     };
 
     writeFileSync(
       path.join(output, "site-budgets.json"),
       JSON.stringify(
-        { budgets, files: { measurement, notice, upFront }, sizes },
+        { budgets, files: { measurement, notice, support, upFront }, sizes },
         null,
         2
       )
@@ -1097,6 +1113,8 @@ describe("the site's scripts", () => {
     expect(entry).not.toBe("");
     expect(sizes.upFront).toBeLessThanOrEqual(budgets.upFront);
     expect(sizes.notice).toBeLessThanOrEqual(budgets.notice);
+    expect(launcher.length).toBeGreaterThan(0);
+    expect(sizes.support).toBeLessThanOrEqual(budgets.support);
     expect(sizes.measurement).toBeLessThanOrEqual(budgets.measurement);
   });
 });

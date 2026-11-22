@@ -133,6 +133,10 @@ peal_settings:
   # allows, a page or a mailto: address. Unset, it tells them to write to
   # whoever runs the server: set it once the address exists.
   # PEAL_CONTACT_URL: https://peal.social/contact/
+  # The support chat in the app's bottom bar: Crisp's website "Peal"
+  # (hello@peal.social's), public, which browsers send. The privacy policy
+  # names Crisp.
+  PEAL_CRISP_WEBSITE_ID: 4d7aa8f1-6f97-4c6a-bcd8-79850beab6dc
   # Product analytics: the project's id here, with PEAL_POSTHOG_KEY and
   # PEAL_POSTHOG_PERSONAL_API_KEY in the vault, all three or none: the
   # release refuses one without the others, so this server never captures
@@ -187,6 +191,10 @@ peal_static_build_args:
   SITE_APP_URL: https://app.peal.social
   SITE_DOCS_URL: https://docs.peal.social
   SITE_DISCORD_URL: https://discord.gg/VBZ5pPT9ss
+  # The support chat's Crisp website ("Peal", owned by hello@peal.social),
+  # as PEAL_CRISP_WEBSITE_ID gives the app; the blog takes the site's.
+  SITE_CRISP_WEBSITE_ID: 4d7aa8f1-6f97-4c6a-bcd8-79850beab6dc
+  DOCS_CRISP_WEBSITE_ID: 4d7aa8f1-6f97-4c6a-bcd8-79850beab6dc
   DOCS_SITE_URL: https://docs.peal.social
   DOCS_APP_URL: https://app.peal.social
   DOCS_ASSISTANT_MODEL: claude-haiku-5-5

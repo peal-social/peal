@@ -10,11 +10,13 @@ import { PlainFrame } from "#components/app-shell.tsx";
 import { PlanGate } from "#components/billing/plan-gate.tsx";
 import { UpgradePrompts } from "#components/billing/upgrade-prompts.tsx";
 import { ContractLinks } from "#components/contract/contract-links.tsx";
+import { SupportLauncher } from "#components/shell/support-launcher.tsx";
 import { WorkspaceShell } from "#components/shell/workspace-shell.tsx";
 import { TwoStepRefusalWatch } from "#components/two-step/refusal-watch.tsx";
 import { TwoStepRequiredNotice } from "#components/two-step/required-notice.tsx";
 import { TwoStepTurnOnHere } from "#components/two-step/turn-on-here.tsx";
 import { docsUrlConfig } from "#shell/docs-url.ts";
+import { supportChatConfig } from "#shell/support-chat.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
 // Around every page of a workspace: its frame (the sidebar, the panel's
@@ -52,7 +54,7 @@ const WorkspaceLayout = async ({
   children,
   params,
 }: LayoutProps<"/[locale]/[workspaceId]">) => {
-  const { workspaceId: segment } = await params;
+  const { locale, workspaceId: segment } = await params;
   const me = await currentUserOrNone();
 
   const workspace = me.pipe(
@@ -75,12 +77,32 @@ const WorkspaceLayout = async ({
 
   const { id: workspaceId, slug } = workspace.value;
 
-  const [standing, termsUrl, contactUrl, docsUrl] = await Promise.all([
-    standingOfWorkspace(workspaceId),
-    Effect.runPromise(termsUrlConfig),
-    Effect.runPromise(contactUrlConfig),
-    Effect.runPromise(docsUrlConfig),
-  ]);
+  const [standing, termsUrl, contactUrl, docsUrl, supportWebsite] =
+    await Promise.all([
+      standingOfWorkspace(workspaceId),
+      Effect.runPromise(termsUrlConfig),
+      Effect.runPromise(contactUrlConfig),
+      Effect.runPromise(docsUrlConfig),
+      Effect.runPromise(supportChatConfig),
+    ]);
+
+  const { user } = me.value;
+
+  // The support chat, never while staff act as someone: it would name
+  // them as the person they act for.
+  const supportChat =
+    supportWebsite === null || me.value.impersonatedBy !== null ? null : (
+      <SupportLauncher
+        locale={locale}
+        person={{
+          email: user.email,
+          name: user.name,
+          userId: user.id,
+          workspaceId,
+        }}
+        websiteId={supportWebsite}
+      />
+    );
 
   // The upgrade dialog goes around the frame too: the agent's panel, in
   // the bottom bar, offers it as the pages do.
@@ -89,7 +111,10 @@ const WorkspaceLayout = async ({
       <WorkspaceShell
         actions={
           <Suspense fallback={null}>
-            <AccountMenu workspaceSlug={slug} />
+            <AccountMenu
+              supportChat={supportChat !== null}
+              workspaceSlug={slug}
+            />
           </Suspense>
         }
         docsUrl={docsUrl}
@@ -99,6 +124,7 @@ const WorkspaceLayout = async ({
           </Suspense>
         }
         permissions={workspace.value.permissions}
+        supportChat={supportChat}
         supportUrl={contactUrl}
         workspaceId={workspaceId}
         workspaceSlug={slug}
