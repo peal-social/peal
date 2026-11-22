@@ -437,32 +437,34 @@ layer(AdaptersTest)("connecting a Google Business Profile location", (it) => {
       }).pipe(Effect.scoped)
   );
 
-  it.effect("revokes the grant on disconnect", () =>
-    Effect.gen(function* revokes() {
-      const on = yield* onGoogle();
-      const workspaceId = yield* freshWorkspace;
+  it.effect(
+    "keeps the grant on disconnect, which the user's other locations rest on",
+    () =>
+      Effect.gen(function* revokes() {
+        const on = yield* onGoogle();
+        const workspaceId = yield* freshWorkspace;
 
-      on.google.setBusinessAccounts([
-        { ...businessAccount, locations: [locationOf(workspaceId)] },
-      ]);
+        on.google.setBusinessAccounts([
+          { ...businessAccount, locations: [locationOf(workspaceId)] },
+        ]);
 
-      const channel = yield* connected(on, workspaceId);
+        const channel = yield* connected(on, workspaceId);
 
-      yield* DisconnectChannel.use((useCase) =>
-        useCase.disconnect(manager(workspaceId), channel.id)
-      ).pipe(
-        Effect.provide(
-          DisconnectChannel.layer.pipe(
-            Layer.provide(ChannelDepartures.none),
-            Layer.provide(
-              Layer.succeed(PlatformAuthorizers, authorizersOf(on.authorizer))
+        yield* DisconnectChannel.use((useCase) =>
+          useCase.disconnect(manager(workspaceId), channel.id)
+        ).pipe(
+          Effect.provide(
+            DisconnectChannel.layer.pipe(
+              Layer.provide(ChannelDepartures.none),
+              Layer.provide(
+                Layer.succeed(PlatformAuthorizers, authorizersOf(on.authorizer))
+              )
             )
           )
-        )
-      );
+        );
 
-      assert.deepStrictEqual(on.google.revoked(), ["1//synthetic-refresh-1"]);
-    }).pipe(Effect.scoped)
+        assert.deepStrictEqual(on.google.revoked(), []);
+      }).pipe(Effect.scoped)
   );
 });
 

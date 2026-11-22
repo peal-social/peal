@@ -122,7 +122,14 @@ const revokingTikTok = (platform: Platform) =>
           ),
       };
 
-      return authorizersOf(tiktok);
+      // Google's: one grant for every location of a user, never revoked.
+      const google: PlatformAuthorizer = {
+        ...tiktok,
+        platform: "googleBusiness",
+        policy: tokenPolicies.googleBusiness,
+      };
+
+      return authorizersOf(tiktok, google);
     })
   );
 
@@ -152,7 +159,7 @@ const recordsTest = (platform: Platform) =>
 // A channel of the workspace with a token of its own.
 const connected = Effect.fn("connected")(function* connected(
   workspaceId: WorkspaceId,
-  platform: "facebook" | "mastodon" | "tiktok",
+  platform: "facebook" | "googleBusiness" | "mastodon" | "tiktok",
   accountId?: string
 ) {
   const channel = yield* freshChannel(workspaceId, { accountId, platform });
@@ -281,6 +288,9 @@ layer(recordsTest("answering"))("workspaces about to be erased", (it) => {
         const otherId = yield* freshWorkspace;
         const keeperId = yield* freshWorkspace;
         const alone = yield* connected(workspaceId, "tiktok");
+
+        // A location whose grant the user's other locations share.
+        yield* connected(workspaceId, "googleBusiness");
         const shared = yield* connected(workspaceId, "tiktok");
         const bothLeaving = yield* connected(workspaceId, "tiktok");
 
