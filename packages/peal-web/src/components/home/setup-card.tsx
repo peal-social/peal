@@ -12,6 +12,7 @@ import {
   failedCount,
   forgetRun,
   nextStep,
+  recordStep,
   runOf,
   runOfSnapshot,
   runSnapshot,
@@ -72,19 +73,29 @@ const shownNowhere = () => true;
 
 const noRun = () => null;
 
+// The card's one way to start a sign-in, so it reads as pending from the
+// click until the tab leaves, whichever state the card has moved to.
+type RunStepper = ReturnType<typeof useRunStep>;
+
 interface ChooseProps {
   readonly billing: Billing | null;
   readonly connectable: Connectable;
   readonly hidden: readonly Platform[];
+  readonly step: RunStepper;
   readonly workspaceId: string;
 }
 
-const Choose = ({ billing, connectable, hidden, workspaceId }: ChooseProps) => {
+const Choose = ({
+  billing,
+  connectable,
+  hidden,
+  step,
+  workspaceId,
+}: ChooseProps) => {
   const workspaceHref = useWorkspaceHref();
   const options = setupOptionsOf(connectable, hidden);
   const [ticked, setTicked] = useState<readonly string[]>([]);
   const [typed, setTyped] = useState<Readonly<Record<string, string>>>({});
-  const step = useRunStep();
 
   if (options.length === 0) {
     return null;
@@ -143,9 +154,14 @@ const ChooseWithBilling = (props: Omit<ChooseProps, "billing">) => {
   );
 };
 
-const Run = ({ run }: { readonly run: ConnectRun }) => {
+const Run = ({
+  run,
+  step,
+}: {
+  readonly run: ConnectRun;
+  readonly step: RunStepper;
+}) => {
   const workspaceHref = useWorkspaceHref();
-  const step = useRunStep();
   const next = nextStep(run);
 
   return (
@@ -167,6 +183,9 @@ const Run = ({ run }: { readonly run: ConnectRun }) => {
               next,
               onContinue: () => {
                 step.start(run);
+              },
+              onSkip: () => {
+                recordStep(run, next.platform, { _tag: "skipped" });
               },
               onStop: forgetRun,
               run,
@@ -195,6 +214,7 @@ export const SetupCard = ({
   readonly workspaceId: string;
 }) => {
   const hydrated = useHydrated();
+  const step = useRunStep();
   const snapshot = useSyncExternalStore(subscribeToRun, runSnapshot, noRun);
   const run = useMemo(() => runOfSnapshot(snapshot), [snapshot]);
 
@@ -212,7 +232,7 @@ export const SetupCard = ({
   }
 
   if (run !== null && run.workspaceId === workspaceId) {
-    return <Run run={run} />;
+    return <Run run={run} step={step} />;
   }
 
   if (
@@ -228,6 +248,7 @@ export const SetupCard = ({
     <ChooseWithBilling
       connectable={connectable.value}
       hidden={hidden}
+      step={step}
       workspaceId={workspaceId}
     />
   ) : (
@@ -235,6 +256,7 @@ export const SetupCard = ({
       billing={null}
       connectable={connectable.value}
       hidden={hidden}
+      step={step}
       workspaceId={workspaceId}
     />
   );

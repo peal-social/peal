@@ -3412,11 +3412,12 @@
     "status": {
       "waiting": "En attente",
       "connected": "Connecté : {handles}",
-      "skipped": "Passé : aucun compte choisi"
+      "skipped": "Passé"
     },
     "running": {
       "description": "Peal s’est arrêté ici. Continuez quand vous voulez, ou arrêtez et connectez le reste plus tard depuis Canaux.",
       "continue": "Continuer avec {name}",
+      "skip": "Passer {name}",
       "stop": "Arrêter"
     },
     "done": {

@@ -1276,8 +1276,10 @@ them beside the one open, so the list stays where it was.
     leaves ("@peal is connected. Continuing to LinkedIn…"). Anything
     that stops it (a failure, a refusal, a cancelled choice, the Back
     button) comes back to Home with **Continue with LinkedIn**
-    (primary) and **Stop** (outline). Home never leaves for a platform
-    by itself.
+    (primary), **Skip LinkedIn** and **Stop** (outline): a platform
+    the member is not signed in to, or signed in to as the wrong
+    account, is passed without ending the run. Home never leaves for a
+    platform by itself, and its buttons wait while a sign-in starts.
   - **Done.** One line on how many accounts were connected and on what
     failed, **Write a post** (primary) and **Close** (outline); when none
     was, **Start over** (primary) alone, which brings back Choose.

@@ -253,15 +253,18 @@ const RunningActions = ({
   isPending,
   name,
   onContinue,
+  onSkip,
   onStop,
 }: {
   readonly isPending: boolean;
   readonly name: string;
   readonly onContinue: () => void;
+  readonly onSkip: () => void;
   readonly onStop: () => void;
 }) => {
   const t = useTranslations("SetupCard");
   const handleContinue = onContinue;
+  const handleSkip = onSkip;
   const handleStop = onStop;
 
   return (
@@ -274,7 +277,20 @@ const RunningActions = ({
       >
         {isPending ? t("leaving") : t("running.continue", { name })}
       </Button>
-      <Button type="button" variant="outline" onClick={handleStop}>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={isPending}
+        onClick={handleSkip}
+      >
+        {t("running.skip", { name })}
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        disabled={isPending}
+        onClick={handleStop}
+      >
         {t("running.stop")}
       </Button>
     </>
@@ -368,6 +384,8 @@ export type SetupCardState =
       readonly run: ConnectRun;
       readonly next: RunStep;
       readonly onContinue: () => void;
+      /** Goes past the next platform, kept as skipped. */
+      readonly onSkip: () => void;
       readonly onStop: () => void;
     }
   | {

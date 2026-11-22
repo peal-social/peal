@@ -126,13 +126,14 @@ describe(SetupCardView, () => {
       _tag: "running",
       next: { platform: "youtube" },
       onContinue: constVoid,
+      onSkip: constVoid,
       onStop: constVoid,
       run: stopped,
     });
 
     expect(html).toContain("Connected: @peal");
     expect(html).toContain("Continue with YouTube");
-    expect(html).toContain("Stop");
+    expect(html).toContain("Skip YouTube");
   });
 
   it("sums the run up once it is done", async () => {
