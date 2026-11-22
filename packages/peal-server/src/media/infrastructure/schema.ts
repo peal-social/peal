@@ -33,6 +33,8 @@ export const mediaAssets = media.table(
     contentType: text("content_type").notNull(),
     createdAt: instant("created_at").notNull(),
     durationMs: integer("duration_ms"),
+    // How many probes in a row found an uploaded video unreadable.
+    failedReads: integer("failed_reads"),
     // What the file was called where it came from, cleaned: null for a
     // file the assistant made and for every file added before names were
     // kept.

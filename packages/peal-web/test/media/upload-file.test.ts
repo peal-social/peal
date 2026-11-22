@@ -256,6 +256,65 @@ describe(uploadFile, () => {
     })
   );
 
+  it.effect(
+    "completes again while the API is busy checking other files, and never deletes the file for it",
+    () =>
+      Effect.gen(function* busy() {
+        const store = yield* fakes(single);
+        const { events } = yield* listening;
+        const asked = yield* Ref.make(0);
+
+        // Busy twice, then checked.
+        const api: UploadApi = {
+          ...store.api,
+          complete: (id) =>
+            Ref.updateAndGet(asked, (count) => count + 1).pipe(
+              Effect.flatMap((count) =>
+                count <= 2
+                  ? Effect.fail(new UploadFailed({ reason: "busy" }))
+                  : store.api.complete(id)
+              )
+            ),
+        };
+
+        const fiber = yield* uploadFile(api, fileOf(4), {
+          altText: "",
+          events,
+        }).pipe(
+          Effect.provideService(Transfer, store.transfer),
+          Effect.forkChild
+        );
+
+        yield* TestClock.adjust("1 minute");
+
+        assert.deepStrictEqual(yield* Fiber.join(fiber), ready);
+        assert.strictEqual(yield* Ref.get(asked), 3);
+        assert.deepStrictEqual(yield* Ref.get(store.discarded), []);
+
+        // Busy every time: it gives up, and keeps the file.
+        const always: UploadApi = {
+          ...store.api,
+          complete: () => Effect.fail(new UploadFailed({ reason: "busy" })),
+        };
+
+        const givenUp = yield* uploadFile(always, fileOf(4), {
+          altText: "",
+          events,
+        }).pipe(
+          Effect.provideService(Transfer, store.transfer),
+          Effect.forkChild
+        );
+
+        yield* TestClock.adjust("10 minutes");
+
+        assert.deepStrictEqual(
+          yield* Effect.flip(Fiber.join(givenUp)),
+          new UploadFailed({ reason: "busy" })
+        );
+        assert.deepStrictEqual(yield* Ref.get(store.discarded), []);
+      })
+  );
+
   it.effect("sends a large file's parts at once, each with its bytes", () =>
     Effect.gen(function* parts() {
       const size = 5 * 7 + 3;

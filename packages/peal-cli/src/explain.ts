@@ -760,7 +760,7 @@ const reasonOf =
         ),
       MediaImportBusy: () =>
         refused(
-          "The workspace already imports two files at once, or has two images being made, or the server runs as many as it takes together: nothing was fetched or made. Try again in a moment."
+          "The workspace already imports two files at once, has two images being made or two uploaded files checked, or the server runs as many as it takes together: nothing was fetched or made, and an uploaded file stays in the library, not ready yet. Try again in a moment."
         ),
       MediaInUse: ({ articleIds, postIds }) =>
         refused(

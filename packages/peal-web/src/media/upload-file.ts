@@ -1,7 +1,7 @@
-import { Effect, Option } from "effect";
+import { Cause, Effect, Option } from "effect";
 import type { Media, NewUpload, PreparedUpload } from "peal-contract";
 
-import { withRetry } from "#media/retry.ts";
+import { completeRetrySchedule, withRetry } from "#media/retry.ts";
 import type { TransferFailed } from "#media/transfer-failed.ts";
 import { Transfer } from "#media/transfer.ts";
 import { UploadFailed } from "#media/upload-failed.ts";
@@ -111,11 +111,24 @@ export const uploadFile = Effect.fn("uploadFile")(function* uploadFile(
 
     events.onCompleting();
 
-    return yield* api.complete(mediaId);
+    // The API checks a few files at once: past them it answers busy, the
+    // file uploaded, and completing again later checks it.
+    return yield* api
+      .complete(mediaId)
+      .pipe(Effect.retry(completeRetrySchedule));
   });
 
   // Once the media exists, an upload that does not end with it uploaded
   // deletes it, while sending or while the API checks the file: nothing is
-  // left pending or rejected, and trying again starts afresh.
-  return yield* sendAndCheck.pipe(Effect.onError(() => api.discard(mediaId)));
+  // left pending or rejected, and trying again starts afresh. A file the
+  // API was too busy to check is uploaded, and stays.
+  return yield* sendAndCheck.pipe(
+    Effect.onError((cause) =>
+      Cause.findErrorOption(cause).pipe(
+        Option.exists((failure) => failure.reason === "busy")
+      )
+        ? Effect.void
+        : api.discard(mediaId)
+    )
+  );
 });

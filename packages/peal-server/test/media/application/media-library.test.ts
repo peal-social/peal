@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import { assert, layer } from "@effect/vitest";
 import {
   ConfigProvider,
@@ -8,6 +10,7 @@ import {
   Latch,
   Layer,
   Option,
+  Ref,
   Stream,
 } from "effect";
 import { TestClock } from "effect/testing";
@@ -34,6 +37,7 @@ import { MediaLibrary } from "#media/container.ts";
 import { MediaAssetIdSchema } from "#media/domain/media-asset-id.ts";
 import { startUpload } from "#media/domain/media-asset.ts";
 import { MediaMetadata } from "#media/domain/media-metadata.ts";
+import { probeSlotWait } from "#media/domain/probe-limits.ts";
 import { storageKeyFor } from "#media/domain/storage-key.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { MediaProbeLive } from "#media/infrastructure/media-probe.ts";
@@ -807,7 +811,7 @@ layer(LibraryTest)("the media library", (it) => {
   );
 
   it.effect(
-    "refuses to probe while the workspace or the server probes as many files as it may, leaving the file uploaded",
+    "waits for a probe's slot a while, then refuses, leaving the file uploaded",
     () =>
       Effect.gen(function* busy() {
         const workspaceId = yield* freshWorkspace;
@@ -817,17 +821,46 @@ layer(LibraryTest)("the media library", (it) => {
 
         yield* sendSigned(yield* singleRequest(prepared), body);
 
-        const finish = (free: boolean) =>
-          finishUpload(request).pipe(
-            Effect.provideService(
-              ProbeSlots,
-              ProbeSlots.of({ take: () => Effect.succeed(free) })
-            ),
-            Effect.provideService(StorageAllowance, unlimitedStorage),
-            Effect.provide(MediaProbeLive)
-          );
+        const free = yield* Ref.make(false);
+        const asked = yield* Ref.make(0);
 
-        assert.include(yield* Effect.flip(finish(false)), {
+        const finish = finishUpload(request).pipe(
+          Effect.provideService(
+            ProbeSlots,
+            ProbeSlots.of({
+              take: () =>
+                Ref.update(asked, (count) => count + 1).pipe(
+                  Effect.andThen(Ref.get(free))
+                ),
+            })
+          ),
+          Effect.provideService(StorageAllowance, unlimitedStorage),
+          Effect.provide(MediaProbeLive)
+        );
+
+        // Until the call asks for a slot, on real time: the database and
+        // the store answer on their own clock.
+        const asking = Effect.gen(function* asking() {
+          const before = yield* Ref.get(asked);
+
+          for (let tries = 0; tries < 500; tries += 1) {
+            if ((yield* Ref.get(asked)) > before) {
+              return;
+            }
+
+            yield* Effect.promise(async () => {
+              await delay(10);
+            });
+          }
+        });
+
+        // No slot for the whole wait: refused, the file left uploaded.
+        const refused = yield* Effect.forkChild(Effect.flip(finish));
+
+        yield* asking;
+        yield* TestClock.adjust(probeSlotWait);
+
+        assert.include(yield* Fiber.join(refused), {
           _tag: "MediaImportBusy",
         });
         assert.deepStrictEqual(
@@ -835,8 +868,15 @@ layer(LibraryTest)("the media library", (it) => {
           { _tag: "uploaded", probe: "pending" }
         );
 
-        // Once a slot is free, the next call probes it.
-        const { asset } = yield* finish(true);
+        // A slot frees itself during the wait: the call probes the file.
+        const waiting = yield* Effect.forkChild(finish);
+
+        yield* asking;
+        yield* TestClock.adjust(Duration.seconds(5));
+        yield* Ref.set(free, true);
+        yield* TestClock.adjust(Duration.seconds(1));
+
+        const { asset } = yield* Fiber.join(waiting);
 
         assert.deepStrictEqual(asset.status, { _tag: "ready" });
       })

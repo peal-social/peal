@@ -2249,6 +2249,7 @@
         "storeRefused": "The media store refused the file. Try again.",
         "storeUnavailable": "The media store cannot be reached right now. Try again in a moment.",
         "incomplete": "Part of the file did not arrive. Try again.",
+        "busy": "Peal is checking other files right now, so this one is in the library but not ready for posts yet. Upload it again in a few minutes.",
         "rejectedSize": "The file that arrived does not have the size it was sent with. Try again.",
         "rejectedType": "The file’s content does not match its type: it may have been renamed, or be damaged.",
         "unexpected": "Something went wrong. Try again."

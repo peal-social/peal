@@ -1,0 +1,1 @@
+ALTER TABLE "media"."media_assets" ADD COLUMN "failed_reads" integer;
