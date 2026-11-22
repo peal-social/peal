@@ -11,11 +11,7 @@ import { DoctorFailed } from "#doctor-failed.ts";
 import { adsScope, publishScope, twoStepFixOf } from "#explain.ts";
 import { jsonFlag, printJson } from "#json.ts";
 import { columns } from "#print.ts";
-import {
-  defaultApiUrl,
-  insecureHttpFlag,
-  insecureHttpVariable,
-} from "#root.ts";
+import { insecureHttpFlag, insecureHttpVariable } from "#root.ts";
 import { accessToken } from "#session.ts";
 import { isWorkspaceId, whereTheIdIs, workspaceFlag } from "#workspace.ts";
 
@@ -74,8 +70,16 @@ const sourceOf = (variable: string, value: string, flag: string) =>
   );
 
 const apiUrlCheck = Effect.gen(function* apiUrlCheck() {
-  const { baseUrl, sendingCredentials } = yield* PealApi;
+  const { apiUrlNamed, baseUrl, sendingCredentials } = yield* PealApi;
   const url = display(baseUrl);
+
+  if (!apiUrlNamed && Option.isSome(yield* apiKey)) {
+    return failing(
+      "api-url",
+      `${url}, the default, and ${apiKeyVariable} is set: an API key goes only to the server it was made on, so the command line sends it to no default.`,
+      "Name the server with --api-url or PEAL_API_URL, such as https://peal.example.com."
+    );
+  }
 
   if (!(yield* sendingCredentials.pipe(Effect.isSuccess))) {
     return failing(
@@ -96,9 +100,9 @@ const apiUrlCheck = Effect.gen(function* apiUrlCheck() {
 
   return ok(
     "api-url",
-    Option.isNone(set) && url === display(new URL(defaultApiUrl))
-      ? `${url}, the default: set PEAL_API_URL or --api-url for another server.`
-      : `${url}, from --api-url.`
+    apiUrlNamed
+      ? `${url}, from --api-url.`
+      : `${url}, the default: set PEAL_API_URL or --api-url for another server.`
   );
 });
 
@@ -427,11 +431,24 @@ const keyChecks = (choice: Option.Option<string>, up: boolean) =>
       return [credential, skipped("access", unanswered), scope, ads, workspace];
     }
 
+    if (!api.apiUrlNamed) {
+      return [
+        credential,
+        skipped(
+          "access",
+          "the API key is sent to no server the run does not name"
+        ),
+        scope,
+        ads,
+        workspace,
+      ];
+    }
+
     if (!(yield* api.sendingCredentials.pipe(Effect.isSuccess))) {
       return [credential, skipped("access", inClear), scope, ads, workspace];
     }
 
-    const client = yield* api.signedIn(key.value).pipe(Effect.orDie);
+    const client = yield* api.withApiKey(key.value).pipe(Effect.orDie);
 
     const access = yield* client.channels
       .list({ params: { workspaceId: workspaceId.value } })

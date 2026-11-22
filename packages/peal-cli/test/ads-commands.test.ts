@@ -97,7 +97,12 @@ const ownerKey: StudioKey = {
 const withKey = (
   session: { withEnv: (env: Record<string, string>) => Runs },
   key: StudioKey
-) => session.withEnv({ PEAL_API_KEY: key.key, PEAL_WORKSPACE: studioId });
+) =>
+  session.withEnv({
+    PEAL_API_KEY: key.key,
+    PEAL_API_URL: "http://localhost:3000",
+    PEAL_WORKSPACE: studioId,
+  });
 
 const amount = (given: string, currency: string, digits: 0 | 2) =>
   minorUnits(given, currency, digits, "--total");

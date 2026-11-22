@@ -13,7 +13,12 @@ import { output } from "./support.ts";
 
 // A run nobody attends: PEAL_API_KEY in the environment, and no sign-in.
 
-const key = { PEAL_API_KEY: draftingKey.key };
+// The key goes only to a server the run names.
+const key = {
+  PEAL_API_KEY: draftingKey.key,
+  PEAL_API_URL: "http://localhost:3000",
+};
+
 const inStudio = ["--workspace", studioId];
 
 const headless = (signIn = false) =>
@@ -291,6 +296,7 @@ describe("an API key in PEAL_API_KEY", () => {
       const session = yield* headless();
 
       const unknown = session.withEnv({
+        ...key,
         PEAL_API_KEY: "peal_test_unknown_key",
       });
 

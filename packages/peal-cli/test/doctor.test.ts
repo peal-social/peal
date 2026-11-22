@@ -119,7 +119,7 @@ describe("peal doctor", () => {
           ]),
           "api-url"
         ).detail,
-        "the default"
+        "from --api-url"
       );
     }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
@@ -221,8 +221,20 @@ describe("peal doctor", () => {
 
       const byId = ["doctor", "--json", "--workspace", studioId];
 
+      // A key goes only to a server the run names.
+      const named = { PEAL_API_URL: "http://localhost:3000" };
+
+      const unnamed = yield* failingReport(
+        session.withEnv({ PEAL_API_KEY: draftingKey.key }),
+        byId
+      );
+
+      assert.strictEqual(statuses(unnamed)["api-url"], "failing");
+      assert.include(check(unnamed, "api-url").fix, "PEAL_API_URL");
+      assert.strictEqual(statuses(unnamed)["access"], "skipped");
+
       const good = yield* session
-        .withEnv({ PEAL_API_KEY: draftingKey.key })
+        .withEnv({ ...named, PEAL_API_KEY: draftingKey.key })
         .printed(byId);
 
       assert.isTrue(diagnosisOf(good).ok);
@@ -234,7 +246,7 @@ describe("peal doctor", () => {
       assert.strictEqual(statuses(good)["publish-scope"], "skipped");
 
       const lacking = yield* failingReport(
-        session.withEnv({ PEAL_API_KEY: blind.key }),
+        session.withEnv({ ...named, PEAL_API_KEY: blind.key }),
         byId
       );
 
@@ -246,7 +258,7 @@ describe("peal doctor", () => {
       assert.include(check(lacking, "access").fix, "channel:read");
 
       const bySlug = yield* failingReport(
-        session.withEnv({ PEAL_API_KEY: draftingKey.key }),
+        session.withEnv({ ...named, PEAL_API_KEY: draftingKey.key }),
         ["doctor", "--json", ...inStudio]
       );
 

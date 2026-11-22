@@ -30,7 +30,7 @@ packages/peal-cli/dist/peal --help
 
 ## Choisir l’instance [#instance]
 
-Indiquez à `peal` l’adresse où vous ouvrez Peal, comme `https://peal.example.com`, avec `--api-url` ou `PEAL_API_URL`. Si vous donnez les deux, l’option l’emporte. Sans l’une ni l’autre, `peal` utilise `http://localhost:3000`, un serveur lancé depuis les sources.
+Indiquez à `peal` l’adresse où vous ouvrez Peal, comme `https://peal.example.com`, avec `--api-url` ou `PEAL_API_URL`. Si vous donnez les deux, l’option l’emporte. Sans l’une ni l’autre, `peal` utilise `http://localhost:3000`, un serveur lancé depuis les sources. Il n’y envoie jamais de clé d’API, sauf si vous nommez cette adresse vous-même ([La lancer avec une clé d’API](#api-key)).
 
 ```sh
 export PEAL_API_URL=https://peal.example.com
@@ -172,6 +172,8 @@ peal drafts list --json
 
 `peal` ne lit la clé que dans l’environnement. Aucune option ne la prend, car une option finit dans l’historique du shell et dans la liste des processus. `peal` ne l’affiche jamais. Tant que `PEAL_API_KEY` est définie, elle l’emporte sur une connexion enregistrée, et une valeur vide ne compte pas comme une clé.
 
+Avec une clé, `--api-url` ou `PEAL_API_URL` doit nommer l’instance où la clé a été créée. Une clé ne part vers aucune adresse par défaut : sans l’une ni l’autre, la commande s’arrête avec `api_url_required` et n’envoie rien.
+
 Avec une clé, `--workspace` ou `PEAL_WORKSPACE` doit donner l’identifiant de l’espace de travail, pas son slug. Il n’y a pas de valeur par défaut, car une clé ne peut pas chercher les espaces de travail. `peal whoami` le liste quand vous êtes connecté en tant que personne, comme `GET /api/me`. Sans lui, la commande s’arrête avec `workspace_id_required`.
 
 La clé fait ce que ses permissions permettent, et rien de plus. Sans `post:schedule`, par exemple, elle écrit des brouillons mais ne les programme pas. Un refus arrive dans les mots du serveur, avec la permission qui manque.
@@ -204,17 +206,17 @@ ok  mcp            MCP clients connect to https://peal.example.com/api/mcp: peal
 
 Il fait ces vérifications, dans cet ordre :
 
-| Vérification    | Ce qu’elle regarde                                                                                                                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `api-url`       | L’adresse de l’instance, et d’où elle vient : `--api-url`, `PEAL_API_URL` ou la valeur par défaut. Elle échoue pour du HTTP simple hors de cette machine, sauf si `--insecure-http` l’autorise.                                 |
-| `health`        | Que le serveur répond en 5 secondes au plus.                                                                                                                                                                                    |
-| `ready`         | Que le serveur joint sa base de données.                                                                                                                                                                                        |
-| `changelog`     | Qu’il répond à `GET /api/changelog` avec la dernière version de l’API ([Journal des modifications](/developers/conventions/versioning#changelog)). Un serveur qui n’y répond pas est plus ancien, ou n’est pas un serveur Peal. |
-| `credential`    | Ce qu’un lancement utilise pour s’authentifier : la clé de `PEAL_API_KEY`, ou la connexion enregistrée. Jamais affiché.                                                                                                         |
-| `access`        | Que ce moyen fonctionne : qui est connecté et où, ou, pour une clé, qu’elle lit les canaux de l’espace de travail.                                                                                                              |
-| `publish-scope` | Si la connexion peut programmer et publier. Ignorée pour une clé, qui a des permissions et pas de scope. Une connexion qui ne l’a pas est `ok` : elle écrit des brouillons, et ce n’est pas à contourner.                       |
-| `workspace`     | Dans quel espace de travail agissent les commandes, et d’où vient ce choix.                                                                                                                                                     |
-| `mcp`           | L’adresse à laquelle se connectent les clients MCP.                                                                                                                                                                             |
+| Vérification    | Ce qu’elle regarde                                                                                                                                                                                                                                                |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api-url`       | L’adresse de l’instance, et d’où elle vient : `--api-url`, `PEAL_API_URL` ou la valeur par défaut. Elle échoue pour du HTTP simple hors de cette machine, sauf si `--insecure-http` l’autorise, et pour la valeur par défaut tant que `PEAL_API_KEY` est définie. |
+| `health`        | Que le serveur répond en 5 secondes au plus.                                                                                                                                                                                                                      |
+| `ready`         | Que le serveur joint sa base de données.                                                                                                                                                                                                                          |
+| `changelog`     | Qu’il répond à `GET /api/changelog` avec la dernière version de l’API ([Journal des modifications](/developers/conventions/versioning#changelog)). Un serveur qui n’y répond pas est plus ancien, ou n’est pas un serveur Peal.                                   |
+| `credential`    | Ce qu’un lancement utilise pour s’authentifier : la clé de `PEAL_API_KEY`, ou la connexion enregistrée. Jamais affiché.                                                                                                                                           |
+| `access`        | Que ce moyen fonctionne : qui est connecté et où, ou, pour une clé, qu’elle lit les canaux de l’espace de travail.                                                                                                                                                |
+| `publish-scope` | Si la connexion peut programmer et publier. Ignorée pour une clé, qui a des permissions et pas de scope. Une connexion qui ne l’a pas est `ok` : elle écrit des brouillons, et ce n’est pas à contourner.                                                         |
+| `workspace`     | Dans quel espace de travail agissent les commandes, et d’où vient ce choix.                                                                                                                                                                                       |
+| `mcp`           | L’adresse à laquelle se connectent les clients MCP.                                                                                                                                                                                                               |
 
 Chaque vérification est `ok`, `failing` (en échec) ou `skipped` (ignorée). Une vérification est ignorée quand elle ne peut pas se faire, par exemple quand le serveur ne répond pas, ou quand elle ne s’applique pas. Une vérification en échec vous dit quoi faire, sur une ligne qui commence par `To do:`. Dès qu’une vérification échoue, `peal doctor` se termine avec le code 1.
 
@@ -292,6 +294,7 @@ La ligne de commande a ses propres codes pour ce qui l’arrête avant une répo
 | `sign_in_expired`         | La connexion enregistrée ne fonctionne plus. Relancez `peal login`.                                                                       |
 | `api_key_refused`         | L’instance a refusé la clé de `PEAL_API_KEY` : révoquée, expirée, ou venue d’un autre serveur.                                            |
 | `person_required`         | La commande s’adresse à une personne connectée, et `PEAL_API_KEY` est définie.                                                            |
+| `api_url_required`        | `PEAL_API_KEY` est définie, et ni `--api-url` ni `PEAL_API_URL` ne nomme l’instance.                                                      |
 | `workspace_id_required`   | Avec une clé d’API, aucun espace de travail n’est nommé, ou il l’est autrement que par son identifiant.                                   |
 | `workspace_required`      | Vous appartenez à plusieurs espaces de travail et n’en avez nommé aucun.                                                                  |
 | `workspace_unknown`       | Vous n’appartenez à aucun espace de travail de ce slug ou de cet identifiant.                                                             |
