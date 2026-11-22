@@ -27,6 +27,12 @@ describe(readsAsAddress, () => {
     "Booking.com",
     "Node.js",
     "Fly.io",
+    "evil\u0065\u0301.com",
+    "हिन्दी.भारत",
+    "tel:+19005550199",
+    "SMS:+19005550199",
+    "Call +1 900 555 0199",
+    "(900) 555-0199",
   ])("reads %s as an address", (name) => {
     expect(readsAsAddress(name)).toBeTruthy();
   });
@@ -41,6 +47,9 @@ describe(readsAsAddress, () => {
     "Anne-Marie O'Neil",
     "李小龍",
     "Version 1.2",
+    "Studio 2026",
+    "Hôtel du Nord",
+    "Team 555",
   ])("reads %s as a name", (name) => {
     expect(readsAsAddress(name)).toBeFalsy();
   });

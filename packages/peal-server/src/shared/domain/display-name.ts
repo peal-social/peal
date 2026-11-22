@@ -27,10 +27,20 @@ const scheme = "://";
 
 const worldWideWeb = new RegExp(String.raw`(?:^|[^\p{L}\p{N}])www${dot}`, "iu");
 
-// A letter or a digit, a dot, then two letters or more, in any script and
-// any case: what a host's last labels look like (`evil.social`, `Fly.io`,
-// `пример.рф`).
-const hostLike = new RegExp(String.raw`[\p{L}\p{N}]${dot}\p{L}{2}`, "u");
+// A letter, a digit or a mark, a dot, then a letter and another letter or
+// mark, in any script and any case: what a host's last labels look like
+// (`evil.social`, `Fly.io`, `пример.рф`, `हिन्दी.भारत`, whose letters carry
+// combining marks).
+const hostLike = new RegExp(
+  String.raw`[\p{L}\p{N}\p{M}]${dot}\p{L}[\p{L}\p{M}]`,
+  "u"
+);
+
+// What a mail client dials: a `tel:` or `sms:` link, or seven digits or
+// more, with spaces, dots, dashes or parentheses between them.
+const phoneLink = /(?:^|[^\p{L}\p{N}])(?:tel|sms):/iu;
+
+const phoneNumber = /\d(?:[\s.()-]*\d){6}/u;
 
 // Four numbers joined by dots: an IPv4 address.
 const dottedAddress = new RegExp(
@@ -43,17 +53,26 @@ export const holdsLinkMarker = (name: string): boolean =>
   name.includes(scheme) || worldWideWeb.test(name);
 
 /**
- * Whether a name reads as a host or an address to a mail client, by a
- * broad test: a link's markers, `@`, a letter or a digit followed by a dot
- * and two letters or more (any script, any case), or a dotted IPv4
- * address. `St. John` and `J.R.R. Tolkien` do not; `Booking.com`,
- * `Node.js` and `M.Sc` do.
+ * Whether a name reads as a host, an address or a number to call to a mail
+ * client, by a broad test on its composed form (NFC, so a decomposed
+ * letter reads as the letter): a link's markers, `@`, a letter, a digit or
+ * a mark followed by a dot and two letters (any script, any case, marks
+ * included), a dotted IPv4 address, `tel:` or `sms:`, or seven digits or
+ * more. `St. John` and `J.R.R. Tolkien` do not; `Booking.com`, `Node.js`,
+ * `M.Sc` and `Call +1 900 555 0199` do.
  */
-export const readsAsAddress = (name: string): boolean =>
-  holdsLinkMarker(name) ||
-  name.includes("@") ||
-  hostLike.test(name) ||
-  dottedAddress.test(name);
+export const readsAsAddress = (given: string): boolean => {
+  const name = given.normalize("NFC");
+
+  return (
+    holdsLinkMarker(name) ||
+    name.includes("@") ||
+    hostLike.test(name) ||
+    dottedAddress.test(name) ||
+    phoneLink.test(name) ||
+    phoneNumber.test(name)
+  );
+};
 
 /**
  * A name as an email shows it: as written, unless it reads as a host or

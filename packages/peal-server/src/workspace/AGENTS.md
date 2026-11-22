@@ -189,9 +189,10 @@ The staff context follows these rules too. What the law has a host keep is in
   built: the notifications context's renderers show a name through
   `nameForMail`, which puts the catalog's `withheldNames` ("A member", "a
   workspace") in place of one that reads as a host or an address by a
-  broad test (`readsAsAddress`: the markers, `@`, a letter or a digit, a
-  dot and two letters of any script and case, or a dotted IPv4 address),
-  names stored before included.
+  broad test on its NFC form (`readsAsAddress`: the markers, `@`, a
+  letter, digit or mark, a dot and two letters of any script and case,
+  marks included, a dotted IPv4 address, `tel:`, `sms:`, or seven digits
+  or more), names stored before included.
 - `ResolveMember.resolveMany` decides several workspaces for one user from
   one read of the memberships (`MemberDirectory.memberships`), each through
   `actorFor` as `resolve` decides one: anything that reads across
