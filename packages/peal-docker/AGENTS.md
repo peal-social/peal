@@ -37,6 +37,16 @@ under Development stack.
   mounts only. The same test covers it, the web, static, docs and
   Postgres images (CI's Node, the workspace's Bun, digests, nonroot) and
   `compose.self-host.yaml`, where Caddy alone publishes ports to the world.
+- No production service joins Compose's default network: each names the
+  networks it needs, so that only the collector and Grafana reach Loki,
+  Tempo and Prometheus (on `observability`, `internal`), only the server
+  exports to the collector (`telemetry`), only the server and the blog
+  reach Postgres, each through a network of its own (`database`,
+  `blog-database`), the web app reaches the server (`app`), and the site,
+  the docs and the blog reach none of these. Caddy (self-host) joins
+  `app`, `site` and `docs`. The tunnel and the host reach every service on
+  127.0.0.1. `compose.test.ts` pins who reaches whom: a new service names
+  its networks, and a new path between services changes that test.
 - A service that mounts a file or folder of the stack's folder (`./…`, or
   a setting's `./…` default) carries the label
   `social.peal.config-hash: ${PEAL_<SERVICE>_CONFIG_HASH:-}`, and no other
@@ -66,7 +76,8 @@ under Development stack.
   (`PG*`) and bucket (`S3_*`) only when it starts, never at build
   (`compose.test.ts` checks the Dockerfile), keeps editors' sessions in the
   `blog-sessions` volume, and mails through `EMAIL_SMTP_*`, its password
-  the server's `RESEND_API_KEY`, handed over only with `PEAL_BLOG_MAIL`. It mounts no file of the
+  a Resend key of its own (`PEAL_BLOG_RESEND_API_KEY`), handed over only
+  with `PEAL_BLOG_MAIL`; it never receives the server's `RESEND_API_KEY`. It mounts no file of the
   stack, so it has no `config-hash` label.
 - Keep `MP_SMTP_DISABLE_RDNS` on Mailpit, in compose and CI: its reverse DNS
   lookup otherwise stalls each SMTP greeting for about 10 seconds, and the

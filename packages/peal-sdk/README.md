@@ -124,7 +124,9 @@ Packagist reads a package from the root of a repository, so the PHP SDK also
 lives in [`peal-social/peal-php`](https://github.com/peal-social/peal-php), a
 read-only copy of [`php`](php): `sdk-php-mirror.yml` updates it whenever
 `main` changes the folder, with the deploy key in the secret
-`PHP_MIRROR_DEPLOY_KEY`.
+`PHP_MIRROR_DEPLOY_KEY`. That secret belongs to the `sdk-release` environment,
+not the repository: each update waits for the environment's reviewers, and
+the environment lets `main` deploy beside the `sdk-*` tags.
 
 ## License
 

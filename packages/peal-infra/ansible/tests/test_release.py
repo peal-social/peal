@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from conftest import INFRA, command_of, render, stdin_of, task
+from conftest import INFRA, ansible_render, command_of, stdin_of, task
 
 DOCKERFILE = INFRA.parent.parent / "peal-docker" / "postgres.Dockerfile"
 
@@ -281,16 +281,24 @@ class TestTheBlogDatabase:
 
 def test_the_release_stops_early_without_the_blog_s_secrets(tmp_path: Path) -> None:
     """Before it replaces anything, the release names the blog's secrets
-    secrets.env lacks."""
-    found = task("peal_release", "Find whether secrets.env lacks the blog's secrets")
-    script = render(found["ansible.builtin.shell"], peal_root=str(tmp_path))
+    secrets.env lacks, and its own Resend key where it mails, which
+    credentials.env lacks."""
+    found = task("peal_release", "Find whether the server lacks the blog's secrets")
     secrets_env = tmp_path / "secrets.env"
+    credentials_env = tmp_path / "credentials.env"
+
+    def missing(mail: bool) -> list[str]:
+        script = ansible_render(found["ansible.builtin.shell"], peal_root=str(tmp_path), peal_blog_mail=mail)
+        return _run(["sh", "-c", script]).stdout.split()
 
     secrets_env.write_text("POSTGRES_PASSWORD=synthetic\nPEAL_BLOG_DATABASE_PASSWORD=\n")
-    missing = _run(["sh", "-c", script])
+    # The server's key is no stand-in for the blog's.
+    credentials_env.write_text("RESEND_API_KEY='re_synthetic'\nPEAL_BLOG_RESEND_API_KEY=''\n")
 
-    assert missing.stdout.split() == ["PEAL_BLOG_DATABASE_PASSWORD", "PEAL_BLOG_ENCRYPTION_KEY"]
+    assert missing(mail=True) == ["PEAL_BLOG_DATABASE_PASSWORD", "PEAL_BLOG_ENCRYPTION_KEY", "PEAL_BLOG_RESEND_API_KEY"]
+    assert missing(mail=False) == ["PEAL_BLOG_DATABASE_PASSWORD", "PEAL_BLOG_ENCRYPTION_KEY"]
 
     secrets_env.write_text("PEAL_BLOG_DATABASE_PASSWORD=synthetic\nPEAL_BLOG_ENCRYPTION_KEY=emdash_enc_v1_synthetic\n")
+    credentials_env.write_text("PEAL_BLOG_RESEND_API_KEY='re_synthetic_blog'\n")
 
-    assert _run(["sh", "-c", script]).stdout == ""
+    assert missing(mail=True) == []

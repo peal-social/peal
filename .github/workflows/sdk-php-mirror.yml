@@ -4,6 +4,10 @@ name: SDK PHP mirror
 # also lives in peal-social/peal-php: a read-only copy of packages/peal-sdk/php
 # that this workflow brings up to date whenever main changes the folder.
 # Releases tag it from sdk-release.yml.
+#
+# The mirror's deploy key is a secret of the sdk-release environment, as
+# for sdk-release.yml's php job, never of the repository: each run waits
+# for that environment's reviewers, and its deployment branches name main.
 on:
   push:
     branches: [main]
@@ -20,6 +24,7 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    environment: sdk-release
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

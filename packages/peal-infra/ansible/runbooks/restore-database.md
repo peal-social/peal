@@ -3,8 +3,13 @@
 A restore brings back every database of the cluster: Peal's, and the
 blog's (`peal_blog`) where it runs. The blog's media is not in the
 database: it stays in the blog's own bucket, which a restore leaves as it
-is. The release that follows signs in as the blog with `secrets.env`'s
-password, and sets it again on a database restored from another server.
+is. The release that follows signs in as the server's role (`peal_server`)
+and as the blog with `secrets.env`'s passwords, and sets them again on a
+database restored from another server; it also gives `peal_server` what
+the restored database holds that it does not own, such as a backup from
+before that role. Until that release, a command the server's image runs
+(`peal-compose run … server`) signs in with `secrets.env`'s password, which
+a database restored from another server refuses.
 
 pgBackRest restores Postgres from the backup bucket: to its latest state,
 which loses at most the last 5 minutes, or to a time since the oldest full

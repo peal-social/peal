@@ -72,8 +72,9 @@ peal_docs_server: "{{ peal_static_build_args.DOCS_ASSISTANT_MODEL | default('') 
 peal_blog: false
 peal_blog_bucket: ""
 # The blog sends its invitations and sign-in links through Resend's SMTP
-# relay, with the RESEND_API_KEY the server sends with, from MAIL_FROM's
-# address (peal_mail_from). false: the blog sends no mail.
+# relay, with a Resend key of its own (PEAL_BLOG_RESEND_API_KEY in the
+# credentials, never the server's RESEND_API_KEY), from MAIL_FROM's address
+# (peal_mail_from). false: the blog sends no mail.
 peal_blog_mail: true
 # Peal's own measurement of the marketing site, the docs and the blog with
 # PostHog (README.md, "Site measurement"): off by default, and on in

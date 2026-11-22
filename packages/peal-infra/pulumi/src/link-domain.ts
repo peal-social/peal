@@ -1,20 +1,17 @@
 import * as cloudflare from "@pulumi/cloudflare";
 import * as pulumi from "@pulumi/pulumi";
 
+import { httpsZoneSettings } from "./https.ts";
 import type { LinkDomainSettings } from "./settings.ts";
 
 /**
  * The zone settings the short-link domain keeps: HTTPS alone (a short link
  * is written https://, and a visitor who types http:// is sent there), TLS
- * 1.2 at least, and the origin's certificate checked. The tunnel carries
- * the request from the edge to the server, so the last one holds whatever
- * the origin is.
+ * 1.2 at least and HSTS, as on the main domain (src/https.ts), and the
+ * origin's certificate checked. The tunnel carries the request from the
+ * edge to the server, so the last one holds whatever the origin is.
  */
-const zoneSettings = {
-  always_use_https: "on",
-  min_tls_version: "1.2",
-  ssl: "strict",
-} as const;
+const zoneSettings = { ...httpsZoneSettings, ssl: "strict" } as const;
 
 /**
  * The paths the rewrite turns into /api/l/<path>: all but the bare domain,

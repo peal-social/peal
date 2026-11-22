@@ -31,6 +31,13 @@
 # the service, and the service reads the files again, only when the label
 # changes. Peal's release sets each hash in release.env; after changing the
 # files by hand, change the hash, or `up --force-recreate` the service.
+#
+# Each service joins only the networks it needs (`networks:` at the end):
+# Loki takes logs without signing in and Prometheus takes metrics written to
+# it, so only the collector reaches them to write and Grafana to read; only
+# the server and the blog reach Postgres; only the server exports to the
+# collector. The site, the docs and the blog reach none of them. The tunnel,
+# Caddy and the host's backup timer reach the services on their ports.
 
 x-service: &service
   restart: unless-stopped
@@ -92,7 +99,9 @@ services:
     environment:
       POSTGRES_USER: peal
       POSTGRES_DB: peal
-      # Part of DATABASE_URL below: keep it URL-safe (openssl rand -hex 32).
+      # Part of DATABASE_URL below, unless PEAL_DATABASE_USER and
+      # PEAL_DATABASE_PASSWORD name a role of its own: keep it URL-safe
+      # (openssl rand -hex 32).
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
       PGBACKREST_STANZA: peal
       PGBACKREST_PG1_PATH: /var/lib/postgresql/18/docker
@@ -128,6 +137,9 @@ services:
       - postgres:/var/lib/postgresql
     # A clean shutdown spares the next start a crash recovery.
     stop_grace_period: 60s
+    # The server's and the blog's ways in, each apart, so neither reaches
+    # the other; pgBackRest reaches the backup bucket through them.
+    networks: [database, blog-database]
     healthcheck:
       <<: *healthcheck
       # Over TCP: while the image initialises a new database, it runs a
@@ -143,7 +155,11 @@ services:
       context: ../..
       dockerfile: packages/peal-docker/server.Dockerfile
     environment:
-      DATABASE_URL: postgres://peal:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/peal
+      # As PEAL_DATABASE_USER, with PEAL_DATABASE_PASSWORD, when both are
+      # set: a role that owns the database and is no superuser, as Peal's
+      # servers sign in (peal-infra's release makes it). Otherwise as the
+      # superuser POSTGRES_PASSWORD signs in. Keep both URL-safe.
+      DATABASE_URL: postgres://${PEAL_DATABASE_USER:-peal}:${PEAL_DATABASE_PASSWORD:-${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}}@postgres:5432/peal
       PUBLIC_URL: ${PUBLIC_URL:?Set PUBLIC_URL, the address people open Peal at}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET}
       # cf-connecting-ip behind Cloudflare, x-forwarded-for behind Caddy.
@@ -290,6 +306,7 @@ services:
       - ${PEAL_PRIVACY_DECLARATION:-./config/production/privacy-declaration.json}:/etc/peal/privacy-declaration.json:ro
     ports:
       - 127.0.0.1:${PEAL_SERVER_PORT:-3000}:3000
+    networks: [app, database, telemetry]
     depends_on:
       postgres:
         condition: service_healthy
@@ -346,6 +363,7 @@ services:
       KEEP_ALIVE_TIMEOUT: "125000"
     ports:
       - 127.0.0.1:${PEAL_WEB_PORT:-3001}:3001
+    networks: [app]
     depends_on:
       server:
         condition: service_healthy
@@ -386,6 +404,7 @@ services:
     ports:
       - 127.0.0.1:${PEAL_SITE_PORT:-4321}:8080
       - 127.0.0.1:${PEAL_DOCS_PORT:-4322}:8081
+    networks: [site]
     healthcheck:
       <<: *healthcheck
       test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/, http://127.0.0.1:8081/]
@@ -425,6 +444,7 @@ services:
       AUTH_IP_HEADERS: ${AUTH_IP_HEADERS:?Set AUTH_IP_HEADERS}
     ports:
       - 127.0.0.1:${PEAL_DOCS_SERVER_PORT:-4323}:4323
+    networks: [docs]
     healthcheck:
       <<: *healthcheck
       test:
@@ -482,19 +502,22 @@ services:
       BLOG_POSTHOG_ENVIRONMENT:
       # EmDash's SMTP, for invitations and magic links; unset, no mail.
       # Peal's servers send through Resend's SMTP relay, whose password is
-      # the server's RESEND_API_KEY, handed over only where the blog mails
-      # (PEAL_BLOG_MAIL, which peal-infra sets).
+      # a Resend key of the blog's own, PEAL_BLOG_RESEND_API_KEY, handed
+      # over only where the blog mails (PEAL_BLOG_MAIL, which peal-infra
+      # sets). Never the server's RESEND_API_KEY: the blog is a CMS of
+      # someone else's making, and a key it leaks must not send as Peal.
       EMAIL_SMTP_HOST:
       EMAIL_SMTP_PORT:
       EMAIL_SMTP_SECURE:
       EMAIL_SMTP_USER:
-      EMAIL_SMTP_PASS: ${PEAL_BLOG_MAIL:+${RESEND_API_KEY:-}}
+      EMAIL_SMTP_PASS: ${PEAL_BLOG_MAIL:+${PEAL_BLOG_RESEND_API_KEY:-}}
       EMAIL_SMTP_FROM:
     volumes:
       # Signed-in editors' sessions, kept across releases.
       - blog-sessions:/app/packages/peal-blog/node_modules/.astro/sessions
     ports:
       - 127.0.0.1:${PEAL_BLOG_PORT:-4324}:4324
+    networks: [blog, blog-database]
     healthcheck:
       <<: *healthcheck
       test:
@@ -531,6 +554,9 @@ services:
       - collector-wget:/busybox:ro
     ports:
       - 127.0.0.1:${PEAL_OTLP_HTTP_PORT:-14318}:4318
+    # Takes the server's telemetry and the host's (on the port above), and
+    # writes to Loki, Tempo and Prometheus.
+    networks: [telemetry, observability]
     depends_on:
       collector-wget:
         condition: service_completed_successfully
@@ -553,6 +579,7 @@ services:
     volumes:
       - ./config/production/loki.yaml:/etc/loki/config.yaml:ro
       - loki:/loki
+    networks: [observability]
     healthcheck:
       <<: *healthcheck
       test: [CMD, /usr/bin/loki, -health]
@@ -567,6 +594,7 @@ services:
     volumes:
       - ./config/production/tempo.yaml:/etc/tempo/config.yaml:ro
       - tempo:/var/tempo
+    networks: [observability]
     healthcheck:
       <<: *healthcheck
       test: [CMD, /tempo, -health]
@@ -586,6 +614,7 @@ services:
     volumes:
       - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - prometheus:/prometheus
+    networks: [observability]
     healthcheck:
       <<: *healthcheck
       test: [CMD, promtool, check, ready]
@@ -644,6 +673,8 @@ services:
       - grafana:/var/lib/grafana
     ports:
       - 127.0.0.1:${PEAL_GRAFANA_PORT:-13000}:3000
+    # Reads the telemetry store, and alerts outside through its own.
+    networks: [observability, grafana]
     depends_on:
       loki:
         condition: service_healthy
@@ -654,6 +685,28 @@ services:
     healthcheck:
       <<: *healthcheck
       test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:3000/api/health]
+
+# A network each, for what it lets meet (see the top of the file). Each
+# gives its containers the internet, as Docker's default does, but the
+# telemetry store's, which needs none.
+networks:
+  # The web app calls the server; Caddy, for self-hosters, reaches both.
+  app: {}
+  # The static site and docs, and the docs server, alone (and Caddy).
+  site: {}
+  docs: {}
+  # The blog alone: its media bucket and its mail are outside.
+  blog: {}
+  # Postgres and the server; Postgres and the blog.
+  database: {}
+  blog-database: {}
+  # The server's OpenTelemetry export, to the collector.
+  telemetry: {}
+  # The collector, Loki, Tempo, Prometheus and Grafana.
+  observability:
+    internal: true
+  # Grafana's way out, for its alerts and heartbeat.
+  grafana: {}
 
 volumes:
   postgres:

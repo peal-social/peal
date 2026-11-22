@@ -5,9 +5,13 @@ exits, so Compose starts it at every `up`."""
 
 from __future__ import annotations
 
+import secrets
+import shutil
+import subprocess
+
 import pytest
 
-from conftest import ansible_render, task
+from conftest import ansible_render, render, task
 
 # What `peal-compose up --wait` prints, on stderr, when nothing changed...
 UNCHANGED = """\
@@ -40,3 +44,28 @@ def test_the_stack_s_start_is_a_change_only_when_something_changed(stderr: str, 
     )
 
     assert result is changed
+
+
+def _docker_runs() -> bool:
+    return (
+        shutil.which("docker") is not None
+        and subprocess.run(["docker", "info"], capture_output=True, check=False).returncode == 0
+    )
+
+
+@pytest.mark.skipif(not _docker_runs(), reason="Docker is not running")
+def test_the_old_shared_network_goes_once() -> None:
+    """A stack started before its services had networks of their own leaves
+    Compose's default network: the release removes it, then finds none."""
+    project = f"peal-infra-test-{secrets.token_hex(4)}"
+    found = task("peal_release", "Remove the stack's old shared network")
+    script = render(found["ansible.builtin.shell"], peal_compose_project=project)
+    subprocess.run(["docker", "network", "create", f"{project}_default"], capture_output=True, check=True)
+    try:
+        first = subprocess.run(["sh", "-c", script], capture_output=True, text=True, check=True)
+        second = subprocess.run(["sh", "-c", script], capture_output=True, text=True, check=True)
+    finally:
+        subprocess.run(["docker", "network", "rm", f"{project}_default"], capture_output=True, check=False)
+
+    assert first.stdout.strip() == "removed"
+    assert second.stdout.strip() == ""

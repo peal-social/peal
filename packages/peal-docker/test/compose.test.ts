@@ -46,6 +46,7 @@ const ServiceSchema = Schema.Struct({
   ),
   image: Schema.String,
   network_mode: Schema.optionalKey(Schema.String),
+  networks: Schema.optionalKey(Schema.Array(Schema.String)),
   profiles: Schema.optionalKey(Schema.Array(Schema.String)),
   ports: Schema.optionalKey(Schema.Array(Schema.String)),
   read_only: Schema.optionalKey(Schema.Boolean),
@@ -59,16 +60,23 @@ const ServiceSchema = Schema.Struct({
 type Service = typeof ServiceSchema.Type;
 
 const Compose = Schema.Struct({
+  networks: Schema.optionalKey(
+    Schema.Record(
+      Schema.String,
+      Schema.Struct({ internal: Schema.optionalKey(Schema.Boolean) })
+    )
+  ),
   services: Schema.Record(Schema.String, ServiceSchema),
 });
 
-const servicesOf = (file: string): [string, Service][] =>
-  Object.entries(
-    Schema.decodeUnknownSync(Compose)(
-      // Merge keys share settings between services.
-      parse(read("..", file), { merge: true })
-    ).services
+const composeOf = (file: string) =>
+  Schema.decodeUnknownSync(Compose)(
+    // Merge keys share settings between services.
+    parse(read("..", file), { merge: true })
   );
+
+const servicesOf = (file: string): [string, Service][] =>
+  Object.entries(composeOf(file).services);
 
 const development = servicesOf("compose.yaml");
 const production = servicesOf("compose.production.yaml");
@@ -309,6 +317,17 @@ describe("compose.production.yaml", () => {
     expect(server?.stop_grace_period).toBe("75s");
   });
 
+  // A superuser runs programs in Postgres's container, which holds the
+  // backup bucket's key: the server signs in as a role of its own where one
+  // is named (Peal's servers), and as the superuser only otherwise.
+  it("signs the server in as its own role when one is named", () => {
+    const server = production.find(([name]) => name === "server")?.[1];
+
+    expect(server?.environment?.["DATABASE_URL"]).toMatch(
+      /^postgres:\/\/\$\{PEAL_DATABASE_USER:-peal\}:\$\{PEAL_DATABASE_PASSWORD:-\$\{POSTGRES_PASSWORD:\?Set POSTGRES_PASSWORD\}\}@postgres:5432\/peal$/u
+    );
+  });
+
   // Cloudflare Access lets the staff alone through to Grafana, and they get
   // full access there, set again at each sign-in.
   it("signs the people Access lets through into Grafana as admins", () => {
@@ -376,6 +395,98 @@ describe("compose.production.yaml", () => {
 
   it.each(production)("%s gains no privileges", (_name, service) => {
     expect(service.security_opt).toContain("no-new-privileges:true");
+  });
+});
+
+// Which services each service can reach: those it shares a network with.
+// A service with no network of its own named would join Compose's default
+// network, which every such service shares.
+const networksOf = (service: Service): Set<string> =>
+  service.network_mode === "none"
+    ? new Set()
+    : new Set(service.networks ?? ["default"]);
+
+const neighbours = (services: [string, Service][]): Record<string, string[]> =>
+  Object.fromEntries(
+    services.flatMap(([name, service]) =>
+      service.network_mode === "none"
+        ? []
+        : [
+            [
+              name,
+              services
+                .flatMap(([other, peer]) =>
+                  other !== name &&
+                  [...networksOf(peer)].some((network) =>
+                    networksOf(service).has(network)
+                  )
+                    ? [other]
+                    : []
+                )
+                .toSorted(),
+            ],
+          ]
+    )
+  );
+
+// Loki, Tempo and Prometheus, which only the collector and Grafana reach.
+const telemetryStore = new Set(["loki", "prometheus", "tempo"]);
+
+describe("the production stack's networks", () => {
+  // Loki takes logs without signing in, and Prometheus takes metrics
+  // written to it: a container that reaches them could read every log and
+  // trace, or forge metrics the alerts read. Only the collector writes to
+  // them, only Grafana reads them, and only what needs Postgres reaches
+  // it. The tunnel and the host reach the services on 127.0.0.1.
+  it("lets each service reach only what it needs", () => {
+    expect(neighbours(production)).toStrictEqual({
+      blog: ["postgres"],
+      docs: [],
+      grafana: ["loki", "otel-collector", "prometheus", "tempo"],
+      loki: ["grafana", "otel-collector", "prometheus", "tempo"],
+      "otel-collector": ["grafana", "loki", "prometheus", "server", "tempo"],
+      postgres: ["blog", "server"],
+      prometheus: ["grafana", "loki", "otel-collector", "tempo"],
+      server: ["otel-collector", "postgres", "web"],
+      static: [],
+      tempo: ["grafana", "loki", "otel-collector", "prometheus"],
+      web: ["server"],
+    });
+  });
+
+  it("gives Caddy, for self-hosters, the services it routes to", () => {
+    expect(neighbours([...production, ...selfHost])["caddy"]).toStrictEqual([
+      "docs",
+      "server",
+      "static",
+      "web",
+    ]);
+  });
+
+  // Loki, Tempo and Prometheus call nothing outside the stack.
+  it("keeps the telemetry store's own network off the internet", () => {
+    const networks = composeOf("compose.production.yaml").networks ?? {};
+
+    const storeNetworks = production.flatMap(([name, service]) =>
+      telemetryStore.has(name) ? (service.networks ?? []) : []
+    );
+
+    expect(storeNetworks.length).toBeGreaterThan(0);
+    expect(
+      storeNetworks.filter((network) => networks[network]?.internal !== true)
+    ).toStrictEqual([]);
+  });
+
+  it("names every network a service joins", () => {
+    const networks = Object.keys(
+      composeOf("compose.production.yaml").networks ?? {}
+    );
+
+    expect(
+      [...production, ...selfHost]
+        .flatMap(([, service]) => service.networks ?? [])
+        .filter((network) => !networks.includes(network))
+    ).toStrictEqual([]);
   });
 });
 

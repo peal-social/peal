@@ -1,6 +1,7 @@
 import * as cloudflare from "@pulumi/cloudflare";
 import * as pulumi from "@pulumi/pulumi";
 
+import { httpsZoneSettings } from "./https.ts";
 import type { AccountSettings, UptimeSettings } from "./settings.ts";
 
 /** Addresses on the domain, each forwarded to the owner's mailbox. */
@@ -77,6 +78,8 @@ export class PealAccount extends pulumi.ComponentResource {
   readonly blogRedirect: cloudflare.Ruleset;
   readonly blueskyHandleRecord: cloudflare.DnsRecord | undefined;
   readonly forwardedAddresses: readonly pulumi.Output<string>[];
+  readonly httpsSettings: readonly cloudflare.ZoneSetting[];
+  readonly normalization: cloudflare.UrlNormalizationSettings;
   readonly ownerPolicyId: pulumi.Output<string>;
   readonly publicCallbacksPolicyId: pulumi.Output<string>;
   readonly uptimeRecords: readonly cloudflare.DnsRecord[];
@@ -137,6 +140,29 @@ export class PealAccount extends pulumi.ComponentResource {
           },
           child(false)
         )
+    );
+
+    // The domain's HTTPS (src/https.ts), for every host name the edge
+    // proxies on it: the app, the site, the docs and the blog of every
+    // environment. The uptime server's records are not proxied, and Caddy
+    // gives them HTTPS of its own.
+    this.httpsSettings = Object.entries(httpsZoneSettings).map(
+      ([settingId, value]) =>
+        new cloudflare.ZoneSetting(
+          `zone-setting-${settingId}`,
+          { settingId, value, zoneId },
+          { parent: this }
+        )
+    );
+
+    // Cloudflare's normalisation of incoming URLs, its default, kept in
+    // code: the edge's rules and the tunnel's path routes (the Access
+    // applications' paths, the blog's refusals) read the path with its dot
+    // segments, repeated slashes and backslashes resolved.
+    this.normalization = new cloudflare.UrlNormalizationSettings(
+      "site-url-normalization",
+      { scope: "incoming", type: "cloudflare", zoneId },
+      { parent: this, protect: true }
     );
 
     // Records route traffic: protected, as the environments' are.

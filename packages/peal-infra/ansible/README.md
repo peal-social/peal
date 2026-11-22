@@ -119,15 +119,15 @@ Run each with `--limit production` or `--limit sandbox` (`--limit uptime` for
 
 ### On the server
 
-| Path                          | What it holds                                                                                                                              |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/srv/peal/secrets.env`       | The database password, `BETTER_AUTH_SECRET`, `PEAL_TOKEN_KEYS`, Grafana's admin password and the Bluesky client keys, generated there once |
-| `/srv/peal/credentials.env`   | What outside services issued: R2 keys, the email key, the backup passphrase, Telegram's, Slack's webhook                                   |
-| `/srv/peal/host.env`          | Plain settings, written by Ansible                                                                                                         |
-| `/srv/peal/release.env`       | The image tags that run, and a hash of the files each service mounts from the release                                                      |
-| `/srv/peal/releases/<commit>` | Each release's Compose file and configuration, the last three kept                                                                         |
-| `/srv/peal/current`           | Link to the release that runs                                                                                                              |
-| `/etc/cloudflared/`           | The tunnel's routes and its token                                                                                                          |
+| Path                          | What it holds                                                                                                                                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/srv/peal/secrets.env`       | The database superuser's password, the server's database role's (`PEAL_DATABASE_PASSWORD`), `BETTER_AUTH_SECRET`, `PEAL_TOKEN_KEYS`, Grafana's admin password and the Bluesky client keys, generated there once |
+| `/srv/peal/credentials.env`   | What outside services issued: R2 keys, the email key, the backup passphrase, Telegram's, Slack's webhook                                                                                                        |
+| `/srv/peal/host.env`          | Plain settings, written by Ansible                                                                                                                                                                              |
+| `/srv/peal/release.env`       | The image tags that run, and a hash of the files each service mounts from the release                                                                                                                           |
+| `/srv/peal/releases/<commit>` | Each release's Compose file and configuration, the last three kept                                                                                                                                              |
+| `/srv/peal/current`           | Link to the release that runs                                                                                                                                                                                   |
+| `/etc/cloudflared/`           | The tunnel's routes and its token                                                                                                                                                                               |
 
 `peal-compose` runs Docker Compose on the release that runs, with those
 files. SSH is for reading:
@@ -405,7 +405,10 @@ copy run without Pulumi, and for what Pulumi does in their place.
 5. **Telegram** ([Telegram](#telegram)): three bots from @BotFather, one for
    each server that alerts, and two private channels.
 6. **Email**: a Resend key for the verified sending domain `peal.social`,
-   which sends as `notifications@peal.social` (`peal_mail_from`).
+   which sends as `notifications@peal.social` (`peal_mail_from`), and,
+   where the blog runs and mails, a second one of its own
+   (`PEAL_BLOG_RESEND_API_KEY`), with Sending access alone, for that
+   domain: the blog never holds the server's key.
 7. **The platforms' apps**, a set of its own for each environment
    ([The platforms' apps](#the-platforms-apps)).
 
@@ -790,8 +793,16 @@ server:
    the old server stops first, with 75 seconds to finish its calls to the
    platforms;
 3. Postgres starts, and keeps the database password in step with
-   `secrets.env`, and, where the blog runs, the blog's role and database
-   too (made the first time);
+   `secrets.env`; the server's own role, `peal_server` (`LOGIN` and no
+   other attribute), is made the first time and its password kept in step,
+   and it is given Peal's database and every schema, table, sequence,
+   view, function and type the superuser owns there, at every release (a
+   release that finds nothing to move changes nothing). The server signs
+   in as that role (`PEAL_DATABASE_USER` in `host.env`), never as the
+   superuser, which can run programs in Postgres's container, where the
+   backup bucket's key and passphrase are; the superuser stays for the
+   local socket, pgBackRest and the runbooks. Where the blog runs, its
+   role and database are kept the same way (made the first time);
 4. the new server starts and applies its migrations before it listens;
 5. the rest of the stack starts (the blog applies EmDash's migrations as it
    starts), and the release is checked on the server and, for production,
@@ -852,11 +863,14 @@ playbooks render stays as it was. With it:
   (`PEAL_BLOG_ENCRYPTION_KEY`), each once, generated on the server and never
   read back; writes the blog's settings into `host.env` (`PEAL_BLOG_*`, the
   site's links as `BLOG_*`, and EmDash's SMTP through Resend's relay,
-  `smtp.resend.com:465` as `resend`, from `peal_mail_from`, with the
-  server's `RESEND_API_KEY` as its password; `peal_blog_mail: false` sends
-  none); requires the blog bucket's key (`PEAL_BLOG_S3_ACCESS_KEY_ID`,
-  `PEAL_BLOG_S3_SECRET_ACCESS_KEY`) and `RESEND_API_KEY` in the
-  credentials; and routes the tunnel:
+  `smtp.resend.com:465` as `resend`, from `peal_mail_from`, with a Resend
+  key of the blog's own, `PEAL_BLOG_RESEND_API_KEY`, as its password, never
+  the server's `RESEND_API_KEY`; `peal_blog_mail: false` sends none);
+  requires the blog bucket's key (`PEAL_BLOG_S3_ACCESS_KEY_ID`,
+  `PEAL_BLOG_S3_SECRET_ACCESS_KEY`) and, where it mails,
+  `PEAL_BLOG_RESEND_API_KEY` in the credentials, by name (the release
+  checks `credentials.env` for it before it changes anything); and routes
+  the tunnel:
   1. `/blog/_emdash…`, in any case, answers 404: EmDash would take an API
      call there for a public page and skip its CSRF check;
   2. `/_emdash/api/media/file/…` goes to the blog, public in production,
@@ -879,7 +893,9 @@ playbooks render stays as it was. With it:
   going from `secrets.env` to psql through the environment alone; it runs
   the `blog` profile and checks `/_emdash/api/health`, which then gates
   every release of the environment. Before it changes anything, it stops
-  when `secrets.env` lacks the blog's secrets (run `site.yml` first). The
+  when `secrets.env` lacks the blog's secrets (run `site.yml` first), or,
+  where the blog mails, `credentials.env` lacks `PEAL_BLOG_RESEND_API_KEY`
+  (names only). The
   app's database is closed to every role but its owner, so the blog's role
   reaches its own database alone.
 - `peal_preflight` refuses the flag without `peal_blog_bucket`, and in
@@ -896,7 +912,9 @@ Turn it on, for the sandbox first:
    --diff` and `pulumi up` on the environment's stack, and
    `scripts/cloudflare_from_pulumi.py --vault-id <environment>@…`, which
    writes `peal_blog_bucket`, production's `blog` audience tag and the
-   bucket's key.
+   bucket's key. Make the blog's Resend key (Resend › API Keys, Sending
+   access, the environment's domain) and put it in the vault as
+   `PEAL_BLOG_RESEND_API_KEY`, unless `peal_blog_mail: false`.
 2. Set `peal_blog: true`, run `site.yml --check --diff`, then `site.yml`,
    then `release.yml --limit <environment>`.
 3. Open `https://<site>/_emdash/admin` right away (behind Access), complete
@@ -1567,7 +1585,8 @@ A second run of `site.yml` reports no change:
 
 `release.yml` changes what a release changes. Run again for the same commit,
 it builds and uploads nothing (the images are on the server), creates no
-Bluesky key (one is in `secrets.env`), leaves the database password alone
-(the server's is accepted, over the network as the server signs in), and
+Bluesky key (one is in `secrets.env`), leaves the database passwords alone
+(each is accepted, over the network as the server signs in), moves no
+object to the server's role (it owns them all already), and
 Compose recreates nothing. What it reads of the running containers is their
 image and settings' hash, never their environment, which holds secrets.

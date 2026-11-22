@@ -27,6 +27,10 @@ services:
       - 80:80
       - 443:443
       - 443:443/udp
+    # The networks of the services it routes to (compose.production.yaml):
+    # the server and the web app, and the static image and the docs server
+    # when their profiles run. Never Postgres's or the telemetry's.
+    networks: [app, site, docs]
     # A change to the Caddyfile reaches Caddy once this changes, as in
     # compose.production.yaml, or after `up --force-recreate caddy`.
     labels:
