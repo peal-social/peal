@@ -112,9 +112,12 @@ The staff context follows these rules too. What the law has a host keep is in
   `pendingInvitationLimit`, `invitationUrl` in `options.ts`): change both
   together. The web app still invites through Better Auth's route.
 - Every invitation email, new or sent again, is one of the day's (UTC)
-  for the member who invites (across their workspaces), the workspace and
-  the address invited (`invitationEmailsPerDay`, `workspace/domain/
-  invitation-emails.ts`: 100, 100, 3), counted by `InvitationEmails`
+  for the member who invites (across their workspaces), the workspace,
+  the workspace and the address together, and the address across Peal
+  (`invitationEmailsPerDay`, `workspace/domain/invitation-emails.ts`: 100,
+  100, 3, 20: a workspace's few for an address never use up another
+  workspace's, so no account blocks a stranger's invitations; the
+  address's ceiling only stops a flood), counted by `InvitationEmails`
   (`DrizzleInvitationEmailsLive`: `workspace.invitation_emails`, one row
   per subject and day under a keyed pseudonym, `Pseudonyms.ofCounted` and
   `ofEmail`, so a row names nobody without the server's secret; each claim
@@ -125,9 +128,12 @@ The staff context follows these rules too. What the law has a host keep is in
   `emailsToday`, 409 `too_many_invitations` with `invitationEmailsRefused`
   as its message, for the API and the MCP tool alike). Better Auth's route
   claims in `beforeCreateInvitation`, once it checked the rest, and, for
-  `resend` (which writes nothing), in the before hook for a member of the
-  workspace with an invitation pending to the address
-  (`claimResentInvitationEmail`): 429 `DAILY_INVITATION_LIMIT_REACHED`.
+  `resend` (which writes nothing), in the before hook once the request
+  passes what the route checks (`claimResentInvitationEmail`: a member
+  whose role holds `invitation:create`, the owner role's invitation sent
+  again by an owner, an address that is no member's, an invitation pending
+  and unexpired as `findPendingInvitation` reads it): 429
+  `DAILY_INVITATION_LIMIT_REACHED`.
   Never claim in `sendInvitationEmail`: Better Auth runs it where a
   failure is only logged. A refused re-invite through the route has
   already cancelled the address's pending invitation (Better Auth cancels

@@ -232,7 +232,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
-      "send an address as many invitation emails as a day allows, through the API and Better Auth's route alike",
+      "send an address as many invitation emails from a workspace as a day allows, through the API and Better Auth's route alike, leaving other workspaces theirs",
       () =>
         Effect.gen(function* daily() {
           const app = yield* TestApp;
@@ -268,8 +268,9 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(resent.status, 200);
 
-          // The address had its day, whoever invites it, from any workspace.
-          const refused = yield* invite(other, otherId, {
+          // The workspace sent the address its day: the API and the route
+          // refuse a fourth.
+          const refused = yield* invite(owner, workspaceId, {
             email,
             role: "viewer",
           });
@@ -288,8 +289,8 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const byRoute = yield* app.request(
             "/api/auth/organization/invite-member",
             {
-              body: { email, organizationId: otherId, role: "viewer" },
-              headers: asPerson(other),
+              body: { email, organizationId: workspaceId, role: "viewer" },
+              headers: asPerson(owner),
             }
           );
 
@@ -298,13 +299,57 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             code: "DAILY_INVITATION_LIMIT_REACHED",
           });
 
-          // Nothing was left pending in the other workspace, and no email
-          // told of anything there.
+          // Another workspace still invites the address: one workspace's
+          // invitations never use up another's.
+          assert.strictEqual(
+            (yield* invite(other, otherId, { email, role: "viewer" })).status,
+            201
+          );
+
           const pending = yield* sql<{
             readonly count: number;
           }>`SELECT count(*)::int AS count FROM auth.invitation WHERE organization_id = ${otherId} AND status = 'pending'`;
 
-          assert.strictEqual(pending[0]?.count, 0);
+          assert.strictEqual(pending[0]?.count, 1);
+        })
+    );
+
+    it.effect(
+      "count an invitation sent again only when the route sends it, never for a member who may not invite",
+      () =>
+        Effect.gen(function* resends() {
+          const app = yield* TestApp;
+          const owner = yield* signedUp("resend-owner");
+          const workspaceId = yield* workspaceOf(owner, "Resends");
+          const viewer = yield* joined(owner, workspaceId, "watcher", "viewer");
+          const email = newEmail("resent");
+
+          const resend = (person: Person) =>
+            app.request("/api/auth/organization/invite-member", {
+              body: {
+                email,
+                organizationId: workspaceId,
+                resend: true,
+                role: "viewer",
+              },
+              headers: asPerson(person),
+            });
+
+          assert.strictEqual(
+            (yield* invite(owner, workspaceId, { email, role: "viewer" }))
+              .status,
+            201
+          );
+
+          // The route refuses the viewer: none of the day's emails goes.
+          for (let tries = 0; tries < 4; tries += 1) {
+            assert.strictEqual((yield* resend(viewer)).status, 403);
+          }
+
+          // So the owner still has the workspace's two more for it.
+          assert.strictEqual((yield* resend(owner)).status, 200);
+          assert.strictEqual((yield* resend(owner)).status, 200);
+          assert.strictEqual((yield* resend(owner)).status, 429);
         })
     );
 

@@ -3,6 +3,7 @@ import { APIError, getSessionFromCtx } from "better-auth/api";
 import { Option, Schema } from "effect";
 
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { permissionsFor, rolesOf } from "#workspace/domain/roles.ts";
 
 /** An invitation email Better Auth's route is about to send. */
 export interface InvitationEmailRequest {
@@ -64,11 +65,32 @@ const decodeActive = Schema.decodeUnknownOption(
   Schema.Struct({ activeOrganizationId: Schema.String })
 );
 
+const MemberRowSchema = Schema.Struct({ role: Schema.String });
+
+const PendingRowSchema = Schema.Struct({
+  expiresAt: Schema.Date,
+  role: Schema.String,
+});
+
+const decodeMember = Schema.decodeUnknownOption(MemberRowSchema);
+
+const decodeId = Schema.decodeUnknownOption(
+  Schema.Struct({ id: Schema.String })
+);
+
+const decodePending = Schema.decodeUnknownOption(
+  Schema.Array(PendingRowSchema)
+);
+
 /**
  * The same for an invitation the route sends again (`resend`, which
  * writes none, so no `beforeCreateInvitation` runs): from the before hook,
- * for a member of the workspace with an invitation pending to the address,
- * which the route then sends again. Any other request is left to the
+ * once the request passes what the route then checks itself, so a claim
+ * is taken only for an email the route sends: a member of the workspace
+ * whose role creates invitations (`invitation:create`), the owner role's
+ * invitation sent again by an owner only, an address that is no member's,
+ * and an invitation pending to it that has not expired, as Better Auth's
+ * `findPendingInvitation` reads it. Any other request is left to the
  * route, which counts a new invitation itself, or refuses.
  */
 export const claimResentInvitationEmail = async (
@@ -105,18 +127,23 @@ export const claimResentInvitationEmail = async (
   const { adapter } = ctx.context;
   const email = resend.value.email.toLowerCase();
 
-  const [member, pending] = await Promise.all([
+  const [memberRow, invitedUser, pendingRows] = await Promise.all([
     adapter.findOne({
       model: "member",
-      select: ["id"],
+      select: ["role"],
       where: [
         { field: "organizationId", value: workspaceId.value },
         { field: "userId", value: session.user.id },
       ],
     }),
     adapter.findOne({
-      model: "invitation",
+      model: "user",
       select: ["id"],
+      where: [{ field: "email", value: email }],
+    }),
+    adapter.findMany({
+      model: "invitation",
+      select: ["expiresAt", "role"],
       where: [
         { field: "organizationId", value: workspaceId.value },
         { field: "email", value: email },
@@ -125,7 +152,40 @@ export const claimResentInvitationEmail = async (
     }),
   ]);
 
-  if (member === null || pending === null) {
+  const member = decodeMember(memberRow);
+
+  if (
+    Option.isNone(member) ||
+    !permissionsFor(member.value.role).includes("invitation:create")
+  ) {
+    return;
+  }
+
+  const invited = decodeId(invitedUser);
+
+  const alreadyMember =
+    Option.isSome(invited) &&
+    (await adapter.findOne({
+      model: "member",
+      select: ["id"],
+      where: [
+        { field: "organizationId", value: workspaceId.value },
+        { field: "userId", value: invited.value.id },
+      ],
+    })) !== null;
+
+  const now = Date.now();
+
+  const pending = Option.getOrElse(decodePending(pendingRows), () => []).find(
+    ({ expiresAt }) => expiresAt.getTime() > now
+  );
+
+  if (
+    alreadyMember ||
+    pending === undefined ||
+    (rolesOf(pending.role).includes("owner") &&
+      !rolesOf(member.value.role).includes("owner"))
+  ) {
     return;
   }
 

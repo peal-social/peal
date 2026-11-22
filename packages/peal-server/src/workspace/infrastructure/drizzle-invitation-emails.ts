@@ -56,6 +56,17 @@ export const DrizzleInvitationEmailsLive = Layer.effect(
             subject,
           }))
         ),
+        pseudonyms
+          .ofCounted(
+            "workspace-address",
+            `${workspaceId}:${email.trim().toLowerCase()}`
+          )
+          .pipe(
+            Effect.map((subject) => ({
+              limit: invitationEmailsPerDay.perWorkspaceAndRecipient,
+              subject,
+            }))
+          ),
         pseudonyms.ofEmail(email).pipe(
           Effect.map((subject) => ({
             limit: invitationEmailsPerDay.perRecipient,
