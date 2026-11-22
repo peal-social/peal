@@ -48,15 +48,55 @@ describe(openSignInTab, () => {
     expect(tab.close).not.toHaveBeenCalled();
   });
 
-  it("closes a tab of that name it cannot cut off, and opens none", () => {
-    const tab = foreignTab();
+  it("closes a tab of that name left on another site, and opens a blank one in its place", () => {
+    const left = foreignTab();
+    const fresh = blankTab();
+
+    const open = vi
+      .fn<(url: string, target: string) => FakeTab>()
+      .mockReturnValueOnce(left)
+      .mockReturnValueOnce(fresh);
+
+    vi.stubGlobal("open", open);
+
+    expect(openSignInTab()).toBe(fresh);
+    expect(left.close).toHaveBeenCalledOnce();
+    expect(open.mock.calls).toStrictEqual([
+      ["", "peal-sign-in"],
+      ["", "peal-sign-in"],
+    ]);
+    expect(fresh.opener).toBeNull();
+    expect(fresh.close).not.toHaveBeenCalled();
+  });
+
+  it("opens none when the tab in its place cannot be cut off either", () => {
+    const left = foreignTab();
+    const still = foreignTab();
     vi.stubGlobal(
       "open",
-      vi.fn<() => FakeTab>(() => tab)
+      vi
+        .fn<() => FakeTab>()
+        .mockReturnValueOnce(left)
+        .mockReturnValueOnce(still)
     );
 
     expect(openSignInTab()).toBeNull();
-    expect(tab.close).toHaveBeenCalledOnce();
+    expect(left.close).toHaveBeenCalledOnce();
+    expect(still.close).toHaveBeenCalledOnce();
+  });
+
+  it("opens none when the browser gives no second tab", () => {
+    const left = foreignTab();
+    vi.stubGlobal(
+      "open",
+      vi
+        .fn<() => FakeTab | null>()
+        .mockReturnValueOnce(left)
+        .mockReturnValueOnce(null)
+    );
+
+    expect(openSignInTab()).toBeNull();
+    expect(left.close).toHaveBeenCalledOnce();
   });
 
   it("answers none where the browser opens no tab", () => {
