@@ -21,6 +21,7 @@ import { cn } from "peal-ui/lib/utils";
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 
+import { followAgentSurface } from "#agent/agent-surface.ts";
 import { agentChat } from "#agent/atoms.ts";
 import {
   adoptChat,
@@ -184,6 +185,7 @@ const ChatPanel = ({
     <PanelView
       menu={
         <ChatMoreMenu
+          keys="panel"
           title={title}
           onCopy={copyTranscript}
           onDelete={() => {
@@ -351,6 +353,9 @@ export const AgentDock = ({
   const panel = useAgentPanel();
   const hint = useShortcutHint(agentPanelKey);
   const { state, update, workspaceId } = panel;
+
+  // Whether a chat's keys act on the panel or the page.
+  useEffect(followAgentSurface, []);
 
   useShortcut(
     agentPanelKey,

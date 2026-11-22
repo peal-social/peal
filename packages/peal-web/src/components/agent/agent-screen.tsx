@@ -209,7 +209,7 @@ export const AgentChatScreen = ({
           }}
         />
         <ChatMoreMenu
-          keys
+          keys="page"
           title={title}
           onCopy={copyTranscript}
           onDelete={() => {

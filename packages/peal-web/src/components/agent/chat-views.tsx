@@ -782,9 +782,15 @@ export const ComposerView = ({
   const tooLong = value.length > maxAgentMessageLength;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
-    if (event.key === "Escape" && onEscape !== undefined) {
+    if (event.key === "Escape") {
       event.preventDefault();
-      onEscape();
+
+      // Leaving the field lets the chat's keys (⇧R, ⌘⌫) act.
+      if (onEscape === undefined) {
+        event.currentTarget.blur();
+      } else {
+        onEscape();
+      }
     } else if (
       event.key === "Enter" &&
       !event.shiftKey &&
