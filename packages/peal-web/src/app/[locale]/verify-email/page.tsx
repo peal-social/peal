@@ -26,10 +26,7 @@ const VerifyEmailPage = async ({
 
   if (password === "needed") {
     return (
-      <AuthCard
-        title={t("title")}
-        description={t("passwordNeededDescription")}
-      >
+      <AuthCard title={t("title")} description={t("passwordNeededDescription")}>
         <Link href="/forgot-password" className={buttonVariants()}>
           {t("choosePassword")}
         </Link>
