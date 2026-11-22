@@ -160,6 +160,13 @@ export const ChatBody = ({
 
   useFollow(end, `${String(state.messages.length)}:${last?.text.length ?? 0}`);
 
+  // A chat opens at its latest messages, as it was left.
+  useEffect(() => {
+    if (state.loaded) {
+      end.current?.scrollIntoView({ block: "end" });
+    }
+  }, [state.loaded]);
+
   return (
     <>
       <TranscriptView
