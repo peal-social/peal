@@ -52,7 +52,13 @@
   messages, the answers' text and tool calls, and the tools' answers cut
   to `maxToolResultLength` with a note, `tool-result.ts`); never an
   approval's request. Messages are ordered by their ids (UUIDv7): the
-  person's is issued before its answer's.
+  person's is issued before its answer's. Each round is one metered
+  request whatever it holds, so a round sends the history within
+  `maxHistoryLength` (`withinBudget`, `run-history.ts`): the latest turns,
+  each whole from a person's message, the oldest dropped first; when the
+  last turn alone passes it, its earliest rounds go, each call with its
+  answer, never its message nor its last round, whose calls may wait for
+  the person. The chat keeps the whole history.
 - One run at a time a chat, across servers: `claim` is one conditional
   update (`run_id`, `run_until`), refused while another's claim holds
   (`ChatBusy`, 409); a server that crashed lets go after `runLease`. A

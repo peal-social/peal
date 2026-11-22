@@ -55,6 +55,7 @@ import { AgentMessageIdSchema } from "#agent/domain/ids.ts";
 import { inPerson } from "#agent/domain/person-required.ts";
 import {
   maxAnswerLength,
+  maxHistoryLength,
   maxRounds,
   roundTimeout,
   runTimeout,
@@ -73,6 +74,7 @@ import {
   historyOf,
   storedHistory,
   unansweredCalls,
+  withinBudget,
   withResults,
   withRound,
   withUserMessage,
@@ -628,7 +630,9 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                         options: cachedPrefix,
                       }),
                     ]),
-                    history
+                    // Each round is one request whatever it holds: a long
+                    // chat sends its latest turns only.
+                    withinBudget(history, maxHistoryLength)
                   ),
                   toolCallValidation: "deferred",
                   toolkit,

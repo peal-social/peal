@@ -40,6 +40,15 @@ export const chatRetentionDays = 90;
  */
 export const maxToolResultLength = 12_000;
 
+/**
+ * The most of a chat's history one round sends the model, in UTF-16 code
+ * units of its text, its calls' parameters and its tools' answers: each
+ * round is one request, metered as one whatever it holds, so a long chat
+ * sends its latest turns only (`withinBudget`). About ten tools' answers
+ * at their longest.
+ */
+export const maxHistoryLength = 120_000;
+
 /** The most of an answer's text a chat keeps. */
 export const maxAnswerLength = 40_000;
 

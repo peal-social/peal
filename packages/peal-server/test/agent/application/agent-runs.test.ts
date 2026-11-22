@@ -11,7 +11,7 @@ import { AgentDesk } from "#agent/application/agent-desk.ts";
 import type { RunAsked } from "#agent/application/agent-desk.ts";
 import { AgentChats } from "#agent/application/ports/agent-chats.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
-import { maxRounds } from "#agent/domain/run-limits.ts";
+import { maxHistoryLength, maxRounds } from "#agent/domain/run-limits.ts";
 import { Ids } from "#shared/application/ids.ts";
 import {
   agentTest,
@@ -610,6 +610,47 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
       assert.deepInclude(ended(events), { outcome: "stepLimit" });
       assert.lengthOf(yield* prompts, maxRounds);
     }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    "sends a long chat's latest turns only, within the history's budget, and keeps it whole",
+    () =>
+      Effect.gen(function* bounded() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+        const long = "x".repeat(7900);
+        const turns = Math.ceil(maxHistoryLength / long.length) + 2;
+
+        for (let index = 0; index < turns; index += 1) {
+          yield* script([says(`Answer ${String(index)}`)]);
+          yield* send(person, chat.id, `${String(index)} ${long}`);
+        }
+
+        const last = (yield* prompts).at(-1);
+        const messages = last?.content ?? [];
+
+        const sent = messages.flatMap((message) =>
+          message.role === "user"
+            ? message.content.flatMap((part) =>
+                part.type === "text" ? [part.text.split(" ")[0] ?? ""] : []
+              )
+            : []
+        );
+
+        // The rules, then a person's message: never half a turn.
+        assert.deepStrictEqual(
+          messages.slice(0, 2).map(({ role }) => role),
+          ["system", "user"]
+        );
+        assert.isBelow(sent.length, turns);
+        assert.strictEqual(sent.at(-1), String(turns - 1));
+        assert.isAtMost(sent.length * long.length, maxHistoryLength);
+
+        // The chat keeps every message.
+        const kept = yield* detail(person, chat.id);
+
+        assert.lengthOf(kept.messages, turns * 2);
+      }).pipe(Effect.provide(agentTest()))
   );
 
   it.effect(
