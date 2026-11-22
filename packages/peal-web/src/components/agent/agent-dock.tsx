@@ -229,6 +229,7 @@ const PanelTab = ({
   // A chat minimized before a reload is not read until it shows: its
   // title is the history's meanwhile.
   const saved = useRecentChats(workspaceId).find(({ id }) => id === chatId);
+
   const name = chatTitle(
     t,
     chatId === newChat ? null : (title ?? saved?.title ?? null)
