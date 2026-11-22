@@ -336,11 +336,21 @@ const findFrom = function* findFrom(
 };
 
 /**
+ * The farthest an early `endstream` may be from where `/Length` points for
+ * the bytes between to be held while `/Length` is checked: the reading
+ * may go on from either, so both must be there.
+ */
+export const maxStreamCheckBytes = 4 * 1024 * 1024;
+
+/**
  * Where a stream's bytes end: a place in the file, `never` when no
  * `endstream` follows, `beyond` when a stream whose bytes are held runs
- * past `maxObjectStreamBytes`.
+ * past `maxObjectStreamBytes`, `lost` when `/Length` points farther than
+ * `maxStreamCheckBytes` past an earlier `endstream` and no `endstream` is
+ * there: the bytes after the earlier one were let go, and nothing after
+ * the stream can be told apart.
  */
-type StreamEnd = number | "beyond" | "never";
+type StreamEnd = number | "beyond" | "lost" | "never";
 
 // Where a stream's bytes end: where its dictionary's `/Length` says, when
 // `endstream` is there, else at the first `endstream` after its start.
@@ -373,7 +383,21 @@ const streamEnd = function* streamEnd(
 
   const early = yield* findFrom(window, endStreamKeyword, start, told, keep);
 
-  yield* reach(window, held ? start : told, told + 2 + endStreamKeyword.length);
+  // The bytes from the earlier `endstream` on are held only when it is
+  // near enough to where `/Length` points.
+  const near = early !== -1 && told - early <= maxStreamCheckBytes;
+
+  // What the reading may go on from: the stream's start when it is held,
+  // else the earlier `endstream` when near, else where `/Length` points.
+  let from = told;
+
+  if (held) {
+    from = start;
+  } else if (near) {
+    from = early;
+  }
+
+  yield* reach(window, from, told + 2 + endStreamKeyword.length);
 
   if (
     startsAt(
@@ -386,7 +410,7 @@ const streamEnd = function* streamEnd(
   }
 
   if (early !== -1) {
-    return early;
+    return near || held ? early : "lost";
   }
 
   const after = yield* findFrom(window, endStreamKeyword, told, until, keep);
@@ -486,7 +510,7 @@ const scan = function* scan(
         break;
       }
 
-      if (end === "beyond") {
+      if (end === "beyond" || end === "lost") {
         return incomplete;
       }
 
@@ -583,13 +607,21 @@ const joined = (parts: readonly Uint8Array[], length: number): Uint8Array => {
   return bytes;
 };
 
+/** What a reading found, and the most bytes of the file it held at once. */
+export interface HeldReading {
+  readonly mostHeld: number;
+  readonly reading: PdfReading;
+}
+
 // Reads a file as its bytes arrive, holding only what the reading needs:
 // a few mebibytes of the file around where it is, and the one object
-// stream it inflates. It stops taking bytes once the reading is over.
+// stream it inflates. Bytes before what the reading still needs are let
+// go as they arrive, never queued. It stops taking bytes once the reading
+// is over.
 const readArriving = <E, R>(
   chunks: Stream.Stream<Uint8Array, E, R>,
   checkHeader: boolean
-): Effect.Effect<PdfReading, E, R> =>
+): Effect.Effect<HeldReading, E, R> =>
   Effect.gen(function* readingArriving() {
     const window: Window = { base: 0, bytes: new Uint8Array(0), ended: false };
     const reading = readPdf(window, checkHeader);
@@ -598,19 +630,55 @@ const readArriving = <E, R>(
     let finished = false;
     let wanted = Option.none<Wanted>();
     let outcome = Option.none<PdfReading>();
+    // Where the bytes the reading still needs start: what comes before is
+    // dropped, from the window first, then from what arrives, so `base`
+    // always names the first byte held.
+    let needed = 0;
+    let mostHeld = 0;
+
+    const drop = () => {
+      if (needed > window.base) {
+        const cut = Math.min(needed, windowEnd(window));
+
+        window.bytes = window.bytes.subarray(cut - window.base);
+        window.base = cut;
+      }
+
+      while (
+        window.bytes.length === 0 &&
+        window.base < needed &&
+        arrived.length > 0
+      ) {
+        const [first, ...rest] = arrived;
+
+        if (first === undefined) {
+          break;
+        }
+
+        const cut = Math.min(needed - window.base, first.length);
+
+        arrivedBytes -= cut;
+        window.base += cut;
+        arrived = cut === first.length ? rest : [first.subarray(cut), ...rest];
+      }
+
+      mostHeld = Math.max(mostHeld, window.bytes.length + arrivedBytes);
+    };
 
     // Joins what arrived to what is kept, once as much arrived as the
     // reading wants, or the file is over.
     const filled = (want: Wanted): boolean => {
+      needed = Math.max(needed, want.keep);
+      drop();
+
       if (!finished && windowEnd(window) + arrivedBytes < want.until) {
         return false;
       }
 
-      const keep = Math.max(want.keep, window.base);
-      const kept = window.bytes.subarray(keep - window.base);
-
-      window.bytes = joined([kept, ...arrived], kept.length + arrivedBytes);
-      window.base = keep;
+      window.bytes = joined(
+        [window.bytes, ...arrived],
+        window.bytes.length + arrivedBytes
+      );
       window.ended = finished;
       arrived = [];
       arrivedBytes = 0;
@@ -650,6 +718,7 @@ const readArriving = <E, R>(
     yield* Stream.runForEachWhile(chunks, (chunk) => {
       arrived.push(chunk);
       arrivedBytes += chunk.length;
+      drop();
 
       return advance.pipe(Effect.map(() => Option.isNone(outcome)));
     });
@@ -657,8 +726,19 @@ const readArriving = <E, R>(
     finished = true;
     yield* advance;
 
-    return Option.getOrElse(outcome, () => unknownPages);
+    return {
+      mostHeld,
+      reading: Option.getOrElse(outcome, () => unknownPages),
+    };
   });
+
+/**
+ * Reads a PDF as its bytes arrive, as `readPdfArriving` does, and says the
+ * most of the file it held in memory at once (`mostHeld`).
+ */
+export const readPdfHolding = <E, R>(
+  chunks: Stream.Stream<Uint8Array, E, R>
+): Effect.Effect<HeldReading, E, R> => readArriving(chunks, true);
 
 /**
  * Reads a PDF as its bytes arrive: whether it starts as a PDF does
@@ -669,7 +749,8 @@ const readArriving = <E, R>(
  */
 export const readPdfArriving = <E, R>(
   chunks: Stream.Stream<Uint8Array, E, R>
-): Effect.Effect<PdfReading, E, R> => readArriving(chunks, true);
+): Effect.Effect<PdfReading, E, R> =>
+  readArriving(chunks, true).pipe(Effect.map(({ reading }) => reading));
 
 /**
  * How many pages a PDF has, as its page tree's root says (`/Count` of the
@@ -699,5 +780,7 @@ export const countPdfPages = (
   bytes: Uint8Array
 ): Effect.Effect<Option.Option<number>> =>
   readArriving(Stream.make(bytes), false).pipe(
-    Effect.map((read) => (read._tag === "pdf" ? read.pages : Option.none()))
+    Effect.map(({ reading }) =>
+      reading._tag === "pdf" ? reading.pages : Option.none()
+    )
   );

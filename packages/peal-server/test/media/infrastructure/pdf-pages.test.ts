@@ -7,6 +7,7 @@ import {
   maxInflatedStream,
   maxObjectStreamBytes,
   readPdfArriving,
+  readPdfHolding,
 } from "#media/infrastructure/pdf-pages.ts";
 import {
   compressedPdf,
@@ -98,6 +99,34 @@ const timed = async (bytes: Uint8Array) => {
   clearInterval(timer);
 
   return { longest, took: performance.now() - started };
+};
+
+// A picture's stream of 90 MiB whose bytes start with `endstream`, then
+// the page tree: its `/Length` is right (`kept`) or points past an
+// `endstream` that is not there (`broken`).
+const farStream = (lengthRight: boolean) => {
+  const filler = 90 * mib;
+
+  const head = encoder.encode(
+    `%PDF-1.4\n1 0 obj << /Length ${filler + (lengthRight ? 0 : 5)} >> stream\nendstream\n`
+  );
+
+  const tail = encoder.encode(
+    "\nendstream\nendobj\n2 0 obj\n<< /Type /Pages /Count 4 /Kids [] >>\nendobj\n%%EOF\n"
+  );
+
+  // Pieces made as they are read, so the test holds no 90 MiB either.
+  const pieces = function* pieces() {
+    yield head;
+
+    for (let sent = 10; sent < filler; sent += 64 * 1024) {
+      yield new Uint8Array(Math.min(64 * 1024, filler - sent));
+    }
+
+    yield tail;
+  };
+
+  return readPdfHolding(Stream.fromIterable(pieces()));
 };
 
 describe("a PDF's pages", () => {
@@ -239,6 +268,20 @@ describe("a PDF's pages", () => {
           yield* pagesArriving(pdfWithLongObjectStream(), 64 * 1024),
           Option.none()
         );
+      })
+  );
+
+  it.effect.each([
+    ["is right", true, Option.some(4)],
+    ["points past an end that is not there", false, Option.none()],
+  ] as const)(
+    "hold a few mebibytes of a stream that ends far past an early endstream, whose length %s",
+    ([, lengthRight, pages]) =>
+      Effect.gen(function* farLength() {
+        const { mostHeld, reading } = yield* farStream(lengthRight);
+
+        assert.deepStrictEqual(reading, { _tag: "pdf", pages });
+        assert.isBelow(mostHeld, 8 * mib);
       })
   );
 
