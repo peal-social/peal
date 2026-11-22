@@ -67,7 +67,9 @@ export class AgentToolbox extends Context.Service<
      */
     readonly holdingPost: (
       member: Member,
-      postId: Option.Option<string>
+      postId: Option.Option<string>,
+      /** The queue the call places the post on: locked before the post. */
+      queueId: Option.Option<string>
     ) => <A>(effect: Effect.Effect<A, RunEnded>) => Effect.Effect<A, RunEnded>;
     readonly subjectOf: (
       member: Member,

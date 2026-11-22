@@ -28,6 +28,7 @@ import { EngagementReviews } from "#engagement/application/engagement-reviews.ts
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
 import { ReviewIdSchema } from "#engagement/domain/review-id.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
+import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import {
   PostIdSchema,
@@ -68,6 +69,8 @@ const reviewTool = "reply_to_location_review";
 const decodeJsonObject = Schema.decodeUnknownSync(JsonObjectSchema);
 
 const decodePostId = Schema.decodeUnknownOption(PostIdSchema);
+
+const decodeQueueId = Schema.decodeUnknownOption(QueueIdSchema);
 
 /**
  * The JSON Schema the agent advertises a tool's parameters with: the one
@@ -176,7 +179,11 @@ export const AgentToolboxLive = Layer.effect(
     // use cases lock it again in it, so the agent's reading of the post
     // and the approved call's change see the same post.
     const holdingPost =
-      (member: Member, postId: Option.Option<string>) =>
+      (
+        member: Member,
+        postId: Option.Option<string>,
+        queueId: Option.Option<string>
+      ) =>
       <A>(effect: Effect.Effect<A, RunEnded>): Effect.Effect<A, RunEnded> => {
         const named = postId.pipe(Option.flatMap(decodePostId));
 
@@ -184,10 +191,13 @@ export const AgentToolboxLive = Layer.effect(
           return effect;
         }
 
+        // The queue a call places the post on is locked before the post,
+        // as placing it does.
         return scheduling
           .holding(
             actorOf(member),
-            named.value
+            named.value,
+            queueId.pipe(Option.flatMap(decodeQueueId))
           )(effect)
           .pipe(
             Effect.catchTags({

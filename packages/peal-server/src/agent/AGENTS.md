@@ -138,7 +138,11 @@
   done. The reading and the run share one transaction that locks the
   post first (`AgentToolbox.holdingPost`, publishing's
   `PostScheduling.holding`, which the post's use cases join, locking it
-  again): no edit lands between them. `queue_post` shows the channels the
+  again): no edit lands between them. For `queue_post` the hold takes the
+  asked queue's lock first (its id read from `list_queues` before the
+  hold, `queuePlacing`), then the post's: the order placing a post on a
+  queue, a reshuffle and deleting a queue take them, so no two such
+  transactions deadlock. `queue_post` shows the channels the
   scheduling uses (a post not a draft moves on all its own, whatever the
   call names) and is not asked for a draft with none, which would take
   the queue's channels and their default options; its card says the

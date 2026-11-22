@@ -317,6 +317,21 @@ export const LanguageModelAgentRunsLive = Layer.effect(
         Effect.orElseSucceed(() => Option.none<Schema.Json>())
       );
 
+    // The queue a queuing call places its post on, by its id, read before
+    // the post is held: the hold locks it first, as placing a post does.
+    const queuePlacing = (member: Member, call: MadeCall) =>
+      sourcesNeeded(call).queues
+        ? readOf(member, "list_queues", {}).pipe(
+            Effect.map((answer) =>
+              answer.pipe(
+                Option.flatMap(queuesOf),
+                Option.flatMap((known) => queueAsked(call, known)),
+                Option.map(({ id }) => id)
+              )
+            )
+          )
+        : Effect.succeed(Option.none<string>());
+
     // Hashing a text in memory does not fail.
     const hashOf = (shown: string) =>
       digests
@@ -1009,7 +1024,8 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 approved && call !== undefined && Option.isSome(asked)
                   ? yield* toolbox.holdingPost(
                       member,
-                      sourcesNeeded(call).postId
+                      sourcesNeeded(call).postId,
+                      yield* queuePlacing(member, call)
                     )(
                       Effect.gen(function* held() {
                         const fresh = yield* requested(member, call);
