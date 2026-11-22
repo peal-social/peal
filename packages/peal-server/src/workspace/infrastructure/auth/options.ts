@@ -37,6 +37,7 @@ import { accessControl, roles } from "./access-control.ts";
 import {
   checkMemberRoom,
   followOwnersAfterLeaving,
+  forgetLeavingMember,
   keepPayer,
   keepPayerLeaving,
   refusePersonalSubscriptions,
@@ -129,6 +130,13 @@ export interface AuthHooks extends BillingHooks {
   readonly impersonatedRequest: ImpersonationCheck;
   readonly invitation: (link: InvitationLink) => void;
   readonly log: (level: AuthLogLevel, message: string) => void;
+  /**
+   * Awaited once someone is no longer a member of a workspace (they left
+   * or were removed): what was theirs alone there goes, their chats with
+   * the agent. Never throws: a failure is logged, and the retention ends
+   * the rest.
+   */
+  readonly memberLeft: (workspaceId: string, userId: string) => Promise<void>;
   readonly resetPassword: (link: AuthLink) => void;
   /** Awaited on each sign-up: whether the server's mode admits the address. */
   readonly signUp: SignUpAdmission;
@@ -636,6 +644,7 @@ export const makeAuth = ({
         await forgetTrustedBrowsers(ctx);
         await tellTwoStepChange(ctx, hooks.twoStepChanged);
         await followOwnersAfterLeaving(ctx, hooks);
+        await forgetLeavingMember(ctx, hooks);
         expireVisitorCookie(ctx, site);
       }),
       before: beforeEveryRoute(hooks),
@@ -672,6 +681,7 @@ export const makeAuth = ({
           // more.
           afterRemoveMember: async ({ member }) => {
             await hooks.ownersChanged(member.organizationId);
+            await hooks.memberLeft(member.organizationId, member.userId);
           },
           afterUpdateMemberRole: async ({ member }) => {
             await hooks.ownersChanged(member.organizationId);

@@ -71,7 +71,7 @@ const askingOf = (
 
 // The agent's toolkit, each of its tools asking first where the agent's
 // toolset says so.
-const agentToolkit = (
+export const agentToolkit = (
   isDraftPost: (named: NamedPost) => Effect.Effect<boolean>
 ) =>
   Toolkit.make(

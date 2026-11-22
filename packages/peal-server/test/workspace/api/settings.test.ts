@@ -230,6 +230,7 @@ const PortsLive = Layer.mergeAll(
         exportUser: () =>
           Effect.succeed({
             activity: [],
+            agentChats: [],
             contracts: {
               billingAccounts: {
                 accounts: [],

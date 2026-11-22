@@ -646,6 +646,39 @@ const ExportedDirectMessageSchema = Schema.Struct({
   ...inWorkspace,
 });
 
+// A chat the user had with the agent in a workspace, which only they
+// read, with its messages: theirs, and the agent's answers with the tools
+// it called, by name, and the changes it asked them to approve, with their
+// answer. Never what the tools read, which is the workspace's and other
+// people's.
+const ExportedAgentChatSchema = Schema.Struct({
+  createdAt: instant,
+  id: Schema.String,
+  messages: Schema.Array(
+    Schema.Struct({
+      approvals: Schema.Array(
+        Schema.Struct({
+          at: nullable(instant),
+          state: Schema.String,
+          text: nullable(Schema.String),
+          tool: Schema.String,
+        })
+      ),
+      createdAt: instant,
+      id: Schema.String,
+      outcome: nullable(Schema.String),
+      rating: nullable(Schema.String),
+      role: Schema.String,
+      text: Schema.String,
+      tools: Schema.Array(Schema.String),
+    })
+  ),
+  starred: Schema.Boolean,
+  title: nullable(Schema.String),
+  updatedAt: instant,
+  ...inWorkspace,
+});
+
 // A private reply the user sent from Peal to the author of a comment, by
 // the comment's id: never the comment, which someone else wrote.
 const ExportedPrivateReplySchema = Schema.Struct({
@@ -993,7 +1026,8 @@ const ExportedWorkspaceSchema = Schema.Struct({
  * their sessions, workspaces, invitations, connected applications, notices
  * and preferences, what staff did to their account, the changes they asked
  * for in workspaces as the activity logs keep them, the orders and
- * withdrawals they made, the posts they wrote in the workspaces they share,
+ * withdrawals they made, their chats with the agent, the posts they wrote
+ * in the workspaces they share,
  * what they wrote and decided in the reviews of posts, the
  * connections that made content and what the law has Peal keep once the
  * account closes, and
@@ -1007,6 +1041,8 @@ export const AccountExportSchema = Schema.Struct({
   // The changes the user asked for in workspaces, oldest first, as their
   // activity logs keep them.
   activity: Schema.Array(ExportedActivitySchema),
+  // The user's chats with the agent, in every workspace, oldest first.
+  agentChats: Schema.Array(ExportedAgentChatSchema),
   // The posts the user wrote in the workspaces they share with others.
   authoredPosts: Schema.Array(ExportedAuthoredPostSchema),
   connectedApps: Schema.Array(ConnectedAppSchema),

@@ -3,6 +3,7 @@ import type { DateTime, Effect } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type {
+  AgentChatRecord,
   ArticleRecord,
   AccountSnapshotRecord,
   AdsRecord,
@@ -101,6 +102,8 @@ export interface UserContent {
    * them, oldest first.
    */
   readonly activity: readonly ActivityRecord[];
+  /** Their chats with the agent, in every workspace, oldest first. */
+  readonly agentChats: readonly AgentChatRecord[];
   /** The orders and withdrawals they made. */
   readonly contracts: ContractsRecord;
   /**

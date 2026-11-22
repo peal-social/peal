@@ -34,7 +34,28 @@ const decodeChat = Schema.decodeUnknownEffect(AgentChat);
 
 const decodeMessage = Schema.decodeUnknownEffect(AgentMessage);
 
-const encodeMessage = Schema.encodeEffect(AgentMessage);
+// What a message holds besides its text, as its JSON columns keep it.
+const MessagePartsJson = Schema.toCodecJson(
+  AgentMessage.mapFields(({ approvals, cards, steps }) => ({
+    approvals,
+    cards,
+    steps,
+  }))
+);
+
+const decodeParts = Schema.decodeUnknownEffect(MessagePartsJson);
+
+const encodeApprovals = Schema.encodeEffect(
+  Schema.toCodecJson(AgentMessage.fields.approvals)
+);
+
+const encodeCards = Schema.encodeEffect(
+  Schema.toCodecJson(AgentMessage.fields.cards)
+);
+
+const encodeSteps = Schema.encodeEffect(
+  Schema.toCodecJson(AgentMessage.fields.steps)
+);
 
 const decodeJson = Schema.decodeUnknownEffect(Schema.Json);
 
@@ -52,22 +73,33 @@ const chatOf = (row: ChatRow) =>
   }).pipe(Effect.orDie);
 
 const messageOf = (row: MessageRow) =>
-  decodeMessage({
+  decodeParts({
     approvals: row.approvals,
     cards: row.cards,
-    createdAt: utc(row.createdAt),
-    durationMs: Option.fromNullOr(row.durationMs),
-    id: row.id,
-    outcome: Option.fromNullOr(row.outcome),
-    rating: Option.fromNullOr(row.rating),
-    role: row.role,
     steps: row.steps,
-    text: row.text,
-  }).pipe(Effect.orDie);
+  }).pipe(
+    Effect.flatMap((parts) =>
+      decodeMessage({
+        ...parts,
+        createdAt: utc(row.createdAt),
+        durationMs: Option.fromNullOr(row.durationMs),
+        id: row.id,
+        outcome: Option.fromNullOr(row.outcome),
+        rating: Option.fromNullOr(row.rating),
+        role: row.role,
+        text: row.text,
+      })
+    ),
+    Effect.orDie
+  );
 
 // The message's columns, its JSON as the domain encodes it.
 const columnsOf = (chatId: string, message: AgentMessage) =>
-  encodeMessage(message).pipe(
+  Effect.all({
+    approvals: encodeApprovals(message.approvals),
+    cards: encodeCards(message.cards),
+    steps: encodeSteps(message.steps),
+  }).pipe(
     Effect.orDie,
     Effect.map((encoded) => ({
       approvals: encoded.approvals,

@@ -88,6 +88,7 @@ const viewOf = Effect.fn("AccountExport.view")(function* viewOf(
       locale: account.user.locale,
     }),
     activity: exported.activity,
+    agentChats: exported.agentChats,
     authoredPosts,
     connectedApps: exported.connectedApps,
     contracts: exported.contracts,

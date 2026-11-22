@@ -453,6 +453,35 @@ export interface SentReplyRecord {
   readonly workspaceId: string;
 }
 
+/**
+ * A chat a person had with the agent in a workspace, with its messages:
+ * theirs, and the agent's answers with the tools it called and the
+ * changes it asked them to approve. Never what the tools read.
+ */
+export interface AgentChatRecord {
+  readonly createdAt: DateTime.Utc;
+  readonly id: string;
+  readonly messages: readonly {
+    readonly approvals: readonly {
+      readonly at: DateTime.Utc | null;
+      readonly state: string;
+      readonly text: string | null;
+      readonly tool: string;
+    }[];
+    readonly createdAt: DateTime.Utc;
+    readonly id: string;
+    readonly outcome: string | null;
+    readonly rating: string | null;
+    readonly role: string;
+    readonly text: string;
+    readonly tools: readonly string[];
+  }[];
+  readonly starred: boolean;
+  readonly title: string | null;
+  readonly updatedAt: DateTime.Utc;
+  readonly workspaceId: string;
+}
+
 /** A reply a member sent from Peal to a review of a location. */
 export interface SentReviewReplyRecord {
   readonly channelId: string;

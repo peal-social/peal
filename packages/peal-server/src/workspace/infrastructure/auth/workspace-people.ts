@@ -10,6 +10,7 @@ import {
 } from "effect";
 import { SqlClient, SqlError } from "effect/sql";
 
+import { AgentRecords } from "#agent/application/agent-records.ts";
 import { WorkspaceEntitlements } from "#billing/application/workspace-entitlements.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
 import { roomForOneMore } from "#shared/domain/allowance.ts";
@@ -45,6 +46,8 @@ const isUuid = Schema.is(Schema.String.check(Schema.isUUID()));
 
 const decodeLocale = Schema.decodeUnknownOption(LocaleSchema);
 
+const decodeUserIdOption = Schema.decodeUnknownOption(UserIdSchema);
+
 const localeOf = (stored: string | null) =>
   Option.getOrElse(decodeLocale(stored), () => defaultLocale);
 
@@ -76,6 +79,7 @@ export const WorkspacePeopleLive = Layer.effect(
     const entitlements = yield* WorkspaceEntitlements;
     const emails = yield* SendAuthEmail;
     const { publicUrl } = yield* AuthSettings;
+    const agentRecords = yield* AgentRecords;
 
     // Requests never wait for their emails. Those still on their way get
     // the layer's lifetime, as Better Auth's do.
@@ -345,8 +349,18 @@ export const WorkspacePeopleLive = Layer.effect(
               inArray(member.userId, [...userIds])
             )
           )
-          .returning({ id: member.id })
+          .returning({ id: member.id, userId: member.userId })
           .pipe(unavailable);
+
+        // What was theirs alone there goes with their membership: their
+        // chats with the agent.
+        yield* Effect.forEach(
+          removed.flatMap(({ userId }) =>
+            Option.toArray(decodeUserIdOption(userId))
+          ),
+          (userId) => agentRecords.eraseMember(workspaceId, userId),
+          { discard: true }
+        ).pipe(Effect.mapError((cause) => new DirectoryUnavailable({ cause })));
 
         return removed.length;
       }

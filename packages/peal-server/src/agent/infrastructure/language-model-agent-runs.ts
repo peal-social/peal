@@ -390,12 +390,8 @@ export const LanguageModelAgentRunsLive = Layer.effect(
 
       const startedAt = yield* Clock.currentTimeMillis;
 
-      const answerId = Option.isSome(continuing)
-        ? continuing.value.id
-        : yield* newId(AgentMessageIdSchema).pipe(
-            Effect.provideService(Ids, ids)
-          );
-
+      // The person's message first, so a chat's messages, ordered by
+      // their ids, read in the order they were written.
       const userMessageId =
         input._tag === "message"
           ? Option.some(
@@ -404,6 +400,12 @@ export const LanguageModelAgentRunsLive = Layer.effect(
               )
             )
           : Option.none();
+
+      const answerId = Option.isSome(continuing)
+        ? continuing.value.id
+        : yield* newId(AgentMessageIdSchema).pipe(
+            Effect.provideService(Ids, ids)
+          );
 
       const answerCreatedAt = Option.isSome(continuing)
         ? continuing.value.createdAt

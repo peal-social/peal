@@ -48,6 +48,7 @@ const auth = makeAuth({
     invitation: ignore,
     log: ignore,
     memberAllowance: async () => await Promise.resolve(Option.none()),
+    memberLeft: nothing,
     memberUpgrade: async () =>
       await Promise.resolve({
         billingUrl: "http://localhost:3001",

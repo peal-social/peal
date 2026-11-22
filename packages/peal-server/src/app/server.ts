@@ -285,7 +285,9 @@ const NoticesContextLive = WebhooksContextLive.pipe(
       Layer.provideMerge(BillingContextsLive),
       Layer.provide(ImpersonationAuditLive),
       Layer.provideMerge(LegalLive),
-      Layer.provideMerge(ActivityContextLive)
+      Layer.provideMerge(ActivityContextLive),
+      // A member who leaves takes their chats with the agent with them.
+      Layer.provide(AgentRecordsLive)
     )
   )
 );

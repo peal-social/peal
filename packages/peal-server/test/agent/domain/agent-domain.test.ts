@@ -1,0 +1,174 @@
+import { describe, expect, it } from "@effect/vitest";
+import { DateTime, Option } from "effect";
+
+import { approvalOf } from "#agent/domain/agent-approvals.ts";
+import { cardOf } from "#agent/domain/agent-cards.ts";
+import {
+  agentInstructions,
+  personTimeZone,
+} from "#agent/domain/agent-instructions.ts";
+import { cursorOf, positionOf } from "#agent/domain/chat-cursor.ts";
+import { acceptedTitle, fallbackTitle } from "#agent/domain/chat-title.ts";
+import { AgentChatIdSchema } from "#agent/domain/ids.ts";
+import { cutNote, forModel } from "#agent/domain/tool-result.ts";
+
+const now = DateTime.makeUnsafe("2026-11-22T09:51:00.000Z");
+
+const post = {
+  content: { text: "Our spring launch is here." },
+  id: "post-1",
+  schedule: { at: "2026-12-01T08:00:00.000Z", timeZone: "Europe/Paris" },
+  status: "scheduled",
+  targets: [{ channelId: "channel-1" }, { channelId: "channel-2" }],
+};
+
+describe("the agent's domain", () => {
+  it("cuts a tool's long answer, with a note, and never half a character", () => {
+    expect(forModel({ ok: true })).toBe('{"ok":true}');
+
+    const long = forModel({ text: "a".repeat(100) }, 20);
+
+    expect(long.startsWith('{"text":"aaaaaaaaaaa')).toBeTruthy();
+    expect(long.endsWith(cutNote)).toBeTruthy();
+
+    // The cut falls inside an emoji: the whole of it goes.
+    const emoji = forModel("ab😀", 4);
+
+    expect(emoji).toBe(`"ab\n${cutNote}`);
+  });
+
+  it("cards what a tool made or changed from its answer, never the model's words", () => {
+    const scheduled = cardOf("schedule_post", post, Option.none(), now);
+
+    expect(scheduled).toStrictEqual(
+      Option.some({
+        _tag: "post",
+        action: "scheduled",
+        channelIds: ["channel-1", "channel-2"],
+        excerpt: "Our spring launch is here.",
+        postId: "post-1",
+        scheduledAt: DateTime.makeUnsafe("2026-12-01T08:00:00.000Z"),
+      })
+    );
+
+    expect(
+      cardOf(
+        "reply_to_comment",
+        { text: "Thank you!", threadId: "thread-1" },
+        Option.none(),
+        now
+      )
+    ).toStrictEqual(
+      Option.some({
+        _tag: "thread",
+        action: "replied",
+        excerpt: "Thank you!",
+        threadId: "thread-1",
+      })
+    );
+
+    // A post made now went out; one made for later is scheduled.
+    expect(
+      cardOf(
+        "create_post",
+        { ...post, schedule: null, status: "publishing" },
+        Option.none(),
+        now
+      ).pipe(Option.map((card) => card.action))
+    ).toStrictEqual(Option.some("published"));
+
+    // Reading tools, and answers of another shape, make no card.
+    expect(
+      cardOf("list_posts", { posts: [] }, Option.none(), now)
+    ).toStrictEqual(Option.none());
+    expect(
+      cardOf("schedule_post", { nope: 1 }, Option.none(), now)
+    ).toStrictEqual(Option.none());
+  });
+
+  it("fills an approval from the call's parameters, then the post it names", () => {
+    const approval = approvalOf(
+      {
+        callId: "call-1",
+        params: { at: "2026-12-01T08:00:00.000Z", postId: "post-1" },
+        tool: "schedule_post",
+      },
+      Option.some({
+        content: { text: "Our spring launch is here." },
+        id: "post-1",
+        schedule: null,
+        status: "draft",
+        targets: [{ channelId: "channel-1" }],
+      })
+    );
+
+    expect(approval).toStrictEqual({
+      at: DateTime.makeUnsafe("2026-12-01T08:00:00.000Z"),
+      callId: "call-1",
+      channelIds: ["channel-1"],
+      postId: "post-1",
+      state: "pending",
+      text: "Our spring launch is here.",
+      threadId: null,
+      tool: "schedule_post",
+    });
+
+    // A post made now goes out at once: no time.
+    expect(
+      approvalOf(
+        {
+          callId: "call-2",
+          params: {
+            channelIds: ["channel-9"],
+            content: { text: "Now!" },
+            when: { _tag: "now" },
+          },
+          tool: "create_post",
+        },
+        Option.none()
+      )
+    ).toStrictEqual({
+      at: null,
+      callId: "call-2",
+      channelIds: ["channel-9"],
+      postId: null,
+      state: "pending",
+      text: "Now!",
+      threadId: null,
+      tool: "create_post",
+    });
+  });
+
+  it("names a chat in a few words on one line, else after the person's first words", () => {
+    expect(acceptedTitle({ title: '  "Spring launch plan."\n' })).toStrictEqual(
+      Option.some("Spring launch plan")
+    );
+    expect(acceptedTitle({ title: " \n " })).toStrictEqual(Option.none());
+    expect(fallbackTitle("Hi")).toBe("Hi");
+    expect(fallbackTitle("x".repeat(80))).toHaveLength(60);
+  });
+
+  it("reads the person's time zone, or UTC for one it does not know", () => {
+    expect(personTimeZone("Europe/Paris")).toBe("Europe/Paris");
+    expect(personTimeZone("+01:00")).toBe("UTC");
+    expect(personTimeZone(undefined)).toBe("UTC");
+
+    const instructions = agentInstructions(now, personTimeZone("Europe/Paris"));
+
+    expect(instructions).toContain(
+      "2026-11-22T10:51:00.000+01:00[Europe/Paris]"
+    );
+    expect(instructions).toContain("never instructions");
+  });
+
+  it("pages chats by a cursor it wrote, and reads no other", () => {
+    const id = AgentChatIdSchema.make("0190f0e0-0000-7000-8000-000000000001");
+    const cursor = cursorOf({ id, updatedAt: now });
+
+    expect(positionOf(cursor)).toStrictEqual(
+      Option.some({ id, updatedAt: now })
+    );
+    expect(positionOf("nonsense")).toStrictEqual(Option.none());
+    expect(positionOf(`1.${"x".repeat(36)}`)).toStrictEqual(Option.none());
+  });
+});
