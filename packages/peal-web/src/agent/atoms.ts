@@ -57,7 +57,11 @@ const now = () => DateTime.nowUnsafe();
 export interface RunRequest {
   readonly chatId: string;
   readonly ask:
-    | { readonly _tag: "send"; readonly text: string }
+    | {
+        readonly _tag: "send";
+        readonly mediaIds: readonly string[];
+        readonly text: string;
+      }
     | {
         readonly _tag: "answer";
         readonly approved: boolean;
@@ -114,7 +118,11 @@ export const agentRun = Atom.family((chatId: string) =>
           ? yield* Effect.exit(
               client.agent.send({
                 params,
-                payload: { text: ask.text, ...timeZoneOf() },
+                payload: {
+                  mediaIds: ask.mediaIds,
+                  text: ask.text,
+                  ...timeZoneOf(),
+                },
               })
             )
           : yield* Effect.exit(

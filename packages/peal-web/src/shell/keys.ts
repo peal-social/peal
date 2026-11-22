@@ -43,6 +43,7 @@ export const agentPanelKey = "mod+j";
 
 /** The keys of a chat's page, as its **…** menu shows them. */
 export const agentChatKeys = {
+  attach: "mod+shift+u",
   delete: "mod+backspace",
   rename: "shift+r",
 } as const;

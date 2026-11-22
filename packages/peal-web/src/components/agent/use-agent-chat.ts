@@ -248,8 +248,12 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
 
       return Exit.isSuccess(exit);
     },
-    send: (text: string) => {
-      registry.set(run, { ask: { _tag: "send", text }, chatId, workspaceId });
+    send: (text: string, mediaIds: readonly string[] = []) => {
+      registry.set(run, {
+        ask: { _tag: "send", mediaIds, text },
+        chatId,
+        workspaceId,
+      });
     },
     star: async (starred: boolean) => {
       dispatch({ _tag: "starred", starred });
@@ -294,7 +298,7 @@ export const useNewAgentChat = (
   useOfferOnRefusal(state, workspaceId);
 
   return {
-    send: async (text: string) => {
+    send: async (text: string, mediaIds: readonly string[] = []) => {
       dispatch({ _tag: "typed", text: "" });
 
       const exit = await create({ params: { workspaceId } });
@@ -314,7 +318,7 @@ export const useNewAgentChat = (
         title: chat.title,
       });
       registry.set(agentRun(chat.id), {
-        ask: { _tag: "send", text },
+        ask: { _tag: "send", mediaIds, text },
         chatId: chat.id,
         workspaceId,
       });

@@ -264,7 +264,7 @@ export const ChatMoreMenu = ({
    * Where the menu's keys act: the chat's page or the panel, whichever
    * the person last used when both show a chat; none without it.
    */
-  readonly keys?: "page" | "panel";
+  readonly keys?: "page" | "panel" | undefined;
   readonly onCopy: () => void;
   readonly onDelete: () => void;
   readonly onRename: (title: string) => Promise<boolean>;

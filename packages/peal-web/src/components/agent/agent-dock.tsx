@@ -40,6 +40,7 @@ import {
   useProblemText,
   useRecentChats,
 } from "#components/agent/agent-chat.tsx";
+import { AgentComposer } from "#components/agent/agent-composer.tsx";
 import { useAgentPanel } from "#components/agent/agent-panel-context.tsx";
 import {
   ChatRowContent,
@@ -49,7 +50,6 @@ import {
   chatTitle,
 } from "#components/agent/agent-views.tsx";
 import { ChatMoreMenu } from "#components/agent/chat-menus.tsx";
-import { ComposerView } from "#components/agent/chat-views.tsx";
 import {
   useAgentChat,
   useNewAgentChat,
@@ -96,8 +96,8 @@ const NewChatPanel = ({
     panel.update((state) => adoptChat(state, chatId));
   });
 
-  const send = (text: string) => {
-    void chat.send(text);
+  const send = (text: string, mediaIds: readonly string[] = []) => {
+    void chat.send(text, mediaIds);
   };
 
   return (
@@ -118,22 +118,22 @@ const NewChatPanel = ({
             {problemText(chat.state.problem)}
           </p>
         )}
-        <ComposerView
+        <AgentComposer
           disabled={!availability.ready}
           inputRef={input}
+          keys="panel"
           label={t("composerLabel")}
           placeholder={t("panelPlaceholder")}
           running={false}
           value={chat.state.draft}
+          workspaceId={workspaceId}
           onChange={(text) => {
             chat.type(text);
           }}
           onEscape={() => {
             input.current?.blur();
           }}
-          onSend={() => {
-            send(chat.state.draft.trim());
-          }}
+          onSend={send}
           onStop={() => {
             // A new chat has no run to stop.
           }}
@@ -218,6 +218,7 @@ const ChatPanel = ({
             availability={availability}
             chat={chat}
             inputRef={input}
+            keys="panel"
             placeholder={t("panelPlaceholder")}
             workspaceId={workspaceId}
             onEscape={() => {
