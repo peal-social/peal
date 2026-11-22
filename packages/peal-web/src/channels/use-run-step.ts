@@ -2,7 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
 import { connectChannel, failureOf } from "#channels/channels-api.ts";
 import {
@@ -48,10 +48,64 @@ export const openSignInTab = (): Window | null => {
  * that refused `close()` may answer no storage until it loads one.
  */
 export const leaveSignInTab = (href: string): void => {
-  globalThis.close();
+  // Closing the last tab of Peal would leave the member nowhere: the tab
+  // closes only while the step is open in another (`useStepOpen`).
+  if (isStepOpen()) {
+    globalThis.close();
+  }
+
   globalThis.setTimeout(() => {
     globalThis.location.replace(href);
   }, 300);
+};
+
+// Where the step says it is open, with when it last said so: a step tab
+// the browser left in the background renews it seldom (hidden tabs run
+// their timers about once a minute), and one that crashed never clears it.
+const stepOpenKey = "peal.channels.setup-step-open";
+const stepOpenFor = 3 * 60 * 1000;
+const stepOpenEvery = 20 * 1000;
+
+const localStore = (): Storage | null => {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return null;
+  }
+};
+
+const isStepOpen = (): boolean => {
+  const said = Number(localStore()?.getItem(stepOpenKey) ?? "0");
+
+  return Date.now() - said < stepOpenFor;
+};
+
+/**
+ * Says, while the setup step shows, that it is open, so a sign-in tab
+ * that finishes may close itself; leaving the page takes it back.
+ */
+export const useStepOpen = (): void => {
+  useEffect(() => {
+    const say = () => {
+      localStore()?.setItem(stepOpenKey, String(Date.now()));
+    };
+
+    const unsay = () => {
+      localStore()?.removeItem(stepOpenKey);
+    };
+
+    say();
+
+    const timer = globalThis.setInterval(say, stepOpenEvery);
+
+    globalThis.addEventListener("pagehide", unsay);
+
+    return () => {
+      globalThis.clearInterval(timer);
+      globalThis.removeEventListener("pagehide", unsay);
+      unsay();
+    };
+  }, []);
 };
 
 /**

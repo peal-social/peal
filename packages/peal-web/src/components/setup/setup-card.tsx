@@ -20,7 +20,11 @@ import {
   subscribeToRun,
 } from "#channels/connect-run.ts";
 import type { ConnectRun } from "#channels/connect-run.ts";
-import { openSignInTab, useRunStep } from "#channels/use-run-step.ts";
+import {
+  openSignInTab,
+  useRunStep,
+  useStepOpen,
+} from "#channels/use-run-step.ts";
 import type { Connectable } from "#components/channels/connect-forms.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { AppLink } from "#components/shell/app-link.tsx";
@@ -183,6 +187,8 @@ export const SetupCard = ({
 }) => {
   const hydrated = useHydrated();
   const step = useRunStep();
+
+  useStepOpen();
   const snapshot = useSyncExternalStore(subscribeToRun, runSnapshot, noRun);
   const run = useMemo(() => runOfSnapshot(snapshot), [snapshot]);
   const connectable = useAtomValue(connectablePlatformsOf(workspaceId));
