@@ -66,6 +66,10 @@
   `available: false` with `reason: paymentMethod` without one. A
   workspace's own providers claim nothing, on any standing: they are the
   free tier's assistant. Elsewhere, nothing of this applies.
+- The agent (`src/agent/`) asks the same model, chosen the same way,
+  through `AgentModelAccess`: the workspace's own provider with its slot
+  and day's count, else the server's model claimed as `suggest` claims
+  it, one request a model round.
 - The model has 90 seconds to answer (`answerTimeout`). Anything between the
   browser and the server must wait longer: the web app's `/api` proxy waits
   120 seconds (`experimental.proxyTimeout` in `next.config.ts`).
