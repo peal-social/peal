@@ -3415,7 +3415,7 @@
       "skipped": "Passé"
     },
     "running": {
-      "description": "Chaque connexion s’ouvre dans un autre onglet, et cette page la suit. Si la page d’une plateforme ne vous ramène pas, fermez cet onglet : vous pouvez continuer ou passer d’ici.",
+      "description": "Chaque connexion s’ouvre dans un autre onglet, si le navigateur le permet, et cette page la suit. Si la page d’une plateforme ne vous ramène pas, revenez sur cette page : vous pouvez continuer ou passer d’ici.",
       "continue": "Continuer avec {name}",
       "skip": "Passer {name}",
       "stop": "Arrêter"
