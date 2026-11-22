@@ -624,7 +624,7 @@
       "failed": "{step} (didn't finish)"
     },
     "approval": {
-      "title": "{kind, select, approve {Approve this post} delete {Delete this} message {Send this message} moderate {Moderate this comment} publish {Publish this post} reply {Reply to this comment} requestChanges {Request changes on this post} schedule {Schedule this post} unpublish {Unpublish this post} other {Make this change}}",
+      "title": "{kind, select, approve {Approve this post} delete {Delete this post} message {Send this message} moderate {Moderate this comment} publish {Publish this post} reply {Reply to this comment} requestChanges {Request changes on this post} schedule {Schedule this post} unpublish {Unpublish this post} other {Make this change}}",
       "at": "On {at}",
       "now": "As soon as you approve",
       "approve": "Approve",

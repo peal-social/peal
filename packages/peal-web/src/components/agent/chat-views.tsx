@@ -326,7 +326,9 @@ export const ApprovalCardView = ({
             </Button>
           </>
         ) : null}
-        {approval.postId === null ? null : (
+        {/* An approved deletion leaves no post to open. */}
+        {approval.postId === null ||
+        (kind === "delete" && approval.state === "approved") ? null : (
           <AppLink
             href={links.post(approval.postId)}
             className="text-brand-text ml-auto text-sm underline-offset-2 hover:underline"
@@ -547,7 +549,10 @@ export const MessageView = ({
       {message.outcome === "failed" && saysFailure ? (
         <p className="text-muted-foreground text-sm">{t("failedHere")}</p>
       ) : null}
-      {running || message.outcome === null ? null : (
+      {/* A failure that wrote nothing has nothing to rate or copy. */}
+      {running ||
+      message.outcome === null ||
+      (message.outcome === "failed" && message.text.trim() === "") ? null : (
         <AnswerFoot actions={actions} message={message} />
       )}
     </article>

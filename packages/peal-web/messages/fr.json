@@ -624,7 +624,7 @@
       "failed": "{step} (inachevé)"
     },
     "approval": {
-      "title": "{kind, select, approve {Approuver cette publication} delete {Supprimer ceci} message {Envoyer ce message} moderate {Modérer ce commentaire} publish {Publier cette publication} reply {Répondre à ce commentaire} requestChanges {Demander des modifications sur cette publication} schedule {Programmer cette publication} unpublish {Dépublier cette publication} other {Faire cette modification}}",
+      "title": "{kind, select, approve {Approuver cette publication} delete {Supprimer cette publication} message {Envoyer ce message} moderate {Modérer ce commentaire} publish {Publier cette publication} reply {Répondre à ce commentaire} requestChanges {Demander des modifications sur cette publication} schedule {Programmer cette publication} unpublish {Dépublier cette publication} other {Faire cette modification}}",
       "at": "Le {at}",
       "now": "Dès votre approbation",
       "approve": "Approuver",
