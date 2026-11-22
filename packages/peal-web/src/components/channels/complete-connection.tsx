@@ -154,6 +154,9 @@ export const CompleteConnection = ({
 
   const workspaceId = useSyncExternalStore(
     ignoreChanges,
+    // The connection this tab started, else the run's, which a tab the run
+    // opened finishes for: it starts with none of its own
+    // (`openSignInTab` forgets any before the tab copies its storage).
     () => pendingWorkspace(platform) ?? runWorkspaceFor(platform),
     unknownOnServer
   );

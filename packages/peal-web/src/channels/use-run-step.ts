@@ -12,7 +12,10 @@ import {
   startOf,
 } from "#channels/connect-run.ts";
 import type { ConnectRun } from "#channels/connect-run.ts";
-import { rememberConnection } from "#channels/pending-connection.ts";
+import {
+  forgetConnection,
+  rememberConnection,
+} from "#channels/pending-connection.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 
 // The name of the tab a run's sign-ins happen in: opening it again reuses
@@ -25,6 +28,11 @@ const signInTab = "peal-sign-in";
  * refuses, and the step's own tab then leaves for the platform.
  */
 export const openSignInTab = (): Window | null => {
+  // A tab opened from this one starts with a copy of its storage: a
+  // connection it remembers from before would name another workspace to
+  // the callback page there.
+  forgetConnection();
+
   try {
     return globalThis.open("", signInTab);
   } catch {

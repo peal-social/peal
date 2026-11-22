@@ -146,12 +146,21 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   with channel:connect (anyone else goes to the workspace's home). The
   member ticks the platforms the server signs in to (`setupOptionsOf`:
   New channel's order, LinkedIn's profile and pages apart, no website or
-  chat, none of `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and the
-  tab runs their sign-ins one after the other: the run lives in
-  `sessionStorage` (`#channels/connect-run.ts`), `useRunStep` starts its
-  next step, and the callback page (`CompleteConnection`) and the account
-  picker record each outcome and start the next platform's sign-in, or go
-  back to the step on any refusal or at the end. The step never leaves
+  chat, none of `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and a
+  tab of the run's own (`openSignInTab`, opened from the click, as
+  browsers open one only then) runs their sign-ins one after the other
+  while the step stays open in the first tab: the run lives in
+  `localStorage` (`#channels/connect-run.ts`), which every tab reads and
+  whose storage events keep the step current; `useRunStep` starts its
+  next step in that tab (or in the step's own, where the browser refused
+  the tab), and the callback page (`CompleteConnection`, which finds the
+  workspace through the run, `runWorkspaceFor`, in a tab that remembers no
+  connection) and the account picker record each outcome and start the
+  next platform's sign-in, or close the tab on any refusal or at the end
+  (`leaveSignInTab`, which opens the step there when the browser does
+  not close it). A platform's page that strands its tab (Google's "Back to
+  safety", Meta's errors, a login abandoned) never takes the step away
+  (dogfooded on the sandbox). The step never leaves
   for a platform by itself, so Back never traps the member; **Skip for
   now**, **Stop** and the end lead to the workspace's home, which shows
   no setup card. Each platform's own page names the account it connects

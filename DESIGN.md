@@ -1278,11 +1278,18 @@ them beside the one open, so the list stays where it was.
     cannot see or choose it.
   - **Running.** The same rows, each with what it came to: connected
     with its handles, failed with the reason (`destructive` text, the
-    row untinted), or waiting. Peal goes from one platform's sign-in to
-    the next by itself, naming the next on the callback page before it
-    leaves ("@peal is connected. Continuing to LinkedIn…"). Anything
-    that stops it (a failure, a refusal, a cancelled choice, the Back
-    button) comes back to the step with **Continue with LinkedIn**
+    row untinted), or waiting. The sign-ins happen in a tab of their own,
+    opened by **Connect** or **Continue**, while the step stays open in
+    the first tab and follows each outcome as it lands: a platform's page
+    that keeps its tab (a help article, an error, a login abandoned, an
+    account awaiting approval) never takes Peal away. In that tab, Peal
+    goes from one platform's sign-in to the next by itself, naming the
+    next on the callback page before it leaves ("@peal is connected.
+    Continuing to LinkedIn…"), and the tab closes once the run ends or
+    stops. A browser that refuses the tab runs the sign-ins in the step's
+    own tab instead. Anything that stops a run (a failure, a refusal, a
+    cancelled choice, the Back button) leaves the step with **Continue
+    with LinkedIn**
     (primary), **Skip LinkedIn** and **Stop** (outline): a platform
     the member is not signed in to, or signed in to as the wrong
     account, is passed without ending the run; **Stop** ends it and goes
