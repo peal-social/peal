@@ -19,6 +19,7 @@ import { RequestLimiter } from "#activity/application/request-limiter.ts";
 import { BoostFollowUp } from "#ads/application/boost-follow-up.ts";
 import { PurgeAdData } from "#ads/application/purge-ad-data.ts";
 import { SyncAdAccounts } from "#ads/application/sync-ad-accounts.ts";
+import { AgentRecords } from "#agent/application/agent-records.ts";
 import { CollectAccounts } from "#analytics/application/collect-accounts.ts";
 import { CollectMetrics } from "#analytics/application/collect-metrics.ts";
 import { PurgeAnalytics } from "#analytics/application/purge-analytics.ts";
@@ -512,8 +513,24 @@ const PublishingCronWorkTest = Layer.mergeAll(
   )
 );
 
+// The agent's retention, which would delete the chats other suites keep
+// in this database: it deletes nothing here.
+const AgentRecordsTest = Layer.succeed(
+  AgentRecords,
+  AgentRecords.of({
+    eraseMember: () => Effect.void,
+    eraseUser: () => Effect.void,
+    eraseWorkspace: () => Effect.void,
+    exportUser: () => Effect.succeed([]),
+    purge: Effect.succeed(0),
+  })
+);
+
 // The server's crons, their work as `PublishingCronWorkTest` does it.
-const CronsTest = CronsLive.pipe(Layer.provide(PublishingCronWorkTest));
+const CronsTest = CronsLive.pipe(
+  Layer.provide(PublishingCronWorkTest),
+  Layer.provide(AgentRecordsTest)
+);
 
 const serverWith = <E, R>(
   platforms: Layer.Layer<Layer.Success<typeof FakePlatformPublisher>, E, R>,

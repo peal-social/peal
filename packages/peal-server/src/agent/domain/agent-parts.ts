@@ -1,0 +1,126 @@
+import { Schema } from "effect";
+
+// What an answer holds besides its text, as the contract tells it
+// (`peal-contract/agent`), which the api layer answers as they are:
+// test/agent/api/contract.test.ts keeps both equal.
+
+/** How a step ended, or that it still runs. */
+export const AgentStepStateSchema = Schema.Literals([
+  "running",
+  "done",
+  "refused",
+  "failed",
+]);
+
+export type AgentStepState = typeof AgentStepStateSchema.Type;
+
+/** A tool the agent called, by its name. */
+export const AgentStepSchema = Schema.Struct({
+  callId: Schema.String,
+  state: AgentStepStateSchema,
+  tool: Schema.String,
+});
+
+export type AgentStep = typeof AgentStepSchema.Type;
+
+/** What the agent did to an item. */
+export const AgentCardActionSchema = Schema.Literals([
+  "created",
+  "updated",
+  "scheduled",
+  "published",
+  "deleted",
+  "replied",
+]);
+
+export type AgentCardAction = typeof AgentCardActionSchema.Type;
+
+/** An item the agent made or changed, as a tool answered it. */
+export const AgentCardSchema = Schema.Union([
+  Schema.TaggedStruct("post", {
+    action: AgentCardActionSchema,
+    channelIds: Schema.Array(Schema.String),
+    excerpt: Schema.String,
+    postId: Schema.String,
+    scheduledAt: Schema.NullOr(Schema.DateTimeUtc),
+  }),
+  Schema.TaggedStruct("thread", {
+    action: AgentCardActionSchema,
+    excerpt: Schema.String,
+    threadId: Schema.String,
+  }),
+]);
+
+export type AgentCard = typeof AgentCardSchema.Type;
+
+/** Where a change the agent asked to make stands. */
+export const AgentApprovalStateSchema = Schema.Literals([
+  "pending",
+  "approved",
+  "declined",
+  "expired",
+]);
+
+export type AgentApprovalState = typeof AgentApprovalStateSchema.Type;
+
+/** A change that waits for the person, from the call's own parameters. */
+export const AgentApprovalSchema = Schema.Struct({
+  at: Schema.NullOr(Schema.DateTimeUtc),
+  callId: Schema.String,
+  channelIds: Schema.Array(Schema.String),
+  postId: Schema.NullOr(Schema.String),
+  state: AgentApprovalStateSchema,
+  text: Schema.NullOr(Schema.String),
+  threadId: Schema.NullOr(Schema.String),
+  tool: Schema.String,
+});
+
+export type AgentApproval = typeof AgentApprovalSchema.Type;
+
+/** How the person rated an answer. */
+export const AgentRatingSchema = Schema.Literals(["up", "down"]);
+
+export type AgentRating = typeof AgentRatingSchema.Type;
+
+/** How a run ended. */
+export const AgentOutcomeSchema = Schema.Literals([
+  "answered",
+  "awaitingApproval",
+  "stopped",
+  "stepLimit",
+  "failed",
+]);
+
+export type AgentOutcome = typeof AgentOutcomeSchema.Type;
+
+/** Why a run failed once its events had started. */
+export const AgentFailureSchema = Schema.Literals([
+  "providerRefused",
+  "unreachable",
+  "timedOut",
+  "unusableAnswer",
+  "allowanceReached",
+  "failed",
+]);
+
+export type AgentFailure = typeof AgentFailureSchema.Type;
+
+/** Who answers: the workspace's own text provider, or the server's model. */
+export const AgentSourceSchema = Schema.Literals(["workspace", "server"]);
+
+export type AgentSource = typeof AgentSourceSchema.Type;
+
+/** Why the agent is off for a person. */
+export const AgentOffReasonSchema = Schema.Literals([
+  "noModel",
+  "paymentMethod",
+]);
+
+export type AgentOffReason = typeof AgentOffReasonSchema.Type;
+
+/** Whether the agent answers a person in a workspace, and who. */
+export interface AgentAvailability {
+  readonly available: boolean;
+  readonly reason: AgentOffReason | null;
+  readonly source: AgentSource | null;
+}

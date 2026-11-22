@@ -14,7 +14,7 @@ import { mcpAuthentication } from "#workspace/container.ts";
 // The tools that create, change or delete posts and media, decide on a
 // post's approval, or answer and moderate comments in public: the law has Peal keep the connection of each call a
 // year, as it keeps the API's writes to them.
-const contentTools: ReadonlySet<string> = new Set(
+export const contentTools: ReadonlySet<string> = new Set(
   [
     ...Object.values(PostTools.tools),
     ...Object.values(MediaTools.tools),
@@ -28,7 +28,7 @@ const contentTools: ReadonlySet<string> = new Set(
 
 // Every tool that changes something: each call that ran is kept in the
 // workspace's activity log, as the API's writes are.
-const changingTools: ReadonlySet<string> = new Set(
+export const changingTools: ReadonlySet<string> = new Set(
   toolCatalogue()
     .filter(({ changes }) => changes)
     .map(({ name }) => name)

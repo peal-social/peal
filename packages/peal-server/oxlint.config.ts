@@ -27,6 +27,7 @@ const contexts = [
   "engagement",
   "ads",
   "shortlinks",
+  "agent",
 ] as const;
 
 type Kernel = (typeof contexts)[number] | "shared";

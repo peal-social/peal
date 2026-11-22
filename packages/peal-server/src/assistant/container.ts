@@ -1,5 +1,6 @@
 import { Layer } from "effect";
 
+import { AgentModelAccess } from "#assistant/application/agent-model-access.ts";
 import { AssistantRequests } from "#assistant/application/assistant-requests.ts";
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
 import { CipherProviderSecrets } from "#assistant/infrastructure/cipher-provider-secrets.ts";
@@ -35,7 +36,9 @@ export { AssistantHandlers as AssistantApiLive } from "#assistant/api/assistant.
  * platforms' limits from publishing, and the media library, which keeps
  * the images it makes; the image and text providers each workspace may
  * bring, their keys sealed on the channels context's `TokenCipher`, called
- * through the outbound guard; the day's count, for billing; and UsageRecords, for the
+ * through the outbound guard; the day's count, for billing; the model's
+ * access for the agent (AgentModelAccess), with the same slots and counts;
+ * and UsageRecords, for the
  * workspace context's exports and erasures. The composition root provides
  * `Drizzle`, the billing context's `WorkspaceEntitlements`, the media
  * context's `MediaLibrary`, the `TokenCipher` and the runtime's Dns (the
@@ -43,7 +46,11 @@ export { AssistantHandlers as AssistantApiLive } from "#assistant/api/assistant.
  * provider answers with).
  */
 export const AssistantLive = Layer.mergeAll(
-  Layer.mergeAll(WritingAssistant.layer, AssistantRequests.layer).pipe(
+  Layer.mergeAll(
+    WritingAssistant.layer,
+    AssistantRequests.layer,
+    AgentModelAccess.layer
+  ).pipe(
     Layer.provide(
       Layer.mergeAll(
         WritingModelLive,
