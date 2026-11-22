@@ -18,6 +18,7 @@ import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import { AccountMail } from "#workspace/application/account-mail.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
 import { ImpersonationGuard } from "#workspace/application/impersonation-guard.ts";
+import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
 import { SecurityPolicies } from "#workspace/application/security-policies.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
@@ -85,6 +86,8 @@ const authWith = (env: Record<string, string>) =>
     Layer.provide(SiteMeasurement.none),
     Layer.provide(SecurityPolicies.none),
     Layer.provide(SignUpGate.anyone),
+    // Nor invites anyone.
+    Layer.provide(InvitationEmails.unlimited),
     // Nothing here changes two-step verification.
     Layer.provide(
       Layer.succeed(

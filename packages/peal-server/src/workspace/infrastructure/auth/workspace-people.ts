@@ -21,6 +21,7 @@ import { Drizzle } from "#shared/infrastructure/database.ts";
 import { AlreadyMember } from "#workspace/application/already-member.ts";
 import { AuthUnavailable } from "#workspace/application/auth-unavailable.ts";
 import { DirectoryUnavailable } from "#workspace/application/directory-unavailable.ts";
+import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { TooManyInvitations } from "#workspace/application/too-many-invitations.ts";
 import { WorkspacePeople } from "#workspace/application/workspace-people.ts";
 import type { InvitationRequest } from "#workspace/application/workspace-people.ts";
@@ -67,8 +68,8 @@ const toInvitation = (row: typeof invitation.$inferSelect) =>
  * Drizzle driver. An invitation sent here follows the rules of Better Auth's
  * `/organization/invite-member`, which the web app calls: one role, never to
  * a member, replacing a pending one to the same address, within the pending
- * invitations' limit and the plan's room, then emailed in the invitee's
- * language. It is checked and written under the workspace's lock, so
+ * invitations' limit, the plan's room and the day's invitation emails
+ * (`InvitationEmails`), then emailed in the invitee's language. It is checked and written under the workspace's lock, so
  * invitations sent together never pass a limit.
  */
 export const WorkspacePeopleLive = Layer.effect(
@@ -80,6 +81,7 @@ export const WorkspacePeopleLive = Layer.effect(
     const emails = yield* SendAuthEmail;
     const { publicUrl } = yield* AuthSettings;
     const agentRecords = yield* AgentRecords;
+    const invitationEmails = yield* InvitationEmails;
 
     // Requests never wait for their emails. Those still on their way get
     // the layer's lifetime, as Better Auth's do.
@@ -202,7 +204,7 @@ export const WorkspacePeopleLive = Layer.effect(
         const pending = others?.pending ?? 0;
 
         if (pending >= pendingInvitationLimit) {
-          return yield* new TooManyInvitations();
+          return yield* new TooManyInvitations({ reason: "pending" });
         }
 
         const [seats] = yield* db
@@ -221,6 +223,16 @@ export const WorkspacePeopleLive = Layer.effect(
 
         if (Result.isFailure(room)) {
           return yield* room.failure;
+        }
+
+        // Its email is one of the day's, for the inviter, the workspace
+        // and the address: taken in this transaction, given back with it.
+        const allowed = yield* invitationEmails
+          .claim({ at: now, email, inviterId: request.inviterId, workspaceId })
+          .pipe(failed);
+
+        if (!allowed) {
+          return yield* new TooManyInvitations({ reason: "emailsToday" });
         }
 
         yield* db

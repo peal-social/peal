@@ -232,6 +232,83 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
+      "send an address as many invitation emails as a day allows, through the API and Better Auth's route alike",
+      () =>
+        Effect.gen(function* daily() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const owner = yield* signedUp("flooder");
+          const workspaceId = yield* workspaceOf(owner, "Flood");
+          const other = yield* signedUp("second-flooder");
+          const otherId = yield* workspaceOf(other, "Second flood");
+          const email = newEmail("flooded");
+
+          // Two through the API, the third through Better Auth's route
+          // with `resend`, which sends the pending one again.
+          for (let sent = 0; sent < 2; sent += 1) {
+            assert.strictEqual(
+              (yield* invite(owner, workspaceId, { email, role: "viewer" }))
+                .status,
+              201
+            );
+          }
+
+          const resent = yield* app.request(
+            "/api/auth/organization/invite-member",
+            {
+              body: {
+                email,
+                organizationId: workspaceId,
+                resend: true,
+                role: "viewer",
+              },
+              headers: asPerson(owner),
+            }
+          );
+
+          assert.strictEqual(resent.status, 200);
+
+          // The address had its day, whoever invites it, from any workspace.
+          const refused = yield* invite(other, otherId, {
+            email,
+            role: "viewer",
+          });
+
+          assert.strictEqual(refused.status, 409);
+          assert.deepInclude(refused.body, {
+            _tag: "TooManyInvitations",
+            code: "too_many_invitations",
+          });
+          assert.include(
+            (yield* bodyOf(Schema.Struct({ message: Schema.String }), refused))
+              .message,
+            "a day allows"
+          );
+
+          const byRoute = yield* app.request(
+            "/api/auth/organization/invite-member",
+            {
+              body: { email, organizationId: otherId, role: "viewer" },
+              headers: asPerson(other),
+            }
+          );
+
+          assert.strictEqual(byRoute.status, 429);
+          assert.deepInclude(byRoute.body, {
+            code: "DAILY_INVITATION_LIMIT_REACHED",
+          });
+
+          // Nothing was left pending in the other workspace, and no email
+          // told of anything there.
+          const pending = yield* sql<{
+            readonly count: number;
+          }>`SELECT count(*)::int AS count FROM auth.invitation WHERE organization_id = ${otherId} AND status = 'pending'`;
+
+          assert.strictEqual(pending[0]?.count, 0);
+        })
+    );
+
+    it.effect(
       "refuse an invitation to a member, the owner role to an admin, and anything to those who may not invite",
       () =>
         Effect.gen(function* refuses() {

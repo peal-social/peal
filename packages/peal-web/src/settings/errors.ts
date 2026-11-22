@@ -9,8 +9,11 @@ import type { AuthClientError } from "#auth/errors.ts";
 // WorkspaceSettings.errors and AccountSettings.errors.
 
 const reasons = new Map<string, SettingsErrorKey>([
+  ["DAILY_INVITATION_LIMIT_REACHED", "invitationsToday"],
   ["IMPERSONATION_READ_ONLY", "impersonating"],
+  ["INVALID_NAME", "nameInvalid"],
   ["INVALID_PASSWORD", "incorrectPassword"],
+  ["INVALID_WORKSPACE_NAME", "workspaceNameInvalid"],
   ["INVALID_WORKSPACE_SLUG", "slugInvalid"],
   ["MEMBER_LIMIT_REACHED", "memberLimit"],
   ["ORGANIZATION_SLUG_ALREADY_TAKEN", "slugTaken"],
@@ -36,8 +39,10 @@ export const SettingsErrorKeySchema = Schema.Literals([
   "forbidden",
   "impersonating",
   "incorrectPassword",
+  "invitationsToday",
   "lastOwner",
   "memberLimit",
+  "nameInvalid",
   "nameMismatch",
   "notFound",
   "partnerClosed",
@@ -51,21 +56,23 @@ export const SettingsErrorKeySchema = Schema.Literals([
   "subscribed",
   "tooManyRequests",
   "unknown",
+  "workspaceNameInvalid",
 ]);
 
 export type SettingsErrorKey = typeof SettingsErrorKeySchema.Type;
 
-/** The catalogue key that explains a failed Better Auth call. */
-export const settingsErrorKey = (error: AuthClientError): SettingsErrorKey => {
-  if (error.status === 429) {
-    return "tooManyRequests";
-  }
-
-  return Option.fromUndefinedOr(error.code).pipe(
+/**
+ * The catalogue key that explains a failed Better Auth call: what its code
+ * says, the rate limit for an unknown one that answered 429 (the day's
+ * invitation emails answer 429 with their own code).
+ */
+export const settingsErrorKey = (error: AuthClientError): SettingsErrorKey =>
+  Option.fromUndefinedOr(error.code).pipe(
     Option.flatMap((code) => Option.fromUndefinedOr(reasons.get(code))),
-    Option.getOrElse((): SettingsErrorKey => "unknown")
+    Option.getOrElse((): SettingsErrorKey =>
+      error.status === 429 ? "tooManyRequests" : "unknown"
+    )
   );
-};
 
 // The API's errors, by tag.
 const apiReasons = new Map<string, SettingsErrorKey>([

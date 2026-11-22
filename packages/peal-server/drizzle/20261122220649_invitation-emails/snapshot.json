@@ -1,0 +1,157 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6ee1189a-9d72-494f-b360-7b09364983e8",
+  "prevIds": [
+    "54e1d4d9-06ff-4e5e-8482-406967452743"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "workspace",
+        "invitation_emails"
+      ],
+      "writes": [
+        "s|tbl|workspace.invitation_emails",
+        "n|tbl|workspace.invitation_emails",
+        "e|tbl|workspace.invitation_emails",
+        "n|rel|workspace.invitation_emails",
+        "n|type|workspace.invitation_emails",
+        "n|rel|workspace.invitation_emails_pkey"
+      ],
+      "reads": [
+        "n|sch|workspace"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "workspace",
+        "invitation_emails",
+        "invitation_emails_day"
+      ],
+      "writes": [
+        "s|idx|workspace.invitation_emails_day",
+        "n|idx|workspace.invitation_emails_day",
+        "e|idx|workspace.invitation_emails_day",
+        "n|rel|workspace.invitation_emails_day"
+      ],
+      "reads": [
+        "n|tbl|workspace.invitation_emails",
+        "n|sch|workspace",
+        "n|col|workspace.invitation_emails.day"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "name": "invitation_emails",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "invitation_emails",
+        "name": "day",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "invitation_emails",
+        "name": "sent",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "invitation_emails",
+        "name": "subject",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "invitation_emails",
+        "name": "invitation_emails_day",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "day",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "invitation_emails",
+        "name": "invitation_emails_pkey",
+        "columns": [
+          "subject",
+          "day"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "workspace",
+        "table": "invitation_emails",
+        "name": "invitation_emails_sent",
+        "value": "\"sent\" > 0",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

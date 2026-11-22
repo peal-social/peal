@@ -794,6 +794,8 @@
       "PROVIDER_EMAIL_INVALID": "Your provider gave an email address Peal can't use. Sign in with your password.",
       "AUTHORIZATION_FAILED": "The application's sign-in request was refused. Go back to the application and start again.",
       "ORGANIZATION_SLUG_ALREADY_TAKEN": "Another workspace already has that address. Choose another.",
+      "INVALID_NAME": "Use a name of one line, up to 100 characters, without a web address.",
+      "INVALID_WORKSPACE_NAME": "Use a workspace name of one line, up to 120 characters, without a web address.",
       "INVALID_WORKSPACE_SLUG": "That address can't be used. Use lower-case letters and digits, with words joined by hyphens."
     },
     "providers": {
@@ -2970,6 +2972,9 @@
       "lastOwner": "A workspace needs an owner: make another member an owner first.",
       "memberLimit": "The workspace’s plan allows no more members. An owner or an admin can move it to a larger plan.",
       "nameMismatch": "The name does not match the workspace’s.",
+      "nameInvalid": "Use a name of one line, up to 100 characters, without a web address.",
+      "workspaceNameInvalid": "Use a workspace name of one line, up to 120 characters, without a web address.",
+      "invitationsToday": "You, the workspace or this address had all the invitation emails a day allows. Try again tomorrow.",
       "notFound": "It is already gone.",
       "passwordTooLong": "The password is too long.",
       "passwordTooShort": "The password needs at least 12 characters.",

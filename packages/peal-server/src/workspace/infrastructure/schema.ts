@@ -170,3 +170,26 @@ export const partnerUsageDays = workspaceSchema.table(
     ),
   ]
 );
+
+/**
+ * How many invitation emails went out each day (UTC), by whom or what
+ * they count against: `subject` is a keyed pseudonym (HMAC under the
+ * server's secret) of the member who invited, of the workspace, or of the
+ * address invited (`InvitationEmails`), never one of them, so a row names
+ * nobody without that secret. A day is kept while it is counted and the
+ * day after (`invitationEmailDays`), then deleted as emails are counted,
+ * on the `day` index.
+ */
+export const invitationEmails = workspaceSchema.table(
+  "invitation_emails",
+  {
+    day: date("day", { mode: "string" }).notNull(),
+    sent: integer("sent").notNull(),
+    subject: text("subject").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.subject, table.day] }),
+    index("invitation_emails_day").on(table.day),
+    check("invitation_emails_sent", sql`${table.sent} > 0`),
+  ]
+);

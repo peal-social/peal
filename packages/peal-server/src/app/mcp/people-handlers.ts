@@ -6,6 +6,7 @@ import { notAllowed, planRefusal, refuse } from "#app/mcp/refusals.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { invitationView, memberView } from "#workspace/api/members.ts";
 import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
+import { invitationEmailsRefused } from "#workspace/domain/invitation-emails.ts";
 
 // What only a member does: an API key, a workspace's or a partner's, is
 // nobody, and a user's token is bound to a workspace they belonged to,
@@ -52,9 +53,11 @@ export const PeopleToolsLive = PeopleTools.toLayer(
               NotAMember: gone,
               PlanLimitReached: refusedByPlan(inviter.workspaceId),
               RoleNotInvitable: () => refuse("Only owners invite owners."),
-              TooManyInvitations: () =>
+              TooManyInvitations: ({ reason }) =>
                 refuse(
-                  "The workspace has 100 invitations pending, the most it may: revoke some first."
+                  reason === "emailsToday"
+                    ? invitationEmailsRefused
+                    : "The workspace has 100 invitations pending, the most it may: revoke some first."
                 ),
               UserRequired: gone,
             })

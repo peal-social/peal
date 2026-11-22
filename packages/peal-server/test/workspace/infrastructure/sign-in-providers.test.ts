@@ -108,6 +108,21 @@ describe("the sign-in providers", () => {
     ).toStrictEqual({ image: undefined, name: "grace.hopper" });
   });
 
+  it("take the link out of a provider's name, rather than refuse the sign-in", () => {
+    expect(
+      profileToUser({
+        email: "ada@example.test",
+        name: "Claim your prize at https://evil.example.com",
+      })
+    ).toStrictEqual({
+      image: undefined,
+      name: "Claim your prize at https evil example com",
+    });
+    expect(
+      profileToUser({ email: "www.prize.com@example.test", name: "" })
+    ).toStrictEqual({ image: undefined, name: "www prize com" });
+  });
+
   it("bound a long name", () => {
     expect(
       profileToUser({

@@ -2,7 +2,10 @@ import type { GenericOAuthConfig } from "better-auth/plugins";
 import { Option, Redacted, Schema } from "effect";
 import { decodeJwt } from "jose";
 
-import { storableLine } from "#shared/domain/platform-text.ts";
+import {
+  fittedName,
+  maxPersonNameLength,
+} from "#shared/domain/display-name.ts";
 
 import type {
   OidcProviderSettings,
@@ -23,7 +26,7 @@ export type SignInProviderId = (typeof signInProviderIds)[number];
 export const googleIssuer = "https://accounts.google.com";
 
 /** The most characters of the name a provider gives that an account keeps. */
-export const maxProviderUserNameLength = 100;
+export const maxProviderUserNameLength = maxPersonNameLength;
 
 const discoveryOf = (issuer: string): string =>
   `${issuer}/.well-known/openid-configuration`;
@@ -36,17 +39,19 @@ export interface ProviderProfile {
 
 /**
  * What an account keeps of the profile a provider sends: its name, made
- * storable (a provider's text is not Peal's), or the address's local part
- * when it gives none; never its picture's address.
+ * fit (`fittedName`: a provider's text is not Peal's, and a name that
+ * reads as a link loses its schemes and dots, never refusing the
+ * sign-in), or the address's local part, made fit too, when it gives
+ * none; never its picture's address.
  */
 export const profileToUser = ({ email, name }: ProviderProfile) => {
-  const kept = storableLine(name ?? "", maxProviderUserNameLength);
+  const kept = fittedName(name ?? "", maxProviderUserNameLength);
 
   return {
     image: undefined,
     name:
       kept === ""
-        ? storableLine(
+        ? fittedName(
             (email ?? "").split("@")[0] ?? "",
             maxProviderUserNameLength
           )

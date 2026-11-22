@@ -77,6 +77,43 @@ The staff context follows these rules too. What the law has a host keep is in
   plan's room) and sharing its constants and link (`invitationLifetime`,
   `pendingInvitationLimit`, `invitationUrl` in `options.ts`): change both
   together. The web app still invites through Better Auth's route.
+- Every invitation email, new or sent again, is one of the day's (UTC)
+  for the member who invites (across their workspaces), the workspace and
+  the address invited (`invitationEmailsPerDay`, `workspace/domain/
+  invitation-emails.ts`: 100, 100, 3), counted by `InvitationEmails`
+  (`DrizzleInvitationEmailsLive`: `workspace.invitation_emails`, one row
+  per subject and day under a keyed pseudonym, `Pseudonyms.ofCounted` and
+  `ofEmail`, so a row names nobody without the server's secret; each claim
+  adds one to the three while each stays within its limit, in one
+  transaction, subjects in one order, and deletes the days before
+  `invitationEmailDays`). `WorkspacePeopleLive` claims inside its
+  invitation's transaction, after the other checks (`TooManyInvitations`
+  `emailsToday`, 409 `too_many_invitations` with `invitationEmailsRefused`
+  as its message, for the API and the MCP tool alike). Better Auth's route
+  claims in `beforeCreateInvitation`, once it checked the rest, and, for
+  `resend` (which writes nothing), in the before hook for a member of the
+  workspace with an invitation pending to the address
+  (`claimResentInvitationEmail`): 429 `DAILY_INVITATION_LIMIT_REACHED`.
+  Never claim in `sendInvitationEmail`: Better Auth runs it where a
+  failure is only logged. A refused re-invite through the route has
+  already cancelled the address's pending invitation (Better Auth cancels
+  it first).
+- A person's name and a workspace's go out in invitations from Peal's own
+  domain: `typedName` (`#shared/domain/display-name.ts`) keeps one line
+  (`storableLine`), at most `maxPersonNameLength` (100) or
+  `maxWorkspaceNameLength` (120, the contract's for partners) characters,
+  and refuses one that reads as a link (`readsAsLink`: `://`, `www.`, a
+  letter or a digit, a dot and a top-level domain that ends there, two
+  letters counting only in one case, so `St. John`, `M.Sc` and `Dr.Jo`
+  pass). Better Auth's hooks apply it (`auth/display-names.ts`):
+  `/sign-up/email` in the before hook (`refuseUnfitSignUpNames`, as the
+  route answers a known address with a made-up user before any write),
+  `databaseHooks.user` on create and update (refused on `/sign-up/email`
+  and `/update-user`, 400 `INVALID_NAME`; made fit elsewhere), and the
+  organization hooks on create and update (400 `INVALID_WORKSPACE_NAME`),
+  which the web app's forms explain. A sign-in provider's name is made fit
+  instead (`fittedName` in `profileToUser`: schemes and dots taken out),
+  so the sign-in goes on. Names stored before keep what they hold.
 - `ResolveMember.resolveMany` decides several workspaces for one user from
   one read of the memberships (`MemberDirectory.memberships`), each through
   `actorFor` as `resolve` decides one: anything that reads across
@@ -385,7 +422,8 @@ The staff context follows these rules too. What the law has a host keep is in
   `requireIdTokenVerification`: the profile is the ID token's claims alone,
   checked for signature, issuer, audience and nonce, never the userinfo
   endpoint (`getUserInfo`); PKCE on; no offline access. The name is made
-  storable (`profileToUser`), the picture never kept. The account id is
+  fit (`profileToUser`, `fittedName`: one line, never a link), the
+  picture never kept. The account id is
   the verified token's `sub` (`accountSubject`), `<issuer>|<sub>` for
   `oidc` (`oidcAccountId`): a subject belongs to its issuer, so a new
   `PEAL_OIDC_ISSUER` reaches no account the old one's subjects joined.

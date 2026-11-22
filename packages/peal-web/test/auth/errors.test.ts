@@ -10,6 +10,13 @@ describe(authErrorKey, () => {
     ).toBe("INVALID_EMAIL_OR_PASSWORD");
   });
 
+  it.each(["INVALID_NAME", "INVALID_WORKSPACE_NAME"])(
+    "explains %s, a name that is not one line or reads as a link",
+    (code) => {
+      expect(authErrorKey({ code, status: 400 })).toBe(code);
+    }
+  );
+
   it.each(["MEMBER_LIMIT_REACHED", "MISSING_RESPONSE", "VERIFICATION_FAILED"])(
     "explains %s, from billing and the captcha",
     (code) => {
