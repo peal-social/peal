@@ -256,6 +256,42 @@ export const emailTo = Effect.fn("emailTo")(function* emailTo(
   );
 });
 
+/**
+ * The emails Mailpit received for an address whose subject matches, newest
+ * first, once there are at least `count`.
+ */
+export const emailsTo = Effect.fn("emailsTo")(function* emailsTo(
+  address: string,
+  subject: RegExp,
+  count: number
+) {
+  const base = yield* mailpitUrl;
+  const query = new URLSearchParams({ query: `to:"${address}"` });
+
+  const find = Effect.gen(function* find() {
+    const { messages } = yield* getJson(
+      `${base}/api/v1/search?${query.toString()}`,
+      MailpitSearchSchema
+    );
+
+    const found = (yield* Effect.all(
+      messages.map((message) =>
+        getJson(`${base}/api/v1/message/${message.ID}`, MailpitMessageSchema)
+      )
+    )).filter((message) => subject.test(message.Subject));
+
+    return found.length >= count
+      ? found
+      : yield* Effect.fail("not yet" as const);
+  });
+
+  return yield* find.pipe(
+    Effect.retry({ schedule: Schedule.spaced("200 millis"), times: 300 }),
+    Effect.timeout(Duration.seconds(60)),
+    Effect.orDie
+  );
+});
+
 /** The first link in an email's text. */
 export const linkIn = (message: MailpitMessage): URL => {
   const found = /https?:\/\/\S+/u.exec(message.Text)?.[0];
@@ -297,7 +333,11 @@ export const signIn = Effect.fn("signIn")(function* signIn(email: string) {
   return cookiesOf(reply);
 });
 
-/** Someone who signed up and confirmed their email from Mailpit. */
+/**
+ * Someone who signed up and confirmed their email from Mailpit, in the
+ * browser that signed up: the sign-up's cookies go with the link, as only
+ * that browser's confirmation keeps the password.
+ */
 export const confirmedAccount = Effect.fn("confirmedAccount")(
   function* confirmedAccount(label: string, locale: "en" | "fr" = "en") {
     const app = yield* TestApp;
@@ -316,7 +356,9 @@ export const confirmedAccount = Effect.fn("confirmedAccount")(
 
     const link = linkIn(confirmation);
 
-    yield* app.request(`${link.pathname}${link.search}`);
+    yield* app.request(`${link.pathname}${link.search}`, {
+      headers: { cookie: cookiesOf(created) },
+    });
 
     return { email, id: user.id };
   }

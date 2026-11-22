@@ -137,7 +137,15 @@ const AccountPage = async ({
         title={t("sessions.title")}
         description={t("sessions.description")}
       >
-        <SessionsList />
+        {/* The server lists no session to staff acting as the member:
+            each comes with its token. */}
+        {me.value.impersonatedBy === null ? (
+          <SessionsList />
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            {t("sessions.impersonating")}
+          </p>
+        )}
       </Section>
       <Section title={t("apps.title")} description={t("apps.description")}>
         <ConnectedAppsList />

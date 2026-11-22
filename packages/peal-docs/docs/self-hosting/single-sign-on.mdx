@@ -49,9 +49,9 @@ Peal reads three claims from the ID token:
 
 ## How accounts are matched [#matching]
 
-A provider's sign-in reaches an account only through an address confirmed on both sides. The provider says it confirmed it, and the Peal account confirmed it too.
+A provider's sign-in reaches an account only through an address the provider says it confirmed.
 
-An account whose address was never confirmed isn't joined to the provider. Its owner signs in with their password, or resets it, first.
+An account whose address was never confirmed is joined to the provider too, and loses its password, its sessions and its connected applications first: whoever made it with that address may not own it, and the provider says the person signing in does.
 
 Once joined, the provider's identifier signs in that account, even if the address at the provider changes. Nothing else links an account to a provider, and the account page has no link or unlink.
 

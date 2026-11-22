@@ -428,7 +428,7 @@ export const english: EmailCatalog = {
   renewalDeadline: "Last day to refuse the renewal: {renewsAt}",
   resetPassword: {
     action: "Choose a new password",
-    body: "Someone asked to reset the password of your Peal account. Choose a new one with the link below.",
+    body: "Someone asked to reset the password of your Peal account. Choose a new one with the link below. Doing so signs you out everywhere and disconnects your connected applications, such as the command line and AI assistants: sign them in again afterwards.",
     ignore:
       "If you did not ask for this, ignore this email: your password stays as it is. The link expires in an hour.",
     subject: "Reset your Peal password",

@@ -337,14 +337,17 @@ const DeviceCodeSchema = Schema.Struct({
   user_code: Schema.String,
 });
 
-const TokensSchema = Schema.Struct({ access_token: Schema.String });
+const TokensSchema = Schema.Struct({
+  access_token: Schema.String,
+  refresh_token: Schema.String,
+});
 
 /**
- * An access token of Peal's command line, which the person signed in with
- * the device grant from a browser holding these cookies.
+ * The access and refresh tokens of Peal's command line, which the person
+ * signed in with the device grant from a browser holding these cookies.
  */
-export const commandLineToken = Effect.fn("commandLineToken")(
-  function* commandLineToken(cookies: string) {
+export const commandLineTokens = Effect.fn("commandLineTokens")(
+  function* commandLineTokens(cookies: string) {
     const app = yield* TestApp;
 
     const device = yield* bodyOf(
@@ -385,6 +388,16 @@ export const commandLineToken = Effect.fn("commandLineToken")(
       })
     );
 
-    return tokens.access_token;
+    return tokens;
+  }
+);
+
+/**
+ * An access token of Peal's command line, which the person signed in with
+ * the device grant from a browser holding these cookies.
+ */
+export const commandLineToken = Effect.fn("commandLineToken")(
+  function* commandLineToken(cookies: string) {
+    return (yield* commandLineTokens(cookies)).access_token;
   }
 );
