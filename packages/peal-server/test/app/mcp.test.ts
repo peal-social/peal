@@ -145,6 +145,43 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
   "the MCP endpoint",
   (it) => {
     it.effect(
+      "registers no client that asks to be told of sign-outs, which Peal would send past its outbound guard",
+      () =>
+        Effect.gen(function* backChannel() {
+          const app = yield* TestApp;
+
+          const registration = {
+            client_name: "Synthetic back-channel agent",
+            grant_types: ["authorization_code", "refresh_token"],
+            redirect_uris: ["http://127.0.0.1:33419/callback"],
+            response_types: ["code"],
+            token_endpoint_auth_method: "none",
+          };
+
+          for (const asked of [
+            { backchannel_logout_uri: "https://agent.example/logout" },
+            { backchannel_logout_session_required: true },
+          ]) {
+            const refused = yield* app.request("/api/auth/oauth2/register", {
+              body: { ...registration, ...asked },
+            });
+
+            assert.strictEqual(refused.status, 400);
+            assert.include(
+              JSON.stringify(refused.body),
+              "REGISTRATION_FIELD_NOT_ALLOWED"
+            );
+          }
+
+          const registered = yield* app.request("/api/auth/oauth2/register", {
+            body: registration,
+          });
+
+          assert.isBelow(registered.status, 300);
+        })
+    );
+
+    it.effect(
       "leads a client without a token to the authorization server",
       () =>
         Effect.gen(function* discovery() {

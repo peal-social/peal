@@ -45,6 +45,7 @@ import {
   turnstile,
 } from "./billing.ts";
 import type { BillingHooks } from "./billing.ts";
+import { guardClientRegistration } from "./client-registration.ts";
 import {
   guardImpersonatedRequest,
   refuseImpersonatedChanges,
@@ -401,14 +402,16 @@ const oauthServer = (settings: AuthConfiguration) => {
 // while acting as someone is checked and recorded next, refused or not.
 // Then what two-step verification decides: a workspace's routes for a
 // member it refuses, and turning it on or off, and a sign-up the server's
-// mode does not admit, and a provider's sign-in that asks for more than
-// Peal's pages do.
+// mode does not admit, a provider's sign-in that asks for more than
+// Peal's pages do, and a client registration that asks for back-channel
+// logout.
 const beforeEveryRoute = (hooks: AuthHooks) =>
   createAuthMiddleware(async (ctx) => {
     await refuseRevokedSessions(ctx);
     await guardImpersonatedRequest(ctx, hooks.impersonatedRequest);
     await refuseUnadmittedSignUps(ctx, hooks.signUp);
     guardProviderSignIn(ctx);
+    guardClientRegistration(ctx);
     await refuseImpersonatedChanges(ctx);
     refusePersonalSubscriptions(ctx);
     await keepPayerLeaving(ctx, hooks);

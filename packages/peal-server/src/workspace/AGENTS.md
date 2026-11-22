@@ -321,7 +321,12 @@ The staff context follows these rules too. What the law has a host keep is in
 - Better Auth is also the OAuth authorization server for the CLI (device
   grant, the `peal-cli` public client registered at startup) and MCP clients
   (authorization code with PKCE, and dynamic registration when
-  `MCP_DYNAMIC_REGISTRATION=true`). Access tokens are JWTs that last 15
+  `MCP_DYNAMIC_REGISTRATION=true`). A registration that asks for
+  back-channel logout (`backchannel_logout_uri`,
+  `backchannel_logout_session_required`) is refused 400
+  `REGISTRATION_FIELD_NOT_ALLOWED` (`guardClientRegistration`): Better
+  Auth would post to that address on sign-out with a fetch of its own,
+  past the `OutboundGuard`. Access tokens are JWTs that last 15
   minutes and are checked locally; refresh tokens rotate, and one sent again
   within 30 seconds gets the same answer, while later reuse revokes that user
   and client's refresh tokens.
