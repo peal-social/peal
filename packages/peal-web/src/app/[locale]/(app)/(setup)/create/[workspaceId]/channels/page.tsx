@@ -9,7 +9,7 @@ import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { setupChannelsPageTitle } from "#shell/page-title.ts";
-import { workspacePath } from "#shell/workspace-path.ts";
+import { setupChannelsPath, workspacePath } from "#shell/workspace-path.ts";
 
 // A new workspace's second step, once it is made: its channels, connected
 // one sign-in after the other, or skipped for later. A member who may not
@@ -27,6 +27,13 @@ const SetupChannelsPage = async ({
 
   if (!membership.permissions.includes("channel:connect")) {
     return redirect({ href: workspacePath(membership.slug), locale });
+  }
+
+  // A sign-in's callback page names the workspace by its id, as it is
+  // outside the app's frame, which knows the slugs: the address shows the
+  // slug, as every other one does.
+  if (workspaceId !== membership.slug) {
+    return redirect({ href: setupChannelsPath(membership.slug), locale });
   }
 
   const hidden = await Effect.runPromise(setupHiddenPlatformsConfig);

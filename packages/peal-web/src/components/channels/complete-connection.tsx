@@ -29,13 +29,14 @@ import {
   recordStep,
   runAt,
   runErrorOf,
+  runWorkspaceFor,
 } from "#channels/connect-run.ts";
 import type { ConnectRun } from "#channels/connect-run.ts";
 import {
   forgetConnection,
   pendingWorkspace,
 } from "#channels/pending-connection.ts";
-import { useRunStep } from "#channels/use-run-step.ts";
+import { leaveSignInTab, useRunStep } from "#channels/use-run-step.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { AccountPicker } from "#components/channels/account-picker.tsx";
 import { useSetupName } from "#components/setup/setup-card-view.tsx";
@@ -115,13 +116,17 @@ export const CompleteConnection = ({
 
   // Back to the setup step the run started on.
   const toSetup = useEffectEvent((workspace: string) => {
-    router.replace(setupHref(workspace));
+    leaveSignInTab(() => {
+      router.replace(setupHref(workspace));
+    });
   });
 
   const runStep = useRunStep({
     offerUpgrade: false,
     onRefused: (run) => {
-      router.replace(setupHref(run.workspaceId));
+      leaveSignInTab(() => {
+        router.replace(setupHref(run.workspaceId));
+      });
     },
   });
 
@@ -149,7 +154,7 @@ export const CompleteConnection = ({
 
   const workspaceId = useSyncExternalStore(
     ignoreChanges,
-    () => pendingWorkspace(platform),
+    () => pendingWorkspace(platform) ?? runWorkspaceFor(platform),
     unknownOnServer
   );
 

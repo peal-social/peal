@@ -3415,7 +3415,7 @@
       "skipped": "Passé"
     },
     "running": {
-      "description": "Peal s’est arrêté ici. Continuez quand vous voulez, ou arrêtez et connectez le reste plus tard depuis Canaux.",
+      "description": "Chaque connexion s’ouvre dans un autre onglet, et cette page la suit. Si la page d’une plateforme ne vous ramène pas, fermez cet onglet : vous pouvez continuer ou passer d’ici.",
       "continue": "Continuer avec {name}",
       "skip": "Passer {name}",
       "stop": "Arrêter"

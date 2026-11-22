@@ -9,10 +9,12 @@ import type { ChannelConnection, Platform } from "peal-contract";
 import type { ChannelErrorKey } from "#channels/channels-api.ts";
 
 // A run of a new workspace's setup step: the platforms the member ticked,
-// signed in to one after the other, the tab going from each platform's
-// callback page to the next one's sign-in. The tab keeps it between those
-// pages, as it keeps the connection under way (`pending-connection.ts`);
-// the server knows nothing of it, and checks each connection on its own.
+// signed in to one after the other, a tab of its own going from each
+// platform's callback page to the next one's sign-in while the step stays
+// open in the first tab and follows it. The browser keeps the run where
+// every tab reads it (`localStorage`), so the step sees each outcome as it
+// lands, and a platform's page that strands its tab strands no run; the
+// server knows nothing of it, and checks each connection on its own.
 const storageKey = "peal.channels.connect-run";
 
 // What the setup step listens to, to show the run as it changes.
@@ -74,7 +76,7 @@ const decodeRun = Schema.decodeUnknownOption(Schema.fromJsonString(RunSchema));
 
 const storage = (): Option.Option<Storage> => {
   try {
-    return Option.some(globalThis.sessionStorage);
+    return Option.some(globalThis.localStorage);
   } catch {
     // Storage the browser refuses (some private modes) keeps no run: each
     // platform then comes back to the setup step, where the member continues.
@@ -139,7 +141,7 @@ export const startOf = (
   return payload;
 };
 
-/** The run this tab keeps, or none. */
+/** The run this browser keeps, or none. */
 export const currentRun = (): ConnectRun | null =>
   storage().pipe(
     Option.flatMap((tab) => Option.fromNullOr(tab.getItem(storageKey))),
@@ -148,8 +150,21 @@ export const currentRun = (): ConnectRun | null =>
   );
 
 /**
- * The run this tab keeps when `platform`'s sign-in in `workspaceId` is its
- * next step, so the callback page carries it on; none otherwise.
+ * The workspace of the run whose next step is `platform`'s sign-in: what a
+ * callback page finishes for, in a tab the run opened, which remembers no
+ * connection of its own (`pending-connection.ts`).
+ */
+export const runWorkspaceFor = (platform: Platform): string | null => {
+  const run = currentRun();
+
+  return run !== null && nextStep(run)?.platform === platform
+    ? run.workspaceId
+    : null;
+};
+
+/**
+ * The run this browser keeps when `platform`'s sign-in in `workspaceId` is
+ * its next step, so the callback page carries it on; none otherwise.
  */
 export const runAt = (
   workspaceId: string,
@@ -193,12 +208,23 @@ export const forgetRun = (): void => {
   announce();
 };
 
-/** Listens for the run changing, for `useSyncExternalStore`. */
+/**
+ * Listens for the run changing, for `useSyncExternalStore`: in this tab,
+ * and in another, whose writes reach this one as storage events.
+ */
 export const subscribeToRun = (listener: () => void): (() => void) => {
+  const fromOtherTab = (event: StorageEvent) => {
+    if (event.key === storageKey || event.key === null) {
+      listener();
+    }
+  };
+
   globalThis.addEventListener(changedEvent, listener);
+  globalThis.addEventListener("storage", fromOtherTab);
 
   return () => {
     globalThis.removeEventListener(changedEvent, listener);
+    globalThis.removeEventListener("storage", fromOtherTab);
   };
 };
 

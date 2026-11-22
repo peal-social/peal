@@ -20,7 +20,7 @@ import {
   subscribeToRun,
 } from "#channels/connect-run.ts";
 import type { ConnectRun } from "#channels/connect-run.ts";
-import { useRunStep } from "#channels/use-run-step.ts";
+import { openSignInTab, useRunStep } from "#channels/use-run-step.ts";
 import type { Connectable } from "#components/channels/connect-forms.tsx";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { AppLink } from "#components/shell/app-link.tsx";
@@ -76,7 +76,7 @@ const Choose = ({
           const run = runOf(workspaceId, stepsOf(options, ticked, typed));
 
           saveRun(run);
-          step.start(run);
+          step.start(run, openSignInTab());
         },
         onDismiss: () => {
           router.push(workspaceHref(workspaceId));
@@ -148,7 +148,7 @@ const Run = ({
               _tag: "running",
               next,
               onContinue: () => {
-                step.start(run);
+                step.start(run, openSignInTab());
               },
               onSkip: () => {
                 recordStep(run, next.platform, { _tag: "skipped" });

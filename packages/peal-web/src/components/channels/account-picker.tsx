@@ -21,7 +21,7 @@ import type { ChannelErrorKey } from "#channels/channels-api.ts";
 import { choiceStart } from "#channels/choice-connection.ts";
 import { nextStep, recordStep, runAt } from "#channels/connect-run.ts";
 import { useConnect } from "#channels/use-connect.ts";
-import { useRunStep } from "#channels/use-run-step.ts";
+import { leaveSignInTab, useRunStep } from "#channels/use-run-step.ts";
 import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import {
   AccountPickerView,
@@ -71,7 +71,9 @@ export const AccountPicker = ({
 
   // Back to the setup step the run started on.
   const toSetup = () => {
-    router.replace(setupHref(workspaceId));
+    leaveSignInTab(() => {
+      router.replace(setupHref(workspaceId));
+    });
   };
 
   const runStep = useRunStep({ offerUpgrade: false, onRefused: toSetup });

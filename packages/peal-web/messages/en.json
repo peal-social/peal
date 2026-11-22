@@ -3415,7 +3415,7 @@
       "skipped": "Skipped"
     },
     "running": {
-      "description": "Peal stopped here. Continue when you’re ready, or stop and connect the rest later from Channels.",
+      "description": "Each sign-in opens in another tab, and this page follows along. If a platform’s page doesn’t bring you back, close that tab: you can continue or skip from here.",
       "continue": "Continue with {name}",
       "skip": "Skip {name}",
       "stop": "Stop"
