@@ -49,8 +49,15 @@
   `duplicate_post`, and `tag_post` on a draft) run as the model calls
   them; every other change waits for the person (`needsApproval`), and
   runs only once they approve it, with their permissions then. The tools
-  are the MCP endpoint's (same names and schemas, its handlers through
-  `PealTools`), returning their refusals to the model. Each call that
+  are the MCP endpoint's (same names, its handlers through `PealTools`),
+  returning their refusals to the model. Each is a `Tool.dynamic`, not
+  strict, advertised with the JSON Schema the MCP tool's own writes,
+  without an `allOf` member's key its object sets too
+  (`advertised-schema.ts`: Effect writes an id's two checks as `pattern`
+  beside `allOf: [{pattern}]`, which Anthropic refuses); the call's
+  parameters go to the MCP tool's codec as the model sent them, and one
+  it refuses is refused to the model (`test/app/agent-toolbox.test.ts`
+  checks what each adapter would send). Each call that
   changes something is kept as `agent.<tool>` in the activity log
   through the session, and a content tool's connection in the
   ConnectionJournal (`src/app/agent/toolbox.ts`).

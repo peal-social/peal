@@ -1,6 +1,8 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Effect } from "effect";
-import { Tool } from "effect/ai";
+import { Context, Effect, Schema } from "effect";
+import { LanguageModel, Tool } from "effect/ai";
+import { toCodecAnthropic } from "effect/ai/AnthropicStructuredOutput";
+import { toCodecOpenAI } from "effect/ai/OpenAiStructuredOutput";
 
 import {
   agentToolNames,
@@ -8,11 +10,23 @@ import {
   draftFreeTools,
   freeTools,
 } from "#agent/domain/agent-toolset.ts";
+import { siblingConflicts } from "#agent/infrastructure/advertised-schema.ts";
 import { agentToolkit } from "#app/agent/toolbox.ts";
 import { changingTools } from "#app/mcp/server.ts";
 import { PealTools } from "#app/mcp/tools.ts";
 
 const { tools } = agentToolkit(() => Effect.succeed(false));
+
+const decodeJson = Schema.decodeUnknownSync(Schema.Json);
+
+// What each adapter would send for a tool's parameters: the Anthropic and
+// OpenAI-compatible adapters read the same function, with the strict or
+// the default transformer.
+const transformers = {
+  anthropicStrict: toCodecAnthropic,
+  default: LanguageModel.defaultCodecTransformer,
+  openAiStrict: toCodecOpenAI,
+};
 
 describe("the agent's toolkit", () => {
   it("holds the MCP endpoint's tools it names, by the same names and schemas", () => {
@@ -23,8 +37,7 @@ describe("the agent's toolkit", () => {
     for (const name of agentToolNames) {
       const mcp = PealTools.tools[name];
 
-      expect(tools[name]?.parametersSchema).toBe(mcp.parametersSchema);
-      expect(tools[name]?.id).toBe(mcp.id);
+      expect(tools[name]?.description).toBe(mcp.description);
       expect(tools[name]?.failureMode).toBe("return");
     }
   });
@@ -52,6 +65,39 @@ describe("the agent's toolkit", () => {
     expect(changingFree).toStrictEqual([]);
   });
 
+  it("advertises no schema whose allOf member sets a key its object sets, for any adapter", () => {
+    for (const name of agentToolNames) {
+      const tool = tools[name];
+
+      expect(tool).toBeDefined();
+
+      if (tool === undefined) {
+        continue;
+      }
+
+      // Not strict: no adapter rewrites the schema into its strict subset.
+      expect(Context.get(tool.annotations, Tool.Strict)).toBeFalsy();
+
+      for (const transformer of Object.values(transformers)) {
+        const sent = decodeJson(Tool.getJsonSchema(tool, { transformer }));
+
+        expect(siblingConflicts(sent)).toStrictEqual([]);
+      }
+    }
+
+    // The MCP tools' own schemas hold such a conflict, which Anthropic
+    // refuses: an id's UUID pattern beside its lowercase one.
+    expect(
+      siblingConflicts(
+        decodeJson(
+          Tool.getJsonSchemaFromSchema(
+            PealTools.tools.create_draft.parametersSchema
+          )
+        )
+      ).length
+    ).toBeGreaterThan(0);
+  });
+
   it("offers no webhook, key, member, connection, ad, feed or message tool", () => {
     const refused = [
       "create_webhook",
@@ -68,6 +114,6 @@ describe("the agent's toolkit", () => {
       expect(agentToolNames).not.toContain(name);
     }
 
-    expect(Object.values(tools).every(Tool.isUserDefined)).toBeTruthy();
+    expect(Object.values(tools).every(Tool.isDynamic)).toBeTruthy();
   });
 });
