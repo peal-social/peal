@@ -582,6 +582,7 @@
     "workedMinutes": "A travaillé {minutes, plural, one {# minute} other {# minutes}}",
     "stopped": "Vous avez arrêté cette réponse ici.",
     "stepLimit": "Peal a utilisé toutes les étapes d’une réponse. Demandez-lui de continuer s’il reste à faire.",
+    "failedHere": "Cette réponse s’est arrêtée sur une erreur. Renvoyez votre message pour réessayer.",
     "channels": "Canaux",
     "otherChannels": "{count, plural, one {# autre canal} other {# autres canaux}}",
     "copy": "Copier la réponse",

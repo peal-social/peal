@@ -213,6 +213,25 @@ describe(TranscriptView, () => {
       "The language model took too long to answer."
     );
   });
+
+  it("says a saved answer failed, once the run's own words are gone", async () => {
+    const failed = answer({ durationMs: 400, outcome: "failed", text: "" });
+    const note = "This answer stopped on an error.";
+
+    const [saved, live] = await Promise.all([
+      transcript({ ...emptyChat, messages: [asked, failed] }),
+      transcript({
+        ...emptyChat,
+        messages: [asked, failed],
+        problem: { _tag: "failed", reason: "timedOut" },
+      }),
+    ]);
+
+    expect([saved.includes(note), live.includes(note)]).toStrictEqual([
+      true,
+      false,
+    ]);
+  });
 });
 
 const approval: AgentApproval = {

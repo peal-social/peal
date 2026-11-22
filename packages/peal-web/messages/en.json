@@ -581,6 +581,7 @@
     "workedSeconds": "Worked for {seconds, plural, one {# second} other {# seconds}}",
     "workedMinutes": "Worked for {minutes, plural, one {# minute} other {# minutes}}",
     "stopped": "You stopped this answer here.",
+    "failedHere": "This answer stopped on an error. Send your message again to retry.",
     "stepLimit": "Peal used every step one answer gets. Ask it to carry on if there's more to do.",
     "channels": "Channels",
     "otherChannels": "{count, plural, one {# other channel} other {# other channels}}",

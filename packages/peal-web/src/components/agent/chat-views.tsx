@@ -475,6 +475,7 @@ export const MessageView = ({
   nameOf,
   onAnswer,
   running,
+  saysFailure = true,
 }: {
   readonly actions: AnswerActions;
   readonly busy: boolean;
@@ -484,6 +485,11 @@ export const MessageView = ({
   readonly onAnswer: (callId: string, approved: boolean) => void;
   /** This is the answer being written now. */
   readonly running: boolean;
+  /**
+   * Whether a failed answer says so itself: not while the chat shows why
+   * its last run failed, which says more.
+   */
+  readonly saysFailure?: boolean;
 }) => {
   const t = useTranslations("Agent");
 
@@ -537,6 +543,9 @@ export const MessageView = ({
       ) : null}
       {message.outcome === "stepLimit" ? (
         <p className="text-muted-foreground text-sm">{t("stepLimit")}</p>
+      ) : null}
+      {message.outcome === "failed" && saysFailure ? (
+        <p className="text-muted-foreground text-sm">{t("failedHere")}</p>
       ) : null}
       {running || message.outcome === null ? null : (
         <AnswerFoot actions={actions} message={message} />
@@ -670,6 +679,7 @@ export const TranscriptView = ({
           nameOf={nameOf}
           onAnswer={onAnswer}
           running={message.id === writing}
+          saysFailure={state.problem === null}
         />
       ))}
       {state.run !== null && writing === null ? (
