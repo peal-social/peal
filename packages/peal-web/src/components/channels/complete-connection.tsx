@@ -25,11 +25,14 @@ import { useChannelErrorText } from "#channels/channel-error-text.ts";
 import { completeConnection, failureOf } from "#channels/channels-api.ts";
 import type { ChannelErrorKey } from "#channels/channels-api.ts";
 import {
+  amended,
+  currentRun,
   nextStep,
   recordStep,
   runAt,
   runErrorOf,
   runWorkspaceFor,
+  saveRun,
 } from "#channels/connect-run.ts";
 import type { ConnectRun } from "#channels/connect-run.ts";
 import {
@@ -221,6 +224,25 @@ export const CompleteConnection = ({
         }
 
         toast.success(t("connected", { handle: outcome.channel.handle }));
+
+        // A platform the step skipped while its sign-in was open here: the
+        // run reads it connected, and the step shows the rest.
+        const skipped = currentRun();
+
+        if (skipped !== null && skipped.workspaceId === workspace) {
+          const after = amended(skipped, platform, {
+            _tag: "connected",
+            handles: [outcome.channel.handle],
+          });
+
+          if (after !== skipped) {
+            saveRun(after);
+            toSetup(workspace);
+
+            return;
+          }
+        }
+
         router.replace(workspaceHref(workspace, "/channels"));
 
         return;

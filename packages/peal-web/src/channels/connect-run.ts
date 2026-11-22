@@ -119,6 +119,28 @@ export const recorded = (
     ? { ...run, outcomes: [...run.outcomes, outcome] }
     : run;
 
+/**
+ * The run once a sign-in of a step the member skipped connected anyway,
+ * finished in its tab after the step moved on: that step reads connected.
+ * Unchanged for a step that came to anything but a skip.
+ */
+export const amended = (
+  run: ConnectRun,
+  platform: Platform,
+  outcome: RunOutcome
+): ConnectRun => {
+  const index = run.steps.findIndex((step) => step.platform === platform);
+
+  return run.outcomes[index]?._tag === "skipped"
+    ? {
+        ...run,
+        outcomes: run.outcomes.map((each, at) =>
+          at === index ? outcome : each
+        ),
+      }
+    : run;
+};
+
 /** The accounts the run connected, across its steps. */
 export const connectedCount = (run: ConnectRun): number =>
   run.outcomes.flatMap((outcome) =>

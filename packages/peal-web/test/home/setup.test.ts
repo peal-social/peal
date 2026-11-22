@@ -4,6 +4,7 @@ import type { Billing, PlanAllowances } from "peal-contract";
 import { accountsMonthly, rateCard } from "peal-contract/rate-card";
 
 import {
+  amended,
   connectedCount,
   failedCount,
   isDone,
@@ -228,6 +229,20 @@ describe("a run", () => {
 
     expect(isDone(done)).toBeTruthy();
     expect(failedCount(done)).toBe(1);
+  });
+
+  it("reads a skipped step connected once its sign-in finished anyway", () => {
+    const skipped = recorded(run, "mastodon", { _tag: "skipped" });
+
+    const after = amended(skipped, "mastodon", {
+      _tag: "connected",
+      handles: ["@a"],
+    });
+
+    expect(after.outcomes).toStrictEqual([
+      { _tag: "connected", handles: ["@a"] },
+    ]);
+    expect(amended(run, "mastodon", { _tag: "skipped" })).toBe(run);
   });
 
   it("ignores a sign-in that is not the next step's", () => {
