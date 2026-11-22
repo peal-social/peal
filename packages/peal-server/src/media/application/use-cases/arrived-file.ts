@@ -4,7 +4,7 @@ import type { DateTime as DateTimeType } from "effect";
 import { MediaAssets } from "#media/application/ports/media-assets.ts";
 import { MediaStorage } from "#media/application/ports/media-storage.ts";
 import { CurrentUploadPolicy } from "#media/application/upload-policy.ts";
-import { finishUpload } from "#media/application/use-cases/finish-upload.ts";
+import { finishArrived } from "#media/application/use-cases/finish-upload.ts";
 import { pooledRoom } from "#media/application/use-cases/pooled-storage.ts";
 import type { AltText } from "#media/domain/alt-text.ts";
 import type { FileName } from "#media/domain/file-name.ts";
@@ -205,7 +205,7 @@ export interface Arrival {
  * Stores the file (`arriving`, which ends once its bytes are in the
  * store) and records it as an asset of the workspace, counted again under
  * the workspace's lock with what was stored meanwhile, then completes and
- * probes it as `finishUpload` does. From the moment the store holds the
+ * probes it as `finishArrived` does. From the moment the store holds the
  * file to the moment its asset is recorded nothing interrupts it, and any
  * failure there, a file that no longer fits or a defect, takes the file
  * out of the store: no file is ever kept without an asset, which nothing
@@ -267,5 +267,5 @@ export const keepArriving = <E, R>(
       )
     );
 
-    return yield* finishUpload({ assetId: id, workspaceId });
+    return yield* finishArrived({ assetId: id, workspaceId });
   }).pipe(Effect.withSpan("Media.keepArriving"));

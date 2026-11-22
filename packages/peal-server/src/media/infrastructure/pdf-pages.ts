@@ -1,15 +1,17 @@
 import { promisify } from "node:util";
 import { inflate } from "node:zlib";
 
-import { Effect, Option, Schema } from "effect";
+import { Effect, Option, Schema, Stream } from "effect";
 
 import {
   afterLineEnd,
   bytesOf,
   find,
+  longestToken,
   nextToken,
   startsAt,
 } from "./pdf-syntax.ts";
+import type { PdfToken } from "./pdf-syntax.ts";
 
 const inflated = promisify(inflate);
 
@@ -155,6 +157,98 @@ const arraysAfter = (kind: TokenKind, arrays: number): number => {
   return kind === "arrayClose" ? Math.max(0, arrays - 1) : arrays;
 };
 
+/**
+ * The most of an object stream's bytes, still compressed, that are held to
+ * be inflated: a longer one leaves the count unknown, so no stream has the
+ * file held whole in memory.
+ */
+export const maxObjectStreamBytes = maxInflatedStream;
+
+// What is held past where the reading is: white space, then a token, each
+// read through `longestToken` at most, and the few bytes after.
+const lookahead = 2 * longestToken + 64;
+
+// How much more of the file is asked for at a time, past what the reading
+// needs, so that what arrived is joined once a mebibyte at most.
+const refill = 1024 * 1024;
+
+/**
+ * The part of the file held in memory: from `base`, as many bytes as were
+ * asked for, and whether they reach the file's end. The reading asks for
+ * more (`more`), and lets go of what it no longer needs, as it goes.
+ */
+interface Window {
+  base: number;
+  bytes: Uint8Array;
+  ended: boolean;
+}
+
+const windowEnd = (window: Window): number => window.base + window.bytes.length;
+
+// A whole buffer, as the plain bytes of an object stream are.
+const whole = (bytes: Uint8Array): Window => ({
+  base: 0,
+  bytes,
+  ended: true,
+});
+
+/** Bytes of the file, from `keep`, up to `until` or the file's end. */
+interface Wanted {
+  readonly keep: number;
+  readonly until: number;
+}
+
+/**
+ * What a reading asks of whoever runs it: to let other work run (`pause`),
+ * to hold the file as `Wanted` says (`more`), or to inflate an object
+ * stream into `room` bytes at most (`inflate`), whose plain bytes it is
+ * then given.
+ */
+type Step =
+  | { readonly _tag: "pause" }
+  | ({ readonly _tag: "more" } & Wanted)
+  | {
+      readonly _tag: "inflate";
+      readonly body: Uint8Array;
+      readonly room: number;
+    };
+
+type Reading<A> = Generator<Step, A, Option.Option<Uint8Array>>;
+
+const pause: Step = { _tag: "pause" };
+
+// Holds the file up to `until`, or to its end, from `keep` on.
+const reach = function* reach(
+  window: Window,
+  keep: number,
+  until: number
+): Reading<void> {
+  if (!window.ended && windowEnd(window) < until) {
+    yield {
+      _tag: "more",
+      keep,
+      until: Math.max(until, windowEnd(window) + refill),
+    };
+  }
+};
+
+// The token at or after `at`, by its places in the file; nothing before
+// `at` is needed any more.
+const tokenFrom = function* tokenFrom(
+  window: Window,
+  at: number
+): Reading<PdfToken> {
+  yield* reach(window, at, at + lookahead);
+
+  const read = nextToken(window.bytes, at - window.base);
+
+  return {
+    ...read,
+    end: read.end + window.base,
+    start: read.start + window.base,
+  };
+};
+
 interface ReadDictionary {
   readonly dictionary: Dictionary;
   readonly end: number;
@@ -163,9 +257,9 @@ interface ReadDictionary {
 // Reads the dictionary that opens at `start`, to its end, the file's, or
 // what cannot be read through.
 const readDictionary = function* readDictionary(
-  bytes: Uint8Array,
+  window: Window,
   start: number
-): Generator<undefined, ReadDictionary> {
+): Reading<ReadDictionary> {
   let keys = noKeys;
   let at = start + 2;
   let sliceStart = at;
@@ -173,7 +267,7 @@ const readDictionary = function* readDictionary(
   let arrays = 0;
 
   while (depth > 0) {
-    const token = nextToken(bytes, at);
+    const token = yield* tokenFrom(window, at);
 
     if (token.kind === "end" || token.kind === "overlong") {
       break;
@@ -194,62 +288,111 @@ const readDictionary = function* readDictionary(
 
     if (at - sliceStart >= sliceBytes) {
       sliceStart = at;
-      yield;
+      yield pause;
     }
   }
 
   return { dictionary: settled(keys, "").dictionary, end: at };
 };
 
-// Where `sequence` next is from `from`, read a slice at a time; -1 if not.
-const findSliced = function* findSliced(
-  bytes: Uint8Array,
+// Where `sequence` first is from `from`, before `until`, read a slice at a
+// time; -1 if not. What is before `keep`, or else before the slice being
+// read, is let go.
+const findFrom = function* findFrom(
+  window: Window,
   sequence: readonly number[],
-  from: number
-): Generator<undefined, number> {
-  for (let start = from; start < bytes.length; start += sliceBytes) {
+  from: number,
+  until: number,
+  keep: Option.Option<number>
+): Reading<number> {
+  let start = from;
+
+  while (start < until) {
+    const sliceEnd = Math.min(start + sliceBytes, until);
+    const readEnd = sliceEnd + sequence.length - 1;
+
+    yield* reach(window, Option.isSome(keep) ? keep.value : start, readEnd);
+
     const found = find(
-      bytes,
+      window.bytes,
       sequence,
-      start,
-      Math.min(bytes.length, start + sliceBytes + sequence.length - 1)
+      start - window.base,
+      Math.min(window.bytes.length, readEnd - window.base)
     );
 
     if (found !== -1) {
-      return found;
+      return found + window.base;
     }
 
-    yield;
+    if (window.ended && windowEnd(window) - sequence.length < sliceEnd) {
+      return -1;
+    }
+
+    start = sliceEnd;
+    yield pause;
   }
 
   return -1;
 };
 
+/**
+ * Where a stream's bytes end: a place in the file, `never` when no
+ * `endstream` follows, `beyond` when a stream whose bytes are held runs
+ * past `maxObjectStreamBytes`.
+ */
+type StreamEnd = number | "beyond" | "never";
+
 // Where a stream's bytes end: where its dictionary's `/Length` says, when
-// `endstream` is there, else at the next `endstream`. -1 when none follows.
+// `endstream` is there, else at the first `endstream` after its start.
+// The file is read forward only: that first `endstream` is looked for on
+// the way to where `/Length` points, so the bytes in between are let go
+// as they are passed, unless they are `held` (an object stream's).
 const streamEnd = function* streamEnd(
-  bytes: Uint8Array,
+  window: Window,
   start: number,
-  length: Option.Option<number>
-): Generator<undefined, number> {
-  const told = length.pipe(
-    Option.map((bytesLong) => start + bytesLong),
-    Option.filter((end) =>
-      startsAt(bytes, afterLineEnd(bytes, end), endStreamKeyword)
+  length: Option.Option<number>,
+  held: boolean
+): Reading<StreamEnd> {
+  const keep = held ? Option.some(start) : Option.none<number>();
+  const until = held ? start + maxObjectStreamBytes + 1 : Infinity;
+
+  // None before `until`: the file ended first, or the stream is longer
+  // than what is held.
+  const missing = (): StreamEnd =>
+    window.ended && windowEnd(window) - endStreamKeyword.length < until
+      ? "never"
+      : "beyond";
+
+  const told = Option.isSome(length) ? start + length.value : undefined;
+
+  if (told === undefined || told >= until) {
+    const found = yield* findFrom(window, endStreamKeyword, start, until, keep);
+
+    return found === -1 ? missing() : found;
+  }
+
+  const early = yield* findFrom(window, endStreamKeyword, start, told, keep);
+
+  yield* reach(window, held ? start : told, told + 2 + endStreamKeyword.length);
+
+  if (
+    startsAt(
+      window.bytes,
+      afterLineEnd(window.bytes, told - window.base),
+      endStreamKeyword
     )
-  );
+  ) {
+    return told;
+  }
 
-  return Option.isSome(told)
-    ? told.value
-    : yield* findSliced(bytes, endStreamKeyword, start);
+  if (early !== -1) {
+    return early;
+  }
+
+  const after = yield* findFrom(window, endStreamKeyword, told, until, keep);
+
+  return after === -1 ? missing() : after;
 };
-
-/** An object stream's bytes, still compressed, and where they are. */
-interface ObjectStream {
-  readonly body: Uint8Array;
-  readonly inflates: boolean;
-  readonly offset: number;
-}
 
 /** The root of a page tree: where it is written, and the pages it says. */
 interface PageTreeRoot {
@@ -262,9 +405,9 @@ interface Scan {
   readonly complete: boolean;
   /** The last page tree root written, if any. */
   readonly root: Option.Option<PageTreeRoot>;
-  /** The object streams, in the file's order; none inside one. */
-  readonly streams: readonly ObjectStream[];
 }
+
+const incomplete: Scan = { complete: false, root: Option.none() };
 
 // A page tree's root is the node of type Pages that has no parent.
 const rootOf = (
@@ -286,65 +429,91 @@ const later = (
     ? one
     : other;
 
-const objectStreamOf = (
-  dictionary: Dictionary,
-  body: Uint8Array,
-  offset: number
-): ObjectStream => ({
-  body,
-  inflates: !dictionary.filtered || dictionary.filter === "/FlateDecode",
-  offset,
-});
+const inflates = (dictionary: Dictionary): boolean =>
+  !dictionary.filtered || dictionary.filter === "/FlateDecode";
 
-// Reads the outermost dictionaries of `bytes`, which are its objects', and
-// skips what streams hold: only object streams are kept (`inFile`), to be
-// read once inflated. A root's place is where it is written in the file,
+// Reads the outermost dictionaries of the window, which are its objects',
+// and skips what streams hold: only object streams (`inFile`) are read,
+// inflated as they come, one at a time, into what is left of
+// `maxInflatedTotal`. A root's place is where it is written in the file,
 // or `offset`, where the object stream that holds it is. A stream that
 // never ends stops the reading: nothing follows it.
 const scan = function* scan(
-  bytes: Uint8Array,
+  window: Window,
   offset: number,
   inFile: boolean
-): Generator<undefined, Scan> {
-  const streams: ObjectStream[] = [];
+): Reading<Scan> {
   let root = Option.none<PageTreeRoot>();
   let last = Option.none<Dictionary>();
-  let complete = true;
+  let streams = 0;
+  let room = maxInflatedTotal;
   let at = 0;
   let sliceStart = 0;
 
-  while (complete) {
-    const token = nextToken(bytes, at);
+  for (;;) {
+    const token = yield* tokenFrom(window, at);
 
     if (token.kind === "end") {
       break;
     }
 
+    if (token.kind === "overlong") {
+      return incomplete;
+    }
+
     at = token.end;
 
-    if (token.kind === "overlong") {
-      complete = false;
-    } else if (token.kind === "open") {
-      const read = yield* readDictionary(bytes, token.start);
+    if (token.kind === "open") {
+      const read = yield* readDictionary(window, token.start);
       const place = inFile ? token.start : offset;
 
       root = later(rootOf(read.dictionary, place), root);
       last = Option.some(read.dictionary);
       at = read.end;
     } else if (inFile && Option.isSome(last) && token.text === "stream") {
-      const start = afterLineEnd(bytes, token.end);
-      const end = yield* streamEnd(bytes, start, last.value.length);
+      yield* reach(window, token.end, token.end + 2);
+
+      const dictionary = last.value;
+
+      const start =
+        afterLineEnd(window.bytes, token.end - window.base) + window.base;
+
+      const objects = dictionary.type === "/ObjStm";
+      const end = yield* streamEnd(window, start, dictionary.length, objects);
 
       // Nothing can be read after a stream that does not end.
-      if (end === -1) {
+      if (end === "never") {
         break;
       }
 
-      if (last.value.type === "/ObjStm") {
-        streams.push(
-          objectStreamOf(last.value, bytes.subarray(start, end), start)
-        );
-        complete = streams.length <= maxObjectStreams;
+      if (end === "beyond") {
+        return incomplete;
+      }
+
+      if (objects) {
+        streams += 1;
+
+        // Copied, so the window it was read from is let go.
+        const body = window.bytes.slice(start - window.base, end - window.base);
+
+        const plain =
+          streams <= maxObjectStreams && inflates(dictionary) && room > 0
+            ? yield { _tag: "inflate", body, room }
+            : Option.none<Uint8Array>();
+
+        if (Option.isNone(plain)) {
+          return incomplete;
+        }
+
+        room -= plain.value.length;
+
+        const inner = yield* scan(whole(plain.value), start, false);
+
+        if (!inner.complete) {
+          return incomplete;
+        }
+
+        root = later(inner.root, root);
       }
 
       last = Option.none();
@@ -355,37 +524,152 @@ const scan = function* scan(
 
     if (at - sliceStart >= sliceBytes) {
       sliceStart = at;
-      yield;
+      yield pause;
     }
   }
 
-  return { complete, root, streams };
+  return { complete: true, root };
 };
 
-// Runs a reading a slice at a time, letting other work run in between.
-const sliced = <A>(reading: Generator<undefined, A>): Effect.Effect<A> =>
-  Effect.gen(function* runSliced() {
-    let step = reading.next();
+/** What reading a file found: no PDF, or a PDF and its pages, when told. */
+export type PdfReading =
+  | { readonly _tag: "notPdf" }
+  | { readonly _tag: "pdf"; readonly pages: Option.Option<number> };
 
-    while (step.done !== true) {
-      yield* Effect.yieldNow;
-      step = reading.next();
+const unknownPages: PdfReading = { _tag: "pdf", pages: Option.none() };
+
+const readPdf = function* readPdf(
+  window: Window,
+  checkHeader: boolean
+): Reading<PdfReading> {
+  if (checkHeader) {
+    yield* reach(window, 0, headerWindow);
+
+    if (!isPdf(window.bytes)) {
+      return { _tag: "notPdf" };
     }
+  }
 
-    return step.value;
+  const read = yield* scan(window, 0, true);
+
+  return read.complete
+    ? {
+        _tag: "pdf",
+        pages: read.root.pipe(Option.flatMap(({ count }) => count)),
+      }
+    : unknownPages;
+};
+
+// An object stream's bytes in the clear, off the main thread. None when
+// they do not inflate, as in an encrypted file, or inflate to more than
+// `room` or `maxInflatedStream`.
+const plainOf = (body: Uint8Array, room: number) =>
+  Effect.tryPromise(
+    async () =>
+      await inflated(body, {
+        maxOutputLength: Math.min(maxInflatedStream, room),
+      })
+  ).pipe(Effect.option);
+
+const joined = (parts: readonly Uint8Array[], length: number): Uint8Array => {
+  const bytes = new Uint8Array(length);
+  let at = 0;
+
+  for (const part of parts) {
+    bytes.set(part, at);
+    at += part.length;
+  }
+
+  return bytes;
+};
+
+// Reads a file as its bytes arrive, holding only what the reading needs:
+// a few mebibytes of the file around where it is, and the one object
+// stream it inflates. It stops taking bytes once the reading is over.
+const readArriving = <E, R>(
+  chunks: Stream.Stream<Uint8Array, E, R>,
+  checkHeader: boolean
+): Effect.Effect<PdfReading, E, R> =>
+  Effect.gen(function* readingArriving() {
+    const window: Window = { base: 0, bytes: new Uint8Array(0), ended: false };
+    const reading = readPdf(window, checkHeader);
+    let arrived: Uint8Array[] = [];
+    let arrivedBytes = 0;
+    let finished = false;
+    let wanted = Option.none<Wanted>();
+    let outcome = Option.none<PdfReading>();
+
+    // Joins what arrived to what is kept, once as much arrived as the
+    // reading wants, or the file is over.
+    const filled = (want: Wanted): boolean => {
+      if (!finished && windowEnd(window) + arrivedBytes < want.until) {
+        return false;
+      }
+
+      const keep = Math.max(want.keep, window.base);
+      const kept = window.bytes.subarray(keep - window.base);
+
+      window.bytes = joined([kept, ...arrived], kept.length + arrivedBytes);
+      window.base = keep;
+      window.ended = finished;
+      arrived = [];
+      arrivedBytes = 0;
+
+      return true;
+    };
+
+    // Runs the reading until it wants more than arrived, or is over.
+    const advance = Effect.gen(function* advance() {
+      let given = Option.none<Uint8Array>();
+
+      while (Option.isNone(outcome)) {
+        if (Option.isSome(wanted)) {
+          if (!filled(wanted.value)) {
+            return;
+          }
+
+          wanted = Option.none();
+        }
+
+        const step = reading.next(given);
+
+        given = Option.none();
+
+        if (step.done === true) {
+          outcome = Option.some(step.value);
+        } else if (step.value._tag === "pause") {
+          yield* Effect.yieldNow;
+        } else if (step.value._tag === "inflate") {
+          given = yield* plainOf(step.value.body, step.value.room);
+        } else {
+          wanted = Option.some(step.value);
+        }
+      }
+    });
+
+    yield* Stream.runForEachWhile(chunks, (chunk) => {
+      arrived.push(chunk);
+      arrivedBytes += chunk.length;
+
+      return advance.pipe(Effect.map(() => Option.isNone(outcome)));
+    });
+
+    finished = true;
+    yield* advance;
+
+    return Option.getOrElse(outcome, () => unknownPages);
   });
 
-// An object stream's bytes in the clear. None when it does not inflate, as
-// in an encrypted file, or inflates to more than `room`.
-const plainOf = (stream: ObjectStream, room: number) =>
-  stream.inflates && room > 0
-    ? Effect.tryPromise(
-        async () =>
-          await inflated(stream.body, {
-            maxOutputLength: Math.min(maxInflatedStream, room),
-          })
-      ).pipe(Effect.option)
-    : Effect.succeedNone;
+/**
+ * Reads a PDF as its bytes arrive: whether it starts as a PDF does
+ * (`isPdf`, from its first 1024 bytes), then its pages, as `countPdfPages`
+ * counts them, holding a few mebibytes of it at a time, never the whole
+ * file (a document is up to 100 MiB). It takes no more bytes once it
+ * knows.
+ */
+export const readPdfArriving = <E, R>(
+  chunks: Stream.Stream<Uint8Array, E, R>
+): Effect.Effect<PdfReading, E, R> => readArriving(chunks, true);
 
 /**
  * How many pages a PDF has, as its page tree's root says (`/Count` of the
@@ -400,45 +684,20 @@ const plainOf = (stream: ObjectStream, room: number) =>
  * None when the count cannot be trusted: no root, a root whose count is
  * written elsewhere, an object stream that does not inflate (as in an
  * encrypted file), more object streams or larger ones than the bounds
- * above, or a string, a name or a comment too long to read through. The
- * count only keeps out files far past what a platform takes; without one
- * the file is kept, for the platform to judge.
+ * above (`maxObjectStreamBytes` compressed among them), or a string, a
+ * name or a comment too long to read through. The count only keeps out
+ * files far past what a platform takes; without one the file is kept, for
+ * the platform to judge.
  *
- * The file is read once, in time that follows its size, a slice at a time
- * (`sliceBytes`): a file made to be slow to read is not, whoever waits for
- * the count can stop waiting, and the process answers its other requests
- * meanwhile. Inflating runs off the main thread, one stream at a time.
+ * The file is read once, forward, in time that follows its size, a slice
+ * at a time (`sliceBytes`): a file made to be slow to read is not, whoever
+ * waits for the count can stop waiting, and the process answers its other
+ * requests meanwhile. Inflating runs off the main thread, one stream at a
+ * time.
  */
 export const countPdfPages = (
   bytes: Uint8Array
 ): Effect.Effect<Option.Option<number>> =>
-  Effect.gen(function* counting() {
-    const outer = yield* sliced(scan(bytes, 0, true));
-
-    if (!outer.complete) {
-      return Option.none<number>();
-    }
-
-    let { root } = outer;
-    let room = maxInflatedTotal;
-
-    for (const stream of outer.streams) {
-      const plain = yield* plainOf(stream, room);
-
-      if (Option.isNone(plain)) {
-        return Option.none<number>();
-      }
-
-      room -= plain.value.length;
-
-      const inner = yield* sliced(scan(plain.value, stream.offset, false));
-
-      if (!inner.complete) {
-        return Option.none<number>();
-      }
-
-      root = later(inner.root, root);
-    }
-
-    return root.pipe(Option.flatMap(({ count }) => count));
-  });
+  readArriving(Stream.make(bytes), false).pipe(
+    Effect.map((read) => (read._tag === "pdf" ? read.pages : Option.none()))
+  );

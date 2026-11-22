@@ -15,6 +15,7 @@ import sharp from "sharp";
 
 import { MediaAssets } from "#media/application/ports/media-assets.ts";
 import { MediaStorage } from "#media/application/ports/media-storage.ts";
+import { ProbeSlots } from "#media/application/ports/probe-slots.ts";
 import { StorageAllowance } from "#media/application/ports/storage-allowance.ts";
 import {
   CurrentUploadPolicy,
@@ -28,6 +29,7 @@ import {
 import { completeUpload } from "#media/application/use-cases/complete-upload.ts";
 import { createUpload } from "#media/application/use-cases/create-upload.ts";
 import type { PreparedUpload } from "#media/application/use-cases/create-upload.ts";
+import { finishUpload } from "#media/application/use-cases/finish-upload.ts";
 import { MediaLibrary } from "#media/container.ts";
 import { MediaAssetIdSchema } from "#media/domain/media-asset-id.ts";
 import { startUpload } from "#media/domain/media-asset.ts";
@@ -79,6 +81,12 @@ const smallParts = {
   multipartThreshold: mebibytes(5),
   partSize: mebibytes(5),
 };
+
+// A server that does not bill: no storage limit.
+const unlimitedStorage = StorageAllowance.of({
+  bytes: () => Effect.succeed(Option.none()),
+  sharedWith: () => Effect.succeed([]),
+});
 
 const freshWorkspace: Effect.Effect<WorkspaceId, never, Ids> = Ids.use(
   (ids) => ids.next
@@ -766,6 +774,72 @@ layer(LibraryTest)("the media library", (it) => {
         probe: "unreadable",
       });
     })
+  );
+
+  it.effect(
+    "answers a file its probe refused for its bytes as it stands, probing it no more",
+    () =>
+      Effect.gen(function* refusedForGood() {
+        const workspaceId = yield* freshWorkspace;
+        const body = damagedPng(64);
+        const prepared = yield* prepare(workspaceId, "image/png", body.length);
+
+        const finish = () =>
+          MediaLibrary.use((library) =>
+            library.finishUpload(memberIn(workspaceId), prepared.asset.id)
+          );
+
+        yield* sendSigned(yield* singleRequest(prepared), body);
+
+        const { asset: first } = yield* finish();
+
+        // A probe would record its reason again, at the time it ran.
+        yield* TestClock.adjust(Duration.minutes(5));
+
+        const { asset: again } = yield* finish();
+
+        assert.deepStrictEqual(again.status, {
+          _tag: "uploaded",
+          probe: "unreadable",
+        });
+        assert.deepStrictEqual(again.updatedAt, first.updatedAt);
+      })
+  );
+
+  it.effect(
+    "refuses to probe while the workspace or the server probes as many files as it may, leaving the file uploaded",
+    () =>
+      Effect.gen(function* busy() {
+        const workspaceId = yield* freshWorkspace;
+        const body = yield* whitePng(16, 9);
+        const prepared = yield* prepare(workspaceId, "image/png", body.length);
+        const request = { assetId: prepared.asset.id, workspaceId };
+
+        yield* sendSigned(yield* singleRequest(prepared), body);
+
+        const finish = (free: boolean) =>
+          finishUpload(request).pipe(
+            Effect.provideService(
+              ProbeSlots,
+              ProbeSlots.of({ take: () => Effect.succeed(free) })
+            ),
+            Effect.provideService(StorageAllowance, unlimitedStorage),
+            Effect.provide(MediaProbeLive)
+          );
+
+        assert.include(yield* Effect.flip(finish(false)), {
+          _tag: "MediaImportBusy",
+        });
+        assert.deepStrictEqual(
+          Option.getOrUndefined(yield* recorded(prepared))?.status,
+          { _tag: "uploaded", probe: "pending" }
+        );
+
+        // Once a slot is free, the next call probes it.
+        const { asset } = yield* finish(true);
+
+        assert.deepStrictEqual(asset.status, { _tag: "ready" });
+      })
   );
 
   it.effect("refuses what the actor's permissions do not allow", () =>

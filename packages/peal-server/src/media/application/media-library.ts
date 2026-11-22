@@ -19,6 +19,7 @@ import type { MediaProbe } from "#media/application/ports/media-probe.ts";
 import type { MediaStorage } from "#media/application/ports/media-storage.ts";
 import { MediaUsage } from "#media/application/ports/media-usage.ts";
 import type { AssetUse } from "#media/application/ports/media-usage.ts";
+import type { ProbeSlots } from "#media/application/ports/probe-slots.ts";
 import type { RemoteMedia } from "#media/application/ports/remote-media.ts";
 import type { StorageAllowance } from "#media/application/ports/storage-allowance.ts";
 import type { UploadIncomplete } from "#media/application/upload-incomplete.ts";
@@ -68,6 +69,7 @@ type MediaPorts =
   | MediaProbe
   | MediaStorage
   | MediaUsage
+  | ProbeSlots
   | RemoteMedia
   | StorageAllowance;
 
@@ -172,11 +174,14 @@ export class MediaLibrary extends Context.Service<
       actor: Actor,
       assetId: MediaAssetId
     ) => Effect.Effect<MediaAsset, CompleteFailure>;
-    /** Completes the upload, then probes the file. */
+    /**
+     * Completes the upload, then probes the file, within the probes a
+     * workspace and the server run at once (`MediaImportBusy` past them).
+     */
     readonly finishUpload: (
       actor: Actor,
       assetId: MediaAssetId
-    ) => Effect.Effect<MediaItem, CompleteFailure>;
+    ) => Effect.Effect<MediaItem, CompleteFailure | MediaImportBusy>;
     readonly probeMedia: (
       actor: Actor,
       assetId: MediaAssetId
