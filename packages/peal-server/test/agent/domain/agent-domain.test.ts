@@ -239,6 +239,12 @@ describe("the agent's domain", () => {
     );
   });
 
+  it("has the model call a change that waits at once, its card being the confirmation", () => {
+    expect(agentInstructions(now, personTimeZone("UTC"))).toContain(
+      "the card Peal shows is the confirmation they give"
+    );
+  });
+
   it("has the model speak of what it can do, never of its tools", () => {
     expect(agentInstructions(now, personTimeZone("UTC"))).toContain(
       "Never name a tool or show its parameters"
