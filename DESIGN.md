@@ -924,6 +924,8 @@ things there, as they would with a colleague. Chats are the person's own.
   **History** (a ghost icon button, a popover of the chats, latest
   first, each with how long ago; choosing one opens it in the panel).
   Minimize hides the panel and keeps its tab; close takes the tab away.
+  A new chat is no tab until its first message is sent: Agent opens it
+  with nothing added to the bar, and shows it again with its draft.
   At most five tabs: a sixth drops the oldest.
 
 ### Command menu

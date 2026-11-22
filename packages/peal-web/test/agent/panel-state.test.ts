@@ -14,17 +14,17 @@ import {
 } from "#agent/panel-state.ts";
 
 describe("the agent's panel", () => {
-  it("opens a new chat from Agent, and hides it on a second press", () => {
+  it("opens a new chat from Agent with no tab, and hides it on a second press", () => {
     const opened = toggleAgent(closedPanel);
 
-    expect(opened).toStrictEqual({ shown: newChat, tabs: [newChat] });
-    expect(toggleAgent(opened)).toStrictEqual({ shown: null, tabs: [newChat] });
+    expect(opened).toStrictEqual({ shown: newChat, tabs: [] });
+    expect(toggleAgent(opened)).toStrictEqual({ shown: null, tabs: [] });
   });
 
-  it("shows the new chat again rather than opening a second one", () => {
-    const again = toggleAgent(minimize(toggleAgent(closedPanel)));
+  it("leaves the open chats' tabs alone when a new chat opens", () => {
+    const again = toggleAgent(minimize(openChat(closedPanel, "c1")));
 
-    expect(again.tabs).toStrictEqual([newChat]);
+    expect(again).toStrictEqual({ shown: newChat, tabs: ["c1"] });
   });
 
   it("opens a chat from History as a tab, once", () => {
@@ -50,14 +50,15 @@ describe("the agent's panel", () => {
     expect(closeChat(state, "c1")).toStrictEqual({ shown: "c2", tabs: ["c2"] });
   });
 
-  it("gives the new chat's tab the id the server made", () => {
-    const state = adoptChat(openChat(toggleAgent(closedPanel), "c1"), "c9");
-
-    expect(state).toStrictEqual({ shown: "c1", tabs: ["c9", "c1"] });
+  it("makes the new chat a tab once its first message made it", () => {
     expect(adoptChat(toggleAgent(closedPanel), "c9")).toStrictEqual({
       shown: "c9",
       tabs: ["c9"],
     });
+    // Made while another chat shows: it stays out of the bar.
+    expect(
+      adoptChat(openChat(toggleAgent(closedPanel), "c1"), "c9")
+    ).toStrictEqual({ shown: "c1", tabs: ["c1"] });
   });
 
   it("keeps the latest tabs only", () => {
@@ -78,6 +79,11 @@ describe("the agent's panel", () => {
   it("reads what the browser kept, and a closed panel for anything else", () => {
     expect(panelStateOf('{"shown":"c1","tabs":["c1"]}')).toStrictEqual({
       shown: "c1",
+      tabs: ["c1"],
+    });
+    // A new chat an older browser kept as a tab is not one.
+    expect(panelStateOf('{"shown":"new","tabs":["new","c1"]}')).toStrictEqual({
+      shown: newChat,
       tabs: ["c1"],
     });
     expect(

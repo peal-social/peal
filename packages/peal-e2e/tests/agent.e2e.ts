@@ -64,12 +64,12 @@ describe("the agent, off", { serial: true }, () => {
     await panel.getByRole("button", "Minimize").tap();
     await expect(panel).toBeHidden();
 
-    // The minimized chat keeps its tab, which shows it again.
-    await screen.getByRole("button", "New chat").tap();
+    // A chat nothing was sent in is no tab of the bar: Agent shows it again.
+    await expect(screen.getByRole("button", "New chat")).toBeHidden();
+    await screen.getByRole("button", "Agent").tap();
     await expect(panel).toBeVisible();
 
     await panel.getByRole("button", "Close").tap();
     await expect(panel).toBeHidden();
-    await expect(screen.getByRole("button", "New chat")).toBeHidden();
   });
 });

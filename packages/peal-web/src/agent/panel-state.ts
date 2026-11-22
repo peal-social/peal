@@ -38,10 +38,13 @@ export const openChat = (state: PanelState, chat: string): PanelState => ({
 
 /**
  * **Agent**: hides the panel while it shows, and otherwise opens a new
- * chat in it.
+ * chat in it, with no tab: a chat becomes a tab of the bar once its first
+ * message makes it (`adoptChat`).
  */
 export const toggleAgent = (state: PanelState): PanelState =>
-  state.shown === null ? openChat(state, newChat) : minimize(state);
+  state.shown === null
+    ? { shown: newChat, tabs: state.tabs.filter((tab) => tab !== newChat) }
+    : minimize(state);
 
 /** A tab of the bar: shows its chat, or hides it while it shows. */
 export const pressTab = (state: PanelState, chat: string): PanelState =>
@@ -59,22 +62,32 @@ export const closeChat = (state: PanelState, chat: string): PanelState => ({
   tabs: state.tabs.filter((tab) => tab !== chat),
 });
 
-/** The new chat's tab takes the id the server gave the chat. */
-export const adoptChat = (state: PanelState, id: string): PanelState => ({
-  shown: state.shown === newChat ? id : state.shown,
-  tabs: [...new Set(state.tabs.map((tab) => (tab === newChat ? id : tab)))],
-});
+/**
+ * The new chat, once its first message made it, takes the id the server
+ * gave it and its tab in the bar.
+ */
+export const adoptChat = (state: PanelState, id: string): PanelState => {
+  const tabs = state.tabs.filter((tab) => tab !== newChat);
+
+  return state.shown === newChat
+    ? { shown: id, tabs: withTab(tabs, id) }
+    : { ...state, tabs };
+};
 
 const decodeStored = Schema.decodeUnknownOption(
   Schema.fromJsonString(PanelStateSchema)
 );
 
 /** The panel a stored value names, or a closed one for anything else. */
-export const panelStateOf = (stored: string | null): PanelState =>
-  Option.getOrElse(
+export const panelStateOf = (stored: string | null): PanelState => {
+  const state = Option.getOrElse(
     Option.fromNullishOr(stored).pipe(Option.flatMap(decodeStored)),
     () => closedPanel
   );
+
+  // A new chat is never a tab, as an older browser may have kept it.
+  return { ...state, tabs: state.tabs.filter((tab) => tab !== newChat) };
+};
 
 /** Where a workspace's panel is kept, in the browser's local storage. */
 export const panelStorageKey = (workspaceId: string): string =>
