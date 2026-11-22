@@ -137,6 +137,37 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   with the workspace's name or "Peal" for the browser's tab
   (`components/shell/frame-view.tsx`). A list page puts its items in
   one bordered list with a line between them, never a card each.
+- A new workspace opens on its second setup step,
+  `/create/<slug>/channels` (`(setup)/create/[workspaceId]/channels`,
+  `setupChannelsPath`, `useSetupChannelsHref`), which `CreateWorkspaceForm`
+  goes to once the workspace is made: the setup card (DESIGN.md, the
+  frame's `setup`; `components/setup/setup-card.tsx`, its view
+  `setup-card-view.tsx`, its rules `#home/setup.ts`, tested), for members
+  with channel:connect (anyone else goes to the workspace's home). The
+  member ticks the platforms the server signs in to (`setupOptionsOf`:
+  New channel's order, LinkedIn's profile and pages apart, no website or
+  chat, none of `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and a
+  tab of the run's own (`openSignInTab`, opened from the click, as
+  browsers open one only then) runs their sign-ins one after the other
+  while the step stays open in the first tab: the run lives in
+  `localStorage` (`#channels/connect-run.ts`), which every tab reads and
+  whose storage events keep the step current; `useRunStep` starts its
+  next step in that tab (or in the step's own, where the browser refused
+  the tab), and the callback page (`CompleteConnection`, which finds the
+  workspace through the run, `runWorkspaceFor`, in a tab that remembers no
+  connection) and the account picker record each outcome and start the
+  next platform's sign-in, or close the tab on any refusal or at the end
+  (`leaveSignInTab`, which opens the step there when the browser does
+  not close it). A platform's page that strands its tab (Google's "Back to
+  safety", Meta's errors, a login abandoned) never takes the step away
+  (dogfooded on the sandbox). The step never leaves
+  for a platform by itself, so Back never traps the member; **Skip for
+  now**, **Stop** and the end lead to the workspace's home, which shows
+  no setup card. Each platform's own page names the account it connects
+  (Peal cannot see or choose it), which the card says. The cost line
+  reads `billingOf` for billing:read only, and every figure from the rate
+  card. The server knows nothing of a run: each connection is checked as
+  any other.
 - The workspace's home builds each assistant's setup (`#home/agents.ts`,
   tested) from the MCP endpoint at the address the browser has Peal open
   at, after hydration: never a key. Brand marks come from simple-icons

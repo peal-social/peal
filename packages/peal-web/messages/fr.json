@@ -1125,7 +1125,8 @@
     "lost": "Cet onglet ne sait pas pour quel espace de travail la connexion a été lancée. Recommencez depuis les canaux de l’espace de travail.",
     "connected": "{handle} est connecté.",
     "toChannels": "Retour aux canaux",
-    "toWorkspaces": "Retour à vos espaces de travail"
+    "toWorkspaces": "Retour à vos espaces de travail",
+    "continuing": "{handle} est connecté. On continue avec {name}…"
   },
   "ConnectLink": {
     "title": "Connecter un compte",
@@ -1205,7 +1206,9 @@
     "connected": "{count, plural, one {# compte est connecté.} other {# comptes sont connectés.}}",
     "cancel": "Retour aux canaux",
     "retry": "Choisissez à nouveau, ou {platform, select, facebook {reconnectez-vous avec Facebook} instagram {{connection, select, unifiedLogin {reconnectez-vous} other {reconnectez-vous avec Facebook}}} youtube {reconnectez-vous avec Google} googleBusiness {reconnectez-vous avec Google} linkedin {reconnectez-vous avec LinkedIn} other {reconnectez-vous}} pour une nouvelle liste.",
-    "startOver": "{platform, select, facebook {Se reconnecter avec Facebook} instagram {{connection, select, unifiedLogin {Se reconnecter} other {Se reconnecter avec Facebook}}} youtube {Se reconnecter avec Google} googleBusiness {Se reconnecter avec Google} linkedin {Se reconnecter avec LinkedIn} other {Se reconnecter}}"
+    "startOver": "{platform, select, facebook {Se reconnecter avec Facebook} instagram {{connection, select, unifiedLogin {Se reconnecter} other {Se reconnecter avec Facebook}}} youtube {Se reconnecter avec Google} googleBusiness {Se reconnecter avec Google} linkedin {Se reconnecter avec LinkedIn} other {Se reconnecter}}",
+    "skip": "Passer cette plateforme",
+    "continuing": "{count, plural, one {# compte connecté} other {# comptes connectés}}. On continue avec {name}…"
   },
   "InstagramChannels": {
     "title": "Instagram",
@@ -3379,6 +3382,51 @@
         "install": "Installez le SDK",
         "call": "Faites un premier appel"
       }
+    }
+  },
+  "SetupCard": {
+    "title": "Configurez vos canaux",
+    "description": "Cochez les plateformes où vous publiez : Peal ouvre la connexion de chacune à tour de rôle. Chaque plateforme indique le compte qu’elle va connecter : si vous êtes connecté à plusieurs comptes, vérifiez que c’est le bon, ou changez-en sur place.",
+    "listLabel": "Plateformes à connecter",
+    "platform": "{platform, select, x {X} linkedin {LinkedIn} bluesky {Bluesky} mastodon {Mastodon} threads {Threads} instagram {Instagram} facebook {Pages Facebook} tiktok {TikTok} youtube {YouTube} pinterest {Pinterest} googleBusiness {Google Business Profile} slack {Slack} other {{platform}}}",
+    "linkedinProfile": "Profil LinkedIn",
+    "linkedinPage": "Pages LinkedIn",
+    "instance": {
+      "label": "Votre serveur Mastodon",
+      "hint": "Par exemple mastodon.social."
+    },
+    "handle": {
+      "label": "Votre identifiant Bluesky (facultatif)",
+      "hint": "Par exemple vous.bsky.social. Laissez vide pour le saisir sur Bluesky."
+    },
+    "xClosed": "Demande un moyen de paiement, sur la page de facturation.",
+    "connect": "{count, plural, =0 {Connecter} one {Connecter # plateforme} other {Connecter # plateformes}}",
+    "leaving": "Ouverture…",
+    "notNow": "Passer pour l’instant",
+    "otherWays": "Les sites web et les messageries se connectent depuis <link>Nouveau canal</link>.",
+    "cost": {
+      "free": "Vos {free, number} premiers comptes sont gratuits.",
+      "needsPayment": "Vos {free, number} premiers comptes sont gratuits. Au-delà, Peal demande un moyen de paiement.",
+      "adds": "À un compte chacune, elles ajoutent {price} par mois HT · {included} avec la TVA française de {rate} %. Chaque page ou chaîne choisie compte pour un compte."
+    },
+    "status": {
+      "waiting": "En attente",
+      "connected": "Connecté : {handles}",
+      "skipped": "Passé"
+    },
+    "running": {
+      "description": "Chaque connexion s’ouvre dans un autre onglet, si le navigateur le permet, et cette page la suit. Si la page d’une plateforme ne vous ramène pas, revenez sur cette page : vous pouvez continuer ou passer d’ici.",
+      "continue": "Continuer avec {name}",
+      "skip": "Passer {name}",
+      "stop": "Arrêter"
+    },
+    "done": {
+      "title": "{connected, plural, =0 {Aucun canal n’a été connecté} other {Vos canaux sont prêts}}",
+      "summary": "{connected, plural, =0 {Chaque plateforme dit ci-dessous ce qui s’est passé. Recommencez pour réessayer.} one {# compte connecté{failed, plural, =0 {.} one {. Une plateforme ne s’est pas connectée : réessayez depuis Canaux.} other {. # plateformes ne se sont pas connectées : réessayez depuis Canaux.}}} other {# comptes connectés{failed, plural, =0 {.} one {. Une plateforme ne s’est pas connectée : réessayez depuis Canaux.} other {. # plateformes ne se sont pas connectées : réessayez depuis Canaux.}}}}",
+      "writePost": "Écrire une publication",
+      "startOver": "Recommencer",
+      "home": "Aller à l’accueil",
+      "accounts": "Ce n’est pas le bon compte ? Déconnectez-le depuis Canaux, puis connectez le bon."
     }
   },
   "Webhooks": {

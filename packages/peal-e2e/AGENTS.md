@@ -150,6 +150,16 @@
   its close button fit the window, and that closing it gives the focus
   back to the thumbnail. A seeded description has no surrounding spaces,
   which the server refuses to read.
+- A new workspace opens on its setup step (`/create/<slug>/channels`):
+  `openedWorkspace` waits for it and leaves with **Skip for now**
+  (`[data-setup-skip]`), so every journey starts on the workspace's home.
+  `tests/setup-card.e2e.ts` reads the step itself: nothing ticked, the
+  free accounts said once Mastodon is ticked, a run that stops at a
+  Mastodon server which does not exist and comes back to the step with
+  its reason, **Start over**, then **Skip for now** to a home with no
+  setup card. The chain from one platform's callback to the next sign-in
+  needs a platform to answer, which no run reaches: `test/home/` and
+  `test/setup/` in the web app cover the run's steps.
 - `tests/two-step.e2e.ts` turns two-step verification on from the account
   page, reading the key written beside the QR code and computing the codes
   an authenticator app would (`tests/support/totp.ts`, RFC 6238), signs in

@@ -329,6 +329,8 @@ services:
       PEAL_CONTACT_URL:
       # The support chat: the Crisp website its launcher opens.
       PEAL_CRISP_WEBSITE_ID:
+      # The platforms the home page's setup card leaves out.
+      PEAL_SETUP_HIDDEN_PLATFORMS:
       # The web app's measurement: on with the server's, the project token
       # its relay at /pulse relays for, and where it sends.
       PEAL_POSTHOG_WEB:

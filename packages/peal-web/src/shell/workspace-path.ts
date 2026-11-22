@@ -17,6 +17,13 @@ export const workspacePath = (slug: string, rest = ""): string =>
   `/${encodeURIComponent(slug)}${rest}`;
 
 /**
+ * The address of a new workspace's second setup step, connecting its
+ * channels: `/create/<slug>/channels`, in the setup page's frame.
+ */
+export const setupChannelsPath = (slug: string): string =>
+  `/create/${encodeURIComponent(slug)}/channels`;
+
+/**
  * The workspace an address's first segment names: by its slug, as every
  * link writes it, or by its id, as the server's emails do (the proxy sends
  * those on to the slug, `slugAddressOf`).

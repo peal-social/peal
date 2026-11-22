@@ -3,6 +3,9 @@ import { expect } from "e2e";
 import { reservedWorkspaceSlugs } from "peal-contract/workspace-slug";
 import { Client } from "pg";
 
+// A new workspace's second setup step, `/create/<slug>/channels`.
+const setupStep = /^https?:\/\/[^/]+(?:\/fr)?\/create\/[^/]+\/channels$/u;
+
 /** A workspace the browser opened: its slug, which its addresses hold, and its id. */
 export interface OpenedWorkspace {
   readonly id: string;
@@ -49,6 +52,11 @@ export const openedWorkspace = async (
 
   if (!workspacePage.test(await browser.url())) {
     await create.tap();
+
+    // A new workspace opens on its second setup step, connecting its
+    // channels: the journeys go on without, as Skip for now does.
+    await expect(browser).toHaveURL(setupStep, { timeout: 30_000 });
+    await browser.locator("[data-setup-skip]").tap();
   }
 
   // Creating the workspace, then rendering its page on the server, takes a

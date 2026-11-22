@@ -23,7 +23,7 @@ import { useOfferAuthUpgrade } from "#components/billing/use-offer-upgrade.ts";
 import { useDebounced } from "#components/media/use-debounced.ts";
 import { useRouter } from "#i18n/navigation.ts";
 import { useMounted } from "#posts/use-mounted.ts";
-import { workspacePath } from "#shell/workspace-path.ts";
+import { setupChannelsPath } from "#shell/workspace-path.ts";
 import {
   createRefusalOf,
   slugAvailabilityOf,
@@ -168,7 +168,7 @@ export const CreateWorkspaceForm = ({
         // five minutes: setting it again renews the cookie.
         chooseWorkspace(result.data.id);
         setError(null);
-        router.push(workspacePath(result.data.slug));
+        router.push(setupChannelsPath(result.data.slug));
         router.refresh();
       } else if (refusalOf(result.error.code, tried).kind === "form") {
         setError(authErrorKey(result.error));
