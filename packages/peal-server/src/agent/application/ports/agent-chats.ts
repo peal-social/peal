@@ -26,8 +26,11 @@ export interface ChatRun {
   readonly chat: AgentChat;
   /** What the model reads of the chat so far, as its JSON (effect/ai's `Prompt`). */
   readonly history: Schema.Json;
-  /** The chat's last answer; none before the first. */
-  readonly lastAnswer: Option.Option<AgentMessage>;
+  /**
+   * The answer whose changes still wait for the person, the latest one
+   * that holds any: the round that asked them; none when nothing waits.
+   */
+  readonly asking: Option.Option<AgentMessage>;
 }
 
 /** A chat as its author's export holds it. */

@@ -76,10 +76,19 @@
   model's words.
 - Each round's system message carries Anthropic's cache breakpoint
   (`cachedPrefix`), so the tools and the rules, the same every round,
-  are read from its cache after the first; other providers ignore it. An answer continues in the same
-  message after an approval (`started` with its id and a null
-  `userMessageId`); a message sent while changes wait makes them
-  `expired`, and the model reads that they were not made.
+  are read from its cache after the first; other providers ignore it.
+- Every run writes an answer of its own, after the chat's earlier
+  messages, so what the agent says after an approval reads below the card
+  the person answered: a run after an approval too (`started` with the
+  new answer's id and a null `userMessageId`), holding the approved
+  call's step and card. The answered change stays on the answer that
+  asked it, its state updated there and sent again first under its
+  `callId`; a message sent while changes wait makes them `expired` there,
+  and the model reads that they were not made. A run's changes are read
+  from the latest answer that holds a pending one (`ChatRun.asking`), not
+  only the last answer: an answer to one of several changes is an answer
+  after it. The model's history is one conversation, whatever the
+  messages.
 - The system message is fixed (`agent-instructions.ts`) but for today's
   date on the person's clock and their zone (an IANA zone, else UTC):
   never the person's message nor a tool's answer. The title's request

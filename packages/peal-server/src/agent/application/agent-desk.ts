@@ -191,7 +191,7 @@ export class AgentDesk extends Context.Service<
 
           const pending =
             input._tag === "answer" &&
-            Option.exists(claimed.value.lastAnswer, (answer) =>
+            Option.exists(claimed.value.asking, (answer) =>
               pendingOf(answer).some(({ callId }) => callId === input.callId)
             );
 
