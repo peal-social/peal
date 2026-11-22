@@ -1,48 +1,45 @@
 import {
-  getCurrentAuthEndpointContext,
+  getCurrentAdapter,
   runWithTransaction,
 } from "@better-auth/core/context";
 import type { GenericEndpointContext, User } from "better-auth";
-import {
-  APIError,
-  getSessionFromCtx,
-  sendVerificationEmailFn,
-} from "better-auth/api";
-import {
-  deleteSessionCookie,
-  expireCookie,
-  parseCookies,
-  setSessionCookie,
-} from "better-auth/cookies";
+import { getSessionFromCtx, sendVerificationEmailFn } from "better-auth/api";
+import { setSessionCookie } from "better-auth/cookies";
 import { Effect, Layer, Option, Schema } from "effect";
 import { Digest, Mac, SecureRandom } from "effect/crypto";
 import { Base64Url } from "effect/encoding";
 
-import { LocaleSchema } from "#shared/domain/locale.ts";
+import {
+  fittedName,
+  maxPersonNameLength,
+} from "#shared/domain/display-name.ts";
+import { defaultLocale, LocaleSchema } from "#shared/domain/locale.ts";
 
 import { forgetConnectedApplications } from "./connected-applications.ts";
 import { bindingOf } from "./sign-up-binding.ts";
+import { markTokensNotBefore } from "./tokens-not-before.ts";
+import { UsedAccountError } from "./used-account-error.ts";
 
 // A password's sign-up binds the account's confirmation to the browser that
 // signed up: a random nonce in an HttpOnly cookie there, and its SHA-256 with
 // the account, beside the SHA-256 of the password it was set with. Opening
 // the emailed link proves the mailbox; holding the nonce proves the person
-// opening it is the one who chose the password. Both, and the account is
+// confirming is the one who chose the password. Both, and the account is
 // confirmed and signed in. The link alone confirms the address, drops the
 // password and every session, and signs nobody in: whoever set the password
 // may not be whoever owns the address.
+//
+// Every decision about an unconfirmed account starts with a statement that
+// takes its row's lock and holds only while the address is unconfirmed
+// (`claimUnconfirmed`, `confirmUnconfirmed`): a sign-up taking an account
+// over and a confirmation of it never interleave, and nothing is written
+// to an account once its address is confirmed.
 
 /** The cookie that holds the nonce, under Better Auth's prefix. */
 export const signUpBrowserCookie = "sign_up_browser";
 
 /** How long a sign-up's browser can confirm it, in seconds. */
 export const signUpBrowserLifetime = 7 * 24 * 60 * 60;
-
-/** The mark the confirmation page reads: the address is confirmed, sign in by setting a password. */
-export const passwordNeededMark = {
-  name: "password",
-  value: "needed",
-} as const;
 
 const crypto = Layer.mergeAll(
   SecureRandom.layerWebCrypto,
@@ -83,15 +80,61 @@ const decodeBinding = Schema.decodeUnknownOption(
 
 const encodeBinding = Schema.encodeSync(Schema.fromJsonString(BindingSchema));
 
-const cookieOf = (ctx: GenericEndpointContext) =>
+/** The nonce's cookie, as Better Auth names and sets its own. */
+export const signUpBrowserCookieOf = (ctx: GenericEndpointContext) =>
   ctx.context.createAuthCookie(signUpBrowserCookie, {
     maxAge: signUpBrowserLifetime,
   });
 
+type AuthCtx = Pick<GenericEndpointContext, "context">;
+
+// Takes the user's row lock, and writes `update` to it, only while its
+// address is unconfirmed: whether it did.
+const whileUnconfirmed = async (
+  ctx: AuthCtx,
+  userId: string,
+  update: { readonly emailVerified?: true }
+): Promise<boolean> => {
+  const adapter = await getCurrentAdapter(ctx.context.adapter);
+
+  const changed = await adapter.updateMany({
+    model: "user",
+    update: { ...update, updatedAt: new Date() },
+    where: [
+      { field: "id", value: userId },
+      { field: "emailVerified", value: false },
+    ],
+  });
+
+  return changed > 0;
+};
+
+/**
+ * The first statement of a sign-up's takeover: holds the account's row
+ * while its address is unconfirmed, and says whether it is. Once
+ * confirmed, the takeover stops there.
+ */
+export const claimUnconfirmed = async (
+  ctx: AuthCtx,
+  userId: string
+): Promise<boolean> => await whileUnconfirmed(ctx, userId, {});
+
+/**
+ * The first statement of a confirmation: confirms the address, holding the
+ * account's row, while it is unconfirmed, and says whether it was. A
+ * sign-up's takeover then waits for the confirmation's transaction and
+ * finds the address confirmed.
+ */
+export const confirmUnconfirmed = async (
+  ctx: AuthCtx,
+  userId: string
+): Promise<boolean> =>
+  await whileUnconfirmed(ctx, userId, { emailVerified: true });
+
 // Keeps, with the account, the digests of the nonce and of the password
 // hash it goes with, replacing any earlier binding.
 const bind = async (
-  ctx: GenericEndpointContext,
+  ctx: AuthCtx,
   userId: string,
   nonce: string,
   passwordHash: string
@@ -110,28 +153,64 @@ const bind = async (
   });
 };
 
+// The name a released account goes by: its address's local part, made a
+// name Peal keeps (`fittedName`), as nothing the pre-registrant typed may
+// stay.
+const releasedName = (email: string): string => {
+  const local = email.slice(0, Math.max(0, email.lastIndexOf("@")));
+  const name = fittedName(local, maxPersonNameLength);
+
+  return name === "" ? fittedName(email, maxPersonNameLength) : name;
+};
+
 /**
- * Leaves an unconfirmed account as a provider's sign-up leaves one: no
- * password, no session, no connected application, no browser that may
- * confirm it. What its password let in ends with it.
+ * Leaves an account as a provider's sign-up leaves one: no password, no
+ * session, no connected application, no browser that may confirm it, and
+ * nothing the pre-registrant chose (the name goes back to the address's,
+ * the language to the default). What its password let in ends with it,
+ * bearer tokens issued before now included (`markTokensNotBefore`). Run
+ * inside the transaction that holds the row.
  */
 export const releaseAccount = async (
-  ctx: Pick<GenericEndpointContext, "context">,
-  userId: string
+  ctx: AuthCtx,
+  user: { readonly email: string; readonly id: string }
 ): Promise<void> => {
   const { internalAdapter } = ctx.context;
+  const credential = await internalAdapter.findCredentialAccount(user.id);
 
-  await runWithTransaction(ctx.context.adapter, async () => {
-    const credential = await internalAdapter.findCredentialAccount(userId);
+  if (credential !== null) {
+    await internalAdapter.deleteAccount(credential.id);
+  }
 
-    if (credential !== null) {
-      await internalAdapter.deleteAccount(credential.id);
-    }
-
-    await internalAdapter.deleteUserSessions(userId);
-    await forgetConnectedApplications(ctx, userId);
-    await internalAdapter.deleteVerificationByIdentifier(bindingOf(userId));
+  await internalAdapter.updateUser(user.id, {
+    locale: defaultLocale,
+    name: releasedName(user.email),
   });
+  await internalAdapter.deleteUserSessions(user.id);
+  await markTokensNotBefore(ctx, user.id);
+  await forgetConnectedApplications(ctx, user.id);
+  await internalAdapter.deleteVerificationByIdentifier(bindingOf(user.id));
+};
+
+/**
+ * Whether the account was used before its address was confirmed: a member
+ * of a workspace, as only a server that does not ask to confirm addresses
+ * lets an unconfirmed account sign in. Such an account is never handed
+ * over to the address's owner: what it made (workspaces, their keys) stays
+ * with whoever made it, so it is closed instead.
+ */
+export const wasUsed = async (
+  ctx: AuthCtx,
+  userId: string
+): Promise<boolean> => {
+  const adapter = await getCurrentAdapter(ctx.context.adapter);
+
+  const memberships = await adapter.count({
+    model: "member",
+    where: [{ field: "userId", value: userId }],
+  });
+
+  return memberships > 0;
 };
 
 // What a sign-up's body holds, as the route validated it.
@@ -147,22 +226,36 @@ const decodeSignUp = Schema.decodeUnknownOption(
 const decodeLocale = Schema.decodeUnknownOption(LocaleSchema);
 
 // The id of the user the route answered with: the account it made, or the
-// made-up one a known address gets.
+// made-up one a known address gets. Anything else (a refusal of the route,
+// or of the body's schema before it ran) answered no sign-up.
 const decodeAnswered = Schema.decodeUnknownOption(
   Schema.Struct({
     returned: Schema.Struct({ user: Schema.Struct({ id: Schema.String }) }),
   })
 );
 
-const isRefusal = Schema.is(
-  Schema.Struct({ returned: Schema.instanceOf(APIError) })
-);
+// Whether a password is one the route takes: it checked, but the takeover
+// checks again, never trusting what came before it.
+const fitsBounds = (ctx: AuthCtx, password: string): boolean => {
+  const { maxPasswordLength, minPasswordLength } = ctx.context.password.config;
 
-// The new signer of an address whose account waits for its confirmation
-// takes the account over: their password and name, a binding to their
-// browser, and a fresh link to the address. The account's sessions and
-// applications end, as whoever set the old password may hold some.
-const takeOver = async (
+  return (
+    password.length >= minPasswordLength && password.length <= maxPasswordLength
+  );
+};
+
+/**
+ * A sign-up for an address that has an account: the new signer takes the
+ * account over while its address is unconfirmed (their password and name,
+ * a binding to their browser, a fresh link to the address; its sessions
+ * and applications end, as whoever set the old password may hold some),
+ * and changes nothing once it is confirmed. The password is hashed either
+ * way, so a confirmed address takes as long. The transaction's first
+ * statement holds the row while the address is unconfirmed
+ * (`claimUnconfirmed`) and stops it otherwise: a confirmation running
+ * meanwhile is either done first, or waits.
+ */
+export const takeOver = async (
   ctx: GenericEndpointContext,
   user: User,
   signUp: {
@@ -171,11 +264,19 @@ const takeOver = async (
     readonly password: string;
   },
   nonce: string
-): Promise<void> => {
+): Promise<boolean> => {
+  if (!fitsBounds(ctx, signUp.password)) {
+    return false;
+  }
+
   const { internalAdapter, password } = ctx.context;
   const hash = await password.hash(signUp.password);
 
   const updated = await runWithTransaction(ctx.context.adapter, async () => {
+    if (!(await claimUnconfirmed(ctx, user.id))) {
+      return null;
+    }
+
     const credential = await internalAdapter.findCredentialAccount(user.id);
 
     await (credential === null
@@ -198,43 +299,51 @@ const takeOver = async (
     );
 
     await internalAdapter.deleteUserSessions(user.id);
+    await markTokensNotBefore(ctx, user.id);
     await forgetConnectedApplications(ctx, user.id);
     await bind(ctx, user.id, nonce, hash);
 
     return changed;
   });
 
+  if (updated === null) {
+    return false;
+  }
+
   await sendVerificationEmailFn(ctx, updated);
+
+  return true;
 };
 
 /**
- * Part of Better Auth's after hook, on `/sign-up/email` that went through:
- * sets a fresh nonce in the browser's cookie, whatever the address, so every
- * answer reads alike, and binds it to the account where the sign-up decides
- * the account's password:
+ * Part of Better Auth's after hook, on `/sign-up/email` that answered a
+ * user: sets a fresh nonce in the browser's cookie, whatever the address,
+ * so every answer reads alike, and binds it to the account where the
+ * sign-up decides the account's password:
  *
  * - the request made the account: its nonce confirms it;
- * - the address has an account that never confirmed it: the new signer
- *   takes it over (`takeOver`), and is sent a new link;
- * - the address is confirmed: nothing changes, and the nonce binds nothing.
+ * - the address has an account: `takeOver`, which changes it only while
+ *   its address is unconfirmed.
  *
- * A route that refused the sign-up sets nothing.
+ * Any other answer (the route's refusal, or the body's schema refused
+ * before the route ran) sets nothing.
  */
 export const bindSignUpBrowser = async (
   ctx: GenericEndpointContext
 ): Promise<void> => {
-  if (ctx.path !== "/sign-up/email" || isRefusal(ctx.context)) {
+  if (ctx.path !== "/sign-up/email") {
     return;
   }
 
+  const answered = decodeAnswered(ctx.context);
   const signUp = decodeSignUp(ctx.body);
 
-  if (Option.isNone(signUp)) {
+  if (Option.isNone(answered) || Option.isNone(signUp)) {
     return;
   }
 
   const nonce = await newNonce();
-  const cookie = cookieOf(ctx);
+  const cookie = signUpBrowserCookieOf(ctx);
 
   ctx.setCookie(cookie.name, nonce, cookie.attributes);
 
@@ -242,21 +351,20 @@ export const bindSignUpBrowser = async (
     signUp.value.email.toLowerCase()
   );
 
-  if (found === null || found.user.emailVerified) {
+  if (found === null) {
     return;
   }
 
-  const answered = decodeAnswered(ctx.context);
-
-  if (
-    Option.isSome(answered) &&
-    answered.value.returned.user.id === found.user.id
-  ) {
+  if (answered.value.returned.user.id === found.user.id) {
     const credential = await ctx.context.internalAdapter.findCredentialAccount(
       found.user.id
     );
 
-    if (credential?.password !== undefined && credential.password !== null) {
+    if (
+      !found.user.emailVerified &&
+      credential?.password !== undefined &&
+      credential.password !== null
+    ) {
       await bind(ctx, found.user.id, nonce, credential.password);
     }
 
@@ -266,13 +374,15 @@ export const bindSignUpBrowser = async (
   await takeOver(ctx, found.user, signUp.value, nonce);
 };
 
-// Whether the request holds the nonce the account was bound to, and the
-// account still has the password the binding was made with. The binding is
-// spent either way.
-const holdsBinding = async (
-  ctx: Pick<GenericEndpointContext, "context">,
+/**
+ * Whether the request holds the nonce the account was bound to, and the
+ * account still has the password the binding was made with, compared in
+ * constant time. The binding is spent either way.
+ */
+export const holdsBinding = async (
+  ctx: AuthCtx,
   userId: string,
-  presented: string | undefined
+  presented: string | null | undefined
 ): Promise<boolean> => {
   const binding = await ctx.context.internalAdapter.consumeVerificationValue(
     bindingOf(userId)
@@ -288,6 +398,7 @@ const holdsBinding = async (
   if (
     Option.isNone(stored) ||
     presented === undefined ||
+    presented === null ||
     presented === "" ||
     credential?.password === undefined ||
     credential.password === null
@@ -305,9 +416,11 @@ const holdsBinding = async (
   return nonce && passwordKept;
 };
 
-// As Better Auth's `autoSignInAfterVerification` signs in: the browser's own
-// session of the account, now confirmed, or a new one.
-const signIn = async (
+/**
+ * Signs the browser in as Better Auth's `autoSignInAfterVerification` did:
+ * the browser's own session of the account, now confirmed, or a new one.
+ */
+export const signInConfirmed = async (
   ctx: GenericEndpointContext,
   user: User
 ): Promise<void> => {
@@ -330,127 +443,47 @@ const signIn = async (
   });
 };
 
-// The confirmation page's address with the mark, as the web app gave it
-// (a path of its origin, or a full address).
-const marked = (callbackURL: string, baseURL: string): string => {
-  const url = new URL(callbackURL, baseURL);
-
-  url.searchParams.set(passwordNeededMark.name, passwordNeededMark.value);
-
-  return callbackURL.startsWith("/")
-    ? `${url.pathname}${url.search}${url.hash}`
-    : url.href;
-};
-
-const decodeCallback = Schema.decodeUnknownOption(
-  Schema.Struct({ callbackURL: Schema.String })
-);
-
-// What the link's confirmation decided, by request, for the route's after
-// hook: Better Auth hands the verification's callback and the after hook
-// the same request.
-const confirmed = new WeakMap<
-  Request,
-  { readonly signIn: boolean; readonly user: User }
->();
-
-/**
- * Better Auth's `emailVerification.beforeEmailVerification`: runs once the
- * link's token is checked, before the address is confirmed (Peal changes
- * no address, so it runs for nothing else). Better Auth's own sign-in after
- * the link is off.
- *
- * - The request holds the account's nonce, and the account still has the
- *   password it was bound with: the after hook signs it in.
- * - Otherwise the password, the sessions and the connected applications go
- *   (`releaseAccount`) before the address is confirmed, so a failure
- *   confirms nothing, and nobody is signed in.
- *
- * The binding is spent either way.
- */
-export const checkSignUpBrowser = async (
-  user: User,
-  request?: Request
-): Promise<void> => {
-  const ctx = getCurrentAuthEndpointContext();
-
-  const presented =
-    request === undefined
-      ? undefined
-      : parseCookies(request.headers.get("cookie") ?? "").get(
-          ctx.context.createAuthCookie(signUpBrowserCookie).name
-        );
-
-  const holds = await holdsBinding(ctx, user.id, presented);
-
-  if (!holds) {
-    await releaseAccount(ctx, user.id);
-  }
-
-  if (request !== undefined) {
-    confirmed.set(request, { signIn: holds, user });
-  }
-};
-
-/**
- * Part of Better Auth's after hook, on `/verify-email` once the link
- * confirmed the address (`checkSignUpBrowser` decided): expires the nonce's
- * cookie, then signs the browser that signed up in, as the link did
- * before; any other browser is signed in by nothing, loses its session of
- * the account if it held one, and is sent to the confirmation page marked
- * `?password=needed`, which asks for a password through the reset flow.
- */
-export const confirmSignUpBrowser = async (
-  ctx: GenericEndpointContext
-): Promise<void> => {
-  const decided =
-    ctx.path === "/verify-email" && ctx.request !== undefined
-      ? confirmed.get(ctx.request)
-      : undefined;
-
-  if (decided === undefined) {
-    return;
-  }
-
-  const cookie = cookieOf(ctx);
-
-  if (ctx.getCookie(cookie.name) !== null) {
-    expireCookie(ctx, cookie);
-  }
-
-  if (decided.signIn) {
-    await signIn(ctx, decided.user);
-
-    return;
-  }
-
-  const current = await getSessionFromCtx(ctx, { disableRefresh: true });
-
-  if (current !== null && current.user.id === decided.user.id) {
-    deleteSessionCookie(ctx);
-  }
-
-  const callback = decodeCallback(ctx.query);
-
-  if (Option.isSome(callback)) {
-    throw ctx.redirect(marked(callback.value.callbackURL, ctx.context.baseURL));
-  }
-};
+/** What a provider's sign-in found of an unconfirmed account. */
+export type ProviderTakeover = "none" | "released" | "used";
 
 /**
  * Part of a provider's sign-in, once Peal's admission let it link an
  * existing account (`link-account`): an account that never confirmed its
- * address is released first (`releaseAccount`), as the provider now
- * vouches for the address and whoever set the password may not own it.
- * Better Auth then links the provider, confirms the address and signs in.
+ * address is confirmed and released in one transaction (`released`), as
+ * the provider now vouches for the address and whoever set the password
+ * may not own it; Better Auth then links the provider, finds the address
+ * confirmed and signs in. An account that was used (`wasUsed`) is left
+ * as it is (`used`), for the caller to close.
  */
 export const releaseUnconfirmedAccount = async (
   ctx: GenericEndpointContext,
   userId: string
-): Promise<void> => {
+): Promise<ProviderTakeover> => {
   const found = await ctx.context.internalAdapter.findUserById(userId);
 
-  if (found !== null && !found.emailVerified) {
-    await releaseAccount(ctx, userId);
+  if (found === null || found.emailVerified) {
+    return "none";
+  }
+
+  try {
+    return await runWithTransaction(ctx.context.adapter, async () => {
+      if (!(await confirmUnconfirmed(ctx, userId))) {
+        return "none";
+      }
+
+      if (await wasUsed(ctx, userId)) {
+        throw new UsedAccountError();
+      }
+
+      await releaseAccount(ctx, found);
+
+      return "released";
+    });
+  } catch (error) {
+    if (error instanceof UsedAccountError) {
+      return "used";
+    }
+
+    throw error;
   }
 };

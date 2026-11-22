@@ -1,18 +1,22 @@
 import { assert, layer } from "@effect/vitest";
-import { Effect, Schema } from "effect";
+import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
 import { commandLineTokens, withCookies } from "#test/workspace/support.ts";
 
 import {
+  confirmFrom,
   cookiesOf,
   emailsTo,
   emailTo,
   IntegrationLive,
   linkIn,
+  MigratedSqlLive,
   newEmail,
   password,
   TestApp,
+  unconfirmedEmails,
+  workspaceOf,
 } from "./harness.ts";
 import type { Reply } from "./harness.ts";
 
@@ -38,6 +42,8 @@ const SessionSchema = Schema.Struct({
 });
 
 const ErrorSchema = Schema.Struct({ code: Schema.String });
+
+const OutcomeSchema = Schema.Struct({ status: Schema.String });
 
 const signUp = Effect.fn("signUp")(function* signUp(
   email: string,
@@ -89,6 +95,10 @@ const open = Effect.fn("open")(function* open(link: URL, cookies: string) {
 const decode = <S extends Schema.Top>(schema: S, reply: Reply) =>
   Schema.decodeUnknownEffect(schema)(reply.body).pipe(Effect.orDie);
 
+// What a confirmation answered it did.
+const outcomeOf = (reply: Reply) =>
+  decode(OutcomeSchema, reply).pipe(Effect.map(({ status }) => status));
+
 // Version nibble of a UUID: 4 for random ids.
 const versionOf = (id: string) => id.charAt(14);
 
@@ -109,18 +119,24 @@ const confirmSubject = /^Confirm your email/u;
 const StoredSchema = Schema.Array(
   Schema.Struct({
     email_verified: Schema.Boolean,
+    hash: Schema.NullOr(Schema.String),
+    locale: Schema.NullOr(Schema.String),
     name: Schema.String,
     passwords: Schema.Number,
     sessions: Schema.Number,
   })
 );
 
-// What the database holds of the address's account.
-const storedOf = Effect.fn("storedOf")(function* storedOf(email: string) {
+// What the database holds of the address's account, if any.
+const maybeStoredOf = Effect.fn("maybeStoredOf")(function* maybeStoredOf(
+  email: string
+) {
   const sql = yield* SqlClient.SqlClient;
 
   const rows = yield* sql`
-    SELECT u.email_verified, u.name,
+    SELECT u.email_verified, u.name, u.locale,
+      (SELECT a.password FROM auth.account a
+        WHERE a.user_id = u.id AND a.provider_id = 'credential') AS hash,
       (SELECT count(*)::int FROM auth.account a
         WHERE a.user_id = u.id AND a.provider_id = 'credential'
           AND a.password IS NOT NULL) AS passwords,
@@ -131,7 +147,11 @@ const storedOf = Effect.fn("storedOf")(function* storedOf(email: string) {
     Effect.orDie
   );
 
-  const [row] = rows;
+  return rows[0];
+});
+
+const storedOf = Effect.fn("storedOf")(function* storedOf(email: string) {
+  const row = yield* maybeStoredOf(email);
 
   assert.isDefined(row);
 
@@ -206,18 +226,17 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const message = yield* emailTo(email, /^Confirmez votre adresse/u);
           const link = linkIn(message);
 
-          assert.strictEqual(link.pathname, "/api/auth/verify-email");
+          // The link opens the web app's page, in the reader's language,
+          // which posts its token.
+          assert.strictEqual(link.origin, "http://localhost:3001");
+          assert.strictEqual(link.pathname, "/fr/verify-email");
           assert.include(message.HTML, "Confirmer mon adresse");
 
-          // In the browser that signed up, the link signs the reader in and
-          // takes them to the page the web app asked for.
-          const verified = yield* open(link, cookiesOf(created));
+          // In the browser that signed up, the post signs the reader in.
+          const verified = yield* confirmFrom(link, cookiesOf(created));
 
-          assert.strictEqual(verified.status, 302);
-          assert.strictEqual(
-            verified.headers.get("location"),
-            "/fr/verify-email"
-          );
+          assert.strictEqual(verified.status, 200);
+          assert.strictEqual(yield* outcomeOf(verified), "signedIn");
           // The nonce is spent.
           assert.include(
             verified.headers.getSetCookie().join("\n"),
@@ -244,40 +263,96 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
-      "confirms the address from another browser without signing anyone in, and drops the password",
+      "confirms nothing when a link is opened, as a mail gateway opens it",
+      () =>
+        Effect.gen(function* prefetched() {
+          const app = yield* TestApp;
+          const email = newEmail("prefetched");
+
+          const created = yield* signUp(email, "en");
+          const link = linkIn(yield* emailTo(email, confirmSubject));
+
+          // Better Auth's own route, which a GET would confirm through, is
+          // not served.
+          const opened = yield* app.request(
+            `/api/auth/verify-email?token=${link.searchParams.get("token") ?? ""}`
+          );
+
+          assert.strictEqual(opened.status, 404);
+
+          // A GET of the confirmation route confirms nothing either.
+          const got = yield* app.request(
+            `/api/auth/confirm-email?token=${link.searchParams.get("token") ?? ""}`
+          );
+
+          assert.notStrictEqual(got.status, 200);
+
+          const stored = yield* storedOf(email);
+
+          assert.isFalse(stored.email_verified);
+          assert.strictEqual(stored.passwords, 1);
+
+          // The person's own post, later, still signs them in.
+          const confirmed = yield* confirmFrom(link, cookiesOf(created));
+
+          assert.strictEqual(yield* outcomeOf(confirmed), "signedIn");
+        })
+    );
+
+    it.effect("refuses a token that is not one of Peal's", () =>
+      Effect.gen(function* forged() {
+        const app = yield* TestApp;
+
+        for (const token of ["", "synthetic.forged.token"]) {
+          const reply = yield* app.request("/api/auth/confirm-email", {
+            body: { token },
+          });
+
+          assert.strictEqual(reply.status, 400);
+          assert.strictEqual(
+            (yield* decode(ErrorSchema, reply)).code,
+            "INVALID_TOKEN"
+          );
+        }
+      })
+    );
+
+    it.effect(
+      "confirms the address from another browser without signing anyone in, and drops what the sign-up chose",
       () =>
         Effect.gen(function* elsewhere() {
           const email = newEmail("elsewhere");
 
-          const created = yield* signUp(email, "en");
+          const created = yield* signUp(email, "fr", {
+            name: "Chosen Name",
+          });
 
           // Another browser holds a nonce of its own, from another sign-up.
           const other = yield* signUp(newEmail("other-browser"), "en");
-          const link = linkIn(yield* emailTo(email, confirmSubject));
+          const link = linkIn(yield* emailTo(email, /^Confirmez/u));
 
-          for (const cookies of ["", cookiesOf(other)]) {
-            const opened = yield* open(link, cookies);
+          const opened = yield* confirmFrom(link, cookiesOf(other));
 
-            assert.strictEqual(opened.status, 302);
-            assert.isFalse(setsSession(opened));
-
-            if (cookies === "") {
-              assert.strictEqual(
-                opened.headers.get("location"),
-                "/verify-email?password=needed"
-              );
-            }
-          }
+          assert.strictEqual(opened.status, 200);
+          assert.strictEqual(yield* outcomeOf(opened), "passwordNeeded");
+          assert.isFalse(setsSession(opened));
 
           const stored = yield* storedOf(email);
 
           assert.isTrue(stored.email_verified);
           assert.strictEqual(stored.passwords, 0);
           assert.strictEqual(stored.sessions, 0);
+          // Nothing the sign-up chose stays: the address's own name, the
+          // default language.
+          assert.strictEqual(stored.name, email.slice(0, email.indexOf("@")));
+          assert.strictEqual(stored.locale, "en");
 
-          // The browser that signed up comes too late: the nonce was spent
-          // with the password.
-          assert.isFalse(setsSession(yield* open(link, cookiesOf(created))));
+          // The browser that signed up comes too late: the address is
+          // confirmed, and nobody is signed in.
+          const late = yield* confirmFrom(link, cookiesOf(created));
+
+          assert.strictEqual(yield* outcomeOf(late), "alreadyConfirmed");
+          assert.isFalse(setsSession(late));
           assert.strictEqual((yield* signIn(email, password)).status, 401);
 
           // A password the address's owner sets then signs them in.
@@ -323,8 +398,8 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.isDefined(newest);
           assert.isDefined(first);
 
-          // Either link, opened in the owner's browser, signs the owner in.
-          const confirmed = yield* open(linkIn(first), cookiesOf(owner));
+          // Either link, posted from the owner's browser, signs the owner in.
+          const confirmed = yield* confirmFrom(linkIn(first), cookiesOf(owner));
 
           assert.isTrue(setsSession(confirmed));
 
@@ -338,7 +413,68 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
-      "signs nobody in from a link opened in a browser that did not sign up",
+      "changes nothing of an account confirmed while a sign-up for it was on its way",
+      () =>
+        Effect.gen(function* confirmedMeanwhile() {
+          const sql = yield* SqlClient.SqlClient;
+          const email = newEmail("race");
+
+          yield* signUp(email, "en", { name: "First" });
+
+          const before = yield* storedOf(email);
+
+          // The owner's confirmation commits after a takeover's sign-up
+          // read the address as unconfirmed, before it writes: the
+          // takeover's first statement then finds it confirmed.
+          yield* sql`UPDATE auth."user" SET email_verified = true
+            WHERE email = ${email.toLowerCase()}`.pipe(Effect.orDie);
+
+          const again = yield* signUp(email, "en", {
+            name: "Second",
+            secret: "a passphrase of the second signer",
+          });
+
+          assert.strictEqual(again.status, 200);
+
+          const after = yield* storedOf(email);
+
+          assert.strictEqual(after.name, "First");
+          assert.strictEqual(after.hash, before.hash);
+        })
+    );
+
+    it.effect(
+      "takes nothing over for a sign-up its route refused, setting no nonce",
+      () =>
+        Effect.gen(function* refusedBodies() {
+          const app = yield* TestApp;
+          const email = newEmail("refused-body");
+
+          yield* signUp(email, "en", { name: "First" });
+
+          const before = yield* storedOf(email);
+
+          for (const body of [
+            { email, name: "Short", password: "" },
+            { email, name: "Odd", password: "a", rememberMe: "no" },
+          ]) {
+            const reply = yield* app.request("/api/auth/sign-up/email", {
+              body,
+            });
+
+            assert.isAtLeast(reply.status, 400);
+            assert.isFalse(setsNonce(reply));
+          }
+
+          const after = yield* storedOf(email);
+
+          assert.strictEqual(after.name, "First");
+          assert.strictEqual(after.hash, before.hash);
+        })
+    );
+
+    it.effect(
+      "signs nobody in from a link posted from a browser that did not sign up",
       () =>
         Effect.gen(function* foreignLink() {
           // Someone signs up with their own address, and hands the owner of
@@ -347,7 +483,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const lure = yield* signUp(theirs, "en");
           const target = yield* signUp(newEmail("target"), "en");
 
-          const opened = yield* open(
+          const opened = yield* confirmFrom(
             linkIn(yield* emailTo(theirs, confirmSubject)),
             cookiesOf(target)
           );
@@ -400,9 +536,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // last sign-up turns into a session.
           const resent = yield* app.request(
             "/api/auth/send-verification-email",
-            {
-              body: { callbackURL: "/verify-email", email },
-            }
+            { body: { callbackURL: "/verify-email", email } }
           );
 
           assert.strictEqual(resent.status, 200);
@@ -411,7 +545,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.isDefined(link);
           assert.isTrue(
-            setsSession(yield* open(linkIn(link), cookiesOf(again)))
+            setsSession(yield* confirmFrom(linkIn(link), cookiesOf(again)))
           );
         })
     );
@@ -422,7 +556,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const first = yield* signUp(email, "en");
 
-        yield* open(
+        yield* confirmFrom(
           linkIn(yield* emailTo(email, confirmSubject)),
           cookiesOf(first)
         );
@@ -482,7 +616,12 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const created = yield* signUp(email, "en");
 
         const message = yield* emailTo(email, confirmSubject);
-        const verified = yield* open(linkIn(message), cookiesOf(created));
+
+        const verified = yield* confirmFrom(
+          linkIn(message),
+          cookiesOf(created)
+        );
+
         const cookie = cookiesOf(verified);
 
         const out = yield* app.request("/api/auth/sign-out", {
@@ -519,7 +658,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const created = yield* signUp(email, "en");
           const confirmation = yield* emailTo(email, confirmSubject);
 
-          const confirmed = yield* open(
+          const confirmed = yield* confirmFrom(
             linkIn(confirmation),
             cookiesOf(created)
           );
@@ -527,6 +666,13 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // The command line, signed in from that browser.
           const tokens = yield* commandLineTokens(
             withCookies(cookiesOf(created), confirmed)
+          );
+
+          const bearer = { authorization: `Bearer ${tokens.access_token}` };
+
+          assert.strictEqual(
+            (yield* app.request("/api/me", { headers: bearer })).status,
+            200
           );
 
           const { message, token } = yield* resetPassword(email, newPassword);
@@ -537,7 +683,13 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual((yield* signIn(email, password)).status, 401);
           assert.strictEqual((yield* signIn(email, newPassword)).status, 200);
 
-          // The command line can no longer renew its access.
+          // The access token it already held stops working at once.
+          assert.strictEqual(
+            (yield* app.request("/api/me", { headers: bearer })).status,
+            401
+          );
+
+          // And it can no longer renew its access.
           const renewed = yield* app.request("/api/auth/oauth2/token", {
             form: {
               client_id: "peal-cli",
@@ -570,3 +722,54 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
   }
 );
+
+// Where accounts work before their address is confirmed, someone who made
+// one with another's address can use it at once: it is closed, never
+// handed over, once the address's owner confirms.
+layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails), MigratedSqlLive), {
+  excludeTestServices: true,
+  timeout: "180 seconds",
+})("signing up where addresses need no confirmation", (it) => {
+  it.effect(
+    "closes an account used before its owner confirmed the address",
+    () =>
+      Effect.gen(function* used() {
+        const sql = yield* SqlClient.SqlClient;
+        const email = newEmail("used-before");
+
+        // Signed in at once, the pre-registrant makes a workspace.
+        const made = yield* signUp(email, "en", { name: "Pre-registrant" });
+        const { user } = yield* decode(SignUpSchema, made);
+
+        const workspaceId = yield* workspaceOf(
+          { cookies: cookiesOf(made), email, id: user.id },
+          "Lure"
+        );
+
+        // The owner posts the link from their own browser.
+        const confirmed = yield* confirmFrom(
+          linkIn(yield* emailTo(email, confirmSubject)),
+          ""
+        );
+
+        assert.strictEqual(yield* outcomeOf(confirmed), "replaced");
+        assert.isFalse(setsSession(confirmed));
+        assert.isUndefined(yield* maybeStoredOf(email));
+
+        const [left] = yield* sql<{ readonly workspaces: number }>`
+          SELECT count(*)::int AS workspaces FROM auth.organization
+          WHERE id = ${workspaceId}`.pipe(Effect.orDie);
+
+        assert.strictEqual(left?.workspaces, 0);
+
+        // The owner signs up afresh, with the address.
+        const fresh = yield* signUp(email, "en", { name: "Owner" });
+
+        assert.strictEqual(fresh.status, 200);
+        assert.notStrictEqual(
+          (yield* decode(SignUpSchema, fresh)).user.id,
+          user.id
+        );
+      })
+  );
+});

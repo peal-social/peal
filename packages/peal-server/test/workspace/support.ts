@@ -264,6 +264,7 @@ export const authWithoutDatabase = (
         requiredBy: async () => await Promise.resolve([]),
       },
       twoStepChanged: ignore,
+      unclaimedAccount: async () => await Promise.resolve(false),
       userCreated: ignore,
       verifyEmail: ignore,
       workspaceChange: nothing,

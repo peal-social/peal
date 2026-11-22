@@ -1,7 +1,21 @@
 import { describe, expect, it } from "@effect/vitest";
 import { Option } from "effect";
 
-import { isUntraced, loggedPathOf } from "#app/untraced-paths.ts";
+import {
+  isUntraced,
+  loggedPathOf,
+  redactedQueryNames,
+} from "#app/untraced-paths.ts";
+
+// The query parameters the tracer writes as `<redacted>`: each approves or
+// proves something on its own.
+describe("the query parameters the tracer redacts", () => {
+  it("redacts the device sign-in's code and the tokens addresses carry", () => {
+    expect(redactedQueryNames).toStrictEqual(
+      expect.arrayContaining(["code", "state", "token", "user_code"])
+    );
+  });
+});
 
 // The paths the HTTP tracer leaves out: what their address holds is a
 // visitor's (a short link's redirect) or a capability (the digest's

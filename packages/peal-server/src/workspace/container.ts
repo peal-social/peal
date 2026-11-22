@@ -46,6 +46,7 @@ import { ReplayErasures } from "#workspace/application/replay-erasures.ts";
 import { ResolveMember } from "#workspace/application/resolve-member.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
 import { StaffStanding } from "#workspace/application/staff-standing.ts";
+import { UnclaimedAccounts } from "#workspace/application/unclaimed-accounts.ts";
 import { WorkspaceContacts } from "#workspace/application/workspace-contacts.ts";
 import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
 import { WorkspaceSeats } from "#workspace/application/workspace-seats.ts";
@@ -213,6 +214,9 @@ export const WorkspaceLive = Layer.mergeAll(
   Layer.provideMerge(PartnerOwnershipLive),
   Layer.provideMerge(StaffToolsLive),
   Layer.provideMerge(BetterAuthLive),
+  // What Better Auth's hooks close an account nobody claimed through,
+  // which WorkspaceSettingsLive serves with CloseAccount.
+  Layer.provideMerge(UnclaimedAccounts.layer),
   // The day's invitation emails, which Peal's API and Better Auth's route
   // count alike, under keyed pseudonyms.
   Layer.provideMerge(
@@ -254,7 +258,7 @@ export const WorkspaceLive = Layer.mergeAll(
  */
 export const WorkspaceSettingsLive = Layer.mergeAll(
   AccountData.layer,
-  CloseAccount.layer,
+  UnclaimedAccounts.served.pipe(Layer.provideMerge(CloseAccount.layer)),
   ConnectedApps.layer,
   DeleteWorkspace.layer,
   OffboardWorkspace.layer,

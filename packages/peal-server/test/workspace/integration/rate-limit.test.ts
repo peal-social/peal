@@ -22,6 +22,7 @@ import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
 import { SecurityPolicies } from "#workspace/application/security-policies.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
+import { UnclaimedAccounts } from "#workspace/application/unclaimed-accounts.ts";
 import {
   PartnerOwnershipLive,
   WorkspaceOwnersLive,
@@ -81,6 +82,7 @@ const authWith = (env: Record<string, string>) =>
     ),
     // Nor changes a workspace.
     Layer.provide(ActivityJournal.none),
+    Layer.provide(UnclaimedAccounts.layer),
     Layer.provide(AgentRecordsLive.pipe(Layer.provide(DatabaseLive))),
     Layer.provide(ProductAnalytics.none),
     Layer.provide(SiteMeasurement.none),

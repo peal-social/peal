@@ -5,6 +5,7 @@ import type {
 import { getOAuthState } from "better-auth/api";
 import { Option, Schema } from "effect";
 
+import type { UnclaimedAccountCloser } from "./email-confirmation.ts";
 import { releaseUnconfirmedAccount } from "./sign-up-browser.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
 
@@ -29,6 +30,11 @@ export const providerRefusalCodes = [
   "sign_up_by_invitation",
   // The account is banned, or could not be read.
   "account_banned",
+  // Someone made an account with the address, never confirmed it and used
+  // it: it was closed, and signing in again makes the person's own.
+  "account_replaced",
+  // Such an account could not be closed: the operator can help.
+  "account_in_use",
 ] as const;
 
 export type ProviderRefusalCode = (typeof providerRefusalCodes)[number];
@@ -224,11 +230,15 @@ const provisioned = ({ source, user }: ValidatedUser): ProvisionedUser => ({
 /**
  * The admission, as Better Auth's `user.validateUserInfo`. A provider's
  * identity it lets link to an account that never confirmed its address
- * releases that account first (`releaseUnconfirmedAccount`): its password
- * and sessions go, and the provider's sign-in takes it over.
+ * confirms and releases that account first (`releaseUnconfirmedAccount`):
+ * its password and sessions go, and the provider's sign-in takes it over.
+ * One that was used before (a server that does not ask to confirm
+ * addresses lets it in) is never handed over: it is closed
+ * (`account_replaced`, the person signs in again to make their own), or
+ * left as it is when it cannot be (`account_in_use`).
  */
 export const providerAdmission =
-  (signUp: SignUpAdmission) =>
+  (signUp: SignUpAdmission, closeUnclaimed: UnclaimedAccountCloser) =>
   async (data: ValidatedUser, ctx: GenericEndpointContext) => {
     const refused = await admitProviderUser(provisioned(data), {
       // From the database, never a session's cached user: a flag turned on
@@ -269,9 +279,12 @@ export const providerAdmission =
       refused === undefined &&
       data.source.method === "oauth" &&
       data.source.action === "link-account" &&
-      id !== undefined
+      id !== undefined &&
+      (await releaseUnconfirmedAccount(ctx, id)) === "used"
     ) {
-      await releaseUnconfirmedAccount(ctx, id);
+      return refusal(
+        (await closeUnclaimed(id)) ? "account_replaced" : "account_in_use"
+      );
     }
 
     return refused;

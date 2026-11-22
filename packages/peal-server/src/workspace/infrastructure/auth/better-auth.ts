@@ -32,6 +32,7 @@ import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
 import { SecurityPolicies } from "#workspace/application/security-policies.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
+import { UnclaimedAccounts } from "#workspace/application/unclaimed-accounts.ts";
 import { UserPrincipal } from "#workspace/domain/user-principal.ts";
 
 import {
@@ -302,6 +303,7 @@ export const BetterAuthLive = Layer.effect(
     const analytics = yield* ProductAnalytics;
     const { settings: site } = yield* SiteMeasurement;
     const agentRecords = yield* AgentRecords;
+    const unclaimed = yield* UnclaimedAccounts;
     const invitationEmails = yield* InvitationEmails;
 
     // The instance, once made: the email of a recovery code used says how
@@ -493,6 +495,15 @@ export const BetterAuthLive = Layer.effect(
           )(kind, userId)
         );
       },
+      // Awaited: an account nobody claimed is closed before the person
+      // confirming is answered. A failure leaves it, and answers false.
+      unclaimedAccount: async (userId) =>
+        await runPromise(
+          decodeUserId(userId).pipe(
+            Effect.flatMap((id) => unclaimed.close(id)),
+            Effect.catch(() => Effect.succeed(false))
+          )
+        ),
       userCreated: (created) => {
         run(toldSignUp(analytics, created));
       },

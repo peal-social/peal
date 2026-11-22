@@ -13,6 +13,7 @@ import { CaptchaSchema, signUpInvitationHeader } from "peal-contract";
 import { appWithOidc } from "#test/workspace/fakes/fake-oidc.ts";
 
 import {
+  confirmFrom,
   cookiesOf,
   emailTo,
   linkIn,
@@ -213,9 +214,7 @@ layer(
         const link = linkIn(yield* emailTo(email, /^Confirm your email/u));
 
         // In the browser that signed up, as the invitation's page sent it.
-        const confirmed = yield* app.request(`${link.pathname}${link.search}`, {
-          headers: { cookie: cookiesOf(created) },
-        });
+        const confirmed = yield* confirmFrom(link, cookiesOf(created));
 
         assert.isTrue(setsSession(confirmed));
 

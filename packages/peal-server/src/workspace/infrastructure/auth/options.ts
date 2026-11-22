@@ -46,12 +46,13 @@ import {
 } from "./billing.ts";
 import type { BillingHooks } from "./billing.ts";
 import { guardClientRegistration } from "./client-registration.ts";
-import { disconnectAfterPasswordReset } from "./connected-applications.ts";
 import {
   refuseUnfitSignUpNames,
   userWithFitName,
   workspaceWithFitName,
 } from "./display-names.ts";
+import { emailConfirmation } from "./email-confirmation.ts";
+import type { UnclaimedAccountCloser } from "./email-confirmation.ts";
 import {
   guardImpersonatedRequest,
   refuseImpersonatedChanges,
@@ -80,13 +81,14 @@ import {
   signInProviderConfigs,
   signInProviderIds,
 } from "./sign-in-providers.ts";
-import {
-  bindSignUpBrowser,
-  checkSignUpBrowser,
-  confirmSignUpBrowser,
-} from "./sign-up-browser.ts";
+import { bindSignUpBrowser } from "./sign-up-browser.ts";
 import { refuseUnadmittedSignUps } from "./sign-up-gate.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
+import {
+  disconnectAfterPasswordReset,
+  noteTokenRequest,
+  refuseRenewalAcrossReset,
+} from "./tokens-not-before.ts";
 import {
   guardTwoStepChanges,
   forgetTrustedBrowsers,
@@ -171,6 +173,12 @@ export interface AuthHooks extends BillingHooks {
    * The made-up user a known address's sign-up answers makes none.
    */
   readonly userCreated: (created: CreatedUser) => void;
+  /**
+   * Awaited when an unconfirmed account that was used is confirmed by
+   * someone else: closes it through the account's erasure, and says
+   * whether it did (email-confirmation.ts).
+   */
+  readonly unclaimedAccount: UnclaimedAccountCloser;
   readonly verifyEmail: (link: AuthLink) => void;
   /**
    * Awaited once a route that changes a workspace has answered a browser:
@@ -250,6 +258,18 @@ export const signUpMethodOf = (
 
 const localePrefix = (locale: Locale): string =>
   locale === defaultLocale ? "" : `/${locale}`;
+
+/**
+ * The web app's page that confirms an address, in the reader's language:
+ * it posts the token from the browser (email-confirmation.ts), so opening
+ * the link confirms nothing on its own.
+ */
+export const confirmationUrl = (
+  publicUrl: string,
+  locale: Locale,
+  token: string
+): string =>
+  `${publicUrl}${localePrefix(locale)}/verify-email?${new URLSearchParams({ token }).toString()}`;
 
 /** The web app's page that answers an invitation, in the reader's language. */
 export const invitationUrl = (
@@ -438,6 +458,7 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await guardTwoStepChanges(ctx, hooks.twoStep);
     await noteTwoStepSender(ctx);
     await claimResentInvitationEmail(ctx, hooks.invitationEmail);
+    noteTokenRequest(ctx);
   });
 
 // The columns of `auth.account` that hold what a provider issued. Peal needs
@@ -595,6 +616,10 @@ export const makeAuth = ({
       "/oauth2/update-client",
       "/organization/delete",
       "/token",
+      // An address is confirmed by a POST of the web app's page
+      // (`/confirm-email`), never by opening a link: a mail gateway that
+      // opens it would confirm from no browser of the person's.
+      "/verify-email",
     ],
     databaseHooks: {
       account: {
@@ -668,12 +693,19 @@ export const makeAuth = ({
       },
     },
     emailVerification: {
-      // The link signs in only the browser that signed up (sign-up-browser.ts).
+      // The link opens the web app's page, which posts its token to
+      // `/confirm-email` (email-confirmation.ts): it signs in only the
+      // browser that signed up (sign-up-browser.ts).
       autoSignInAfterVerification: false,
-      beforeEmailVerification: checkSignUpBrowser,
       sendOnSignUp: true,
-      sendVerificationEmail: async ({ url, user }) => {
-        hooks.verifyEmail({ locale: localeOf(user), to: user.email, url });
+      sendVerificationEmail: async ({ token, user }) => {
+        const locale = localeOf(user);
+
+        hooks.verifyEmail({
+          locale,
+          to: user.email,
+          url: confirmationUrl(settings.publicUrl, locale, token),
+        });
 
         await Promise.resolve();
       },
@@ -687,7 +719,7 @@ export const makeAuth = ({
         await forgetLeavingMember(ctx, hooks);
         expireVisitorCookie(ctx, site);
         await bindSignUpBrowser(ctx);
-        await confirmSignUpBrowser(ctx);
+        await refuseRenewalAcrossReset(ctx);
       }),
       before: beforeEveryRoute(hooks),
     },
@@ -885,6 +917,8 @@ export const makeAuth = ({
         interval: "5s",
         verificationUri: oauthPages.device,
       }),
+      // `/confirm-email`, which confirms an address from the web app's page.
+      emailConfirmation(hooks.unclaimedAccount),
       ...Option.match(settings.captcha, {
         onNone: () => [],
         onSome: (captcha) => [turnstile(captcha)],
@@ -915,7 +949,7 @@ export const makeAuth = ({
     user: {
       // Who a sign-in provider lets in (provider-admission.ts): a confirmed
       // address, no two-step verification, and the sign-up gate.
-      validateUserInfo: providerAdmission(hooks.signUp),
+      validateUserInfo: providerAdmission(hooks.signUp, hooks.unclaimedAccount),
       additionalFields: {
         // Whether the person allows the web app to link what they do in it
         // to their account and to record their sessions, and when they
