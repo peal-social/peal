@@ -18,7 +18,8 @@ import {
   TooltipTrigger,
 } from "peal-ui/components/tooltip";
 import { cn } from "peal-ui/lib/utils";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
 
 import { agentChat } from "#agent/atoms.ts";
 import {
@@ -56,6 +57,19 @@ import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { useRouter } from "#i18n/navigation.ts";
 import { agentPanelKey } from "#shell/keys.ts";
 
+// The panel's composer takes the focus once it shows and can be typed
+// in, so ⌘J then typing writes to the agent.
+const useFocusOnOpen = (
+  input: RefObject<HTMLTextAreaElement | null>,
+  ready: boolean
+) => {
+  useEffect(() => {
+    if (ready) {
+      input.current?.focus({ preventScroll: true });
+    }
+  }, [input, ready]);
+};
+
 const NewChatPanel = ({
   onClose,
   onFullPage,
@@ -74,6 +88,8 @@ const NewChatPanel = ({
   const availability = useAvailability(workspaceId, permissions);
   const problemText = useProblemText();
   const input = useRef<HTMLTextAreaElement>(null);
+
+  useFocusOnOpen(input, availability.ready);
 
   const chat = useNewAgentChat(workspaceId, (chatId) => {
     panel.update((state) => adoptChat(state, chatId));
@@ -149,6 +165,8 @@ const ChatPanel = ({
   const copyTranscript = useCopyTranscript(chat);
   const input = useRef<HTMLTextAreaElement>(null);
   const title = chatTitle(t, chat.state.title);
+
+  useFocusOnOpen(input, availability.ready);
 
   const removeAndClose = async () => {
     if (await chat.remove()) {
