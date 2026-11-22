@@ -7,11 +7,20 @@ import type { AgentApprovalPost, AgentMessage } from "peal-contract/agent";
 // server's request, never the agent's words, and the card shows all of
 // it: what goes out is never hidden.
 
-/** A platform option as the card lists it: its field, its value as text. */
+/**
+ * A platform option as the card lists it: its field, its value as text,
+ * and the file of the library it names (a video's thumbnail, a reel's
+ * cover), which the card shows as the file itself.
+ */
 export interface OptionLine {
   readonly field: string;
+  readonly mediaId: string | null;
   readonly value: string;
 }
+
+// The options that name a file of the library, by their field's name:
+// `thumbnailMediaId`, `coverMediaId`.
+const namesMedia = (field: string) => field.endsWith("MediaId");
 
 type TargetOptions = NonNullable<
   AgentApprovalPost["targets"][number]["options"]
@@ -42,7 +51,11 @@ export const optionLinesOf = (
     : Object.entries(options)
         .filter(([field, value]) => field !== "platform" && value !== null)
         .toSorted(([one], [other]) => one.localeCompare(other, "en"))
-        .map(([field, value]) => ({ field, value: valueOf(value) }));
+        .map(([field, value]) => ({
+          field,
+          mediaId: namesMedia(field) && isText(value) ? value : null,
+          value: valueOf(value),
+        }));
 
 /** A wait, in the largest unit that says it exactly. */
 export interface Delay {

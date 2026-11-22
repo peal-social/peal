@@ -290,6 +290,10 @@ export const AgentApprovalSchema = Schema.Struct({
   // The queue a post goes to the next free slot of, by name; null for any
   // other change.
   queue: Schema.NullOr(Schema.String),
+  // That queue's next free slot when the change was asked: an indication,
+  // as the slot is taken when the change runs and may have moved by then.
+  // Null for any other change, or a queue with no room.
+  queueAt: Schema.NullOr(Schema.DateTimeUtc),
   state: AgentApprovalStateSchema,
   // The tags the change makes, or files the post under, by name and colour.
   tags: Schema.Array(

@@ -33,13 +33,24 @@ describe(optionLinesOf, () => {
         trialReel: null,
       })
     ).toStrictEqual([
-      { field: "collaborators", value: "synthetic.partner, synthetic.friend" },
+      {
+        field: "collaborators",
+        mediaId: null,
+        value: "synthetic.partner, synthetic.friend",
+      },
       {
         field: "mentions",
+        mediaId: null,
         value: '[{"name":"Peal","urn":"urn:li:organization:1"}]',
       },
-      { field: "shareToFeed", value: "true" },
-      { field: "title", value: "Spring" },
+      { field: "shareToFeed", mediaId: null, value: "true" },
+      { field: "title", mediaId: null, value: "Spring" },
+    ]);
+    // A file an option names is the file, to show as such.
+    expect(
+      optionLinesOf({ platform: "youtube", thumbnailMediaId: "media-9" })
+    ).toStrictEqual([
+      { field: "thumbnailMediaId", mediaId: "media-9", value: "media-9" },
     ]);
     expect(optionLinesOf(null)).toStrictEqual([]);
   });

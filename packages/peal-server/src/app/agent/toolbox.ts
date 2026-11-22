@@ -17,6 +17,7 @@ import {
 } from "#agent/infrastructure/advertised-schema.ts";
 import { AgentToolbox } from "#agent/infrastructure/agent-toolbox.ts";
 import type { AgentTool } from "#agent/infrastructure/agent-toolbox.ts";
+import type { RunEnded } from "#agent/infrastructure/run-ended.ts";
 import { PealToolsLive } from "#app/mcp/handlers.ts";
 import { toolRefusedCode } from "#app/mcp/recorded-calls.ts";
 import { changingTools, contentTools } from "#app/mcp/server.ts";
@@ -26,8 +27,13 @@ import { EngagementInbox } from "#engagement/application/engagement-inbox.ts";
 import { EngagementReviews } from "#engagement/application/engagement-reviews.ts";
 import { CommentIdSchema } from "#engagement/domain/comment-id.ts";
 import { ReviewIdSchema } from "#engagement/domain/review-id.ts";
+import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { actorOf } from "#shared/api/actor.ts";
-import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import {
+  PostIdSchema,
+  UserIdSchema,
+  WorkspaceIdSchema,
+} from "#shared/domain/ids.ts";
 import { recordToolCall } from "#workspace/api/activity-recording.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
 import { ConnectionJournal } from "#workspace/application/connection-journal.ts";
@@ -60,6 +66,8 @@ const commentTools: ReadonlySet<string> = new Set([
 const reviewTool = "reply_to_location_review";
 
 const decodeJsonObject = Schema.decodeUnknownSync(JsonObjectSchema);
+
+const decodePostId = Schema.decodeUnknownOption(PostIdSchema);
 
 /**
  * The JSON Schema the agent advertises a tool's parameters with: the one
@@ -162,6 +170,35 @@ export const AgentToolboxLive = Layer.effect(
     const peal = yield* PealTools;
     const inbox = yield* EngagementInbox;
     const reviews = yield* EngagementReviews;
+    const scheduling = yield* PostScheduling;
+
+    // The effect in one transaction that holds the post first: the post's
+    // use cases lock it again in it, so the agent's reading of the post
+    // and the approved call's change see the same post.
+    const holdingPost =
+      (member: Member, postId: Option.Option<string>) =>
+      <A>(effect: Effect.Effect<A, RunEnded>): Effect.Effect<A, RunEnded> => {
+        const named = postId.pipe(Option.flatMap(decodePostId));
+
+        if (Option.isNone(named)) {
+          return effect;
+        }
+
+        return scheduling
+          .holding(
+            actorOf(member),
+            named.value
+          )(effect)
+          .pipe(
+            Effect.catchTags({
+              DatabaseError: Effect.die,
+              // Refused before the effect starts: a post they cannot read
+              // is not held, and the effect finds it gone.
+              MissingPermission: () => effect,
+              PostNotFound: () => effect,
+            })
+          );
+      };
 
     // The comment or review a call names, read as the member may read it.
     const subjectOf = (
@@ -283,6 +320,7 @@ export const AgentToolboxLive = Layer.effect(
 
     return AgentToolbox.of({
       changes: (tool) => changingTools.has(tool),
+      holdingPost,
       subjectOf,
       record: ({ member, origin, refused, tool }) =>
         Effect.gen(function* record() {

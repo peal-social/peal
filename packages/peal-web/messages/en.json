@@ -646,6 +646,8 @@
       "at": "On {at}",
       "now": "As soon as you approve",
       "queue": "In the next free slot of {queue}",
+      "queueAt": "In the next free slot of {queue}: {at} for now, as the slot is taken when you approve",
+      "noMediaHere": "No media on this channel",
       "newText": "{part, select, 0 {New text} other {New text of part {part}}}",
       "comment": "Your comment",
       "media": "Media",

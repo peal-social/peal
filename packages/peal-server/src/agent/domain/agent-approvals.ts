@@ -72,7 +72,7 @@ export const approvalRefusals = {
   queue:
     "Peal found no such queue to show the person, so nothing was asked of them: name one list_queues answers, or leave it out for the workspace's default queue.",
   queueChannels:
-    "This draft has no channels, and the queue's come from a channel set: name the channels (channelIds) so the person sees where it goes, or tell them to do it in Peal's web app.",
+    "This draft has no channels, so the queue would give it its own channels and their default options, which Peal cannot show the person: name the channels (channelIds), or tell them to do it in Peal's web app.",
   tags: "Peal found no such tag to show the person, so nothing was asked of them: use the ids list_tags answers.",
   target:
     "This post has no such channel to show the person, so nothing was asked of them: name one of the targets get_post answers.",
@@ -203,23 +203,61 @@ const postChannels = (
       : channelNamed(asked, post).pipe(Result.map((id) => [id]));
   }
 
-  if (tool === "queue_post" && asked.channelIds === undefined) {
-    if (own.length > 0) {
-      return Result.succeed(own);
-    }
-
-    // A draft with no channels goes to the queue's.
-    return queueNamed(asked, sources).pipe(
-      Result.flatMap((queue) =>
-        queue.channelSetId === null
-          ? Result.succeed(queue.channelIds)
-          : Result.fail(approvalRefusals.queueChannels)
-      )
-    );
+  if (tool === "queue_post") {
+    return queuedChannels(asked, post, own, sources);
   }
 
   return Result.succeed(asked.channelIds ?? own);
 };
+
+// Where queuing a post sends it, as the scheduling use case does: a post
+// already scheduled or waiting for an approval moves on all its channels,
+// whatever the call names; a draft goes to the channels named, else its
+// own. A draft with none would take the queue's channels with each one's
+// default options, which the card cannot show: not asked.
+const queuedChannels = (
+  asked: CallParameters,
+  post: PublishablePost,
+  own: readonly string[],
+  sources: ApprovalSources
+): Result.Result<readonly string[], string> => {
+  if (post.status !== "draft") {
+    return Result.succeed(own);
+  }
+
+  const channels = asked.channelIds ?? own;
+
+  return queueNamed(asked, sources).pipe(
+    Result.flatMap(() =>
+      channels.length > 0
+        ? Result.succeed(channels)
+        : Result.fail(approvalRefusals.queueChannels)
+    )
+  );
+};
+
+/**
+ * The queue a queuing call names, or the workspace's default, as the
+ * workspace holds it; none for another call, or a queue it does not have.
+ */
+export const queueAsked = (
+  { params, tool }: RequestedCall,
+  queues: readonly QueueItem[]
+): Option.Option<QueueItem> =>
+  tool === "queue_post"
+    ? parametersOf(params).pipe(
+        Option.flatMap((asked) =>
+          Result.getSuccess(
+            queueNamed(asked, {
+              post: Option.none(),
+              queues: Option.some(queues),
+              subject: Option.none(),
+              tags: Option.none(),
+            })
+          )
+        )
+      )
+    : Option.none();
 
 /**
  * All that goes out of the post on these channels: its text, media and
@@ -401,6 +439,7 @@ export const approvalOf = (
       ),
       postId: asked.postId ?? null,
       queue,
+      queueAt: null,
       state: "pending",
       tags: yield* tagsAsked(tool, asked, sources),
       text: sentText(tool, asked),
@@ -448,7 +487,15 @@ export const shownOf = (approval: AgentApproval): string => {
     (): Record<string, Schema.Json> => ({})
   );
 
-  return canonical({ ...encoded, callId: "", digest: "", state: "pending" });
+  // A queue's next free slot is an indication, which may move: not part
+  // of what the person approves.
+  return canonical({
+    ...encoded,
+    callId: "",
+    digest: "",
+    queueAt: null,
+    state: "pending",
+  });
 };
 
 /** The approvals of an answer that still wait for the person, as kept. */

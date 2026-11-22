@@ -1,4 +1,4 @@
-import { Context, Effect, Layer, Option, Ref, Schema } from "effect";
+import { Context, Effect, Layer, Option, Ref, Schema, Semaphore } from "effect";
 import { Tool, Toolkit } from "effect/ai";
 import { CurrentMember } from "peal-contract";
 
@@ -94,6 +94,19 @@ const FakeToolkit = Toolkit.make(
   ),
   tool("publish_post", Schema.Struct({ postId: Schema.String }), true),
   tool(
+    "queue_post",
+    Schema.Struct({
+      postId: Schema.String,
+      queue: Schema.optionalKey(Schema.String),
+    }),
+    true
+  ),
+  tool("list_queues", Schema.Struct({})),
+  tool(
+    "preview_queue",
+    Schema.Struct({ count: Schema.Int, queueId: Schema.String })
+  ),
+  tool(
     "reply_to_comment",
     Schema.Struct({ commentId: Schema.String, text: Schema.String }),
     true
@@ -113,6 +126,15 @@ export class FakeTools extends Context.Service<
     readonly records: Effect.Effect<readonly ToolCallRecord[]>;
     /** A teammate edits the post's text, as the workspace then holds it. */
     readonly edit: (text: string) => Effect.Effect<void>;
+    /**
+     * A teammate edits the post's text the next time the post is read,
+     * as soon as nothing holds it: an edit that lands between the
+     * agent's reading of the post and the change it runs, unless the
+     * post is held between them.
+     */
+    readonly editWhenRead: (text: string) => Effect.Effect<void>;
+    /** The text the post had each time it was published. */
+    readonly published: Effect.Effect<readonly string[]>;
   }
 >()("peal-server/test/agent/FakeTools") {}
 
@@ -121,6 +143,33 @@ export const FakeToolboxLive = Layer.effectContext(
     const ran = yield* Ref.make<readonly string[]>([]);
     const records = yield* Ref.make<readonly ToolCallRecord[]>([]);
     const text = yield* Ref.make(postText);
+    const published = yield* Ref.make<readonly string[]>([]);
+    const pendingEdit = yield* Ref.make(Option.none<string>());
+    // The post's lock, as a change of the post takes it.
+    const lock = yield* Semaphore.make(1);
+
+    const edited = (changed: string) =>
+      lock.withPermits(1)(Ref.set(text, changed));
+
+    // An edit asked to land when the post is read: started at once, and
+    // given the time to land unless the post is held.
+    const editsOnRead = Ref.getAndSet(pendingEdit, Option.none()).pipe(
+      Effect.flatMap(
+        Option.match({
+          onNone: () => Effect.void,
+          onSome: (changed) =>
+            Effect.forkDetach(edited(changed)).pipe(
+              Effect.andThen(
+                Effect.forEach(
+                  Array.from({ length: 10 }),
+                  () => Effect.yieldNow
+                )
+              ),
+              Effect.asVoid
+            ),
+        })
+      )
+    );
 
     const running = (
       name: string,
@@ -144,7 +193,7 @@ export const FakeToolboxLive = Layer.effectContext(
                 Effect.orDie,
                 Effect.flatMap(({ postId: asked }) =>
                   asked === postId
-                    ? held("draft")
+                    ? held("draft").pipe(Effect.tap(() => editsOnRead))
                     : Effect.fail(
                         new ToolRefused({ message: "No post with this id." })
                       )
@@ -153,12 +202,51 @@ export const FakeToolboxLive = Layer.effectContext(
             ),
           list_posts: () =>
             running("list_posts", Effect.succeed({ posts: [] })),
+          // The workspace's one queue, its default, of the post's channel.
+          list_queues: () =>
+            running(
+              "list_queues",
+              Effect.succeed({
+                queues: [
+                  {
+                    channelIds: [channelId],
+                    channelSetId: null,
+                    id: "queue-1",
+                    isDefault: true,
+                    name: "Mornings",
+                  },
+                ],
+              })
+            ),
+          preview_queue: () =>
+            running(
+              "preview_queue",
+              Effect.succeed({
+                nextFree: "2026-12-02T08:00:00.000Z",
+                noRoom: null,
+                slots: [],
+              })
+            ),
+          queue_post: () =>
+            running(
+              "queue_post",
+              held("scheduled", "2026-12-02T08:00:00.000Z")
+            ),
           moderate_comment: () =>
             running(
               "moderate_comment",
               Effect.succeed({ text: "Spam here", threadId: "thread-1" })
             ),
-          publish_post: () => running("publish_post", held("publishing")),
+          publish_post: () =>
+            running(
+              "publish_post",
+              Ref.get(text).pipe(
+                Effect.tap((now) =>
+                  Ref.update(published, (texts) => [...texts, now])
+                ),
+                Effect.andThen(held("publishing"))
+              )
+            ),
           reply_to_comment: () =>
             running(
               "reply_to_comment",
@@ -190,6 +278,10 @@ export const FakeToolboxLive = Layer.effectContext(
       AgentToolbox,
       AgentToolbox.of({
         changes: (name) => name !== "list_posts" && name !== "get_post",
+        // The post held while the effect runs, as the live toolbox's
+        // transaction does.
+        holdingPost: (_member, named) => (effect) =>
+          Option.isSome(named) ? lock.withPermits(1)(effect) : effect,
         // The comment every reply or moderation acts on, as the inbox
         // holds it.
         subjectOf: (_member, name) =>
@@ -208,7 +300,9 @@ export const FakeToolboxLive = Layer.effectContext(
       Context.add(
         FakeTools,
         FakeTools.of({
-          edit: (changed) => Ref.set(text, changed),
+          edit: edited,
+          editWhenRead: (changed) => Ref.set(pendingEdit, Option.some(changed)),
+          published: Ref.get(published),
           ran: Ref.get(ran),
           records: Ref.get(records),
         })

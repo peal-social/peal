@@ -304,6 +304,7 @@ describe("the agent's domain", () => {
         },
         postId: "post-1",
         queue: null,
+        queueAt: null,
         state: "pending",
         tags: [],
         text: null,
@@ -368,12 +369,49 @@ describe("the agent's domain", () => {
     ]);
   });
 
+  it("queues a post on the channels the scheduling does, and asks nothing whose channels the queue would fill", () => {
+    const queues = { queues: Option.some([{ ...queue, isDefault: true }]) };
+
+    // A scheduled post moves on all its channels, whatever the call names.
+    const moved = shown(
+      "queue_post",
+      { channelIds: ["channel-1"], postId: "post-1" },
+      {
+        post: Option.some({ ...publishable, status: "scheduled" }),
+        ...queues,
+      }
+    );
+
+    expect([
+      moved.channelIds,
+      moved.post?.targets.map(({ channelId }) => channelId),
+      // A draft with no channels would take the queue's, with their
+      // default options: not asked, even from a queue of direct channels.
+      refusalOf(
+        "queue_post",
+        { postId: "post-1" },
+        { post: Option.some({ ...publishable, targets: [] }), ...queues }
+      ),
+      // Its next free slot is no part of what the person approves.
+      shownOf(moved) ===
+        shownOf({
+          ...moved,
+          queueAt: DateTime.makeUnsafe("2026-12-01T08:00:00Z"),
+        }),
+    ]).toStrictEqual([
+      ["channel-1", "channel-2"],
+      ["channel-1", "channel-2"],
+      approvalRefusals.queueChannels,
+      true,
+    ]);
+  });
+
   it("names a queue, tags, a moderation, a comment and an edited part as the call and the workspace say", () => {
     const withPost = { post: Option.some(publishable) };
 
     const queued = shown(
       "queue_post",
-      { postId: "post-1", queue: "MORNINGS" },
+      { channelIds: ["channel-1"], postId: "post-1", queue: "MORNINGS" },
       {
         post: Option.some({ ...publishable, targets: [] }),
         queues: Option.some([queue]),

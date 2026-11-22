@@ -174,6 +174,10 @@ export const AgentApprovalSchema = Schema.Struct({
   post: orNone(ApprovalPostSchema),
   postId: Schema.NullOr(Schema.String),
   queue: orNone(Schema.String),
+  // The queue's next free slot when the change was asked, as an
+  // indication: the slot is taken when the change runs, and may have
+  // moved. Never part of `digest`.
+  queueAt: orNone(Schema.DateTimeUtc),
   state: AgentApprovalStateSchema,
   tags: Schema.Array(ApprovalTagSchema).pipe(
     Schema.withDecodingDefaultKey(Effect.succeed([]))

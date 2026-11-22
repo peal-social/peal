@@ -293,6 +293,7 @@ const approval: AgentApproval = {
         channelId: "channel-1",
         options: {
           collaborators: ["synthetic.partner"],
+          coverMediaId: "media-cover",
           platform: "instagram",
           shareToFeed: true,
         },
@@ -303,6 +304,7 @@ const approval: AgentApproval = {
   },
   postId: "post-1",
   queue: null,
+  queueAt: null,
   state: "pending",
   tags: [],
   text: null,
@@ -365,6 +367,65 @@ describe(ApprovalCardView, () => {
     ]).toStrictEqual(Array.from({ length: 13 }, () => true));
   });
 
+  it("shows a file an option names as the file, a channel with no media as such, and alt text whole", async () => {
+    const longAlt = `A bottle on a table. ${"Spring light. ".repeat(300)}`;
+
+    const html = await render(
+      <ApprovalCardView
+        approval={{
+          ...approval,
+          post:
+            approval.post === null
+              ? null
+              : {
+                  ...approval.post,
+                  media: [{ altText: longAlt, mediaId: "media-1" }],
+                  overrides: [
+                    {
+                      channelId: "channel-1",
+                      media: [],
+                      text: "Text alone here.",
+                    },
+                  ],
+                },
+        }}
+        busy={false}
+        links={links}
+        nameOf={(id) => (id === "channel-1" ? "Client A (@client)" : null)}
+        renderMedia={(media) => (
+          <span data-files={media.map(({ mediaId }) => mediaId).join(",")} />
+        )}
+        onAnswer={() => {
+          // Not pressed in a render.
+        }}
+      />
+    );
+
+    expect([
+      html.includes('data-files="media-cover"'),
+      html.includes(">media-cover<"),
+      html.includes("No media on this channel"),
+      html.includes('data-files="media-1"'),
+    ]).toStrictEqual([true, false, true, true]);
+
+    // Without the files, each alt text shows whole, never clipped.
+    const plain = await approvalCard({
+      ...approval,
+      post:
+        approval.post === null
+          ? null
+          : {
+              ...approval.post,
+              media: [{ altText: longAlt, mediaId: "media-1" }],
+            },
+    });
+
+    expect([
+      plain.includes(longAlt.trim()),
+      plain.includes("line-clamp"),
+    ]).toStrictEqual([true, false]);
+  });
+
   it("names what a moderation does, the queue, a request's comment and an edit's part", async () => {
     const moderated = await approvalCard({
       ...approval,
@@ -380,6 +441,7 @@ describe(ApprovalCardView, () => {
       ...approval,
       at: null,
       queue: "Mornings",
+      queueAt: DateTime.makeUnsafe("2026-11-24T08:00:00Z"),
       tool: "queue_post",
     });
 
@@ -398,7 +460,7 @@ describe(ApprovalCardView, () => {
 
     expect([
       moderated.includes("Delete this comment"),
-      queued.includes("In the next free slot of Mornings"),
+      queued.includes("In the next free slot of Mornings: Tuesday"),
       changes.includes("Your comment"),
       changes.includes("Say spring, not summer."),
       edited.includes("New text of part 1"),

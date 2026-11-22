@@ -1,4 +1,5 @@
 import { Option, Schema } from "effect";
+import type { DateTime } from "effect";
 
 import { storableText } from "#shared/domain/platform-text.ts";
 
@@ -171,6 +172,18 @@ export const tagsOf = (
   encoded: Schema.Json
 ): Option.Option<readonly TagItem[]> =>
   decodeTags(encoded).pipe(Option.map(({ tags }) => tags));
+
+const decodePreview = Schema.decodeUnknownOption(
+  Schema.Struct({
+    nextFree: Schema.NullOr(Schema.DateTimeUtcFromString),
+  })
+);
+
+/** A queue's next free slot, as preview_queue answered it; none for no room. */
+export const nextFreeOf = (encoded: Schema.Json): Option.Option<DateTime.Utc> =>
+  decodePreview(encoded).pipe(
+    Option.flatMap(({ nextFree }) => Option.fromNullOr(nextFree))
+  );
 
 /** The workspace's queues, as list_queues answered them. */
 export const queuesOf = (
