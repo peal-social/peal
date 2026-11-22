@@ -23,7 +23,8 @@
   the person chose, and a tool that read the others would hand a model
   what the person did not connect. Each workspace stands alone, and the
   API has no overview, agenda or report across a person's workspaces
-  either.
+  either. `list_workspaces` answers the connection's workspace alone,
+  never the others the person belongs to.
 - The use cases' permission checks refuse a client the user let read only.
   Tools answer with the views the API handlers answer
   (`#<context>/api/*-view.ts`). Each area has its toolkit (`posts-tools.ts`,

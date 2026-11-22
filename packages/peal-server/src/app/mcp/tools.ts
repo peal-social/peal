@@ -73,7 +73,7 @@ export const WhoAmI = Tool.make("whoami", {
 export const ListWorkspaces = Tool.make("list_workspaces", {
   dependencies: [CurrentMember],
   description:
-    "Lists the workspaces the signed-in user belongs to, with their role in each. `connected` marks the one this connection acts in; to work in another, the user connects again and picks it. An API key lists its own workspace alone, with a null role.",
+    "Lists the workspace this connection acts in, with the user's role there, and `connected` true: a connection reads no other workspace, even one the user belongs to. To work in another, the user connects again and picks it. An API key lists its own workspace, with a null role.",
   failure: ToolRefused,
   success: Schema.Struct({
     workspaces: Schema.Array(

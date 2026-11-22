@@ -393,14 +393,14 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           results.channels.channels.map(({ id }) => id),
           [fixture.studioChannel]
         );
+        // The connection's workspace alone, though the user belongs to
+        // another: what they did not connect is not the client's to know.
         assert.deepStrictEqual(
-          results.workspaces.workspaces
-            .map(({ connected, id }) => ({ connected, id }))
-            .toSorted((a, b) => a.id.localeCompare(b.id)),
-          [
-            { connected: true, id: fixture.studio },
-            { connected: false, id: fixture.shop },
-          ].toSorted((a, b) => a.id.localeCompare(b.id))
+          results.workspaces.workspaces.map(({ connected, id }) => ({
+            connected,
+            id,
+          })),
+          [{ connected: true, id: fixture.studio }]
         );
         assert.deepStrictEqual(results.health, {
           database: "up",
