@@ -229,13 +229,18 @@ export type AgentChatDetail = typeof AgentChatDetailSchema.Type;
 /**
  * Why a run failed once its events had started: the provider refused the
  * workspace's settings or could not be reached, took too long, or
- * answered something the agent cannot use.
+ * answered something the agent cannot use; or the workspace ran out of
+ * the agent's requests between two of the run's model rounds
+ * (`allowanceReached`: the same allowance whose refusal before a run is
+ * `AssistantQuotaExceeded`, `UsageAllowanceReached` or
+ * `OwnTextLimitReached`).
  */
 export const AgentFailureSchema = Schema.Literals([
   "providerRefused",
   "unreachable",
   "timedOut",
   "unusableAnswer",
+  "allowanceReached",
   "failed",
 ]);
 
@@ -245,12 +250,17 @@ export type AgentFailure = typeof AgentFailureSchema.Type;
  * What a run sends as it goes, as Server-Sent Events, one JSON event each:
  *
  * - `started`: the person's message (`userMessageId`, null when the run
- *   continues after an approval) and the answer's id.
+ *   continues after an approval) and the answer's id. A run that
+ *   continues after an approval goes on in the answer that asked for it:
+ *   `messageId` is that answer's, whose text, steps, cards and duration
+ *   the run's events add to.
  * - `text`: the next piece of the answer's text, to append.
  * - `step`: a tool call started, or how it ended (same `callId`).
  * - `card`: an item the agent made or changed.
  * - `approval`: a change that waits for the person's answer; the run ends
- *   after it with `awaitingApproval`.
+ *   after it with `awaitingApproval`. A run that continues after an
+ *   answer first sends the answered change again, with its new state
+ *   (`approved` or `declined`), under the same `callId`.
  * - `title`: the chat's new title.
  * - `finished`: the run ended, and how; the answer is saved.
  * - `failed`: the run stopped on a failure; what came before is saved.
