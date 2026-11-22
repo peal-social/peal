@@ -5,8 +5,12 @@
   sessions live in memory and end with `DELETE`). effect/ai never ends a
   session itself, so `mcpSessionGuard` (`sessions.ts`, after
   `mcpAuthentication`) keeps track of them: a session is its opener's
-  alone (404 to another credential), `sessionsPerCredential` (16) a
-  person or a key at most, the one unused longest ended past them, any
+  alone (`ownerOf`: a person through one application in one workspace,
+  or a key; 404 to anyone else, another application of the same person
+  included), `sessionsPerCredential` (16) to each and
+  `sessionsPerPerson` (64) to a person across all, the one unused
+  longest ended past them (the credential's first, so an application
+  ends another's only past the person's total), any
   unused for `sessionIdleLimit` (an hour) ended by a sweep every minute,
   and an `initialize` past `maxInitializeBytes` (64 KiB) refused, as
   effect/ai keeps it for the session. A session is ended through the

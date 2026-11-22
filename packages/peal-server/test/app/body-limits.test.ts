@@ -22,6 +22,14 @@ const CodedSchema = Schema.fromJsonString(
 
 const decodeCode = Schema.decodeUnknownOption(CodedSchema);
 
+// A sign-in for an address nobody has, padded to a size.
+const signInBody = (padding: string) =>
+  JSON.stringify({
+    email: "nobody-synthetic@example.test",
+    padding,
+    password: "synthetic-password",
+  });
+
 // A body sent in chunks, without a length, as a client streaming it does.
 const streamed = (text: string) =>
   new ReadableStream<Uint8Array>({
@@ -108,6 +116,23 @@ layer(MigratedSqlLive, { excludeTestServices: true, timeout: "180 seconds" })(
             headers: json,
           });
 
+          // Better Auth's, in chunks: read under the limit before it is
+          // handed over, a byte past it refused, a small one answered as
+          // sent.
+          const pastSize = 1024 * 1024 + 1 - signInBody("").length;
+
+          const chunkedSignIn = yield* answer("/api/auth/sign-in/email", {
+            body: streamed(signInBody("x".repeat(pastSize))),
+            duplex: "half",
+            headers: json,
+          });
+
+          const atLimitSignIn = yield* answer("/api/auth/sign-in/email", {
+            body: streamed(signInBody("x".repeat(pastSize - 1))),
+            duplex: "half",
+            headers: json,
+          });
+
           const undeclared = yield* answer("/api/data-deletion/facebook", {
             body: `signed_request=${mebibytes(2)}`,
             headers: { "content-type": "application/x-www-form-urlencoded" },
@@ -148,6 +173,10 @@ layer(MigratedSqlLive, { excludeTestServices: true, timeout: "180 seconds" })(
           }
 
           assert.strictEqual(signIn.status, 413);
+          assert.strictEqual(chunkedSignIn.status, 413);
+          // Exactly at the limit, Better Auth reads it: nobody has that
+          // address.
+          assert.strictEqual(atLimitSignIn.status, 401);
           assert.strictEqual(mcp.status, 413);
           assert.strictEqual(bulk.status, 401);
         })

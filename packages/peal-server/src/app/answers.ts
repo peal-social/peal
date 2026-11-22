@@ -124,7 +124,8 @@ export const apiAnswers = <
           const bodyLimit = bodyLimitFor(request.url);
 
           // Better Auth reads the web request itself, past MaxBodySize: a
-          // body declared too large is refused here, for every route.
+          // body declared too large is refused here, for every route (one
+          // with no length, Better Auth's routes read first: boundedBody).
           if (declaredPastLimit(request.headers["content-length"], bodyLimit)) {
             return named(
               toldAs(
