@@ -48,7 +48,14 @@ export const useAvailability = (
   const t = useTranslations("Agent");
   const workspaceHref = useWorkspaceHref();
   const status = useAtomValue(agentStatus(workspaceId));
+  const mounted = useMounted();
   const reread = useAtomRefresh(agentStatus(workspaceId));
+
+  // The status needs the visitor's cookies, which the server's render has
+  // not: it is read once the page has hydrated.
+  if (!mounted) {
+    return { notice: null, ready: false };
+  }
 
   return AsyncResult.match(status, {
     onFailure: () => ({
@@ -172,8 +179,7 @@ export const ChatBody = ({
           chat.answer(callId, approved);
         }}
       />
-      <div ref={end} />
-      <div className="bg-card sticky bottom-0 flex flex-col gap-2 pt-2 pb-3">
+      <div className="bg-card sticky bottom-0 mt-auto flex flex-col gap-2 pt-2 pb-3">
         {availability.notice}
         <ComposerView
           disabled={!availability.ready}
@@ -194,6 +200,8 @@ export const ChatBody = ({
           }}
         />
       </div>
+      {/* After the composer, which covers the end of the chat. */}
+      <div ref={end} />
     </>
   );
 };

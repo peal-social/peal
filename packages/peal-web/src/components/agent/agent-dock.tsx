@@ -180,6 +180,11 @@ const ChatPanel = ({
       onMinimize={onMinimize}
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pt-4">
+        {chat.missing ? (
+          <p className="text-muted-foreground py-16 text-center text-sm">
+            {t("errors.chatGone")}
+          </p>
+        ) : null}
         {empty ? (
           <PanelEmptyView
             disabled={!availability.ready}
@@ -188,16 +193,18 @@ const ChatPanel = ({
             }}
           />
         ) : null}
-        <ChatBody
-          availability={availability}
-          chat={chat}
-          inputRef={input}
-          placeholder={t("panelPlaceholder")}
-          workspaceId={workspaceId}
-          onEscape={() => {
-            input.current?.blur();
-          }}
-        />
+        {chat.missing ? null : (
+          <ChatBody
+            availability={availability}
+            chat={chat}
+            inputRef={input}
+            placeholder={t("panelPlaceholder")}
+            workspaceId={workspaceId}
+            onEscape={() => {
+              input.current?.blur();
+            }}
+          />
+        )}
       </div>
     </PanelView>
   );

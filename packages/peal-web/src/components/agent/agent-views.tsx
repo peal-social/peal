@@ -59,7 +59,7 @@ export const AgeText = ({
         ? t("justNow")
         : new Intl.RelativeTimeFormat(locale, {
             numeric: "auto",
-            style: "narrow",
+            style: "short",
           }).format(age.value, age.unit)}
     </time>
   );

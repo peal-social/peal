@@ -175,6 +175,9 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
       });
     },
     detail,
+    /** The chat could not be read: deleted, expired, or the network. */
+    missing:
+      AsyncResult.isFailure(detail) && !state.loaded && state.run === null,
     remove: async (): Promise<boolean> => {
       const exit = await remove({ params: { chatId, workspaceId } });
 

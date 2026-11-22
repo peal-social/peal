@@ -1,6 +1,5 @@
 "use client";
 
-import { AsyncResult } from "effect/reactivity";
 import { PanelBottomOpenIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
@@ -188,11 +187,6 @@ export const AgentChatScreen = ({
     }
   };
 
-  const missing =
-    AsyncResult.isFailure(chat.detail) &&
-    !chat.state.loaded &&
-    chat.state.run === null;
-
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <PageTitle>{title}</PageTitle>
@@ -235,7 +229,7 @@ export const AgentChatScreen = ({
           {t("menu.moveToPanel")}
         </Button>
       </PageActions>
-      {missing ? (
+      {chat.missing ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
           <p className="text-muted-foreground text-sm">
             {t("errors.chatGone")}
