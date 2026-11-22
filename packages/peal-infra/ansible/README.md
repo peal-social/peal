@@ -405,7 +405,10 @@ copy run without Pulumi, and for what Pulumi does in their place.
 5. **Telegram** ([Telegram](#telegram)): three bots from @BotFather, one for
    each server that alerts, and two private channels.
 6. **Email**: a Resend key for the verified sending domain `peal.social`,
-   which sends as `notifications@peal.social` (`peal_mail_from`).
+   which sends as `notifications@peal.social` (`peal_mail_from`), and,
+   where the blog runs and mails, a second one of its own
+   (`PEAL_BLOG_RESEND_API_KEY`), with Sending access alone, for that
+   domain: the blog never holds the server's key.
 7. **The platforms' apps**, a set of its own for each environment
    ([The platforms' apps](#the-platforms-apps)).
 
@@ -852,11 +855,14 @@ playbooks render stays as it was. With it:
   (`PEAL_BLOG_ENCRYPTION_KEY`), each once, generated on the server and never
   read back; writes the blog's settings into `host.env` (`PEAL_BLOG_*`, the
   site's links as `BLOG_*`, and EmDash's SMTP through Resend's relay,
-  `smtp.resend.com:465` as `resend`, from `peal_mail_from`, with the
-  server's `RESEND_API_KEY` as its password; `peal_blog_mail: false` sends
-  none); requires the blog bucket's key (`PEAL_BLOG_S3_ACCESS_KEY_ID`,
-  `PEAL_BLOG_S3_SECRET_ACCESS_KEY`) and `RESEND_API_KEY` in the
-  credentials; and routes the tunnel:
+  `smtp.resend.com:465` as `resend`, from `peal_mail_from`, with a Resend
+  key of the blog's own, `PEAL_BLOG_RESEND_API_KEY`, as its password, never
+  the server's `RESEND_API_KEY`; `peal_blog_mail: false` sends none);
+  requires the blog bucket's key (`PEAL_BLOG_S3_ACCESS_KEY_ID`,
+  `PEAL_BLOG_S3_SECRET_ACCESS_KEY`) and, where it mails,
+  `PEAL_BLOG_RESEND_API_KEY` in the credentials, by name (the release
+  checks `credentials.env` for it before it changes anything); and routes
+  the tunnel:
   1. `/blog/_emdash…`, in any case, answers 404: EmDash would take an API
      call there for a public page and skip its CSRF check;
   2. `/_emdash/api/media/file/…` goes to the blog, public in production,
@@ -879,7 +885,9 @@ playbooks render stays as it was. With it:
   going from `secrets.env` to psql through the environment alone; it runs
   the `blog` profile and checks `/_emdash/api/health`, which then gates
   every release of the environment. Before it changes anything, it stops
-  when `secrets.env` lacks the blog's secrets (run `site.yml` first). The
+  when `secrets.env` lacks the blog's secrets (run `site.yml` first), or,
+  where the blog mails, `credentials.env` lacks `PEAL_BLOG_RESEND_API_KEY`
+  (names only). The
   app's database is closed to every role but its owner, so the blog's role
   reaches its own database alone.
 - `peal_preflight` refuses the flag without `peal_blog_bucket`, and in
@@ -896,7 +904,9 @@ Turn it on, for the sandbox first:
    --diff` and `pulumi up` on the environment's stack, and
    `scripts/cloudflare_from_pulumi.py --vault-id <environment>@…`, which
    writes `peal_blog_bucket`, production's `blog` audience tag and the
-   bucket's key.
+   bucket's key. Make the blog's Resend key (Resend › API Keys, Sending
+   access, the environment's domain) and put it in the vault as
+   `PEAL_BLOG_RESEND_API_KEY`, unless `peal_blog_mail: false`.
 2. Set `peal_blog: true`, run `site.yml --check --diff`, then `site.yml`,
    then `release.yml --limit <environment>`.
 3. Open `https://<site>/_emdash/admin` right away (behind Access), complete

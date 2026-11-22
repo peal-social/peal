@@ -482,13 +482,15 @@ services:
       BLOG_POSTHOG_ENVIRONMENT:
       # EmDash's SMTP, for invitations and magic links; unset, no mail.
       # Peal's servers send through Resend's SMTP relay, whose password is
-      # the server's RESEND_API_KEY, handed over only where the blog mails
-      # (PEAL_BLOG_MAIL, which peal-infra sets).
+      # a Resend key of the blog's own, PEAL_BLOG_RESEND_API_KEY, handed
+      # over only where the blog mails (PEAL_BLOG_MAIL, which peal-infra
+      # sets). Never the server's RESEND_API_KEY: the blog is a CMS of
+      # someone else's making, and a key it leaks must not send as Peal.
       EMAIL_SMTP_HOST:
       EMAIL_SMTP_PORT:
       EMAIL_SMTP_SECURE:
       EMAIL_SMTP_USER:
-      EMAIL_SMTP_PASS: ${PEAL_BLOG_MAIL:+${RESEND_API_KEY:-}}
+      EMAIL_SMTP_PASS: ${PEAL_BLOG_MAIL:+${PEAL_BLOG_RESEND_API_KEY:-}}
       EMAIL_SMTP_FROM:
     volumes:
       # Signed-in editors' sessions, kept across releases.

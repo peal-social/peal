@@ -203,7 +203,8 @@ def test_host_env_gives_the_blog_its_settings(rendered_blog: Path, environment: 
 def test_the_blog_mails_through_resend_s_relay(rendered_blog: Path, environment: str) -> None:
     host_env = _host_env(rendered_blog, environment)
 
-    # Compose hands the blog RESEND_API_KEY as its SMTP password with it alone.
+    # Compose hands the blog its own Resend key as its SMTP password, with it
+    # alone.
     assert host_env["PEAL_BLOG_MAIL"] == "true"
 
     assert {name: host_env[name] for name in host_env if name.startswith("EMAIL_SMTP_")} == {
@@ -229,10 +230,15 @@ def test_a_blog_without_mail_gets_no_smtp(rendered_blog_without_mail: Path, envi
 
 
 def test_compose_hands_the_smtp_password_only_where_the_blog_mails() -> None:
+    """The blog's own Resend key, never the server's: a compromised blog must
+    not send as the server, or read what the server's key reads."""
     compose = yaml.safe_load((Path(__file__).parent.parent.parent.parent / "peal-docker"
                               / "compose.production.yaml").read_text())
+    blog = compose["services"]["blog"]["environment"]
 
-    assert compose["services"]["blog"]["environment"]["EMAIL_SMTP_PASS"] == "${PEAL_BLOG_MAIL:+${RESEND_API_KEY:-}}"
+    assert blog["EMAIL_SMTP_PASS"] == "${PEAL_BLOG_MAIL:+${PEAL_BLOG_RESEND_API_KEY:-}}"
+    assert not [name for name, value in blog.items() if "RESEND_API_KEY" in name + str(value)
+                and "PEAL_BLOG_RESEND_API_KEY" not in str(value)]
 
 
 def _required(environment: str, **names: Any) -> list[str]:
@@ -241,12 +247,14 @@ def _required(environment: str, **names: Any) -> list[str]:
 
 
 @pytest.mark.parametrize("environment", ["production", "sandbox"])
-def test_the_blog_requires_its_bucket_key_and_resend(environment: str) -> None:
+def test_the_blog_requires_its_bucket_key_and_its_resend_key(environment: str) -> None:
     on = _required(environment, peal_blog=True)
 
-    assert {"PEAL_BLOG_S3_ACCESS_KEY_ID", "PEAL_BLOG_S3_SECRET_ACCESS_KEY", "RESEND_API_KEY"} <= set(on)
-    assert "RESEND_API_KEY" not in _required(environment, peal_blog=True, peal_blog_mail=False)
-    assert not {"PEAL_BLOG_S3_ACCESS_KEY_ID", "RESEND_API_KEY"} & set(_required(environment, peal_blog=False))
+    assert {"PEAL_BLOG_S3_ACCESS_KEY_ID", "PEAL_BLOG_S3_SECRET_ACCESS_KEY", "PEAL_BLOG_RESEND_API_KEY"} <= set(on)
+    # The server's key is the mail credential's business, not the blog's.
+    assert "RESEND_API_KEY" not in on
+    assert "PEAL_BLOG_RESEND_API_KEY" not in _required(environment, peal_blog=True, peal_blog_mail=False)
+    assert not {"PEAL_BLOG_S3_ACCESS_KEY_ID", "PEAL_BLOG_RESEND_API_KEY"} & set(_required(environment, peal_blog=False))
 
 
 def test_the_profile_follows_the_flag() -> None:

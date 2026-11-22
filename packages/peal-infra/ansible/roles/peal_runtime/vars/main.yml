@@ -58,7 +58,7 @@ peal_runtime_host_settings: >-
 # the site's links, its measurement as the site's (peal_site_measurement:
 # PostHog's project token, public, which the vault gives), and EmDash's
 # SMTP through Resend's relay, whose password Compose hands the blog from
-# RESEND_API_KEY only with PEAL_BLOG_MAIL.
+# its own key, PEAL_BLOG_RESEND_API_KEY, only with PEAL_BLOG_MAIL.
 peal_runtime_blog_settings: >-
   {{ {
        'PEAL_BLOG_PORT': peal_ports.blog,
@@ -111,7 +111,8 @@ peal_runtime_posthog_on: "{{ 'PEAL_POSTHOG_KEY' in peal_runtime_optional_given }
 
 # The credentials this server needs, by name: peal_required_credentials, the
 # heartbeat's token when Grafana sends one, the docs' assistant's key
-# when the docs run as a server, and the secret of each app whose id
+# when the docs run as a server, the blog's bucket key and Resend key
+# where it runs (never the server's RESEND_API_KEY), and the secret of each app whose id
 # peal_settings gives, as the server refuses to start with one half of an
 # app alone (oauthClientConfig, Google sign-in): the release stops first.
 peal_runtime_required_credentials: >-
@@ -119,7 +120,7 @@ peal_runtime_required_credentials: >-
      + (['PEAL_HEARTBEAT_TOKEN'] if peal_heartbeat_url else [])
      + (['DOCS_ANTHROPIC_API_KEY'] if peal_docs_server | bool else [])
      + (['PEAL_BLOG_S3_ACCESS_KEY_ID', 'PEAL_BLOG_S3_SECRET_ACCESS_KEY']
-        + (['RESEND_API_KEY'] if peal_blog_mail | bool else []) if peal_blog | bool else [])
+        + (['PEAL_BLOG_RESEND_API_KEY'] if peal_blog_mail | bool else []) if peal_blog | bool else [])
      + ({
           'LINKEDIN_CLIENT_ID': 'LINKEDIN_CLIENT_SECRET',
           'LINKEDIN_PAGES_CLIENT_ID': 'LINKEDIN_PAGES_CLIENT_SECRET',

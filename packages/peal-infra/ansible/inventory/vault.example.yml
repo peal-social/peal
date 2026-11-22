@@ -48,9 +48,13 @@ peal_credentials:
   # Where the blog runs (peal_blog), its bucket's key, for that bucket
   # alone, which scripts/cloudflare_from_pulumi.py writes once the
   # environment's stack has made it (README.md, "The blog"). Optional until
-  # the flag is on. The blog mails with RESEND_API_KEY.
+  # the flag is on. With peal_blog_mail, the blog mails through Resend's
+  # SMTP relay with a key of its own, never the server's RESEND_API_KEY:
+  # a Resend API key with Sending access only, for the domain of
+  # peal_mail_from (README.md, "The blog").
   # PEAL_BLOG_S3_ACCESS_KEY_ID: REPLACE
   # PEAL_BLOG_S3_SECRET_ACCESS_KEY: REPLACE
+  # PEAL_BLOG_RESEND_API_KEY: REPLACE
   # Optional, each turning a feature on (the docs' environment variables
   # page): the writing assistant's provider key; Stripe's, with
   # STRIPE_LOOKUP_KEY_PREFIX in peal_settings when its prices' lookup keys

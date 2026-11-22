@@ -63,7 +63,8 @@ under Development stack.
   (`PG*`) and bucket (`S3_*`) only when it starts, never at build
   (`compose.test.ts` checks the Dockerfile), keeps editors' sessions in the
   `blog-sessions` volume, and mails through `EMAIL_SMTP_*`, its password
-  the server's `RESEND_API_KEY`, handed over only with `PEAL_BLOG_MAIL`. It mounts no file of the
+  a Resend key of its own (`PEAL_BLOG_RESEND_API_KEY`), handed over only
+  with `PEAL_BLOG_MAIL`; it never receives the server's `RESEND_API_KEY`. It mounts no file of the
   stack, so it has no `config-hash` label.
 - Keep `MP_SMTP_DISABLE_RDNS` on Mailpit, in compose and CI: its reverse DNS
   lookup otherwise stalls each SMTP greeting for about 10 seconds, and the

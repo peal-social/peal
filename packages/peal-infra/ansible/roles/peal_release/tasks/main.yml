@@ -46,13 +46,19 @@
 
 # The blog's role takes its password from secrets.env, which site.yml writes
 # once the flag is on: without it, the release would set an empty password
-# and fail once the stack had been replaced. Names only, read-only.
-- name: Find whether secrets.env lacks the blog's secrets
+# and fail once the stack had been replaced. Where the blog mails, its own
+# Resend key must be in credentials.env, which site.yml writes from the
+# vault: the blog never falls back on the server's. Names only, read-only.
+- name: Find whether the server lacks the blog's secrets
   ansible.builtin.shell: |
     set -eu
     for name in PEAL_BLOG_DATABASE_PASSWORD PEAL_BLOG_ENCRYPTION_KEY; do
       grep -Eqs "^${name}=.+" {{ peal_root }}/secrets.env || echo "$name"
     done
+    {% if peal_blog_mail | bool %}
+    grep -Eqs "^PEAL_BLOG_RESEND_API_KEY=['\"]?[^'\"[:space:]]" {{ peal_root }}/credentials.env \
+      || echo PEAL_BLOG_RESEND_API_KEY
+    {% endif %}
   register: peal_release_blog_secrets
   changed_when: false
   check_mode: false
@@ -62,9 +68,10 @@
   ansible.builtin.assert:
     that: peal_release_blog_secrets.stdout_lines | length == 0
     fail_msg: >-
-      {{ peal_root }}/secrets.env holds no {{ peal_release_blog_secrets.stdout_lines | join(', ') }}:
-      run site.yml on {{ inventory_hostname }}, which generates them once the
-      blog is on, then release.yml.
+      {{ inventory_hostname }} lacks {{ peal_release_blog_secrets.stdout_lines | join(', ') }}:
+      put the blog's Resend key in the vault (or credentials.env), run
+      site.yml on {{ inventory_hostname }}, which generates the blog's other
+      secrets once it is on, then release.yml.
     quiet: true
   when: peal_blog | bool
 
