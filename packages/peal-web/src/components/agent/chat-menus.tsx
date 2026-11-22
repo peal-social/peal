@@ -336,6 +336,9 @@ export const ChatMoreMenu = ({
         </DropdownMenuContent>
       </DropdownMenu>
       <RenameDialog
+        // A title that changed (the chat read, or named) starts the field
+        // again from it: the menu opens the dialog without its handler.
+        key={title}
         open={renaming}
         title={title}
         onOpenChange={setRenaming}

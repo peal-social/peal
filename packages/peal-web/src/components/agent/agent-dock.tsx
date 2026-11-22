@@ -216,15 +216,23 @@ const PanelTab = ({
   onClose,
   onPress,
   shown,
+  workspaceId,
 }: {
   readonly chatId: string;
   readonly onClose: () => void;
   readonly onPress: () => void;
   readonly shown: boolean;
+  readonly workspaceId: string;
 }) => {
   const t = useTranslations("Agent");
   const { title } = useAtomValue(agentChat(chatId));
-  const name = chatTitle(t, chatId === newChat ? null : title);
+  // A chat minimized before a reload is not read until it shows: its
+  // title is the history's meanwhile.
+  const saved = useRecentChats(workspaceId).find(({ id }) => id === chatId);
+  const name = chatTitle(
+    t,
+    chatId === newChat ? null : (title ?? saved?.title ?? null)
+  );
 
   return (
     <li
@@ -369,6 +377,7 @@ export const AgentDock = ({
               key={tab}
               chatId={tab}
               shown={tab === shown}
+              workspaceId={workspaceId}
               onClose={() => {
                 close(tab);
               }}

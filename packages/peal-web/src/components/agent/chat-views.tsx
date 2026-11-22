@@ -23,6 +23,7 @@ import type {
   AgentRating,
   AgentStep,
 } from "peal-contract/agent";
+import { maxAgentMessageLength } from "peal-contract/agent";
 import { Badge } from "peal-ui/components/badge";
 import { Button, buttonVariants } from "peal-ui/components/button";
 import { EmptyStateTitle } from "peal-ui/components/empty-state";
@@ -744,6 +745,7 @@ export const ComposerView = ({
 }) => {
   const t = useTranslations("Agent");
   const empty = value.trim() === "";
+  const tooLong = value.length > maxAgentMessageLength;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Escape" && onEscape !== undefined) {
@@ -756,7 +758,7 @@ export const ComposerView = ({
     ) {
       event.preventDefault();
 
-      if (!running && !empty && !disabled) {
+      if (!running && !empty && !tooLong && !disabled) {
         onSend();
       }
     }
@@ -778,7 +780,22 @@ export const ComposerView = ({
         }}
         onKeyDown={handleKeyDown}
       />
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-2">
+        {/* Near the limit, how much is left; past it, sending waits. */}
+        {value.length > maxAgentMessageLength * 0.9 ? (
+          <span
+            aria-live="polite"
+            className={cn(
+              "text-xs tabular-nums",
+              tooLong ? "text-destructive-text" : "text-muted-foreground"
+            )}
+          >
+            {t("tooLong", {
+              count: value.length,
+              max: maxAgentMessageLength,
+            })}
+          </span>
+        ) : null}
         {running ? (
           <Button
             size="icon-sm"
@@ -793,7 +810,7 @@ export const ComposerView = ({
             size="icon-sm"
             corners="round"
             aria-label={t("send")}
-            disabled={disabled || empty}
+            disabled={disabled || empty || tooLong}
             onClick={onSend}
           >
             <ArrowUpIcon aria-hidden />

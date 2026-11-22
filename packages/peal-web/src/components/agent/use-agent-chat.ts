@@ -24,12 +24,14 @@ import {
   rateAgentAnswer,
   updateAgentChat,
 } from "#agent/atoms.ts";
+import { closeChat } from "#agent/panel-state.ts";
 import { refusalOf, rereadsChat } from "#agent/refusal.ts";
 import { emptyChat, foldChat } from "#agent/run-state.ts";
 import type { ChatAction, ChatState } from "#agent/run-state.ts";
 import { limitOfFailure } from "#billing/upgrade.ts";
 import { channelName } from "#channels/channel-name.ts";
 import { channelsOf } from "#channels/channels-api.ts";
+import { useAgentPanel } from "#components/agent/agent-panel-context.tsx";
 import type {
   ChannelNameOf,
   ChatLinks,
@@ -142,6 +144,7 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
   const rate = useAtomSet(rateAgentAnswer, { mode: "promiseExit" });
   const update = useAtomSet(updateAgentChat, { mode: "promiseExit" });
   const remove = useAtomSet(deleteAgentChat, { mode: "promiseExit" });
+  const panel = useAgentPanel();
   // The server renders without the person's cookies, so it never reads
   // the chat: only the browser says one is missing.
   const mounted = useMounted();
@@ -189,6 +192,12 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
       const exit = await remove({ params: { chatId, workspaceId } });
 
       refreshChats();
+
+      // A deleted chat leaves the panel and the tab's memory too.
+      if (Exit.isSuccess(exit)) {
+        panel.update((current) => closeChat(current, chatId));
+        registry.set(agentChat(chatId), emptyChat);
+      }
 
       return Exit.isSuccess(exit);
     },

@@ -570,7 +570,7 @@
   "Agent": {
     "newChat": "Nouvelle conversation",
     "placeholder": "Demandez à Peal…",
-    "panelPlaceholder": "Posez une question sur vos publications, vos canaux ou vos commentaires",
+    "panelPlaceholder": "Posez une question à Peal…",
     "composerLabel": "Message à Peal",
     "send": "Envoyer",
     "stop": "Arrêter",
@@ -581,6 +581,7 @@
     "workedSeconds": "A travaillé {seconds, plural, one {# seconde} other {# secondes}}",
     "workedMinutes": "A travaillé {minutes, plural, one {# minute} other {# minutes}}",
     "stopped": "Vous avez arrêté cette réponse ici.",
+    "tooLong": "{count, number} / {max, number} caractères",
     "stepLimit": "Peal a utilisé toutes les étapes d’une réponse. Demandez-lui de continuer s’il reste à faire.",
     "failedHere": "Cette réponse s’est arrêtée sur une erreur. Renvoyez votre message pour réessayer.",
     "channels": "Canaux",
