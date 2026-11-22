@@ -37,7 +37,8 @@ export const addressedFrom =
       : HttpClientRequest.setHeader(addressed, sessionHeader, session);
   };
 
-const fetchFrom = (baseUrl: string) =>
+/** The browser's HTTP client for Peal's API at `baseUrl`. */
+export const fetchFrom = (baseUrl: string) =>
   Layer.effect(
     HttpClient.HttpClient,
     Effect.gen(function* prependBaseUrl() {

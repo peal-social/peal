@@ -1,0 +1,53 @@
+---
+title: The agent
+description: Ask Peal's agent about your workspace in a chat, have it write drafts, and approve each change it wants to make before it happens.
+sidebar:
+  icon: bot
+---
+
+The agent is a chat where you ask about your workspace and have Peal do things in it: "What's scheduled this week?", "Write a draft announcing our event", "Which comments are still waiting for an answer?". It acts as you, with your role's permissions, and only in the workspace you have open.
+
+## Talk to the agent [#chat]
+
+Open **Agent** in the sidebar, type your message, and press Enter. Shift+Enter starts a new line. You can also click one of the examples under the box, which sends its question at once.
+
+To keep the chat beside the page you're working on, press **⌘J** (Ctrl+J on Windows and Linux), or click **Agent** at the end of the bottom bar. The chat opens in a panel at the bottom right and stays open as you move between pages. **History**, beside it, lists your chats.
+
+While the agent works, each step shows as a line ("Looking at posts…"). When it's done, the steps fold into "Worked for 7 seconds", which you can open. To stop it, click the square button where **Send** was. What it wrote until then stays in the chat.
+
+Under each answer, use the thumbs to tell us whether it helped, or copy the answer.
+
+## What the agent changes on its own [#changes]
+
+The agent reads your workspace freely: posts, channels, queues, tags, signatures, channel sets, media, analytics, comments and reviews. It also writes and edits drafts and tags them, because a draft is private and you can change or delete it.
+
+It asks you first before anything else. That covers any change other people see, that can't be undone or that costs money:
+
+- scheduling, publishing or unpublishing a post, and deleting one
+- replying to a comment or a review, moderating a comment, or sending a message
+- approving a post, or requesting changes on it
+
+The request shows as a card in the chat. It says what will happen ("Schedule this post"), the text in full, the channels by name and when, on your clock. That comes from the request itself, not from what the agent wrote. Click **Approve** to make the change, or **Decline**, and the agent carries on. If you send another message instead, the request expires and nothing happens.
+
+Items the agent created or changed show as cards under its answer. Click one to open it.
+
+<Callout type="warning" title="Read before you approve">
+  The agent can misread what you asked. An approved post goes out to your
+  audience, and an unpublished one can't be put back.
+</Callout>
+
+The agent doesn't manage members, API keys, webhooks, feeds or automations, doesn't connect channels and never spends on ads.
+
+## Who answers [#model]
+
+The agent uses the workspace's own [text provider](/guides/workspace#text-provider) when it has one. Otherwise it uses the AI provider the Peal instance's administrator chose. When neither is set, the agent page says it's off, and an owner or an admin can set up a text provider in the assistant settings.
+
+Each request the agent sends the model counts as one of the [writing assistant's requests](/guides/posts/assistant#limits). One answer can take several, up to 8, when the agent looks things up before it answers. With the workspace's own provider, Peal's requests aren't spent, and the provider's own daily limit applies. On Peal Cloud, the instance's model needs a payment method on the billing account.
+
+A message can be up to 8,000 characters.
+
+## Where your chats are kept [#privacy]
+
+Only you can read your chats. Other members can't, and neither can staff acting for you. Peal keeps a chat for 90 days after its last message, then deletes it. To delete one sooner, open it and choose **Delete** in its **…** menu. Chats are also deleted when you leave the workspace, when the workspace is deleted and when you close your account.
+
+The agent is only for people signed in to Peal. API keys, applications and the [MCP server](/developers/mcp) can't use it.

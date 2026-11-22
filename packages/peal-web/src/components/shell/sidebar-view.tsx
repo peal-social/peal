@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BellIcon,
   BellRingIcon,
+  BotIcon,
   NewspaperIcon,
   CableIcon,
   CalendarDaysIcon,
@@ -70,6 +71,7 @@ export type LinkComponent = ComponentType<{
 export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
   account: UserIcon,
   ads: MegaphoneIcon,
+  agent: BotIcon,
   analytics: ChartColumnIcon,
   apiKeys: KeyRoundIcon,
   articles: NewspaperIcon,

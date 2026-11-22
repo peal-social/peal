@@ -38,6 +38,15 @@ export const shortcutSheetKey = "mod+/";
 /** The same where / is typed with Shift, as on a French keyboard. */
 export const shortcutSheetShiftedKey = "mod+shift+/";
 
+/** The key that opens the agent's panel, or hides it: Command or Control with J. */
+export const agentPanelKey = "mod+j";
+
+/** The keys of a chat's page, as its **…** menu shows them. */
+export const agentChatKeys = {
+  delete: "mod+backspace",
+  rename: "shift+r",
+} as const;
+
 /** The key that takes back the last change a toast offers to undo. */
 export const undoKey = "mod+z";
 

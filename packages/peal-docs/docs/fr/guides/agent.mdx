@@ -1,0 +1,54 @@
+---
+title: L'agent
+description: Interroger l'agent de Peal sur votre espace de travail dans une conversation, lui faire écrire des brouillons, et approuver chaque modification avant qu'elle ait lieu.
+sidebar:
+  icon: bot
+---
+
+L'agent est une conversation où vous posez des questions sur votre espace de travail et demandez à Peal d'y faire des choses : « Qu'est-ce qui est programmé cette semaine ? », « Écris un brouillon qui annonce notre événement », « Quels commentaires attendent encore une réponse ? ». Il agit en votre nom, avec les permissions de votre rôle, et seulement dans l'espace de travail que vous avez ouvert.
+
+## Parler à l'agent [#chat]
+
+Ouvrez **Agent** dans la barre latérale, saisissez votre message et appuyez sur Entrée. Maj+Entrée passe à la ligne. Vous pouvez aussi cliquer sur l'un des exemples sous la zone de saisie, qui envoie sa question tout de suite.
+
+Pour garder la conversation à côté de la page sur laquelle vous travaillez, appuyez sur **⌘J** (Ctrl+J sous Windows et Linux), ou cliquez sur **Agent** au bout de la barre du bas. La conversation s'ouvre dans un panneau en bas à droite et reste ouverte quand vous changez de page. **Historique**, juste à côté, liste vos conversations.
+
+Pendant que l'agent travaille, chaque étape s'affiche sur une ligne (« Lecture des publications… »). Une fois la réponse finie, les étapes se replient dans « A travaillé 7 secondes », que vous pouvez ouvrir. Pour l'arrêter, cliquez sur le bouton carré à la place d'**Envoyer**. Ce qu'il a écrit jusque-là reste dans la conversation.
+
+Sous chaque réponse, les pouces nous disent si elle vous a servi, et vous pouvez copier la réponse.
+
+## Ce que l'agent modifie seul [#changes]
+
+L'agent lit librement votre espace de travail : publications, canaux, files, étiquettes, signatures, groupes de canaux, médias, statistiques, commentaires et avis. Il écrit et modifie aussi des brouillons et leur ajoute des étiquettes, car un brouillon est privé et vous pouvez le changer ou le supprimer.
+
+Pour tout le reste, il vous demande d'abord. Cela couvre toute modification que d'autres voient, qu'on ne peut pas annuler ou qui coûte de l'argent :
+
+- programmer, publier ou dépublier une publication, et en supprimer une
+- répondre à un commentaire ou à un avis, modérer un commentaire, ou envoyer un message
+- approuver une publication, ou y demander des modifications
+
+La demande s'affiche sous forme de carte dans la conversation. Elle dit ce qui va se passer (« Programmer cette publication »), le texte en entier, les canaux par leur nom et quand, à votre heure. Tout cela vient de la demande elle-même, pas de ce que l'agent a écrit. Cliquez sur **Approuver** pour faire la modification, ou sur **Refuser**, et l'agent continue. Si vous envoyez un autre message à la place, la demande expire et rien ne se passe.
+
+Les éléments que l'agent a créés ou modifiés s'affichent en cartes sous sa réponse. Cliquez sur l'une d'elles pour l'ouvrir.
+
+<Callout type="warning" title="Relisez avant d'approuver">
+  L'agent peut mal comprendre ce que vous avez demandé. Une publication
+  approuvée part vers votre audience, et une publication dépubliée ne peut pas
+  être remise en ligne.
+</Callout>
+
+L'agent ne gère ni les membres, ni les clés d'API, ni les webhooks, ni les flux, ni les automatisations, ne connecte pas de canal et ne dépense jamais en publicité.
+
+## Qui répond [#model]
+
+L'agent utilise le [fournisseur de texte](/guides/workspace#text-provider) propre à l'espace de travail quand il en a un. Sinon, il utilise le fournisseur d'IA choisi par l'administrateur de l'instance Peal. Quand aucun des deux n'est configuré, la page de l'agent indique qu'il est désactivé, et un propriétaire ou un administrateur peut configurer un fournisseur de texte dans les réglages de l'assistant.
+
+Chaque demande que l'agent envoie au modèle compte comme une des [demandes de l'assistant de rédaction](/guides/posts/assistant#limits). Une réponse peut en prendre plusieurs, jusqu'à 8, quand l'agent cherche des informations avant de répondre. Avec le fournisseur propre à l'espace de travail, les demandes de Peal ne sont pas dépensées, et c'est la limite quotidienne de ce fournisseur qui s'applique. Sur Peal Cloud, le modèle de l'instance demande un moyen de paiement sur le compte de facturation.
+
+Un message peut faire jusqu'à 8 000 caractères.
+
+## Où vos conversations sont gardées [#privacy]
+
+Vous seul pouvez lire vos conversations. Les autres membres ne le peuvent pas, ni le personnel qui agit en votre nom. Peal garde une conversation 90 jours après son dernier message, puis la supprime. Pour en supprimer une plus tôt, ouvrez-la et choisissez **Supprimer** dans son menu **…**. Les conversations sont aussi supprimées quand vous quittez l'espace de travail, quand l'espace de travail est supprimé et quand vous fermez votre compte.
+
+L'agent est réservé aux personnes connectées à Peal. Les clés d'API, les applications et le [serveur MCP](/developers/mcp) ne peuvent pas l'utiliser.
