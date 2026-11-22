@@ -3,10 +3,51 @@ import type { Locale } from "next-intl";
 
 import { routing } from "#i18n/routing.ts";
 
-// A path on this site: one slash, then anything but a second slash or a
-// backslash (which browsers read as another host), and no whitespace.
+// A page's path: segments of letters, digits and the few marks a page's
+// address holds, with no dot (the proxy takes a path with one for a file,
+// and `.`, `..` and `.well-known` are not pages) and no `%`, which a
+// browser or a proxy may decode into a dot segment, a slash or another
+// first segment (`/%61pi`). No empty segment, so no `//`.
+const pagePath = /^\/(?:[\w~!$&'()*+,;=:@-]+(?:\/[\w~!$&'()*+,;=:@-]+)*)?$/u;
+
+// What may follow, a query and a fragment: printable ASCII, as a browser
+// sends them encoded, never a backslash nor `//`.
+const pageQuery = /^(?:[?#][!-[\]-~]*)?$/u;
+
+// First segments that are not pages: the server's (`/api`, the discovery
+// documents) and the web app's route handlers, in any case, as a short link
+// under /api/l answers a redirect to anywhere.
+const notPages: ReadonlySet<string> = new Set([
+  ".well-known",
+  "_next",
+  "api",
+  "emoji-data",
+  "pulse",
+]);
+
+const locales: ReadonlySet<string> = new Set(routing.locales);
+
+const isPagePath = (next: string): boolean => {
+  const at = next.search(/[?#]/u);
+  const path = at === -1 ? next : next.slice(0, at);
+  const rest = at === -1 ? "" : next.slice(at);
+
+  if (!pagePath.test(path) || !pageQuery.test(rest) || rest.includes("//")) {
+    return false;
+  }
+
+  const [first = "", second = ""] = path
+    .slice(1)
+    .split("/")
+    .map((segment) => segment.toLowerCase());
+
+  return !notPages.has(locales.has(first) ? second : first);
+};
+
+// A page of this app, never another site's (a second slash or a backslash
+// that browsers read as another host) nor a path the server answers.
 const NextPathSchema = Schema.String.check(
-  Schema.isPattern(/^\/(?![/\\])\S*$/u)
+  Schema.makeFilter(isPagePath, { expected: "a page of this app" })
 );
 
 const decodeNextPath = Schema.decodeUnknownOption(NextPathSchema);
