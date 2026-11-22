@@ -226,20 +226,45 @@ export const markUploaded = (
       )
     : refused(asset, "markUploaded");
 
+// How many probes in a row found the video unreadable, this one included;
+// none for another kind or another reason.
+const failedReadsAfter = (
+  asset: MediaAsset,
+  probe: Exclude<ProbeState, "pending">
+) => {
+  if (asset.kind !== "video" || probe !== "unreadable") {
+    return Option.none<number>();
+  }
+
+  const before =
+    asset.status._tag === "uploaded" && asset.status.probe === "unreadable"
+      ? (asset.status.failedReads ?? 1)
+      : 0;
+
+  return Option.some(before + 1);
+};
+
 /**
  * The uploaded file could not be probed, for this reason: it stays uploaded
- * until a probe reads it.
+ * until a probe reads it. A video found unreadable counts the probes in a
+ * row that did (`maxVideoReads`).
  */
 export const markUnprobed = (
   asset: MediaAsset,
   probe: Exclude<ProbeState, "pending">,
   now: DateTime.Utc
-): Transition =>
-  asset.status._tag === "uploaded"
-    ? Result.succeed(
-        withChange(asset, { _tag: "uploaded", probe }, asset.metadata, now)
-      )
-    : refused(asset, "markUnprobed");
+): Transition => {
+  if (asset.status._tag !== "uploaded") {
+    return refused(asset, "markUnprobed");
+  }
+
+  const status: MediaStatus = Option.match(failedReadsAfter(asset, probe), {
+    onNone: () => ({ _tag: "uploaded", probe }),
+    onSome: (failedReads) => ({ _tag: "uploaded", failedReads, probe }),
+  });
+
+  return Result.succeed(withChange(asset, status, asset.metadata, now));
+};
 
 /** The uploaded file was probed: it can go into posts. */
 export const markReady = (

@@ -47,6 +47,8 @@ const stateColumns = (asset: MediaAsset): Omit<NewRow, "altText"> => {
       Option.map((duration) => Math.round(Duration.toMillis(duration))),
       Option.getOrNull
     ),
+    failedReads:
+      status._tag === "uploaded" ? (status.failedReads ?? null) : null,
     fileName: Option.getOrNull(asset.fileName),
     height: dimensions?.height ?? null,
     id: asset.id,
@@ -89,7 +91,11 @@ const statusOf = (row: Row) => {
   }
 
   if (row.status === "uploaded") {
-    return { _tag: "uploaded", probe: row.probeState ?? "pending" };
+    const probe = row.probeState ?? "pending";
+
+    return row.failedReads === null
+      ? { _tag: "uploaded", probe }
+      : { _tag: "uploaded", failedReads: row.failedReads, probe };
   }
 
   return { _tag: row.status };

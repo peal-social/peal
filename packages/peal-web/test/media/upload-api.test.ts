@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import {
   AltTextTooLong,
   Forbidden,
+  MediaImportBusy,
   MediaNotFound,
   MediaStoreUnavailable,
   MediaTooLarge,
@@ -19,6 +20,7 @@ import { UploadFailed } from "#media/upload-failed.ts";
 describe(failureOf, () => {
   it.each([
     [new Forbidden(), "forbidden"],
+    [new MediaImportBusy(), "busy"],
     [new MediaStoreUnavailable(), "storeUnavailable"],
     [new Unauthenticated(), "signedOut"],
     [

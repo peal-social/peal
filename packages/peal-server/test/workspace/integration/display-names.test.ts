@@ -38,7 +38,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
               body: {
                 email,
                 locale: "en",
-                name: "Claim your prize at evil.com",
+                name: "Claim your prize at https://evil.example",
                 password,
               },
             });
@@ -123,7 +123,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const renamed = yield* app.request("/api/auth/organization/update", {
           body: {
-            data: { name: "Visit evil.RU" },
+            data: { name: "Visit www.evil.example" },
             organizationId: workspaceId,
           },
           headers: { cookie: owner.cookies },

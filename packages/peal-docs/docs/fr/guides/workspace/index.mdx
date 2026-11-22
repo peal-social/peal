@@ -67,9 +67,9 @@ Les invitations en attente sont listées avec leur date d’expiration. Pour cha
 
 Seule la personne invitée peut l’accepter, connectée avec l’adresse invitée une fois celle-ci vérifiée, et seulement jusqu’à l’expiration de l’invitation.
 
-Chaque invitation, envoyée ou renvoyée, est un e-mail. Une journée (UTC) en permet 100 pour chaque membre qui invite, 100 pour chaque espace de travail, et 3 pour chaque adresse invitée. Au-delà, inviter est refusé jusqu’au lendemain (`too_many_invitations`, 409, par l’API).
+Chaque invitation, envoyée ou renvoyée, est un e-mail. Une journée (UTC) en permet 100 pour chaque membre qui invite, 100 pour chaque espace de travail, 3 d’un même espace de travail vers une même adresse, et 20 vers une même adresse depuis tout Peal. Au-delà, inviter est refusé jusqu’au lendemain (`too_many_invitations`, 409, par l’API).
 
-L’e-mail montre votre nom et celui de l’espace de travail. Un nom tient sur une ligne, de 100 caractères au plus pour une personne et 120 pour un espace de travail, et ne peut pas contenir d’adresse web : un nom avec `://`, `www.` ou un domaine comme `example.com` est refusé.
+L’e-mail montre votre nom et celui de l’espace de travail. Un nom tient sur une ligne, de 100 caractères au plus pour une personne et 120 pour un espace de travail, et ne peut pas contenir `://` ni `www.`. Un nom qui se lit comme une adresse web ou e-mail, comme `Booking.com`, reste valable dans Peal, mais les e-mails disent « Un membre » ou « un espace de travail » à la place, pour qu’aucun e-mail ne porte un lien saisi par quelqu’un.
 
 ### Exiger la validation en deux étapes [#require-two-step]
 

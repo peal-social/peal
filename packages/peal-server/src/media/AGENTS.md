@@ -9,12 +9,19 @@
   checked against the declared one), ffprobe for videos. `ready` means probed;
   an `uploaded` asset carries its probe state (`pending`, `unavailable`, or why
   the probe failed). Calling it again probes again, unless the reason came
-  from the file's bytes (`isFinalProbe`: `tooLarge`, `tooManyPages`,
-  `unreadable`; a stored file never changes): the asset is answered as it
-  stands. Probes run two at once per workspace and eight per process
-  (`ProbeSlots`, `probesAtOnce`); past it `finishUpload` answers
-  `MediaImportBusy` (429) once the upload is completed, the asset left
-  uploaded for the next call. The files that arrive (imports, the
+  from the file's bytes (`isFinalProbe`: `tooLarge`, `tooManyPages`, and
+  `unreadable` for an image or a document, read into memory; a stored file
+  never changes): the asset is answered as it stands. ffprobe reads a
+  video from the store itself, so a failing store reads as `unreadable`
+  too: a video is probed again until `maxVideoReads` (3) probes in a row
+  found it so (`failedReads` on the uploaded status,
+  `media_assets.failed_reads`). Probes run two at once per workspace and eight per process
+  (`ProbeSlots`, `probesAtOnce`); past it `finishUpload` waits for a slot
+  (`probeSlotWait`, 20 seconds, asking every `probeSlotPoll`), then
+  answers `MediaImportBusy` (429) once the upload is completed, the asset
+  left uploaded for the next call. Clients complete again on it, with
+  backoff, and never delete the file for it (the web app's uploader, the
+  command line). The files that arrive (imports, the
   assistant's images) probe within their own slots (`finishArrived`).
 - Accepted media: JPEG, PNG, GIF and WebP images up to 16 MiB; MP4 and
   QuickTime videos up to 1 GiB; PDF documents up to 100 MiB and 300 pages
@@ -32,7 +39,12 @@
   mebibytes around where it reads and the one object stream it inflates
   (`maxObjectStreamBytes` compressed at most, or the count is none), never
   the whole file, with bounds on object streams and on what they inflate
-  to, and stops taking bytes once it knows: keep every reader of uploaded
+  to, and stops taking bytes once it knows. Bytes before what it still
+  needs are dropped as they arrive, never queued (`readPdfHolding`'s
+  `mostHeld` says what was held at most); an early `endstream` more than
+  `maxStreamCheckBytes` before where `/Length` points is not held while
+  `/Length` is checked, and the count is none when `/Length` then proves
+  wrong. Keep every reader of uploaded
   bytes linear, interruptible and bounded in memory, as a synchronous loop
   holds the whole server and no timeout fires in it. Never render or open a
   document: store it, hand it over.

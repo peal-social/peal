@@ -812,8 +812,8 @@
       "PROVIDER_EMAIL_INVALID": "Votre fournisseur a donné une adresse e-mail que Peal ne peut pas utiliser. Connectez-vous avec votre mot de passe.",
       "AUTHORIZATION_FAILED": "La demande de connexion de l’application a été refusée. Revenez à l’application et recommencez.",
       "ORGANIZATION_SLUG_ALREADY_TAKEN": "Un autre espace a déjà cette adresse. Choisissez-en une autre.",
-      "INVALID_NAME": "Choisissez un nom d’une seule ligne, de 100 caractères au plus, sans adresse web.",
-      "INVALID_WORKSPACE_NAME": "Choisissez un nom d’espace de travail d’une seule ligne, de 120 caractères au plus, sans adresse web.",
+      "INVALID_NAME": "Choisissez un nom d’une seule ligne, de 100 caractères au plus, sans « www. » ni « :// ».",
+      "INVALID_WORKSPACE_NAME": "Choisissez un nom d’espace de travail d’une seule ligne, de 120 caractères au plus, sans « www. » ni « :// ».",
       "INVALID_WORKSPACE_SLUG": "Cette adresse ne peut pas servir. Utilisez des lettres minuscules et des chiffres, des mots reliés par des tirets."
     },
     "providers": {
@@ -2251,6 +2251,7 @@
         "storeRefused": "Le stockage des médias a refusé le fichier. Réessayez.",
         "storeUnavailable": "Le stockage des médias est injoignable pour le moment. Réessayez dans un instant.",
         "incomplete": "Une partie du fichier n’est pas arrivée. Réessayez.",
+        "busy": "Peal vérifie d’autres fichiers en ce moment : celui-ci est dans la médiathèque, mais pas encore prêt pour les publications. Envoyez-le à nouveau dans quelques minutes.",
         "rejectedSize": "Le fichier arrivé n’a pas la taille avec laquelle il a été envoyé. Réessayez.",
         "rejectedType": "Le contenu du fichier ne correspond pas à son type : il a peut-être été renommé, ou il est endommagé.",
         "unexpected": "Une erreur est survenue. Réessayez."
@@ -2992,8 +2993,8 @@
       "lastOwner": "Un espace de travail a besoin d’un propriétaire : nommez d’abord un autre membre propriétaire.",
       "memberLimit": "L’abonnement de l’espace de travail ne permet pas d’autre membre. Un propriétaire ou un administrateur peut passer à un abonnement supérieur.",
       "nameMismatch": "Le nom ne correspond pas à celui de l’espace de travail.",
-      "nameInvalid": "Choisissez un nom d’une seule ligne, de 100 caractères au plus, sans adresse web.",
-      "workspaceNameInvalid": "Choisissez un nom d’espace de travail d’une seule ligne, de 120 caractères au plus, sans adresse web.",
+      "nameInvalid": "Choisissez un nom d’une seule ligne, de 100 caractères au plus, sans « www. » ni « :// ».",
+      "workspaceNameInvalid": "Choisissez un nom d’espace de travail d’une seule ligne, de 120 caractères au plus, sans « www. » ni « :// ».",
       "invitationsToday": "Vous, l’espace de travail ou cette adresse avez eu tous les e-mails d’invitation qu’une journée permet. Réessayez demain.",
       "notFound": "Cet élément n’existe déjà plus.",
       "passwordTooLong": "Le mot de passe est trop long.",

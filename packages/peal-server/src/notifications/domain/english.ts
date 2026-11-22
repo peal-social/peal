@@ -288,6 +288,7 @@ export const english: EmailCatalog = {
     starterGone: "whoever started it can no longer answer comments there.",
   },
   intervals: { month: "month", year: "year" },
+  withheldNames: { person: "A member", workspace: "a workspace" },
   invitation: {
     action: "Accept the invitation",
     body: "{inviterName} invited you to join {workspaceName} on Peal {role}.",

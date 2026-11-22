@@ -29,7 +29,7 @@ Un PDF est un document, que seul LinkedIn affiche, page par page. Peal le stocke
 
 Une image dont le contenu n’est pas du type sous lequel elle a été envoyée est refusée, et supprimée.
 
-Un fichier que Peal n’a pas pu lire reste envoyé, avec la raison. Terminer à nouveau l’envoi (`POST …/media/{mediaId}/complete`) le relit, sauf si la raison vient du fichier lui-même : trop lourd, plus de 300 pages, ou endommagé. Envoyez alors le fichier à nouveau. Un espace de travail fait lire deux fichiers à la fois, et un serveur huit. Un de plus est refusé (`MediaImportBusy`, 429), son envoi terminé : terminez-le à nouveau un instant plus tard.
+Un fichier que Peal n’a pas pu lire reste envoyé, avec la raison. Terminer à nouveau l’envoi (`POST …/media/{mediaId}/complete`) le relit, sauf si la raison vient du fichier lui-même : trop lourd, plus de 300 pages, ou une image ou un PDF endommagé. Une vidéo trouvée endommagée est relue jusqu’à trois fois de suite, car le stockage a pu faillir pendant la lecture. Au-delà, envoyez le fichier à nouveau. Un espace de travail fait lire deux fichiers à la fois, et un serveur huit. Un de plus attend jusqu’à 20 secondes, puis est refusé (`MediaImportBusy`, 429), son envoi terminé : terminez-le à nouveau un instant plus tard. L’application web et la ligne de commande de Peal le font d’elles-mêmes.
 
 ### Le stockage sur une instance qui facture [#storage]
 

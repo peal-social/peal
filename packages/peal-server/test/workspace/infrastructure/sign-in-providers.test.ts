@@ -116,11 +116,11 @@ describe("the sign-in providers", () => {
       })
     ).toStrictEqual({
       image: undefined,
-      name: "Claim your prize at https evil example com",
+      name: "Claim your prize at https evil.example.com",
     });
     expect(
       profileToUser({ email: "www.prize.com@example.test", name: "" })
-    ).toStrictEqual({ image: undefined, name: "www prize com" });
+    ).toStrictEqual({ image: undefined, name: "www prize.com" });
   });
 
   it("bound a long name", () => {

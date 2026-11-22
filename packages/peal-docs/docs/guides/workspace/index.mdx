@@ -67,9 +67,9 @@ Pending invitations are listed with their expiry date. For each one, you can:
 
 Only the person invited can accept it, signed in with the invited address once it's verified, and only until the invitation expires.
 
-Each invitation, sent or sent again, is an email. A day (UTC) allows 100 of them for each member who invites, 100 for each workspace, and 3 for each address invited. Past that, inviting is refused until the next day (`too_many_invitations`, 409, through the API).
+Each invitation, sent or sent again, is an email. A day (UTC) allows 100 of them for each member who invites, 100 for each workspace, 3 from one workspace to the same address, and 20 to one address from all of Peal. Past that, inviting is refused until the next day (`too_many_invitations`, 409, through the API).
 
-The email shows your name and the workspace's. A name is one line, up to 100 characters for a person and 120 for a workspace, and can't hold a web address: a name with `://`, `www.` or a domain such as `example.com` is refused.
+The email shows your name and the workspace's. A name is one line, up to 100 characters for a person and 120 for a workspace, and can't hold `://` or `www.`. A name that reads as a web or email address, such as `Booking.com`, is fine in Peal, but emails say "A member" or "a workspace" instead, so that no email carries a link someone typed.
 
 ### Require two-step verification [#require-two-step]
 

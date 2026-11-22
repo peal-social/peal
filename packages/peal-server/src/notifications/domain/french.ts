@@ -300,6 +300,7 @@ export const french: EmailCatalog = {
       "la personne qui l’a lancée ne peut plus y répondre aux commentaires.",
   },
   intervals: { month: "mois", year: "an" },
+  withheldNames: { person: "Un membre", workspace: "un espace de travail" },
   invitation: {
     action: "Accepter l’invitation",
     body: "{inviterName} vous invite à rejoindre {workspaceName} sur Peal {role}.",

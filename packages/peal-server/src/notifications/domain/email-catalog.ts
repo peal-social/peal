@@ -215,6 +215,15 @@ export interface EmailCatalog {
   /** "month" or "year", as `{interval}`. */
   readonly intervals: { readonly month: string; readonly year: string };
   /**
+   * What an email names instead of a person or a workspace whose name
+   * reads as a host or an address (`nameForMail`): "A member", "a
+   * workspace".
+   */
+  readonly withheldNames: {
+    readonly person: string;
+    readonly workspace: string;
+  };
+  /**
    * A trial of `{plan}` in `{workspaceName}` ends at `{endsAt}`, and
    * `{standing}` says what the workspace then holds beyond the free plan
    * (`overFreePlan`, with its `{over}` list) or that it holds nothing

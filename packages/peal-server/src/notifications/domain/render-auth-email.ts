@@ -1,5 +1,7 @@
 import { DateTime, Match } from "effect";
 
+import { nameForMail } from "#shared/domain/display-name.ts";
+
 import type { AuthEmail } from "./auth-email.ts";
 import type { EmailCatalog, EmailMessages } from "./email-catalog.ts";
 import {
@@ -189,9 +191,18 @@ const contentOf = (email: AuthEmail, catalog: EmailCatalog): Content =>
       return {
         messages: catalog.invitation,
         values: new Map([
-          ["inviterName", invitation.inviterName],
+          [
+            "inviterName",
+            nameForMail(invitation.inviterName, catalog.withheldNames.person),
+          ],
           ["role", roles.get(invitation.role) ?? invitation.role],
-          ["workspaceName", invitation.workspaceName],
+          [
+            "workspaceName",
+            nameForMail(
+              invitation.workspaceName,
+              catalog.withheldNames.workspace
+            ),
+          ],
         ]),
       };
     },
@@ -215,7 +226,12 @@ const contentOf = (email: AuthEmail, catalog: EmailCatalog): Content =>
         subscriptionsCancelled,
         catalog.billingEnded.workspace
       ),
-      values: new Map([["workspaceName", workspaceName]]),
+      values: new Map([
+        [
+          "workspaceName",
+          nameForMail(workspaceName, catalog.withheldNames.workspace),
+        ],
+      ]),
     }),
   });
 

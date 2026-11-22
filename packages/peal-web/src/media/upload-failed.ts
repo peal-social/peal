@@ -23,6 +23,9 @@ export const UploadFailureReasonSchema = Schema.Literals([
   "storeUnavailable",
   // The API checked what arrived.
   "incomplete",
+  // The workspace, or the server, checks as many files as it may at once:
+  // the file stays in the library, uploaded, and is never deleted for it.
+  "busy",
   "rejectedSize",
   "rejectedType",
   // Anything else: an answer the app does not understand.

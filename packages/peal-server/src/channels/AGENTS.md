@@ -208,7 +208,12 @@
   mobile apps only): the state, bound to member and workspace, guards the
   callback, and a token answer naming an `error` is a refusal whatever its
   status. A `PlatformAuthorizer` may have `revoke` (TikTok's guidelines ask
-  for it; Google takes it), which `revokeUnsharedGrant`
+  for it; Google takes it, but `grantsSpanningAccounts` leaves YouTube and
+  Google Business Profile out: Google ends a user's whole grant to Peal's
+  client whichever token is revoked, a sign-in gives several locations or
+  channels the same tokens, and no channel keeps the Google user's id, so
+  revoking for one would end the others, in any workspace), which
+  `revokeUnsharedGrant`
   (`application/grant-revocation.ts`) calls once no other channel, in any
   workspace, connects the same account (`ChannelRepository.accountInUse`,
   the channels going with it left out), waiting `revokeTimeout` (10

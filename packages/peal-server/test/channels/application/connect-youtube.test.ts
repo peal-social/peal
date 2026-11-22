@@ -418,7 +418,7 @@ layer(AdaptersTest)("connecting a YouTube channel", (it) => {
   );
 
   it.effect(
-    "revokes the grant on disconnect, once no workspace connects the channel",
+    "keeps the grant on disconnect, which Google would revoke for every channel of its user",
     () =>
       Effect.gen(function* revokes() {
         const on = yield* onGoogle();
@@ -438,12 +438,13 @@ layer(AdaptersTest)("connecting a YouTube channel", (it) => {
             useCase.disconnect(manager(workspaceId), channel.id)
           ).pipe(Effect.provide(disconnecting(on.authorizer)));
 
-        // The other workspace still posts as the channel: its grant stays.
+        // Google ends a user's whole grant whichever token is revoked, and
+        // no channel tells which Google user it rests on: never revoked.
         yield* disconnect(second, shared);
         assert.deepStrictEqual(on.google.revoked(), []);
 
         yield* disconnect(first, kept);
-        assert.deepStrictEqual(on.google.revoked(), ["1//synthetic-refresh-1"]);
+        assert.deepStrictEqual(on.google.revoked(), []);
         assert.deepStrictEqual(yield* statusOf(kept), Option.none());
       }).pipe(Effect.scoped)
   );
