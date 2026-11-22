@@ -7,6 +7,7 @@ import { Context, Effect, Layer, Option, Ref } from "effect";
 
 import { ActivityRecords } from "#activity/application/activity-records.ts";
 import { AdRecords } from "#ads/application/ad-records.ts";
+import { AgentRecords } from "#agent/application/agent-records.ts";
 import { AnalyticsRecords } from "#analytics/application/analytics-records.ts";
 import { UsageRecords } from "#assistant/application/ports/usage-records.ts";
 import { BillingRecords } from "#billing/application/billing-records.ts";
@@ -106,6 +107,7 @@ const RecordsTest = Layer.unwrap(
           }),
           Layer.mock(ActivityRecords, { eraseWorkspace: () => Effect.void }),
           Layer.mock(ShortLinkRecords, { eraseWorkspace: () => Effect.void }),
+          Layer.mock(AgentRecords, { eraseWorkspace: () => Effect.void }),
           Layer.mock(StaffRecords, {}),
           Layer.mock(LegalRecords, {})
         )

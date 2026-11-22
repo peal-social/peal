@@ -196,24 +196,27 @@ export interface ToolCall {
 /**
  * Keeps a call to a tool that changes something in its workspace's
  * activity log, as `mcp.<tool>`, without a status: tools answer in
- * JSON-RPC. Never fails: a failure to keep it is logged.
+ * JSON-RPC. The in-app agent's calls, which a person makes in their own
+ * session, are kept as `agent.<tool>`, through the session. Never fails: a
+ * failure to keep it is logged.
  */
 export const recordToolCall = (
   journal: ActivityJournal["Service"],
-  call: ToolCall
+  call: ToolCall,
+  surface: "agent" | "mcp" = "mcp"
 ): Effect.Effect<void> =>
   Effect.serviceOption(RequestId).pipe(
     Effect.flatMap((requestId) =>
       kept(journal, {
         named: {},
-        operation: `mcp.${call.tool}`,
+        operation: `${surface}.${call.tool}`,
         outcome: {
           _tag: "toolCalled",
           errorCode: Option.fromUndefinedOr(call.errorCode),
         },
         principal: principalOf(call.member.principal),
         requestId,
-        via: "mcp",
+        via: surface === "agent" ? "session" : "mcp",
         workspaceId: WorkspaceIdSchema.make(call.member.workspaceId),
       })
     )

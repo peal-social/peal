@@ -104,34 +104,36 @@ const WorkspaceLayout = async ({
       />
     );
 
+  // The upgrade dialog goes around the frame too: the agent's panel, in
+  // the bottom bar, offers it as the pages do.
   return (
-    <WorkspaceShell
-      actions={
-        <Suspense fallback={null}>
-          <AccountMenu
-            supportChat={supportChat !== null}
-            workspaceSlug={slug}
-          />
-        </Suspense>
-      }
-      docsUrl={docsUrl}
-      footer={
-        <Suspense fallback={null}>
-          <ContractLinks />
-        </Suspense>
-      }
-      permissions={workspace.value.permissions}
-      supportChat={supportChat}
-      supportUrl={contactUrl}
-      workspaceId={workspaceId}
-      workspaceSlug={slug}
-      workspaces={me.value.workspaces.map(({ id, name, slug: other }) => ({
-        id,
-        name,
-        slug: other,
-      }))}
-    >
-      <UpgradePrompts current={workspaceId}>
+    <UpgradePrompts current={workspaceId}>
+      <WorkspaceShell
+        actions={
+          <Suspense fallback={null}>
+            <AccountMenu
+              supportChat={supportChat !== null}
+              workspaceSlug={slug}
+            />
+          </Suspense>
+        }
+        docsUrl={docsUrl}
+        footer={
+          <Suspense fallback={null}>
+            <ContractLinks />
+          </Suspense>
+        }
+        permissions={workspace.value.permissions}
+        supportChat={supportChat}
+        supportUrl={contactUrl}
+        workspaceId={workspaceId}
+        workspaceSlug={slug}
+        workspaces={me.value.workspaces.map(({ id, name, slug: other }) => ({
+          id,
+          name,
+          slug: other,
+        }))}
+      >
         <TwoStepRefusalWatch />
         <PlanGate
           contactUrl={contactUrl}
@@ -146,8 +148,8 @@ const WorkspaceLayout = async ({
         >
           {children}
         </PlanGate>
-      </UpgradePrompts>
-    </WorkspaceShell>
+      </WorkspaceShell>
+    </UpgradePrompts>
   );
 };
 

@@ -6,6 +6,7 @@ import { randomBytes } from "node:crypto";
 import { assert, describe, it } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer } from "effect";
 
+import { AgentRecordsLive } from "#agent/container.ts";
 import { BillingLive } from "#billing/container.ts";
 import { SendAuthEmail } from "#notifications/application/send-auth-email.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
@@ -79,6 +80,7 @@ const authWith = (env: Record<string, string>) =>
     ),
     // Nor changes a workspace.
     Layer.provide(ActivityJournal.none),
+    Layer.provide(AgentRecordsLive.pipe(Layer.provide(DatabaseLive))),
     Layer.provide(ProductAnalytics.none),
     Layer.provide(SiteMeasurement.none),
     Layer.provide(SecurityPolicies.none),

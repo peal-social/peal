@@ -23,6 +23,12 @@ const viewsOf = (pages: Parameters<typeof shortcutGroupsOf>[0]["pages"]) =>
     status === undefined ? [] : [status]
   );
 
+// The general group's lines, with or without the agent.
+const general = (canAskAgent: boolean) =>
+  shortcutGroupsOf({ canAskAgent, canCreate: false, pages: [] })
+    .find(({ name }) => name === "general")
+    ?.rows.map(({ action }) => action);
+
 describe(shortcutGroupsOf, () => {
   it("lists Go to only for the member's pages that have a key", () => {
     const groups = shortcutGroupsOf({
@@ -39,6 +45,13 @@ describe(shortcutGroupsOf, () => {
       ["posts", "g p"],
       [undefined, "g d"],
       [undefined, "g a"],
+    ]);
+  });
+
+  it("lists the agent's panel only for those who may talk to it", () => {
+    expect([general(true), general(false)]).toStrictEqual([
+      ["openMenu", "showShortcuts", "openAgent", "undo"],
+      ["openMenu", "showShortcuts", "undo"],
     ]);
   });
 

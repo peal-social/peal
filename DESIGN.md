@@ -585,13 +585,14 @@ A modal's backdrop is ink at 10%.
 | `{rounded.md}`   | 8px   | Buttons, fields, selects, menus, popovers, toasts, sidebar rows, view tabs and any tab-like chip. |
 | `{rounded.lg}`   | 12px  | The panel, cards, lists, tables, dialogs, the command menu, code blocks.                          |
 | `{rounded.xl}`   | 16px  | The site's product panels (the hero stage).                                                       |
-| `{rounded.pill}` | full  | The selection bar and its buttons.                                                                |
+| `{rounded.pill}` | full  | The selection bar and its buttons, the agent's send button and its suggestions.                   |
 | `{rounded.full}` | full  | Avatars and dots.                                                                                 |
 
 - Radius: 8 px for controls, menus, popovers and toasts; 12 px for the
   panel, cards, lists, tables and dialogs; 4 px for keys, status badges
   and state chips; 6 px for tags and filter chips; full for avatars,
-  dots and the selection bar (with its buttons). In Tailwind,
+  dots, the selection bar (with its buttons) and the agent's send
+  button and suggestions (Button's `corners="round"`). In Tailwind,
   `rounded-sm` is 4 px, `rounded-md` 6, `rounded-lg` 8 and `rounded-xl`
   12, all from `--radius`.
 
@@ -639,7 +640,8 @@ confirmation only: `{colors.destructive}` with white text.
 **`button-inverse`** — On the brand field only: white with ink text.
 
 Sizes: default 34 px, `sm` 30 px, `xs` 24 px, `lg` 38 px (a toolbar's
-search); icon buttons are square at the same heights.
+search); icon buttons are square at the same heights. A ghost button that
+is a toggle (`aria-pressed`) takes `accent` while pressed.
 
 ### Fields
 
@@ -687,7 +689,8 @@ the word in muted text and in the reader's language.
 - **C** opens a new post; **G then** a letter opens the pages people open
   most (H home, C calendar, P posts, I inbox, M media, Y analytics, S
   settings) and two tabs of the posts list (D Drafts, A Needs approval).
-  Letters are the same in every language.
+  Letters are the same in every language. **⌘J** (Ctrl+J) opens the
+  agent's panel on a new chat, or hides it.
 - A letter never runs while focus is in a field or while a dialog is
   open; keys with ⌘ or Ctrl always do. Every key the app binds is shown
   beside its command in the command menu.
@@ -744,9 +747,10 @@ it. There is no bar across the top.
   first page the member may open, and a mode with none is shown
   disabled, saying why. At the
   bar's end, **Help** (Docs, Support, Keyboard shortcuts) and the
-  **agent's** place: "Agent" and History as ghost buttons, shown and off
-  until the agent comes, a tooltip saying so. No bell, no language
-  switcher in the frame.
+  **agent's** place, for members who may use the assistant (see
+  [The agent](#the-agent)): its chats open in the panel as tabs,
+  **Agent** and **History**. No bell, no language switcher in the
+  frame.
 - **`panel-header`**, 48 px, a hairline under it, held at the panel's
   top: the breadcrumb (the steps the page is nested under, in muted
   text, each a link back to it that turns ink on hover, then the page's
@@ -804,7 +808,7 @@ it. There is no bar across the top.
 - The contract functions close the panel's content, in small muted text.
 
 PealCreative holds, in this order and without group labels: Home,
-Channels, Posts, Analytics, Inbox, Ads and Automations. Posts drills down
+Agent, Channels, Posts, Analytics, Inbox, Ads and Automations. Posts drills down
 to the posts list (its states as tabs), Calendar, Articles, Media and
 Import; Automations to Queues, Repeating posts, Follow-ups, Feeds and
 Comment rules. The creator tool is the composer: New post (C) opens it
@@ -828,6 +832,142 @@ one (Posts, Notifications, Billing, Account). A page
 that opens one item is named after the item's kind (Comment, Message,
 Review). A state of a list is a tab of its page, never a page of its own:
 drafts and the posts that need an approval are tabs of Posts. Home keeps "Write once." as a greeting under the name.
+
+### The agent
+
+A chat in which a person asks about their workspace and has Peal do
+things there, as they would with a colleague. Chats are the person's own.
+
+- **The agent page** (`…/agent`, Agent in PealCreative's navigation, its
+  icon lucide's `Bot`): no title of its own under the header. The Peal
+  mark as a watermark, 288 px (384 from 768 px) at 10% opacity, in the
+  upper half of the panel behind the content; then, in a column 48 rem
+  wide, the composer, under it "Get started with some examples" (muted,
+  14 px, 500) with a × that hides them in this browser, three example
+  cards three up (one on a phone: white, hairline, `{rounded.lg}`, 16 px
+  inside, an icon at 16 px in muted text, a title 14 px 500, one line
+  12 px muted; a card sends its prompt at once), then "Recent chats", a
+  bordered `list` of the latest eight: the chat's title, a star when
+  favoured, and at the row's end how long ago it moved ("just now",
+  "2 hr. ago"), 12 px muted.
+- **A chat's page** (`…/agent/<chat>`, under Agent in the breadcrumb):
+  the chat's title (or "New chat") is the page's name. The header's
+  actions are the **chat switcher** (a ghost icon button, a chevron:
+  **New chat**, then the chats grouped by day under Today, Yesterday
+  and a date, each with how long ago), the **star** (favourite, a
+  pressed toggle), **…** (Rename ⇧R, Copy as markdown, then Delete
+  ⌘⌫, which asks first) and **Move to panel** (a small ghost button,
+  an icon first), which opens the chat in the panel and the agent page
+  in place. The messages sit in a column 48 rem wide, the composer
+  sticky at its foot.
+- **Messages**: a date line ("Today 10:48 AM", 12 px muted, centred)
+  above the first. The person's message right-aligned in a `muted`
+  bubble, `{rounded.lg}`, 85% wide at most. The agent's answer full
+  width, no bubble, 14 px with a relaxed line height: paragraphs, lists,
+  bold (600), italics, inline code (Geist Mono on `muted`, 4 px radius)
+  and links in blue's text, a link out of Peal in a new tab. Under a
+  finished answer, `xs` ghost icon buttons: thumbs up, thumbs down
+  (pressed toggles) and copy.
+- **Work under way** reads as a line, never a spinner: "Thinking…"
+  until the first words; the text streams in, and each step shows as a
+  muted line in the present ("Looking at posts…") where it falls in the
+  text, so what the agent wrote before a step stays above it. While it
+  waits, a light passes along its text (`text-shimmer`, 2 s, from start
+  to end); with reduced motion, it is still and muted. Once the answer
+  ends, the steps and the text written before them fold into "Worked for
+  7 seconds" with a chevron, and only the text after the last step, the
+  answer, stays in view. Opened, the fold shows, in order, the text
+  before each step and the step's line in the past tense, behind a
+  hairline at their start. An answer without steps has no fold.
+- **Result cards**: an item the agent made or changed, under its
+  answer, one a row (the panel is too narrow for two): white, hairline, `{rounded.lg}`,
+  12 px inside, what happened (12 px, 500, muted: "Created post"), the
+  start of the item's text (two lines at most), its channels as outline
+  badges and when it goes out. The card is the link to the item; a
+  deleted item's card links nowhere.
+- **Approval card**: a change others see, that cannot be undone or that
+  costs money waits for the person. White, hairline, `{rounded.lg}`,
+  16 px inside: what the change does (14 px, 600: "Schedule this
+  post"), the text whole on `muted`, the channels as outline badges,
+  when on the person's clock in muted text, then **Approve** (primary,
+  `sm`) and **Decline** (outline, `sm`), with "Open the post" in
+  blue's text at the end. Once answered, an outline badge at the
+  title's end says Approved, Declined or Expired (or "Approved, not done" when the change then failed), and the buttons go.
+  Everything on it comes from the request, never from the agent's words.
+- **The composer**: a white field, hairline, `{rounded.lg}`, 8 px
+  inside, growing with its text to 192 px, then scrolling; the focus
+  ring on the whole field. At its end the send button, primary, round
+  (`icon-sm`, `{rounded.pill}`), an arrow up; while a run goes, the same
+  button is Stop, a filled square. Enter sends, Shift+Enter breaks the
+  line, Escape leaves the composer (the chat's keys then act). Before the
+  send button, **+** (a ghost round `icon-sm`) opens a menu above it:
+  **File** (⌘⇧U), files from the computer added to the media library
+  and attached to the message, each a chip above the text (its name, a
+  spinner on its way, × to take it off; sending waits for them), and
+  **Skill**, a submenu of the person's skills (lucide's `Box`, the name,
+  "Workspace" in muted 12 px at the row's end for a shared one), then a
+  separator and **Create skill…**, which opens the new skill's page;
+  with no skill, Create skill… alone.
+- **Skills in a message**: typing "/" at the start of the text or of a
+  word opens the "/" menu above the text at the "/" (a `menu`, 256 px
+  wide): the skills whose name holds what follows the slash, whatever
+  its case, then a separator and **Create skill…** last. The arrows move
+  the highlight while the caret stays in the field, Enter or Tab picks,
+  Escape closes it, and Enter never sends while it is open; a query
+  with a space that no name holds closes it, so a sentence can start
+  with "/". Picking takes the "/" and the query out of the text. A
+  picked skill is a chip beside the files' (`muted`, lucide's `Box`,
+  the name, × to take it off), three at most: a fourth is not offered,
+  nor one picked already. A message with skills and no text of its own
+  sends their names as its text. The person's sent message shows its
+  skills as outline chips, as its files', under the bubble.
+- **The agent's settings** (`…/settings/agent`, Agent in Settings, for
+  those who may use the agent): the skills the person may use in one
+  bordered `list`, each row the name (500), an outline badge
+  "Personal" or "Workspace" and, at its end, "Updated Nov 22, 2026"
+  (12 px muted); **New skill** in the header's actions; with none, the
+  empty state saying what a skill is, New skill its primary button. A
+  skill's page (`…/settings/agent/skills/<id>`, named by the skill,
+  under Settings › Agent in the breadcrumb; `…/skills/new` is New
+  skill) is a form in the settings column: Name (with how many
+  characters it takes), Instructions (a textarea of ten rows, counted),
+  "Who can use it" as two radios, each with its line (Personal: only
+  you; Workspace: every member who may use the agent), then **Save**
+  (primary) and **Cancel** (outline). Its **…** in the header offers
+  **Use in chat**, which opens the agent page with the skill picked,
+  and **Delete**, after a dialog saying it cannot be undone. A
+  workspace skill the person may not change shows its form disabled,
+  with a muted line saying another member made it, and neither Save
+  nor Delete.
+- **Off**: where no model answers, the page and the panel say so in the
+  empty state's title and line, with the next step as the primary
+  button (the assistant settings for those who may change them, the
+  billing page for a payment method), or a line saying whom to ask.
+  The composer stays, disabled.
+- **The panel** (`agent-panel`): a white card, hairline, `{rounded.lg}`,
+  the large shadow, 400 × 600 px at the window's bottom right, 8 px
+  from its right edge and 8 px above the bottom bar, over the page (a
+  phone: the window less 8 px a side, above the bottom bar). Its header,
+  48 px with a hairline, names the chat (14 px, 500) with **…** right
+  after the title, then at the end minimize, open as a page and close,
+  all ghost icon buttons of one size on one line; a long title ends in
+  an ellipsis, bringing **…** beside the others. Empty, it
+  shows the Peal mark (40 px), "Welcome to Peal" (the empty state's
+  title), one muted line and the examples as round outline `xs`
+  buttons; the composer is at its foot ("Ask about your posts, channels
+  or comments"). It stays open across the workspace's pages and
+  reloads, in this browser.
+- **The bottom bar's agent place**: each chat open in the panel is a
+  tab (its title, truncated at 160 px, 12 px, an `xs` × to close it;
+  the one shown on `accent`; hidden on a phone), then **Agent** (a
+  ghost `sm` button, lucide's `Bot` first, pressed while the panel
+  shows: it opens a new chat, or hides the panel; ⌘J), then
+  **History** (a ghost icon button, a popover of the chats, latest
+  first, each with how long ago; choosing one opens it in the panel).
+  Minimize hides the panel and keeps its tab; close takes the tab away.
+  A new chat is no tab until its first message is sent: Agent opens it
+  with nothing added to the bar, and shows it again with its draft.
+  At most five tabs: a sixth drops the oldest.
 
 ### Command menu
 

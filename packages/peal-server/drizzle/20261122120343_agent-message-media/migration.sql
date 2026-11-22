@@ -1,0 +1,1 @@
+ALTER TABLE "agent"."messages" ADD COLUMN "media" jsonb DEFAULT '[]' NOT NULL;

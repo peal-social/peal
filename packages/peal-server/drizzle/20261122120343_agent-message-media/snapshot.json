@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "bd66bc19-fa38-4778-8b9c-813fd13ffa7b",
+  "prevIds": [
+    "36270c22-31d0-4cb8-af82-439fe4e404a1"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "agent",
+        "messages",
+        "media"
+      ],
+      "writes": [
+        "s|col|agent.messages.media",
+        "n|col|agent.messages.media",
+        "e|col|agent.messages.media"
+      ],
+      "reads": [
+        "n|tbl|agent.messages",
+        "n|sch|agent"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "agent",
+        "table": "messages",
+        "name": "media",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'[]'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

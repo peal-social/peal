@@ -567,6 +567,162 @@
     },
     "remainingMonth": "{remaining, plural, =0 {Plus aucune demande ce mois-ci} one {# demande restante ce mois-ci} other {# demandes restantes ce mois-ci}}"
   },
+  "Agent": {
+    "newChat": "Nouvelle conversation",
+    "placeholder": "Demandez à Peal…",
+    "panelPlaceholder": "Posez une question à Peal…",
+    "composerLabel": "Message à Peal",
+    "send": "Envoyer",
+    "stop": "Arrêter",
+    "thinking": "Réflexion…",
+    "you": "Vous",
+    "justNow": "à l’instant",
+    "dateLine": "{day, select, today {Aujourd’hui} yesterday {Hier} other {{date}}} {time}",
+    "workedSeconds": "A travaillé {seconds, plural, one {# seconde} other {# secondes}}",
+    "workedMinutes": "A travaillé {minutes, plural, one {# minute} other {# minutes}}",
+    "stopped": "Vous avez arrêté cette réponse ici.",
+    "tooLong": "{count, number} / {max, number} caractères",
+    "stepLimit": "Peal a utilisé toutes les étapes d’une réponse. Demandez-lui de continuer s’il reste à faire.",
+    "failedHere": "Cette réponse s’est arrêtée sur une erreur. Renvoyez votre message pour réessayer.",
+    "channels": "Canaux",
+    "otherChannels": "{count, plural, one {# autre canal} other {# autres canaux}}",
+    "copy": "Copier la réponse",
+    "copied": "Réponse copiée",
+    "copyFailed": "Impossible de copier dans le presse-papiers.",
+    "rateUp": "Bonne réponse",
+    "rateDown": "Mauvaise réponse",
+    "recent": "Conversations récentes",
+    "retry": "Réessayer",
+    "welcome": "Bienvenue dans Peal",
+    "welcomeLine": "Posez une question ou dites à Peal ce qu’il vous faut",
+    "examples": {
+      "title": "Commencez avec quelques exemples",
+      "dismiss": "Masquer les exemples",
+      "plan": {
+        "title": "Voir la semaine",
+        "line": "Ce qui part, et les jours où rien ne part",
+        "prompt": "Qu’est-ce qui est programmé cette semaine, et quels jours rien ne part ?"
+      },
+      "draft": {
+        "title": "Écrire un brouillon",
+        "line": "Quelques mots deviennent un brouillon pour vos canaux",
+        "prompt": "Écris un brouillon pour tous nos canaux qui annonce notre prochain événement."
+      },
+      "comments": {
+        "title": "Rattraper les commentaires",
+        "line": "Les commentaires qui attendent encore une réponse",
+        "prompt": "Quels commentaires attendent encore une réponse ?"
+      }
+    },
+    "add": {
+      "label": "Ajouter des fichiers et plus",
+      "file": "Fichier",
+      "skill": "Compétence",
+      "attachments": "Fichiers joints",
+      "remove": "Retirer {name}",
+      "uploading": "Ajout de {name} à la médiathèque…",
+      "failed": "{name} n’a pas pu être ajouté à la médiathèque.",
+      "waiting": "Attendez que les fichiers soient dans la médiathèque.",
+      "kind": "{kind, select, image {Image} video {Vidéo} other {Document}}",
+      "createSkill": "Créer une compétence…",
+      "skills": "Compétences choisies",
+      "removeSkill": "Retirer la compétence {name}",
+      "workspaceSkill": "Espace de travail",
+      "slashMenu": "Compétences",
+      "slashStatus": "{count, plural, =0 {Aucune compétence ne correspond. Appuyez sur Entrée pour en créer une.} one {# compétence correspond. Appuyez sur Entrée pour la choisir.} other {# compétences correspondent. Utilisez les flèches, puis Entrée pour en choisir une.}}"
+    },
+    "groups": {
+      "today": "Aujourd’hui",
+      "yesterday": "Hier"
+    },
+    "steps": {
+      "running": "{kind, select, analytics {Lecture des statistiques…} approvals {Lecture des approbations…} channels {Lecture des canaux…} comments {Lecture des commentaires…} deleting {Suppression…} drafting {Rédaction du brouillon…} editing {Modification de la publication en ligne…} tagCreating {Création de l’étiquette…} inbox {Lecture de la boîte de réception…} media {Lecture de la médiathèque…} messages {Lecture des messages…} messaging {Envoi du message…} moderating {Modération du commentaire…} posts {Lecture des publications…} publishing {Publication…} queues {Lecture des files…} replying {Réponse…} reviewing {Examen de la publication…} reviews {Lecture des avis…} saved {Lecture des signatures et des groupes de canaux…} scheduling {Programmation…} tagging {Ajout des étiquettes…} tags {Lecture des étiquettes…} unpublishing {Dépublication…} workspace {Lecture de l’espace de travail…} skill {Lecture d’une compétence…} other {Travail en cours…}}",
+      "done": "{kind, select, analytics {Statistiques lues} approvals {Approbations lues} channels {Canaux lus} comments {Commentaires lus} deleting {Supprimé} drafting {Brouillon rédigé} editing {Publication en ligne modifiée} tagCreating {Étiquette créée} inbox {Boîte de réception lue} media {Médiathèque lue} messages {Messages lus} messaging {Message envoyé} moderating {Commentaire modéré} posts {Publications lues} publishing {Publié} queues {Files lues} replying {Réponse envoyée} reviewing {Publication examinée} reviews {Avis lus} saved {Signatures et groupes de canaux lus} scheduling {Programmé} tagging {Étiquettes ajoutées} tags {Étiquettes lues} unpublishing {Dépublié} workspace {Espace de travail lu} skill {Compétence lue} other {Outil utilisé}}",
+      "refused": "{step} (non autorisé)",
+      "failed": "{step} (inachevé)"
+    },
+    "approval": {
+      "title": "{kind, select, approve {Approuver cette publication} delete {Supprimer cette publication} edit {Modifier cette publication en ligne} tag {Créer cette étiquette} message {Envoyer ce message} moderate {Modérer ce commentaire} move {Déplacer cette publication} publish {Publier cette publication} queue {Ajouter cette publication à sa file d’attente} reply {Répondre à ce commentaire} requestChanges {Demander des modifications sur cette publication} schedule {Programmer cette publication} unpublish {Dépublier cette publication} unschedule {Déprogrammer cette publication} other {Faire cette modification}}",
+      "at": "Le {at}",
+      "now": "Dès votre approbation",
+      "approve": "Approuver",
+      "decline": "Refuser",
+      "state": "{state, select, approved {Approuvé} notDone {Approuvé, non fait} declined {Refusé} expired {Expiré} other {En attente}}",
+      "inReplyTo": "{author} a écrit",
+      "inReplyToSomeone": "Le commentaire",
+      "openPost": "Ouvrir la publication",
+      "openThread": "Ouvrir les commentaires"
+    },
+    "card": {
+      "post": "{action, select, created {Publication créée} updated {Publication modifiée} scheduled {Publication programmée} published {Publication publiée} deleted {Publication supprimée} replied {Réponse envoyée} other {Publication}}",
+      "thread": "{action, select, replied {Réponse à un commentaire} deleted {Commentaire supprimé} other {Commentaire}}",
+      "goesOut": "Part le {at}"
+    },
+    "menu": {
+      "label": "Options de la conversation",
+      "switch": "Changer de conversation",
+      "star": "Favori",
+      "starred": "Favori",
+      "rename": "Renommer",
+      "renameTitle": "Renommer la conversation",
+      "titleLabel": "Titre",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "copyMarkdown": "Copier en Markdown",
+      "copiedMarkdown": "Conversation copiée en Markdown",
+      "delete": "Supprimer",
+      "deleteTitle": "Supprimer cette conversation ?",
+      "deleteLine": "Ses messages sont supprimés pour de bon. Ce que Peal a fait dans l’espace de travail reste tel quel.",
+      "deleteConfirm": "Supprimer",
+      "moveToPanel": "Passer dans le panneau"
+    },
+    "panel": {
+      "label": "L’agent de Peal",
+      "minimize": "Réduire",
+      "fullPage": "Ouvrir en page",
+      "close": "Fermer"
+    },
+    "dock": {
+      "agent": "Agent",
+      "toggle": "Ouvrir l’agent",
+      "history": "Historique",
+      "historyEmpty": "Aucune conversation pour l’instant.",
+      "tabs": "Conversations ouvertes dans le panneau",
+      "closeTab": "Fermer {title}"
+    },
+    "off": {
+      "title": "L’agent est désactivé",
+      "noModel": "Aucun modèle de langage pour cet espace de travail pour l’instant. Un propriétaire ou un administrateur peut configurer le fournisseur de texte de l’espace de travail dans les réglages de l’assistant.",
+      "paymentMethod": "Le modèle de Peal demande un moyen de paiement sur le compte de facturation. Un fournisseur de texte propre à l’espace de travail fonctionne sans.",
+      "settings": "Configurer un fournisseur de texte",
+      "billing": "Ajouter un moyen de paiement",
+      "askAdmin": "Demandez à un propriétaire ou à un administrateur de l’espace de travail de l’activer.",
+      "unreachable": "Peal n’a pas pu vérifier si l’agent est activé. Réessayez dans un instant."
+    },
+    "errors": {
+      "busy": "Peal répond encore dans cette conversation. Attendez qu’il ait fini, ou arrêtez-le, puis renvoyez votre message.",
+      "mediaNotFound": "L’un des fichiers joints n’est plus dans la médiathèque de cet espace de travail. Retirez-le, puis renvoyez votre message.",
+      "mediaNotReady": "L’un des fichiers joints est encore vérifié par la médiathèque. Renvoyez votre message dans un instant.",
+      "chatNotFound": "Cette conversation n’existe plus. Elle a été supprimée, ou elle a expiré.",
+      "chatGone": "Impossible d’ouvrir cette conversation. Elle a été supprimée ou elle a expiré, ou le réseau a échoué.",
+      "notPending": "Cette modification n’attend plus de réponse, donc Peal n’a rien fait. La conversation montre maintenant où elle en est.",
+      "empty": "Écrivez d’abord un message.",
+      "tooLong": "Votre message dépasse les {maxLength, number} caractères que Peal accepte.",
+      "quota": "{dailyLimit, plural, =0 {Votre espace de travail ne peut envoyer aucune demande à l’assistant.} one {Votre espace de travail a utilisé sa # demande à l’assistant pour aujourd’hui. Vous pourrez en envoyer une nouvelle à partir du {resetsAt}.} other {Votre espace de travail a utilisé ses # demandes à l’assistant pour aujourd’hui. Vous pourrez en envoyer de nouvelles à partir du {resetsAt}.}}",
+      "unavailable": "L’agent n’est pas disponible sur ce serveur.",
+      "forbidden": "Votre rôle ne vous permet pas d’utiliser l’agent.",
+      "personRequired": "Vous seul pouvez parler à votre agent, connecté à votre propre compte. Le personnel qui agit en votre nom, les clés d’API et les applications ne le peuvent pas.",
+      "ownLimit": "Votre espace de travail a envoyé {dailyLimit, number} demandes à son propre fournisseur de texte aujourd’hui, le maximum par jour. Redemandez demain (UTC).",
+      "ownBusy": "Votre espace de travail a déjà autant de demandes en cours chez son propre fournisseur de texte qu’il le peut. Rien n’a été dépensé. Réessayez quand l’une d’elles a abouti.",
+      "paymentMethod": "L’agent de Peal demande un moyen de paiement sur le compte de facturation. Un fournisseur de texte à vous fonctionne sans.",
+      "paymentFailed": "Le dernier paiement du compte de facturation a échoué : l’agent ne prend rien au-delà de ce qui est inclus tant qu’il n’est pas passé. Mettez à jour le moyen de paiement depuis la page de facturation.",
+      "monthUsed": "Votre compte de facturation a utilisé les {allowed, number} demandes à l’assistant permises ce mois-ci. Vous pourrez redemander à partir du {resetsAt}.",
+      "failed": "{reason, select, providerRefused {Le fournisseur de texte de votre espace de travail a refusé ses réglages. Un propriétaire ou un administrateur peut les corriger dans les réglages de l’assistant.} unreachable {Le modèle de langage est injoignable. Réessayez dans un instant.} timedOut {Le modèle de langage a mis trop de temps à répondre. Réessayez.} unusableAnswer {La réponse du modèle de langage est inutilisable. Réessayez.} allowanceReached {L’espace de travail a utilisé les requêtes de l’agent dont il dispose pour l’instant : l’agent s’est arrêté ici. Voyez ce qui reste sur la page de facturation.} other {Une erreur s’est produite. Réessayez.}}",
+      "lost": "La réponse s’est interrompue avant la fin. Rechargez la page pour voir ce que Peal a enregistré.",
+      "generic": "Une erreur s’est produite. Réessayez.",
+      "skillNotFound": "Une compétence que vous avez choisie a été supprimée ou ne vous est plus partagée. Retirez-la, puis renvoyez votre message."
+    }
+  },
   "AppShell": {
     "productName": "Peal",
     "hostedBy": "Connexion sécurisée par {product}"
@@ -3070,6 +3226,8 @@
       "newPost": "Nouvelle publication",
       "post": "Publication",
       "home": "Accueil",
+      "agent": "Agent",
+      "agentChat": "Conversation",
       "platforms": "Plateformes",
       "articles": "Articles",
       "article": "Article",
@@ -3082,13 +3240,13 @@
       "notifications": "Notifications",
       "notificationSettings": "Préférences de notification",
       "newChannel": "Nouveau canal",
-      "channelPlatform": "Plateforme"
+      "channelPlatform": "Plateforme",
+      "agentSettings": "Agent",
+      "newSkill": "Nouvelle compétence",
+      "skill": "Compétence"
     },
     "help": "Aide",
-    "shortcuts": "Raccourcis clavier",
-    "agent": "Agent",
-    "agentSoon": "L’agent arrive bientôt",
-    "history": "Historique"
+    "shortcuts": "Raccourcis clavier"
   },
   "CommandMenu": {
     "title": "Menu des commandes",
@@ -5114,7 +5272,8 @@
       "cancel": "Annuler les publications",
       "filter": "Filtrer la liste",
       "approve": "Approuver les publications",
-      "requestChanges": "Demander des modifications"
+      "requestChanges": "Demander des modifications",
+      "openAgent": "Ouvrir l’agent"
     }
   },
   "Lists": {
@@ -5158,5 +5317,56 @@
     "showMore": "Afficher plus",
     "nothingOpen": "Rien d’ouvert",
     "nothingOpenHint": "Choisissez un commentaire, un avis ou une conversation dans la liste."
+  },
+  "AgentSkills": {
+    "new": "Nouvelle compétence",
+    "emptyTitle": "Aucune compétence pour l’instant",
+    "empty": "Une compétence, ce sont des consignes que vous enregistrez pour une tâche que vous refaites. Choisissez-la dans un message en tapant / dans la zone de saisie de l’agent, et Peal la suit.",
+    "scope": "{scope, select, workspace {Espace de travail} other {Personnelle}}",
+    "updated": "Modifiée le {at}",
+    "loadFailed": "Impossible de lire vos compétences.",
+    "retry": "Réessayer",
+    "gone": "Impossible d’ouvrir cette compétence. Elle a été supprimée, ou elle ne vous est plus partagée.",
+    "backToList": "Voir vos compétences",
+    "readOnly": "Vous pouvez utiliser cette compétence de l’espace de travail. Seuls le membre qui l’a créée et les personnes qui gèrent les réglages de l’assistant peuvent la modifier.",
+    "form": {
+      "name": "Nom",
+      "nameHint": "Ce que vous taperez après / pour la choisir. {max, number} caractères au plus.",
+      "instructions": "Consignes",
+      "instructionsHint": "Ce que Peal doit faire, et comment, quand la compétence est choisie.",
+      "instructionsCount": "{count, number} / {max, number} caractères",
+      "scope": "Qui peut l’utiliser",
+      "personal": "Personnelle",
+      "personalHint": "Vous seul pouvez l’utiliser.",
+      "workspace": "Espace de travail",
+      "workspaceHint": "Tous les membres qui peuvent utiliser l’agent dans cet espace de travail peuvent l’utiliser.",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "nameEmpty": "Donnez un nom à la compétence.",
+      "nameTooLong": "Le nom dépasse {max, number} caractères.",
+      "instructionsEmpty": "Écrivez ce que Peal doit faire.",
+      "instructionsTooLong": "Les consignes dépassent {max, number} caractères."
+    },
+    "menu": {
+      "label": "Options de la compétence",
+      "useInChat": "Utiliser dans une conversation",
+      "delete": "Supprimer",
+      "deleteTitle": "Supprimer cette compétence ?",
+      "deleteLine": "{name} est supprimée pour tous ceux qui peuvent l’utiliser. C’est définitif. Les messages qui l’ont choisie gardent son nom.",
+      "deleteConfirm": "Supprimer",
+      "cancel": "Annuler"
+    },
+    "saved": "Compétence enregistrée",
+    "created": "Compétence créée",
+    "deleted": "Compétence supprimée",
+    "errors": {
+      "nameTaken": "Vous pouvez déjà utiliser une compétence de ce nom. Choisissez-en un autre, pour que / trouve la bonne.",
+      "tooMany": "Vous pouvez utiliser {max, number} compétences ici, le maximum. Supprimez-en une avant d’en créer une autre.",
+      "notEditable": "Vous ne pouvez pas modifier cette compétence : seuls le membre qui l’a créée et les personnes qui gèrent les réglages de l’assistant le peuvent.",
+      "notFound": "Cette compétence n’existe plus. Elle a été supprimée, ou elle ne vous est plus partagée.",
+      "forbidden": "Votre rôle ne vous permet pas d’utiliser l’agent, donc pas d’enregistrer de compétences.",
+      "unexpected": "Impossible d’enregistrer la compétence. Réessayez.",
+      "deleteFailed": "Impossible de supprimer la compétence. Réessayez."
+    }
   }
 }

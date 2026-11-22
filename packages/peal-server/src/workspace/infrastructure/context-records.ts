@@ -1,7 +1,9 @@
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 
 import { ActivityRecords } from "#activity/application/activity-records.ts";
 import { AdRecords } from "#ads/application/ad-records.ts";
+import { AgentRecords } from "#agent/application/agent-records.ts";
+import type { ExportedChat } from "#agent/application/ports/agent-chats.ts";
 import { AnalyticsRecords } from "#analytics/application/analytics-records.ts";
 import { UsageRecords } from "#assistant/application/ports/usage-records.ts";
 import { BillingRecords } from "#billing/application/billing-records.ts";
@@ -25,6 +27,33 @@ import type { ErasedWorkspace } from "#workspace/application/context-records.ts"
 import { WorkspaceBusy } from "#workspace/application/workspace-busy.ts";
 import { WorkspaceFilesRemain } from "#workspace/application/workspace-files-remain.ts";
 import { WorkspaceSubscribed } from "#workspace/application/workspace-subscribed.ts";
+
+// A chat with the agent as the export holds it: never what its tools read.
+const agentChatRecordOf = ({ chat, messages }: ExportedChat) => ({
+  createdAt: chat.createdAt,
+  id: chat.id,
+  messages: messages.map((message) => ({
+    approvals: message.approvals.map(({ at, state, text, tool }) => ({
+      at,
+      state,
+      text,
+      tool,
+    })),
+    createdAt: message.createdAt,
+    id: message.id,
+    media: message.media.map(({ id, name }) => ({ id, name })),
+    outcome: Option.getOrNull(message.outcome),
+    rating: Option.getOrNull(message.rating),
+    role: message.role,
+    skills: message.skills.map(({ id, name }) => ({ id, name })),
+    text: message.text,
+    tools: message.steps.map(({ tool }) => tool),
+  })),
+  starred: chat.starred,
+  title: Option.getOrNull(chat.title),
+  updatedAt: chat.updatedAt,
+  workspaceId: chat.workspaceId,
+});
 
 // A post of the workspace is going out, or one of its boosts may spend.
 const busy = ({ workspaceId }: { readonly workspaceId: WorkspaceId }) =>
@@ -70,6 +99,7 @@ export const ContextRecordsLive = Layer.effect(
     const engagement = yield* EngagementRecords;
     const adRecords = yield* AdRecords;
     const shortLinks = yield* ShortLinkRecords;
+    const agentChats = yield* AgentRecords;
     const pseudonyms = yield* Pseudonyms;
 
     return ContextRecords.of({
@@ -78,6 +108,7 @@ export const ContextRecordsLive = Layer.effect(
           const pseudonym = yield* pseudonyms.ofEmail(email);
 
           yield* notices.eraseUser(userId);
+          yield* agentChats.eraseUser(userId);
           yield* posts.forgetAuthor(userId);
           yield* articles.forgetAuthor(userId);
           yield* engagement.forgetUser(userId);
@@ -107,6 +138,7 @@ export const ContextRecordsLive = Layer.effect(
           yield* channels.eraseWorkspace(workspaceId);
           yield* media.eraseWorkspace(workspaceId);
           yield* notices.eraseWorkspace(workspaceId);
+          yield* agentChats.eraseWorkspace(workspaceId);
           yield* usage.eraseWorkspace(workspaceId);
           yield* webhooks.eraseWorkspace(workspaceId);
           yield* activity.eraseWorkspace(workspaceId);
@@ -132,6 +164,10 @@ export const ContextRecordsLive = Layer.effect(
       exportUser: (userId) =>
         Effect.all({
           activity: activity.exportUser(userId),
+          agentChats: agentChats
+            .exportUser(userId)
+            .pipe(Effect.map((chats) => chats.map(agentChatRecordOf))),
+          agentSkills: agentChats.exportSkills(userId),
           contracts: billing.exportUser(userId),
           legalHold: legal.exportUser(userId),
           messages: engagement.exportUserMessages(userId),
@@ -145,6 +181,8 @@ export const ContextRecordsLive = Layer.effect(
           Effect.map((exported) => ({
             ...exported.user,
             activity: exported.activity,
+            agentChats: exported.agentChats,
+            agentSkills: exported.agentSkills,
             contracts: exported.contracts,
             legalHold: exported.legalHold,
             messages: exported.messages,

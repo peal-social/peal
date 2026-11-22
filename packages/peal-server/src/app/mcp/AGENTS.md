@@ -74,6 +74,10 @@
   `PostTools` and `MediaTools` that change something are `contentTools`,
   whose calls the ConnectionJournal keeps. The account's own
   data (its export, its applications) has no tool.
+- The web app's agent (`src/agent/`, `src/app/agent/toolbox.ts`) calls
+  some of these tools, by the same names and schemas, through
+  `PealTools`' handlers: a tool's name, description or parameters it
+  names change the agent's too (`test/app/agent-toolbox.test.ts`).
 - `recordedCalls` tells product analytics of every `tools/call` that ran,
   reading tools included (`mcp_tool_called`: the tool's name, whether it
   changes something, how it ended and how long it took, never its

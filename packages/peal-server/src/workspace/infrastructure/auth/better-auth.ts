@@ -10,6 +10,7 @@ import {
 } from "effect";
 import type { LogLevel } from "effect";
 
+import { AgentRecords } from "#agent/application/agent-records.ts";
 import { BillingAccounts } from "#billing/application/billing-accounts.ts";
 import { CheckoutOrders } from "#billing/application/checkout-orders.ts";
 import { CreditProblemDesk } from "#billing/application/credit-problem-desk.ts";
@@ -298,6 +299,7 @@ export const BetterAuthLive = Layer.effect(
     const signUps = yield* SignUpGate;
     const analytics = yield* ProductAnalytics;
     const { settings: site } = yield* SiteMeasurement;
+    const agentRecords = yield* AgentRecords;
 
     // The instance, once made: the email of a recovery code used says how
     // many are left, which only the instance reads.
@@ -369,6 +371,27 @@ export const BetterAuthLive = Layer.effect(
             .from(workspaceId, "members", needed)
             .pipe(Effect.map(upgradeOf))
         ),
+      // Awaited once a member left or was removed: their chats with the
+      // agent there go. A failure is logged: the retention ends them.
+      memberLeft: async (workspaceId, userId) => {
+        await runPromise(
+          Effect.all({
+            user: decodeUserId(userId),
+            workspace: decodeWorkspaceIdEffect(workspaceId),
+          }).pipe(
+            Effect.flatMap(({ user, workspace }) =>
+              agentRecords.eraseMember(workspace, user)
+            ),
+            Effect.catchCause((cause) =>
+              Effect.logWarning(
+                "Erasing what a member who left kept in the workspace failed",
+                cause
+              )
+            ),
+            Effect.withSpan("BetterAuth.memberLeft")
+          )
+        );
+      },
       // Awaited after a member left, was removed or changed role. A failure
       // is logged: the next read of the workspace repairs it.
       ownersChanged: async (workspaceId) => {

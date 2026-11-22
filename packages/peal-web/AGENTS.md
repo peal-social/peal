@@ -57,7 +57,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   for another workspace), both in the `(setup)` route group,
   `[workspaceId]` (the workspace's home: the
   measurement's question, connecting channels and assistants, a
-  quickstart), `…/platforms` (PealAPI's, for channel:read),
+  quickstart), `…/agent` and `…/agent/[chatId]` (the agent, for
+  assistant:use), `…/platforms` (PealAPI's, for channel:read),
   `[workspaceId]/channels`, `…/media`, `…/calendar`,
   `…/analytics`, `…/inbox` (a split view, its layout the list, for
   `engagement:read`: not-found otherwise, as for staff acting as a member)
@@ -72,7 +73,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   a draft or a scheduled post in the composer, and shows a post that went
   out in `PostDetail` (each channel's status, attempts and reasons, with
   repost and confirm, and its analytics), `…/settings` (with `members`, `invitations`, `tags`, `signatures`,
-  `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys` and `webhooks`) and `…/billing`. The person's own
+  `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys`, `webhooks` and `agent`, the agent's skills, for assistant:use, with `agent/skills/new` and `agent/skills/[skillId]`) and `…/billing`. The person's own
   pages are every workspace's too, in its Settings: `…/settings/account`
   (their account), `…/notifications` (their notifications across
   workspaces) and `…/settings/notifications` (which reach them by email);
@@ -108,7 +109,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   actions), the contract functions closing its content, and a bottom bar
   across the window: the account menu at its start (`AccountMenuView`),
   Help (**Docs** at `PEAL_DOCS_URL`, **Support** at `PEAL_CONTACT_URL`
-  when set, the shortcut sheet) and the agent's place, off for now, at
+  when set, the shortcut sheet) and the agent's place (`AgentDock`) at
   its end. `(app)/[workspaceId]/layout.tsx`
   gives a workspace's pages `WorkspaceShell`, whose `SidebarView` holds,
   in its head, the workspace switcher, Search (the command menu) and New
@@ -757,6 +758,47 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   write: Peal appends nothing. An `unconfirmed` one offers the two
   answers after checking the conversation, never a resend; `reconnect`
   links to the inbox's message settings.
+- The agent (`#agent/*`, `components/agent/`, the `Agent` catalogue;
+  DESIGN.md, "The agent") talks to `AgentApi` (`peal-contract/agent`),
+  apart from `Api`, through its own client (`PealAgentApi`,
+  `#agent/client.ts`). A run is a stream of `AgentEvent`s that
+  `agentRun` (`#agent/atoms.ts`) folds into the chat's one atom
+  (`agentChat`) with `foldChat` (`#agent/run-state.ts`, pure and
+  tested); Stop writes `Atom.Interrupt`, which closes the stream. Both
+  are kept while the tab lives, so the page and the panel show the same
+  chat and a run goes on when either closes. The agent's answer is the
+  markdown `#agent/markdown.ts` reads (paragraphs, lists, bold,
+  italics, inline code, links to this origin's paths or http(s)),
+  rendered as elements by `AgentMarkdown`, never as HTML. Cards and
+  approvals show what the server sent, never the agent's words; a step
+  and a change are named from their tool (`#agent/steps.ts`), with a
+  word of their own for a tool the list does not know. The panel's tabs
+  and the chat shown are the browser's (`#agent/panel-state.ts`, in
+  `localStorage` per workspace through `makePanelStore`), around every
+  page of the workspace (`AgentPanelProvider` in `WorkspaceShell`).
+  The status is read after hydration, as it needs the visitor's
+  cookies. Refusals before a run get words from `Agent.errors`
+  (`refusalMessage`), never the server's English, and a plan's opens
+  the upgrade dialog, which `UpgradePrompts` therefore puts around the
+  whole frame.
+- Skills (`#agent/skills.ts` atoms through `PealAgentApi`, the
+  `agent-skills:<workspace>` reactivity key; `AgentSkills` catalogue) are
+  the person's and the workspace's instructions a message picks
+  (`skillIds`, three at most). The composer picks them under **+** >
+  **Skill** and with "/", ui-sdk's `TriggerMenu` on the field
+  (`textFieldAdapter`), whose list and closing are
+  `slashSkillsOf` (`#agent/skill-picker.ts`, tested): `ComposerView`
+  sends nothing on a key the open menu took (`defaultPrevented`,
+  `isMenuOpen`), and Escape is the menu's own. The menu's state lives
+  in `SlashSkillMenu` alone: a state change of the component that draws
+  the field, set from ui-sdk's input listener, renders before React
+  reads the field and puts the text back without the "/". Picked skills are the chat's (`ChatState.skills`, back on
+  a refusal), shown as chips; a message of skills alone sends their
+  names as its text (`sentTextOf`). The settings page
+  (`components/agent/skills-settings.tsx`, views in `skill-views.tsx`)
+  explains refusals through `skillProblemOf` (`#agent/skill-refusal.ts`),
+  never the server's English; **Use in chat** opens `…/agent?skill=<id>`,
+  which the agent page picks once and drops from the address.
 - `AssistantMenu` sits in the composer's text section and works on the text
   for all channels. Render it only for members with `assistant:use`, and
   only while `GET …/assistant` answers `available`; refresh that status after
