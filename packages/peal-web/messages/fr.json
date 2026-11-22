@@ -631,6 +631,8 @@
       "approve": "Approuver",
       "decline": "Refuser",
       "state": "{state, select, approved {Approuvé} notDone {Approuvé, non fait} declined {Refusé} expired {Expiré} other {En attente}}",
+      "inReplyTo": "{author} a écrit",
+      "inReplyToSomeone": "Le commentaire",
       "openPost": "Ouvrir la publication",
       "openThread": "Ouvrir les commentaires"
     },

@@ -276,6 +276,24 @@ describe(ApprovalCardView, () => {
     ]).toStrictEqual([true, true, true, true, true, true, true, true]);
   });
 
+  it("quotes the comment a reply answers, and its author", async () => {
+    const html = await approvalCard({
+      ...approval,
+      inReplyTo: { author: "Claire Martin", text: "Is it a hybrid?" },
+      postId: null,
+      text: "Yes, a plug-in hybrid.",
+      threadId: "thread-1",
+      tool: "reply_to_comment",
+    });
+
+    expect([
+      html.includes("Reply to this comment"),
+      html.includes("Claire Martin wrote"),
+      html.includes("Is it a hybrid?"),
+      html.includes("Yes, a plug-in hybrid."),
+    ]).toStrictEqual([true, true, true, true]);
+  });
+
   it("shows how it was answered, without the buttons", async () => {
     const html = await approvalCard({ ...approval, state: "expired" }, "fr");
 

@@ -631,6 +631,8 @@
       "approve": "Approve",
       "decline": "Decline",
       "state": "{state, select, approved {Approved} notDone {Approved, not done} declined {Declined} expired {Expired} other {Waiting}}",
+      "inReplyTo": "{author} wrote",
+      "inReplyToSomeone": "The comment",
       "openPost": "Open the post",
       "openThread": "Open the comments"
     },

@@ -299,6 +299,22 @@ export const ApprovalCardView = ({
           </Badge>
         )}
       </div>
+      {/* What the reply answers, as the workspace holds it: plain text. */}
+      {approval.inReplyTo === null ? null : (
+        <figure className="flex flex-col gap-1 border-s-2 ps-3 text-sm">
+          <figcaption className="text-muted-foreground text-xs">
+            {approval.inReplyTo.author === ""
+              ? t("approval.inReplyToSomeone")
+              : t("approval.inReplyTo", { author: approval.inReplyTo.author })}
+          </figcaption>
+          <blockquote
+            dir="auto"
+            className="text-muted-foreground whitespace-pre-wrap"
+          >
+            {approval.inReplyTo.text}
+          </blockquote>
+        </figure>
+      )}
       {approval.text === null ? null : (
         <blockquote
           dir="auto"
