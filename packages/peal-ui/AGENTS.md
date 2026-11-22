@@ -57,7 +57,7 @@ same on all three:
 
 - `src/lib/support` is the support chat (DESIGN.md, "Support chat"), the
   same on the app, the site, the docs and the blog: `<peal-support>`
-  (`element.ts`, in its light DOM, styled by `src/styles/support.css`),
+  (`launcher.ts`, in its light DOM, styled by `src/styles/support.css`),
   its pixel bubble for the site and the blog (`launcher-art.ts`, pure
   frames on a 2D canvas) or lucide's message-circle for the app and the
   docs (`data-art`), its
@@ -76,4 +76,4 @@ same on all three:
 - The launcher's script imports neither Effect nor peal-contract (gzip:
   under 4 kB, its styles included). `conversationCookieSeconds` is the
   registry's `supportCookie`, which a test compares.
-- `sideEffects` lists `support/element.ts` and `support/start.ts`.
+- `sideEffects` lists `support/launcher.ts` and `support/start.ts`.

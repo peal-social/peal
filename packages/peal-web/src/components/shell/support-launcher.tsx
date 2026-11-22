@@ -6,13 +6,13 @@ import { useEffect, useRef } from "react";
 
 // Defines `<peal-support>` once, apart from the page's first script.
 const loadLauncher = () => {
-  void import("peal-ui/lib/support/element");
+  void import("peal-ui/lib/support/launcher");
 };
 
 /**
- * The support chat's launcher at the bottom bar's end (DESIGN.md, "Support
- * chat"): peal-ui's `<peal-support>`, which loads Crisp only once pressed
- * and names the signed-in person and their workspace to Peal's team. The
+ * The support chat in the app (DESIGN.md, "Support chat"): peal-ui's
+ * `<peal-support>`, which shows nothing there (the account menu's Support
+ * opens it), loads Crisp only once opened and names the signed-in person and their workspace to Peal's team. The
  * element is made here rather than in JSX, so React never re-creates it;
  * it starts once its attributes name the website.
  */
