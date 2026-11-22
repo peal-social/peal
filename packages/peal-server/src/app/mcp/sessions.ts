@@ -21,10 +21,18 @@ import type { Principal } from "peal-contract";
 
 /**
  * How many sessions of the sessionful revisions one credential keeps open
- * at once: a person's, whichever clients they connected, or a key's. A
- * session past them ends the credential's longest unused one.
+ * at once: a person's through one application in one workspace, or a
+ * key's. A session past them ends that credential's longest unused one,
+ * never another application's.
  */
 export const sessionsPerCredential = 16;
+
+/**
+ * How many a person keeps open across every application and workspace,
+ * so that registering more clients cannot grow what the server holds
+ * without bound: past them, the person's longest unused one ends.
+ */
+export const sessionsPerPerson = 64;
 
 /** How long a session is kept unused before it is ended. */
 export const sessionIdleLimit = Duration.hours(1);
@@ -52,27 +60,51 @@ export const endedSessions = Metric.counter("peal.mcp.sessions.ended", {
 
 type EndReason = "idle" | "pastLimit";
 
+/**
+ * Whose a session is (`ownerOf`): the credential that opened it, which
+ * alone uses it, and the person, or key, its total counts against.
+ */
+export interface SessionOwner {
+  readonly credential: string;
+  readonly person: string;
+}
+
 /** A session of the sessionful revisions, as Peal keeps track of it. */
 export interface OpenSession {
   readonly id: string;
-  /** Whose it is: the credential that opened it (`ownerOf`). */
-  readonly owner: string;
+  readonly owner: SessionOwner;
   /** When it was last used, in milliseconds since the epoch. */
   readonly lastUsed: number;
 }
 
 /**
- * Whose a session is: a person, whichever application they connected,
- * so registering more clients opens no more sessions; or a key.
+ * Whose a session is: a person through one application, in the workspace
+ * the connection acts in, counted against the person's total; or a key,
+ * which is both.
  */
-export const ownerOf = (principal: Principal): string => {
+export const ownerOf = (
+  principal: Principal,
+  workspaceId: string
+): SessionOwner => {
   if (principal._tag === "apiKey") {
-    return `key:${principal.apiKeyId}`;
+    const key = `key:${principal.apiKeyId}`;
+
+    return { credential: key, person: key };
   }
 
-  return principal._tag === "partnerKey"
-    ? `partner-key:${principal.partnerKeyId}`
-    : `user:${principal.userId}`;
+  if (principal._tag === "partnerKey") {
+    const key = `partner-key:${principal.partnerKeyId}`;
+
+    return { credential: key, person: key };
+  }
+
+  const person = `user:${principal.userId}`;
+  const clientId = principal.oauth?.clientId ?? "session";
+
+  return {
+    credential: `${person}:${clientId}:${principal.oauth?.workspaceId ?? workspaceId}`,
+    person,
+  };
 };
 
 /** The sessions unused for longer than the limit, at `now`. */
@@ -84,19 +116,42 @@ export const idleSessions = (
     ({ lastUsed }) => now - lastUsed > Duration.toMillis(sessionIdleLimit)
   );
 
+// The sessions past `limit` among those kept, least recently used first.
+const pastOf = (
+  kept: readonly OpenSession[],
+  limit: number
+): readonly OpenSession[] =>
+  kept
+    .toSorted((a, b) => a.lastUsed - b.lastUsed)
+    .slice(0, Math.max(0, kept.length - limit));
+
 /**
- * The sessions of an owner past `sessionsPerCredential`, least recently
- * used first: those to end so the owner keeps as many as it may.
+ * The sessions to end once `owner` opened one: its credential's past
+ * `sessionsPerCredential`, then the person's past `sessionsPerPerson`
+ * among the rest, each least recently used first. Another person's or
+ * key's are never among them.
  */
 export const sessionsPastLimit = (
   sessions: readonly OpenSession[],
-  owner: string
+  owner: SessionOwner
 ): readonly OpenSession[] => {
-  const owned = sessions
-    .filter((session) => session.owner === owner)
-    .toSorted((a, b) => a.lastUsed - b.lastUsed);
+  const ofCredential = pastOf(
+    sessions.filter(
+      ({ owner: { credential } }) => credential === owner.credential
+    ),
+    sessionsPerCredential
+  );
 
-  return owned.slice(0, Math.max(0, owned.length - sessionsPerCredential));
+  const ending = new Set(ofCredential.map(({ id }) => id));
+
+  const ofPerson = pastOf(
+    sessions.filter(
+      ({ id, owner: { person } }) => person === owner.person && !ending.has(id)
+    ),
+    sessionsPerPerson
+  );
+
+  return [...ofCredential, ...ofPerson];
 };
 
 /**
@@ -112,9 +167,9 @@ export class McpSessions extends Context.Service<
     /** Takes the router a session's DELETE is answered on. */
     readonly endOn: (router: HttpRouter.HttpRouter) => void;
     readonly forget: (id: string) => Effect.Effect<void>;
-    readonly open: (id: string, owner: string) => Effect.Effect<void>;
-    /** Whether the owner holds the session, which counts as using it. */
-    readonly use: (id: string, owner: string) => Effect.Effect<boolean>;
+    readonly open: (id: string, owner: SessionOwner) => Effect.Effect<void>;
+    /** Whether the credential holds the session, which counts as using it. */
+    readonly use: (id: string, owner: SessionOwner) => Effect.Effect<boolean>;
   }
 >()("peal-server/app/mcp/McpSessions") {
   /** The sessions, and the sweep that ends those unused too long. */
@@ -164,7 +219,7 @@ export class McpSessions extends Context.Service<
           );
         });
 
-      const open = (id: string, owner: string) =>
+      const open = (id: string, owner: SessionOwner) =>
         Effect.gen(function* opened() {
           sessions.set(id, {
             id,
@@ -177,11 +232,11 @@ export class McpSessions extends Context.Service<
           }
         });
 
-      const use = (id: string, owner: string) =>
+      const use = (id: string, owner: SessionOwner) =>
         Effect.gen(function* used() {
           const session = sessions.get(id);
 
-          if (session?.owner !== owner) {
+          if (session?.owner.credential !== owner.credential) {
             return false;
           }
 
@@ -293,8 +348,9 @@ const jsonRpcError = (status: number, message: string) =>
  * `mcpAuthentication`: a session is its opener's alone (404 to anyone
  * else, as to a session that ended), each use keeps it open, a DELETE
  * ends it, an `initialize` larger than `maxInitializeBytes` is refused,
- * and a credential that opens one past `sessionsPerCredential` ends its
- * longest unused one.
+ * and one opened past `sessionsPerCredential` (a person through one
+ * application in one workspace, or a key) or `sessionsPerPerson` ends
+ * the credential's, then the person's, longest unused one.
  */
 export const mcpSessionGuard = HttpRouter.middleware(
   Effect.gen(function* mcpSessionGuardLive() {
@@ -303,8 +359,8 @@ export const mcpSessionGuard = HttpRouter.middleware(
     return (httpEffect) =>
       Effect.gen(function* guarded() {
         const request = yield* HttpServerRequest.HttpServerRequest;
-        const { principal } = yield* CurrentMember;
-        const owner = ownerOf(principal);
+        const { principal, workspaceId } = yield* CurrentMember;
+        const owner = ownerOf(principal, workspaceId);
         const sessionId = request.headers[sessionHeader];
 
         if (sessionId !== undefined) {

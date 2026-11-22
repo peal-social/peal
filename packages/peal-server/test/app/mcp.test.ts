@@ -601,6 +601,14 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "post:read",
           ]);
 
+          // Another application the same person connected.
+          const otherToken = yield* authorize(
+            fixture.owner,
+            yield* registeredClient,
+            workspace,
+            "workspace:read"
+          );
+
           const send = (
             authorization: string,
             headers: Readonly<Record<string, string>>,
@@ -632,6 +640,12 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
             ended: yield* endedAs("ended"),
             failed: yield* endedAs("failed"),
           };
+
+          // The other application's session, unused longer than any.
+          const theirs =
+            (yield* send(otherToken, {}, initialize())).headers.get(
+              "mcp-session-id"
+            ) ?? "";
 
           const opened: string[] = [];
 
@@ -665,8 +679,12 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
           assert.strictEqual(yield* listedIn(token, oldest), 404);
           assert.strictEqual(yield* listedIn(token, second), 200);
-          // A session is its opener's alone.
+          // A session is its opener's alone, another application of the
+          // same person's included, which keeps its own.
           assert.strictEqual(yield* listedIn(key, second), 404);
+          assert.strictEqual(yield* listedIn(token, theirs), 404);
+          assert.strictEqual(yield* listedIn(otherToken, theirs), 200);
+          assert.strictEqual(yield* listedIn(otherToken, second), 404);
 
           // What an initialize says is kept for the whole session: a large
           // one is refused.
@@ -677,6 +695,46 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           assert.strictEqual(large.status, 413);
+
+          // A body in chunks, with no length to refuse it by, is read up to
+          // the endpoint's limit, then refused as a JSON-RPC error.
+          const text = JSON.stringify({
+            ...initialize(),
+            params: { padding: "x".repeat(9 * 1024 * 1024) },
+          });
+
+          const bytes = new TextEncoder().encode(text);
+
+          const streamedAnswer = yield* Effect.promise(
+            async () =>
+              await app.handler(
+                new Request(mcpResource, {
+                  body: new ReadableStream<Uint8Array>({
+                    start(controller) {
+                      for (let at = 0; at < bytes.length; at += 65_536) {
+                        controller.enqueue(bytes.subarray(at, at + 65_536));
+                      }
+
+                      controller.close();
+                    },
+                  }),
+                  duplex: "half",
+                  headers: {
+                    accept: "application/json, text/event-stream",
+                    authorization: `Bearer ${token}`,
+                    "content-type": "application/json",
+                  },
+                  method: "POST",
+                })
+              )
+          );
+
+          const told = yield* Effect.promise(
+            async () => await streamedAnswer.text()
+          );
+
+          assert.strictEqual(streamedAnswer.status, 413);
+          assert.include(told, '"jsonrpc":"2.0"');
         })
     );
   }
