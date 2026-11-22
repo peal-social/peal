@@ -14,6 +14,7 @@ import {
   AgentApprovalNotPending,
   AgentBusy,
   AgentChatNotFound,
+  AgentMediaRejected,
 } from "peal-contract/agent";
 
 import { AgentDesk } from "#agent/application/agent-desk.ts";
@@ -47,6 +48,7 @@ export const messageView = (message: AgentMessage) => ({
   durationMs: Option.getOrNull(message.durationMs),
   id: message.id,
   outcome: Option.getOrNull(message.outcome),
+  media: message.media,
   rating: Option.getOrNull(message.rating),
   role: message.role,
   steps: message.steps,
@@ -223,6 +225,7 @@ export const AgentHandlers = HttpApiBuilder.group(
               actor,
               params.chatId,
               payload.text,
+              payload.mediaIds ?? [],
               yield* askedOf(payload.timeZone)
             )
             .pipe(
@@ -230,6 +233,8 @@ export const AgentHandlers = HttpApiBuilder.group(
                 ...runRefusals(actor),
                 ApprovalNotPending: () =>
                   Effect.die("A message never answers an approval"),
+                MediaRejected: ({ mediaId, reason }) =>
+                  Effect.fail(new AgentMediaRejected({ mediaId, reason })),
                 MessageRejected: () =>
                   Effect.fail(
                     new AssistantInputRejected({
@@ -258,6 +263,8 @@ export const AgentHandlers = HttpApiBuilder.group(
                 ...runRefusals(actor),
                 ApprovalNotPending: () =>
                   Effect.fail(new AgentApprovalNotPending()),
+                MediaRejected: () =>
+                  Effect.die("An approval's answer attaches no file"),
                 MessageRejected: () =>
                   Effect.die("An approval's answer holds no message"),
               })

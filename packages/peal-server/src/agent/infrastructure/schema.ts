@@ -66,6 +66,8 @@ export const messages = agentSchema.table(
     createdAt: instant("created_at").notNull(),
     durationMs: integer("duration_ms"),
     id: uuid("id").primaryKey(),
+    // The files of the workspace's media library the person attached.
+    media: jsonb("media").notNull().default([]),
     outcome: text("outcome"),
     rating: text("rating"),
     role: text("role").notNull(),

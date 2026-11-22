@@ -58,5 +58,8 @@ export const maxTitleLength = 120;
 /** The longest message a person sends, as the contract takes it. */
 export const maxMessageLength = 8000;
 
+/** The most files a message attaches, as the contract takes it. */
+export const maxMessageMedia = 10;
+
 /** How many chats a page of the history holds. */
 export const chatPageSize = 50;

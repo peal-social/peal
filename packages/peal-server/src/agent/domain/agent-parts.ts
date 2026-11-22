@@ -98,6 +98,15 @@ export const AgentApprovalSchema = Schema.Struct({
 
 export type AgentApproval = typeof AgentApprovalSchema.Type;
 
+/** A file of the workspace's media library attached to a person's message. */
+export const AgentMediaSchema = Schema.Struct({
+  id: Schema.String,
+  kind: Schema.Literals(["image", "video", "document"]),
+  name: Schema.NullOr(Schema.String),
+});
+
+export type AgentMedia = typeof AgentMediaSchema.Type;
+
 /** How the person rated an answer. */
 export const AgentRatingSchema = Schema.Literals(["up", "down"]);
 

@@ -15,6 +15,7 @@ import {
 import { ApprovalNotPending } from "#agent/application/approval-not-pending.ts";
 import { ChatBusy } from "#agent/application/chat-busy.ts";
 import { ChatNotFound } from "#agent/application/chat-not-found.ts";
+import type { MediaRejected } from "#agent/application/media-rejected.ts";
 import { MessageRejected } from "#agent/application/message-rejected.ts";
 import { AgentChats } from "#agent/application/ports/agent-chats.ts";
 import type {
@@ -29,6 +30,7 @@ import type {
   RunInput,
   RunRefusal,
 } from "#agent/application/ports/agent-runs.ts";
+import { AttachedFiles } from "#agent/application/ports/attached-files.ts";
 import { pendingOf } from "#agent/domain/agent-approvals.ts";
 import { AgentChat } from "#agent/domain/agent-chat.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
@@ -64,8 +66,18 @@ type RunFailure =
   | ApprovalNotPending
   | ChatBusy
   | ChatNotFound
+  | MediaRejected
   | MessageRejected
   | RunRefusal;
+
+/** What the person sent: a message with the files it names, or an answer. */
+type Asked =
+  | {
+      readonly _tag: "message";
+      readonly mediaIds: readonly string[];
+      readonly text: string;
+    }
+  | Extract<RunInput, { readonly _tag: "answer" }>;
 
 // The person in their own session, with assistant:use.
 const ownerOf = (actor: Actor) =>
@@ -127,6 +139,7 @@ export class AgentDesk extends Context.Service<
       actor: Actor,
       chatId: string,
       text: string,
+      mediaIds: readonly string[],
       asked: RunAsked
     ) => Effect.Effect<Stream.Stream<AgentEvent>, RunFailure>;
     /** The person's answer to a change the agent asked to make. */
@@ -144,6 +157,7 @@ export class AgentDesk extends Context.Service<
     Effect.gen(function* AgentDeskLive() {
       const chats = yield* AgentChats;
       const runs = yield* AgentRuns;
+      const files = yield* AttachedFiles;
       const ids = yield* Ids;
       // A run whose stream is never read (its request gone before its
       // answer started) still lets go of what it holds, after its lease.
@@ -161,17 +175,29 @@ export class AgentDesk extends Context.Service<
       const run = (
         actor: Actor,
         chatId: string,
-        input: RunInput,
+        given: Asked,
         { origin, timeZone }: RunAsked
       ) =>
         Effect.gen(function* running() {
           const owner = yield* ownerOf(actor);
 
-          if (input._tag === "message" && input.text.trim().length === 0) {
+          if (given._tag === "message" && given.text.trim().length === 0) {
             return yield* new MessageRejected({ reason: "empty" });
           }
 
           const chat = yield* found(owner, chatId);
+
+          // The files a message attaches, before anything is claimed or
+          // counted: a file it cannot use refuses it whole.
+          const input: RunInput =
+            given._tag === "message"
+              ? {
+                  _tag: "message",
+                  media: yield* files.read(actor, given.mediaIds),
+                  text: given.text,
+                }
+              : given;
+
           const runId = yield* ids.next;
           const now = yield* DateTime.now;
 
@@ -306,8 +332,8 @@ export class AgentDesk extends Context.Service<
 
             yield* rated ? Effect.void : Effect.fail(new ChatNotFound());
           }).pipe(Effect.withSpan("AgentDesk.rate")),
-        send: (actor, chatId, text, asked) =>
-          run(actor, chatId, { _tag: "message", text }, asked).pipe(
+        send: (actor, chatId, text, mediaIds, asked) =>
+          run(actor, chatId, { _tag: "message", mediaIds, text }, asked).pipe(
             Effect.withSpan("AgentDesk.send")
           ),
         updateChat: (actor, chatId, change) =>

@@ -48,9 +48,10 @@ const decodeMessage = Schema.decodeUnknownEffect(AgentMessage);
 
 // What a message holds besides its text, as its JSON columns keep it.
 const MessagePartsJson = Schema.toCodecJson(
-  AgentMessage.mapFields(({ approvals, cards, steps }) => ({
+  AgentMessage.mapFields(({ approvals, cards, media, steps }) => ({
     approvals,
     cards,
+    media,
     steps,
   }))
 );
@@ -63,6 +64,10 @@ const encodeApprovals = Schema.encodeEffect(
 
 const encodeCards = Schema.encodeEffect(
   Schema.toCodecJson(AgentMessage.fields.cards)
+);
+
+const encodeMedia = Schema.encodeEffect(
+  Schema.toCodecJson(AgentMessage.fields.media)
 );
 
 const encodeSteps = Schema.encodeEffect(
@@ -93,6 +98,7 @@ const messageOf = (row: MessageRow) =>
   decodeParts({
     approvals: row.approvals,
     cards: row.cards,
+    media: row.media,
     steps: row.steps,
   }).pipe(
     Effect.flatMap((parts) =>
@@ -115,6 +121,7 @@ const columnsOf = (chatId: string, message: AgentMessage) =>
   Effect.all({
     approvals: encodeApprovals(message.approvals),
     cards: encodeCards(message.cards),
+    media: encodeMedia(message.media),
     steps: encodeSteps(message.steps),
   }).pipe(
     Effect.orDie,
@@ -125,6 +132,7 @@ const columnsOf = (chatId: string, message: AgentMessage) =>
       createdAt: date(message.createdAt),
       durationMs: Option.getOrNull(message.durationMs),
       id: message.id,
+      media: encoded.media,
       outcome: Option.getOrNull(message.outcome),
       rating: Option.getOrNull(message.rating),
       role: message.role,

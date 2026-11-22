@@ -6,7 +6,10 @@ import type { DayExhausted } from "#agent/application/day-exhausted.ts";
 import type { OwnProviderBusy } from "#agent/application/own-provider-busy.ts";
 import type { ChatRun } from "#agent/application/ports/agent-chats.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
-import type { AgentAvailability } from "#agent/domain/agent-parts.ts";
+import type {
+  AgentAvailability,
+  AgentMedia,
+} from "#agent/domain/agent-parts.ts";
 import type { PersonRequired } from "#agent/domain/person-required.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import type { AllowanceReached } from "#shared/domain/allowance-reached.ts";
@@ -21,7 +24,12 @@ export interface RequestOrigin {
 
 /** What the person sent: a message, or their answer to a change. */
 export type RunInput =
-  | { readonly _tag: "message"; readonly text: string }
+  | {
+      readonly _tag: "message";
+      /** The files it attaches, as the person may read them. */
+      readonly media: readonly AgentMedia[];
+      readonly text: string;
+    }
   | {
       readonly _tag: "answer";
       readonly approved: boolean;

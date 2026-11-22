@@ -167,6 +167,7 @@ const answerOf = (id: string, at: DateTime.Utc): AgentMessage => ({
   createdAt: at,
   durationMs: null,
   id,
+  media: [],
   outcome: null,
   rating: null,
   role: "assistant",

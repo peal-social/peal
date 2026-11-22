@@ -41,6 +41,7 @@ const agentChatRecordOf = ({ chat, messages }: ExportedChat) => ({
     })),
     createdAt: message.createdAt,
     id: message.id,
+    media: message.media.map(({ id, name }) => ({ id, name })),
     outcome: Option.getOrNull(message.outcome),
     rating: Option.getOrNull(message.rating),
     role: message.role,
