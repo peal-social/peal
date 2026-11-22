@@ -2,9 +2,7 @@
 
 import {
   BookOpenIcon,
-  BotIcon,
   CircleHelpIcon,
-  HistoryIcon,
   KeyboardIcon,
   LifeBuoyIcon,
   MenuIcon,
@@ -23,11 +21,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "peal-ui/components/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "peal-ui/components/tooltip";
 import { cn } from "peal-ui/lib/utils";
 import {
   createContext,
@@ -252,37 +245,6 @@ const HelpMenu = ({
   );
 };
 
-// The agent's place at the bottom bar's end, as in the list it comes from:
-// shown already, off until the agent is built.
-const AgentButtons = () => {
-  const t = useTranslations("WorkspaceShell");
-
-  return (
-    <>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button variant="ghost" size="sm" disabled focusableWhenDisabled />
-          }
-        >
-          <BotIcon aria-hidden />
-          {t("agent")}
-        </TooltipTrigger>
-        <TooltipContent>{t("agentSoon")}</TooltipContent>
-      </Tooltip>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        disabled
-        aria-label={t("history")}
-        title={t("agentSoon")}
-      >
-        <HistoryIcon aria-hidden />
-      </Button>
-    </>
-  );
-};
-
 /** A step of the breadcrumb: muted, ink while hovered or focused. */
 export const crumbLinkClass =
   "hover:text-foreground focus-visible:ring-ring/50 rounded-sm transition-colors outline-none focus-visible:ring-2";
@@ -292,12 +254,14 @@ export const crumbLinkClass =
  * sidebar on the page's background and the page in a white panel beside
  * it, under a header naming it (the breadcrumb, the page's `h1`) with the
  * page's actions at its end; then a bar across the window's foot, the
- * account at its start (`actions`), Help and the agent's place at its end.
+ * account at its start (`actions`), Help and the agent's place (`agent`)
+ * at its end.
  * On a phone the sidebar is a sheet the header's menu button opens; its
  * links close it through `useCloseMenu`.
  */
 export const FrameView = ({
   actions,
+  agent = null,
   breadcrumb,
   children,
   docsUrl,
@@ -309,6 +273,8 @@ export const FrameView = ({
 }: {
   /** The account menu, at the bottom bar's start. */
   readonly actions: ReactNode;
+  /** The agent's place, at the bottom bar's end, and its panel. */
+  readonly agent?: ReactNode;
   /**
    * The steps before the page, outermost first, each a link back to it
    * (`link`, styled by `crumbLinkClass`), then the page's name.
@@ -443,7 +409,7 @@ export const FrameView = ({
           </div>
           <div className="flex flex-1 items-center justify-end gap-1 pr-2.5">
             <HelpMenu docsUrl={docsUrl} supportUrl={supportUrl} />
-            <AgentButtons />
+            {agent}
           </div>
         </div>
       </div>

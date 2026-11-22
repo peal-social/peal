@@ -12,6 +12,7 @@
   "type": "module",
   "exports": {
     ".": "./src/api.ts",
+    "./agent": "./src/agent-api.ts",
     "./billing-plans": "./src/billing-plans.ts",
     "./data-processing": "./src/data-processing.ts",
     "./errors": "./src/error-catalogue.ts",

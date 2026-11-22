@@ -1,5 +1,6 @@
 import { Context, Effect, Layer, Option } from "effect";
 
+import type { CommentId } from "#engagement/domain/comment-id.ts";
 import type { Comment } from "#engagement/domain/comment.ts";
 import { abilitiesOf } from "#engagement/domain/engagement-abilities.ts";
 import type { EngagementAbilities } from "#engagement/domain/engagement-abilities.ts";
@@ -79,6 +80,17 @@ export class EngagementInbox extends Context.Service<
       ThreadDetail,
       DatabaseError | MissingPermission | ThreadNotFound
     >;
+    /**
+     * One comment of the workspace's, as a member reads it in its thread;
+     * none for another workspace's or one Peal never kept.
+     */
+    readonly comment: (
+      actor: Actor,
+      commentId: CommentId
+    ) => Effect.Effect<
+      Option.Option<Comment>,
+      DatabaseError | MissingPermission
+    >;
     /** What a channel can do about comments; nothing once it is gone or off. */
     readonly abilities: (
       actor: Actor,
@@ -131,6 +143,17 @@ export class EngagementInbox extends Context.Service<
         };
 
         return result;
+      });
+
+      const comment = Effect.fn("EngagementInbox.comment")(function* comment(
+        actor: Actor,
+        commentId: CommentId
+      ) {
+        yield* Effect.fromResult(authorize(actor, "engagement:read"));
+
+        return (yield* store.comment(commentId)).pipe(
+          Option.filter((found) => found.workspaceId === actor.workspaceId)
+        );
       });
 
       const thread = Effect.fn("EngagementInbox.thread")(function* thread(
@@ -187,7 +210,7 @@ export class EngagementInbox extends Context.Service<
         }
       );
 
-      return EngagementInbox.of({ abilities, thread, threads });
+      return EngagementInbox.of({ abilities, comment, thread, threads });
     })
   );
 }

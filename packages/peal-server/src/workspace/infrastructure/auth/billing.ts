@@ -1273,6 +1273,42 @@ export const keepPayerLeaving = async (
   });
 };
 
+// What `/organization/leave` answers once the member left: their
+// membership, as it was.
+const decodeLeft = Schema.decodeUnknownOption(
+  Schema.Struct({
+    returned: Schema.Struct({
+      organizationId: Schema.String,
+      userId: Schema.String,
+    }),
+  })
+);
+
+/**
+ * After Better Auth's `/organization/leave`, once the member left: what
+ * was theirs alone in the workspace goes (`memberLeft`), as when they are
+ * removed. A refused leave answers an error, which names nobody.
+ */
+export const forgetLeavingMember = async (
+  ctx: GenericEndpointContext,
+  hooks: {
+    readonly memberLeft: (workspaceId: string, userId: string) => Promise<void>;
+  }
+): Promise<void> => {
+  if (ctx.path !== "/organization/leave") {
+    return;
+  }
+
+  const left = decodeLeft(ctx.context);
+
+  if (Option.isSome(left)) {
+    await hooks.memberLeft(
+      left.value.returned.organizationId,
+      left.value.returned.userId
+    );
+  }
+};
+
 /**
  * After Better Auth's `/organization/leave`, which calls no hook of its
  * own: the workspace's billing account follows its owners.

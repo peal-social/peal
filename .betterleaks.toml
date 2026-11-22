@@ -21,3 +21,7 @@ finding["secret"] == "correct horse battery staple"
 
 [extend]
 useDefault = true
+# An OAuth client's id is public: the platform's sign-in page shows it in
+# its address (`client_id=`), and the inventory commits each app's id
+# beside its secret in the vault. Its secret's own rule stays on.
+disabledRules = ["linkedin-client-id"]

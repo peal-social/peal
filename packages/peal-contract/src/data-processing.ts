@@ -25,6 +25,8 @@ export type ProcessingText = Readonly<Record<ProcessingLocale, string>>;
  *
  * - `activityLog`: a workspace's log of who changed what
  *   (`activity/domain/activity-retention.ts`);
+ * - `agentChats`: a person's chat with the agent, from its last message
+ *   (`agent/domain/run-limits.ts`, `chatRetentionDays`);
  * - `analytics` and the platforms' own caps (`analyticsLinkedIn`,
  *   `analyticsPinterest`, `analyticsGoogleBusiness`), and
  *   `analyticsDisconnected`: the figures the platforms report
@@ -91,6 +93,7 @@ export const retentionPeriods = {
   activityLog: { days: 90 },
   adAuditTrail: { days: 396 },
   adInsights: { days: 396 },
+  agentChats: { days: 90 },
   analytics: { days: 730 },
   analyticsDisconnected: { days: 7 },
   analyticsGoogleBusiness: { days: 30 },
@@ -309,6 +312,32 @@ export const processingRegister: readonly ProcessingCategory[] = [
     source: {
       en: "Your use of the assistant",
       fr: "Votre usage de l’assistant",
+    },
+  },
+  {
+    applies: "always",
+    data: {
+      en: "Your chats with the agent in each workspace, which only you read: their title, whether you starred them, your messages, the agent’s answers with the tools it called (by name), the items it made or changed and the changes it asked you to approve, with your answers and your ratings, and what the agent’s model reads to go on with a chat (your messages, its answers and what its tools answered, cut to a bound). The skills you save for the agent, each a name and instructions: your own, which only you use, or the workspace’s, which every member who may use the agent there uses and those who manage it may change; and, on each of your messages, the skills you picked for it, by the name they had then. To answer, your messages, the skills you picked or the agent read, and what the tools read for you in the workspace (its posts, channels, comments, reviews, analytics) are sent to the AI provider, or to the text provider the workspace set, under that provider’s terms, with the workspace’s key where it set one; the workspace’s direct messages are never read for it",
+      fr: "Vos conversations avec l’agent dans chaque espace de travail, que vous seul lisez : leur titre, si vous les avez marquées d’une étoile, vos messages, les réponses de l’agent avec les outils qu’il a appelés (par leur nom), les éléments qu’il a créés ou modifiés et les changements qu’il vous a demandé d’approuver, avec vos réponses et vos évaluations, et ce que le modèle de l’agent lit pour poursuivre une conversation (vos messages, ses réponses et ce qu’ont répondu ses outils, tronqué au-delà d’une limite). Les compétences que vous enregistrez pour l’agent, chacune un nom et des instructions : les vôtres, que vous seul utilisez, ou celles de l’espace de travail, qu’utilise chaque membre qui peut s’y servir de l’agent et que ceux qui le gèrent peuvent modifier ; et, sur chacun de vos messages, les compétences que vous avez choisies pour lui, sous le nom qu’elles avaient alors. Pour répondre, vos messages, les compétences que vous avez choisies ou que l’agent a lues, et ce que les outils lisent pour vous dans l’espace de travail (ses publications, canaux, commentaires, avis, statistiques) sont envoyés au fournisseur d’IA, ou au fournisseur de texte que l’espace de travail a réglé, selon les conditions de ce fournisseur, avec la clé de l’espace de travail s’il en a réglé une ; les messages privés de l’espace de travail ne sont jamais lus pour lui",
+    },
+    id: "agent",
+    legalBasis: contract,
+    name: {
+      en: "Chats and skills of the agent",
+      fr: "Conversations et compétences de l’agent",
+    },
+    operatorSet: false,
+    purposes: {
+      en: "Answer you in the agent’s chat and do, in the workspace, what you ask, with your permissions, asking you first before any change others see, that cannot be undone or that costs money; keep your chats so you find them again on any device, and your skills so you or your team pick them again",
+      fr: "Vous répondre dans la conversation avec l’agent et faire, dans l’espace de travail, ce que vous demandez, avec vos autorisations, en vous demandant d’abord avant tout changement que d’autres voient, irréversible ou payant ; conserver vos conversations pour que vous les retrouviez sur tout appareil, et vos compétences pour que vous ou votre équipe les choisissiez de nouveau",
+    },
+    retention: {
+      en: `${p.agentChats.days} days after a chat’s last message, then deleted within a day, with its messages; at once when you delete it, leave the workspace, close your account or the workspace is deleted. A skill until it is deleted: your own at once when you leave the workspace or close your account; the workspace’s stay with it, no longer yours, until the workspace is deleted`,
+      fr: `${p.agentChats.days} jours après le dernier message d’une conversation, puis supprimée dans la journée, avec ses messages ; aussitôt quand vous la supprimez, quittez l’espace de travail, fermez votre compte ou que l’espace de travail est supprimé. Une compétence jusqu’à sa suppression : les vôtres aussitôt quand vous quittez l’espace de travail ou fermez votre compte ; celles de l’espace de travail y restent, sans plus être les vôtres, jusqu’à la suppression de l’espace de travail`,
+    },
+    source: {
+      en: "You, and what the agent’s tools read in the workspace for you",
+      fr: "Vous, et ce que les outils de l’agent lisent pour vous dans l’espace de travail",
     },
   },
   {

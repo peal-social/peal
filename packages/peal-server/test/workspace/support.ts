@@ -243,6 +243,9 @@ export const authWithoutDatabase = (
       invitation: ignore,
       log: ignore,
       memberAllowance: async () => await Promise.resolve(Option.none()),
+      memberLeft: async () => {
+        await Promise.resolve();
+      },
       memberUpgrade: async () =>
         await Promise.resolve({
           billingUrl: "http://localhost:3001",

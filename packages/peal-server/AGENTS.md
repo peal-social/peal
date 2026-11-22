@@ -21,6 +21,7 @@ change crosses several:
 | `activity`           | [`src/activity/AGENTS.md`](src/activity/AGENTS.md)           |
 | `ads`                | [`src/ads/AGENTS.md`](src/ads/AGENTS.md)                     |
 | `shortlinks`         | [`src/shortlinks/AGENTS.md`](src/shortlinks/AGENTS.md)       |
+| `agent`              | [`src/agent/AGENTS.md`](src/agent/AGENTS.md)                 |
 | the MCP endpoint     | [`src/app/mcp/AGENTS.md`](src/app/mcp/AGENTS.md)             |
 
 The shared kernel's rules are below.
@@ -50,6 +51,7 @@ them:
 | `review`        | approval policies, requests and decisions, review links, comments                                                                                               |
 | `ads`           | ad accounts, what they may spend, what is read of them, boosts                                                                                                  |
 | `shortlinks`    | the short addresses a post's links go out as, their daily click counts, each workspace's default                                                                |
+| `agent`         | the web app's agent: each person's chats and skills, runs on the assistant's model with the MCP endpoint's tools, the changes it asks the person to approve     |
 
 - `domain`: entities and rules on Effect's core (`effect`: Schema, DateTime,
   Data). No HTTP, SQL, cluster, workflow, AI, Drizzle or Better Auth.
@@ -368,7 +370,7 @@ and no socket, for tests.
   SQL.
 - Each context keeps its tables in a Postgres schema named after it
   (`publishing`, `channels`, `media`, `notifications`, `assistant`,
-  `analytics`, `billing`, `staff`, `legal`, `review`, `webhooks`, `engagement`, `ads`, `shortlinks`; the
+  `analytics`, `billing`, `staff`, `legal`, `review`, `webhooks`, `engagement`, `ads`, `shortlinks`, `agent`; the
   workspace context's are Better Auth's, in `auth`). Effect creates its
   `cluster_*` tables in `public`; drizzle-kit never manages them.
 - Declare a context's tables in `src/<context>/infrastructure/schema.ts`, then
