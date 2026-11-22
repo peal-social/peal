@@ -494,12 +494,27 @@ const AnswerFoot = ({
 };
 
 /** One message: the person's in a muted bubble, the agent's full width. */
+const noCalls: ReadonlySet<string> = new Set();
+
+/** The calls of a chat that were refused or failed, in any of its answers. */
+export const notDoneOf = (
+  messages: readonly AgentMessage[]
+): ReadonlySet<string> =>
+  new Set(
+    messages.flatMap(({ steps }) =>
+      steps
+        .filter(({ state }) => state === "refused" || state === "failed")
+        .map(({ callId }) => callId)
+    )
+  );
+
 export const MessageView = ({
   actions,
   busy,
   links,
   message,
   nameOf,
+  notDone = noCalls,
   onAnswer,
   running,
   saysFailure = true,
@@ -508,6 +523,11 @@ export const MessageView = ({
   readonly busy: boolean;
   readonly links: ChatLinks;
   readonly message: AgentMessage;
+  /**
+   * The calls that were refused or failed, in any answer of the chat: an
+   * approved change's step is in the answer that went on after it.
+   */
+  readonly notDone?: ReadonlySet<string>;
   readonly nameOf: ChannelNameOf;
   readonly onAnswer: (callId: string, approved: boolean) => void;
   /** This is the answer being written now. */
@@ -558,11 +578,7 @@ export const MessageView = ({
         <ApprovalCardView
           key={approval.callId}
           approval={approval}
-          notDone={message.steps.some(
-            (step) =>
-              step.callId === approval.callId &&
-              (step.state === "refused" || step.state === "failed")
-          )}
+          notDone={notDone.has(approval.callId)}
           busy={busy}
           links={links}
           nameOf={nameOf}
@@ -699,6 +715,7 @@ export const TranscriptView = ({
   const format = useFormatter();
   const [first] = state.messages;
   const writing = state.run?.messageId ?? null;
+  const notDone = notDoneOf(state.messages);
 
   return (
     <div className="flex flex-col gap-6">
@@ -713,6 +730,7 @@ export const TranscriptView = ({
           links={links}
           message={message}
           nameOf={nameOf}
+          notDone={notDone}
           onAnswer={onAnswer}
           running={message.id === writing}
           saysFailure={state.problem === null}

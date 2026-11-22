@@ -161,6 +161,31 @@ describe(foldChat, () => {
     expect(declined.messages[1]?.approvals[0]?.state).toBe("declined");
   });
 
+  it("updates an answered change on the message that holds it, as a new answer goes on", () => {
+    const approved = fold(asked, [
+      event(1, { _tag: "started", messageId: "m2", userMessageId: "m1" }),
+      event(2, { _tag: "approval", approval }),
+      event(3, {
+        _tag: "finished",
+        durationMs: 2000,
+        outcome: "awaitingApproval",
+      }),
+      { _tag: "answered", approved: true, at: at(10), callId: "call-2" },
+      event(11, { _tag: "started", messageId: "m3", userMessageId: null }),
+      event(11, {
+        _tag: "approval",
+        approval: { ...approval, state: "approved" },
+      }),
+      event(12, { _tag: "text", delta: "Done." }),
+    ]);
+
+    expect([
+      approved.messages[1]?.approvals.map(({ state }) => state),
+      approved.messages[2]?.approvals,
+      approved.messages[2]?.text,
+    ]).toStrictEqual([["approved"], [], "Done."]);
+  });
+
   it("expires a change that waits when the person writes again", () => {
     const state = fold(asked, [
       event(1, { _tag: "started", messageId: "m2", userMessageId: "m1" }),

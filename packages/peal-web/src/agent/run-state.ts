@@ -252,7 +252,15 @@ const onEvent = (
     }
 
     case "approval": {
-      return withMessage(state, run.messageId, (message) => ({
+      const { callId } = event.approval;
+
+      // An answer to a change the chat shows updates its card, on whichever
+      // message holds it; a new request joins the answer being written.
+      const held = state.messages.find(({ approvals }) =>
+        approvals.some((approval) => approval.callId === callId)
+      );
+
+      return withMessage(state, held?.id ?? run.messageId, (message) => ({
         ...message,
         approvals: upsertApproval(message.approvals, event.approval),
       }));
