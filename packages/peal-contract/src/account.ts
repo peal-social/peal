@@ -666,6 +666,10 @@ const ExportedAgentChatSchema = Schema.Struct({
       ),
       createdAt: instant,
       id: Schema.String,
+      // The files the person attached, by their id and name.
+      media: Schema.Array(
+        Schema.Struct({ id: Schema.String, name: nullable(Schema.String) })
+      ),
       outcome: nullable(Schema.String),
       rating: nullable(Schema.String),
       role: Schema.String,

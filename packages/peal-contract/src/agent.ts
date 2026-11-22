@@ -4,11 +4,13 @@ import { HttpApiEndpoint, HttpApiGroup, HttpApiSchema } from "effect/http-api";
 import { AgentApprovalNotPending } from "./agent-approval-not-pending.ts";
 import { AgentBusy } from "./agent-busy.ts";
 import { AgentChatNotFound } from "./agent-chat-not-found.ts";
+import { AgentMediaRejected } from "./agent-media-rejected.ts";
 import { AssistantInputRejected } from "./assistant-input-rejected.ts";
 import { AssistantQuotaExceeded } from "./assistant-quota-exceeded.ts";
 import { AssistantUnavailable } from "./assistant-unavailable.ts";
 import { Authentication } from "./authentication.ts";
 import { Forbidden } from "./forbidden.ts";
+import { MediaKindSchema } from "./media.ts";
 import { OwnTextLimitReached } from "./own-text-limit-reached.ts";
 import { TextProviderBusy } from "./text-provider-busy.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
@@ -18,6 +20,9 @@ import { WorkspaceAccess } from "./workspace-access.ts";
 // to it, in the browser. It is not part of `Api`, so the OpenAPI document,
 // the SDKs and the command line never see it: they reach Peal's tools
 // through the MCP endpoint, with a model of their own.
+
+/** The most files a message to the agent attaches. */
+export const maxAgentMessageMedia = 10;
 
 /** The longest message a person sends the agent, in UTF-16 code units. */
 export const maxAgentMessageLength = 8000;
@@ -188,6 +193,19 @@ export const AgentApprovalSchema = Schema.Struct({
 
 export type AgentApproval = typeof AgentApprovalSchema.Type;
 
+/**
+ * A file of the workspace's media library attached to a person's message:
+ * its id in the library, its kind, and the name it was uploaded with
+ * (null for none).
+ */
+export const AgentMediaSchema = Schema.Struct({
+  id: Schema.String,
+  kind: MediaKindSchema,
+  name: Schema.NullOr(Schema.String),
+}).annotate({ identifier: "AgentMedia" });
+
+export type AgentMedia = typeof AgentMediaSchema.Type;
+
 /** How a person rated one of the agent's answers. */
 export const AgentRatingSchema = Schema.Literals(["up", "down"]);
 
@@ -219,6 +237,8 @@ export const AgentMessageSchema = Schema.Struct({
   // How long the agent worked on it; null for the person's.
   durationMs: Schema.NullOr(Schema.Int),
   id: Schema.String,
+  // The files the person attached to their message; none on the agent's.
+  media: Schema.Array(AgentMediaSchema),
   outcome: Schema.NullOr(AgentOutcomeSchema),
   rating: Schema.NullOr(AgentRatingSchema),
   role: Schema.Literals(["user", "assistant"]),
@@ -301,8 +321,17 @@ export const AgentEventSchema = Schema.Union([
 
 export type AgentEvent = typeof AgentEventSchema.Type;
 
-/** A message to the agent. */
+/**
+ * A message to the agent, with the files of the workspace's media library
+ * it attaches (`mediaIds`, `maxAgentMessageMedia` at most): each must be
+ * one the person may read, and ready (AgentMediaRejected otherwise). The
+ * agent reads which files they are, never their bytes, and may use their
+ * ids where its tools take media, such as a draft's.
+ */
 export const AgentMessageRequestSchema = Schema.Struct({
+  mediaIds: Schema.optionalKey(
+    Schema.Array(Schema.String).check(Schema.isMaxLength(maxAgentMessageMedia))
+  ),
   text: Schema.String.check(
     Schema.isMinLength(1),
     Schema.isMaxLength(maxAgentMessageLength)
@@ -409,7 +438,7 @@ export class AgentGroup extends HttpApiGroup.make("agent")
       success: HttpApiSchema.NoContent,
     }),
     HttpApiEndpoint.post("send", "/chats/:chatId/messages", {
-      error: [...runErrors, AssistantInputRejected],
+      error: [...runErrors, AssistantInputRejected, AgentMediaRejected],
       params: chat,
       payload: AgentMessageRequestSchema,
       success: runEvents,

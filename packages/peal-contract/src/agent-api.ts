@@ -15,6 +15,7 @@ export {
   AgentEventSchema,
   AgentFailureSchema,
   AgentGroup,
+  AgentMediaSchema,
   AgentMessageRequestSchema,
   AgentMessageSchema,
   AgentOffReasonSchema,
@@ -26,6 +27,7 @@ export {
   AgentStepSchema,
   AgentStepStateSchema,
   agentChatPageSize,
+  maxAgentMessageMedia,
   maxAgentChatTitleLength,
   maxAgentMessageLength,
 } from "./agent.ts";
@@ -42,6 +44,7 @@ export type {
   AgentChatUpdate,
   AgentEvent,
   AgentFailure,
+  AgentMedia,
   AgentMessage,
   AgentMessageRequest,
   AgentOffReason,
@@ -56,6 +59,8 @@ export type {
 export { AgentApprovalNotPending } from "./agent-approval-not-pending.ts";
 
 export { AgentBusy } from "./agent-busy.ts";
+
+export { AgentMediaRejected } from "./agent-media-rejected.ts";
 
 export { AgentChatNotFound } from "./agent-chat-not-found.ts";
 
