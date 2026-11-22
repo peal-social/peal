@@ -435,6 +435,24 @@ export const LanguageModelAgentRunsLive = Layer.effect(
               Effect.andThen(Queue.offer(queue, event))
             );
 
+          // A step, where it falls in the answer: where it was first
+          // called, or the answer's length now.
+          const stepOf = (
+            callId: string,
+            state: AgentStepState,
+            tool: string
+          ) =>
+            Ref.get(draft).pipe(
+              Effect.map(({ steps, text }) => ({
+                at:
+                  steps.find((step) => step.callId === callId)?.at ??
+                  text.length,
+                callId,
+                state,
+                tool,
+              }))
+            );
+
           const rounds = yield* Ref.make(0);
           const toolsCalled = yield* Ref.make<readonly string[]>([]);
 
@@ -500,11 +518,11 @@ export const LanguageModelAgentRunsLive = Layer.effect(
 
               yield* emit({
                 _tag: "step",
-                step: {
-                  callId: result.callId,
-                  state: stateOf(result.isFailure, result.encoded),
-                  tool: result.tool,
-                },
+                step: yield* stepOf(
+                  result.callId,
+                  stateOf(result.isFailure, result.encoded),
+                  result.tool
+                ),
               });
 
               if (!result.isFailure) {
@@ -560,11 +578,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                     if (!asking.has(part.name)) {
                       yield* emit({
                         _tag: "step",
-                        step: {
-                          callId: part.id,
-                          state: "running",
-                          tool: part.name,
-                        },
+                        step: yield* stepOf(part.id, "running", part.name),
                       });
                     }
                   } else if (part.type === "tool-result" && !part.preliminary) {
@@ -811,7 +825,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
               if (call !== undefined && approved) {
                 yield* emit({
                   _tag: "step",
-                  step: { callId, state: "running", tool: call.tool },
+                  step: yield* stepOf(callId, "running", call.tool),
                 });
 
                 const result = yield* runApproved(member, call);

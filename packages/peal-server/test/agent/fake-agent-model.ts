@@ -40,6 +40,23 @@ export const calls = (
   ],
 });
 
+/** A round that writes this text, then calls a tool and waits for its answer. */
+export const saysThenCalls = (
+  text: string,
+  name: string,
+  params: Schema.Json,
+  id = `call-${name}`
+): Round => ({
+  _tag: "parts",
+  parts: [
+    { id: "t", type: "text-start" },
+    { delta: text, id: "t", type: "text-delta" },
+    { id: "t", type: "text-end" },
+    { id, name, params, type: "tool-call" },
+    { reason: "tool-calls", type: "finish", usage },
+  ],
+});
+
 /** A round the provider fails for this reason. */
 export const fails = (reason: AiError.AiErrorReason): Round => ({
   _tag: "failure",

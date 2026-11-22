@@ -59,11 +59,17 @@ describe(foldChat, () => {
       event(1, { _tag: "text", delta: "You have " }),
       event(2, {
         _tag: "step",
-        step: { callId: "call-1", state: "running", tool: "list_drafts" },
+        step: {
+          at: 9,
+          callId: "call-1",
+          state: "running",
+          tool: "list_drafts",
+        },
       }),
       event(3, {
         _tag: "step",
-        step: { callId: "call-1", state: "done", tool: "list_drafts" },
+        // The server may say where it ended: it stays where it was called.
+        step: { at: 20, callId: "call-1", state: "done", tool: "list_drafts" },
       }),
       event(4, { _tag: "text", delta: "two drafts." }),
       event(5, {
@@ -87,7 +93,7 @@ describe(foldChat, () => {
     expect(state.messages[1]).toMatchObject({
       durationMs: 6500,
       outcome: "answered",
-      steps: [{ callId: "call-1", state: "done", tool: "list_drafts" }],
+      steps: [{ at: 9, callId: "call-1", state: "done", tool: "list_drafts" }],
       text: "You have two drafts.",
     });
     expect(state.messages[1]?.cards).toHaveLength(1);
@@ -176,7 +182,12 @@ describe(foldChat, () => {
       event(2, { _tag: "text", delta: "Looking" }),
       event(2, {
         _tag: "step",
-        step: { callId: "call-1", state: "running", tool: "search_posts" },
+        step: {
+          at: 7,
+          callId: "call-1",
+          state: "running",
+          tool: "search_posts",
+        },
       }),
       { _tag: "interrupted", at: at(4), reason: "stopped" },
     ]);

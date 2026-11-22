@@ -111,12 +111,15 @@ const withMessage = (
         ),
       };
 
+// A step stays where it was called in the answer, however it ends.
 const upsertStep = (
   steps: readonly AgentStep[],
   step: AgentStep
 ): readonly AgentStep[] =>
   steps.some(({ callId }) => callId === step.callId)
-    ? steps.map((each) => (each.callId === step.callId ? step : each))
+    ? steps.map((each) =>
+        each.callId === step.callId ? { ...step, at: each.at } : each
+      )
     : [...steps, step];
 
 const upsertApproval = (

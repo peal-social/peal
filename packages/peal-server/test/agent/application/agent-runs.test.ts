@@ -23,6 +23,7 @@ import {
   freshPerson,
   postId,
   says,
+  saysThenCalls,
   silence,
 } from "#test/agent/support.ts";
 import type { Person, Round } from "#test/agent/support.ts";
@@ -138,6 +139,38 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
           _tag: "title",
           title: "Plan the posts of our spring launch across every channel we",
         });
+      }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    "places each step where the answer stood when the tool was called, and keeps it there",
+    () =>
+      Effect.gen(function* placesSteps() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+
+        yield* script([
+          saysThenCalls("Let me look. ", "list_posts", {}),
+          says("You have two posts."),
+        ]);
+
+        const events = yield* send(person, chat.id, "What's scheduled?");
+
+        const steps = events.flatMap((event) =>
+          event._tag === "step" ? [[event.step.state, event.step.at]] : []
+        );
+
+        assert.deepStrictEqual(steps, [
+          ["running", 13],
+          ["done", 13],
+        ]);
+
+        const kept = yield* detail(person, chat.id);
+
+        assert.deepStrictEqual(
+          kept.messages.at(-1)?.steps.map(({ at }) => at),
+          [13]
+        );
       }).pipe(Effect.provide(agentTest()))
   );
 

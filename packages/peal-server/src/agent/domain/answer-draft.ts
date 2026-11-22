@@ -41,7 +41,18 @@ export const applied = (draft: AnswerDraft, event: AgentEvent): AnswerDraft => {
   }
 
   if (event._tag === "step") {
-    return { ...draft, steps: upserted(draft.steps, event.step) };
+    // A step stays where it was called, however it ends.
+    const called = draft.steps.find(
+      ({ callId }) => callId === event.step.callId
+    );
+
+    return {
+      ...draft,
+      steps: upserted(
+        draft.steps,
+        called === undefined ? event.step : { ...event.step, at: called.at }
+      ),
+    };
   }
 
   if (event._tag === "card") {

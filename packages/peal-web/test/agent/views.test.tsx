@@ -128,13 +128,19 @@ describe(TranscriptView, () => {
       messages: [
         asked,
         answer({
-          steps: [{ callId: "c1", state: "running", tool: "list_drafts" }],
+          steps: [
+            { at: 13, callId: "c1", state: "running", tool: "list_drafts" },
+          ],
+          text: "Let me look. ",
         }),
       ],
       run: { messageId: "m2", startedAt: at },
     });
 
-    expect(html).toContain("Looking at posts…");
+    // The text, then the step's live line where it falls.
+    expect(html.indexOf("Let me look.")).toBeLessThan(
+      html.indexOf("Looking at posts…")
+    );
     expect(html).not.toContain("Thinking…");
   });
 
@@ -146,17 +152,54 @@ describe(TranscriptView, () => {
         answer({
           durationMs: 7000,
           outcome: "answered",
-          steps: [{ callId: "c1", state: "done", tool: "list_drafts" }],
-          text: "You have two drafts.",
+          steps: [{ at: 13, callId: "c1", state: "done", tool: "list_drafts" }],
+          text: "Let me look. You have two drafts.",
         }),
       ],
     });
 
     expect([
       html.includes("Worked for 7 seconds"),
+      html.includes("You have two drafts."),
       html.includes('aria-label="Good answer"'),
       html.includes('aria-label="Copy the answer"'),
-    ]).toStrictEqual([true, true, true]);
+    ]).toStrictEqual([true, true, true, true]);
+  });
+
+  it("folds the text before the steps away, keeping the answer in view", async () => {
+    const html = await transcript({
+      ...emptyChat,
+      messages: [
+        asked,
+        answer({
+          durationMs: 7000,
+          outcome: "answered",
+          steps: [{ at: 13, callId: "c1", state: "done", tool: "list_drafts" }],
+          text: "Let me look. You have two drafts.",
+        }),
+      ],
+    });
+
+    // Closed, the fold renders nothing of what it holds.
+    expect([
+      html.includes("Let me look."),
+      html.includes("Looked at posts"),
+    ]).toStrictEqual([false, false]);
+  });
+
+  it("has no fold for an answer without steps", async () => {
+    const html = await transcript({
+      ...emptyChat,
+      messages: [
+        asked,
+        answer({ durationMs: 7000, outcome: "answered", text: "Hello." }),
+      ],
+    });
+
+    expect([
+      html.includes("Worked for"),
+      html.includes("Hello."),
+    ]).toStrictEqual([false, true]);
   });
 
   it("says why a run failed, in the reader's language", async () => {

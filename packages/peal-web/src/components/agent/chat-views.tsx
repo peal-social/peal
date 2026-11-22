@@ -27,9 +27,11 @@ import { Badge } from "peal-ui/components/badge";
 import { Button, buttonVariants } from "peal-ui/components/button";
 import { EmptyStateTitle } from "peal-ui/components/empty-state";
 import { cn } from "peal-ui/lib/utils";
-import { useId } from "react";
+import { Fragment, useId } from "react";
 import type { KeyboardEvent, ReactNode, RefObject } from "react";
 
+import { segmentsOf } from "#agent/answer-segments.ts";
+import type { AnswerSegments } from "#agent/answer-segments.ts";
 import { relativeDayOf } from "#agent/history.ts";
 import type { RunRefusal } from "#agent/refusal.ts";
 import type { ChatState, RunProblem } from "#agent/run-state.ts";
@@ -86,66 +88,103 @@ export const workedLine = (t: Translate, durationMs: number): string => {
     : t("workedMinutes", { minutes: Math.round(seconds / 60) });
 };
 
-const StepsOf = ({
-  running,
-  steps,
+// A step's line: live, with the shimmer, while its run writes it.
+const StepLine = ({
+  live,
+  step,
 }: {
-  readonly running: boolean;
-  readonly steps: readonly AgentStep[];
+  readonly live: boolean;
+  readonly step: AgentStep;
 }) => {
   const t = useTranslations("Agent");
 
   return (
-    <ul className="text-muted-foreground flex flex-col gap-1 text-sm">
-      {steps.map((step) => (
-        <li key={step.callId}>
-          {running && step.state === "running" ? (
-            <Shimmer>{stepLine(t, step)}</Shimmer>
-          ) : (
-            stepLine(t, step)
-          )}
-        </li>
-      ))}
-    </ul>
+    <p className="text-muted-foreground text-sm">
+      {live && step.state === "running" ? (
+        <Shimmer>{stepLine(t, step)}</Shimmer>
+      ) : (
+        stepLine(t, step)
+      )}
+    </p>
   );
 };
 
+// The text written before each step, then the step's line, in order.
+const Segments = ({
+  link,
+  live,
+  segments,
+}: {
+  readonly link: LinkComponent;
+  readonly live: boolean;
+  readonly segments: AnswerSegments["steps"];
+}) =>
+  segments.map(({ before, step }) => (
+    <Fragment key={step.callId}>
+      {before.trim() === "" ? null : (
+        <AgentMarkdown link={link} text={before} />
+      )}
+      <StepLine live={live} step={step} />
+    </Fragment>
+  ));
+
 /**
- * What the agent did for an answer: each step as a live line while it
- * runs, then folded into "Worked for 7 seconds", which opens them.
+ * An answer's text with its steps where they fall. While it runs, the
+ * text streams with each step's live line in its place; once done, the
+ * steps and the text before them fold into "Worked for 7 seconds", which
+ * opens them in order, and the text after the last step, the answer,
+ * stays in view. An answer without steps has no fold.
  */
-export const StepsView = ({
+export const AnswerTextView = ({
   durationMs,
+  link,
   running,
   steps,
+  text,
 }: {
   readonly durationMs: number | null;
+  readonly link: LinkComponent;
   readonly running: boolean;
   readonly steps: readonly AgentStep[];
+  readonly text: string;
 }) => {
   const t = useTranslations("Agent");
+  const { answer, steps: segments } = segmentsOf(text, steps);
 
-  if (running) {
-    return steps.length === 0 ? null : <StepsOf running steps={steps} />;
-  }
+  const waiting =
+    running &&
+    answer.trim() === "" &&
+    !steps.some(({ state }) => state === "running");
 
-  if (durationMs === null || steps.length === 0) {
-    return null;
-  }
+  const folded = !running && durationMs !== null && segments.length > 0;
 
   return (
-    <Collapsible className="flex flex-col gap-1.5">
-      <CollapsibleTrigger className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 group/steps inline-flex w-fit items-center gap-1 rounded-sm text-sm outline-none focus-visible:ring-3">
-        {workedLine(t, durationMs)}
-        <ChevronRightIcon
-          aria-hidden
-          className="size-3.5 transition-transform group-data-[open]/steps:rotate-90 motion-reduce:transition-none"
-        />
-      </CollapsibleTrigger>
-      <CollapsiblePanel className="border-l pl-3">
-        <StepsOf running={false} steps={steps} />
-      </CollapsiblePanel>
-    </Collapsible>
+    <>
+      {folded ? (
+        <Collapsible className="flex flex-col gap-3">
+          <CollapsibleTrigger className="text-muted-foreground hover:text-foreground focus-visible:ring-ring/50 group/steps inline-flex w-fit items-center gap-1 rounded-sm text-sm outline-none focus-visible:ring-3">
+            {workedLine(t, durationMs)}
+            <ChevronRightIcon
+              aria-hidden
+              className="size-3.5 transition-transform group-data-[open]/steps:rotate-90 motion-reduce:transition-none"
+            />
+          </CollapsibleTrigger>
+          <CollapsiblePanel className="flex flex-col gap-3 border-l pl-3">
+            <Segments link={link} live={false} segments={segments} />
+          </CollapsiblePanel>
+        </Collapsible>
+      ) : (
+        <Segments link={link} live={running} segments={segments} />
+      )}
+      {answer.trim() === "" ? null : (
+        <AgentMarkdown link={link} text={answer} />
+      )}
+      {waiting ? (
+        <p className="text-sm">
+          <Shimmer>{t("thinking")}</Shimmer>
+        </p>
+      ) : null}
+    </>
   );
 };
 
@@ -461,26 +500,15 @@ export const MessageView = ({
     );
   }
 
-  const waiting =
-    running &&
-    message.text === "" &&
-    !message.steps.some(({ state }) => state === "running");
-
   return (
     <article className="flex flex-col gap-3" aria-busy={running}>
-      <StepsView
+      <AnswerTextView
         durationMs={message.durationMs}
+        link={links.link}
         running={running}
         steps={message.steps}
+        text={message.text}
       />
-      {waiting ? (
-        <p className="text-sm">
-          <Shimmer>{t("thinking")}</Shimmer>
-        </p>
-      ) : null}
-      {message.text === "" ? null : (
-        <AgentMarkdown link={links.link} text={message.text} />
-      )}
       {message.cards.length === 0 ? null : (
         <ul className="grid gap-2 sm:grid-cols-2">
           {message.cards.map((card, index) => (

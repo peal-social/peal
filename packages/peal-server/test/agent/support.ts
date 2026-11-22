@@ -33,6 +33,7 @@ export {
   FakeAgentModel,
   fails,
   says,
+  saysThenCalls,
   silence,
 } from "#test/agent/fake-agent-model.ts";
 

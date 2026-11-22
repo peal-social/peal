@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { DateTime, Option } from "effect";
+import { DateTime, Option, Schema } from "effect";
 
 import { approvalOf } from "#agent/domain/agent-approvals.ts";
 import { cardOf } from "#agent/domain/agent-cards.ts";
@@ -7,6 +7,8 @@ import {
   agentInstructions,
   personTimeZone,
 } from "#agent/domain/agent-instructions.ts";
+import { AgentStepSchema } from "#agent/domain/agent-parts.ts";
+import { applied, emptyAnswer } from "#agent/domain/answer-draft.ts";
 import { cursorOf, positionOf } from "#agent/domain/chat-cursor.ts";
 import { acceptedTitle, fallbackTitle } from "#agent/domain/chat-title.ts";
 import { AgentChatIdSchema } from "#agent/domain/ids.ts";
@@ -22,7 +24,34 @@ const post = {
   targets: [{ channelId: "channel-1" }, { channelId: "channel-2" }],
 };
 
+const decodeStep = Schema.decodeUnknownSync(AgentStepSchema);
+
 describe("the agent's domain", () => {
+  it("keeps a step where it was called, and reads an older one at the start", () => {
+    const running = applied(
+      { ...emptyAnswer, text: "Let me look. " },
+      {
+        _tag: "step",
+        step: { at: 13, callId: "c1", state: "running", tool: "list_posts" },
+      }
+    );
+
+    const done = applied(
+      { ...running, text: "Let me look. You have two." },
+      {
+        _tag: "step",
+        step: { at: 26, callId: "c1", state: "done", tool: "list_posts" },
+      }
+    );
+
+    expect(done.steps).toStrictEqual([
+      { at: 13, callId: "c1", state: "done", tool: "list_posts" },
+    ]);
+    expect(
+      decodeStep({ callId: "c0", state: "done", tool: "list_posts" }).at
+    ).toBe(0);
+  });
+
   it("cuts a tool's long answer, with a note, and never half a character", () => {
     expect(forModel({ ok: true })).toBe('{"ok":true}');
 

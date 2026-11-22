@@ -869,12 +869,16 @@ things there, as they would with a colleague. Chats are the person's own.
   finished answer, `xs` ghost icon buttons: thumbs up, thumbs down
   (pressed toggles) and copy.
 - **Work under way** reads as a line, never a spinner: "Thinking…"
-  until the first words, then each step as a muted line in the present
-  ("Looking at posts…"). While it waits, a light passes along its text
-  (`text-shimmer`, 2 s, from start to end); with reduced motion, it is
-  still and muted. Once the answer ends, its steps fold into "Worked for
-  7 seconds" with a chevron, which opens them in the past tense behind
-  a hairline at their start.
+  until the first words; the text streams in, and each step shows as a
+  muted line in the present ("Looking at posts…") where it falls in the
+  text, so what the agent wrote before a step stays above it. While it
+  waits, a light passes along its text (`text-shimmer`, 2 s, from start
+  to end); with reduced motion, it is still and muted. Once the answer
+  ends, the steps and the text written before them fold into "Worked for
+  7 seconds" with a chevron, and only the text after the last step, the
+  answer, stays in view. Opened, the fold shows, in order, the text
+  before each step and the step's line in the past tense, behind a
+  hairline at their start. An answer without steps has no fold.
 - **Result cards**: an item the agent made or changed, under its
   answer, two up (one on a phone): white, hairline, `{rounded.lg}`,
   12 px inside, what happened (12 px, 500, muted: "Created post"), the

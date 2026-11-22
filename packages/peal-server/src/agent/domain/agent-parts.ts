@@ -1,4 +1,4 @@
-import { Schema } from "effect";
+import { Effect, Schema } from "effect";
 
 // What an answer holds besides its text, as the contract tells it
 // (`peal-contract/agent`), which the api layer answers as they are:
@@ -14,8 +14,15 @@ export const AgentStepStateSchema = Schema.Literals([
 
 export type AgentStepState = typeof AgentStepStateSchema.Type;
 
-/** A tool the agent called, by its name. */
+/**
+ * A tool the agent called, by its name, and where it falls in the answer:
+ * the length of the answer's text when it was called, in UTF-16 code
+ * units. Steps saved before it was kept read as at the answer's start.
+ */
 export const AgentStepSchema = Schema.Struct({
+  at: Schema.Int.check(Schema.isGreaterThanOrEqualTo(0)).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(0))
+  ),
   callId: Schema.String,
   state: AgentStepStateSchema,
   tool: Schema.String,

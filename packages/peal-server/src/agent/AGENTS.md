@@ -54,6 +54,10 @@
   changes something is kept as `agent.<tool>` in the activity log
   through the session, and a content tool's connection in the
   ConnectionJournal (`src/app/agent/toolbox.ts`).
+- A step says where it falls in the answer (`at`: the answer's length
+  when the tool was called), set when it starts and kept however it
+  ends (`stepOf`, and `applied` in `answer-draft.ts`); steps saved
+  before `at` existed read as 0.
 - Cards and approvals come from the tools' answers and the calls'
   parameters (`agent-cards.ts`, `agent-approvals.ts`, read leniently with
   `tool-items.ts`), and a call that names a post reads it for its
