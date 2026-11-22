@@ -539,6 +539,41 @@ layer(BillingIntegration, {
         assert.strictEqual(nowhere.status, 400);
         assert.deepInclude(nowhere.body, { code: "INVALID_ID" });
 
+        // The workspace named nowhere: Stripe's plugin would fall back to
+        // the session's active workspace, past the order's check.
+        const unnamed = yield* upgrade(owner, {
+          customerType: "organization",
+          metadata: { orderId: order.id },
+        });
+
+        assert.strictEqual(unnamed.status, 400);
+        assert.deepInclude(unnamed.body, {
+          code: "UPGRADE_WORKSPACE_REQUIRED",
+        });
+
+        // Named in the query, which the plugin reads too: refused, even
+        // beside the body's.
+        const queried = yield* app.request(
+          `/api/auth/subscription/upgrade?referenceId=${workspaceId}`,
+          {
+            body: {
+              cancelUrl: `/app/${workspaceId}/billing`,
+              customerType: "organization",
+              disableRedirect: true,
+              metadata: { orderId: order.id },
+              plan: "payAsYouGo",
+              referenceId: workspaceId,
+              successUrl: `/app/${workspaceId}/billing?checkout=done`,
+            },
+            headers: { cookie: owner.cookies },
+          }
+        );
+
+        assert.strictEqual(queried.status, 400);
+        assert.deepInclude(queried.body, {
+          code: "UPGRADE_WORKSPACE_REQUIRED",
+        });
+
         const personal = yield* upgrade(owner, {});
 
         assert.strictEqual(personal.status, 400);
