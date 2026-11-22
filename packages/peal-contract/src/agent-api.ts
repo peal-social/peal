@@ -64,6 +64,37 @@ export { AgentMediaRejected } from "./agent-media-rejected.ts";
 
 export { AgentChatNotFound } from "./agent-chat-not-found.ts";
 
+export { AgentSkillNotFound } from "./agent-skill-not-found.ts";
+
+export {
+  AgentSkillRefused,
+  AgentSkillRefusalSchema,
+} from "./agent-skill-refused.ts";
+
+export type { AgentSkillRefusal } from "./agent-skill-refused.ts";
+
+export {
+  AgentMessageSkillSchema,
+  AgentSkillListSchema,
+  AgentSkillRequestSchema,
+  AgentSkillSchema,
+  AgentSkillScopeSchema,
+  AgentSkillUpdateSchema,
+  maxAgentMessageSkills,
+  maxAgentSkillInstructionsLength,
+  maxAgentSkillNameLength,
+  maxAgentSkills,
+} from "./agent-skill.ts";
+
+export type {
+  AgentMessageSkill,
+  AgentSkill,
+  AgentSkillList,
+  AgentSkillRequest,
+  AgentSkillScope,
+  AgentSkillUpdate,
+} from "./agent-skill.ts";
+
 /**
  * The agent's endpoints, apart from `Api` (`peal-contract/agent`): the web
  * app's client derives from it, the server serves it beside `Api`, and

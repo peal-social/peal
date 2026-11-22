@@ -5,6 +5,16 @@ import { AgentApprovalNotPending } from "./agent-approval-not-pending.ts";
 import { AgentBusy } from "./agent-busy.ts";
 import { AgentChatNotFound } from "./agent-chat-not-found.ts";
 import { AgentMediaRejected } from "./agent-media-rejected.ts";
+import { AgentSkillNotFound } from "./agent-skill-not-found.ts";
+import { AgentSkillRefused } from "./agent-skill-refused.ts";
+import {
+  AgentMessageSkillSchema,
+  AgentSkillListSchema,
+  AgentSkillRequestSchema,
+  AgentSkillSchema,
+  AgentSkillUpdateSchema,
+  maxAgentMessageSkills,
+} from "./agent-skill.ts";
 import { AssistantInputRejected } from "./assistant-input-rejected.ts";
 import { AssistantQuotaExceeded } from "./assistant-quota-exceeded.ts";
 import { AssistantUnavailable } from "./assistant-unavailable.ts";
@@ -242,6 +252,8 @@ export const AgentMessageSchema = Schema.Struct({
   outcome: Schema.NullOr(AgentOutcomeSchema),
   rating: Schema.NullOr(AgentRatingSchema),
   role: Schema.Literals(["user", "assistant"]),
+  // The skills the person picked for their message; none on the agent's.
+  skills: Schema.Array(AgentMessageSkillSchema),
   steps: Schema.Array(AgentStepSchema),
   // Markdown for the agent's (paragraphs, lists, emphasis, code, links),
   // plain text for the person's.
@@ -326,11 +338,17 @@ export type AgentEvent = typeof AgentEventSchema.Type;
  * it attaches (`mediaIds`, `maxAgentMessageMedia` at most): each must be
  * one the person may read, and ready (AgentMediaRejected otherwise). The
  * agent reads which files they are, never their bytes, and may use their
- * ids where its tools take media, such as a draft's.
+ * ids where its tools take media, such as a draft's. It may pick skills
+ * (`skillIds`, `maxAgentMessageSkills` at most), each one the person may
+ * use (AgentSkillNotFound otherwise): the agent follows their
+ * instructions for this message.
  */
 export const AgentMessageRequestSchema = Schema.Struct({
   mediaIds: Schema.optionalKey(
     Schema.Array(Schema.String).check(Schema.isMaxLength(maxAgentMessageMedia))
+  ),
+  skillIds: Schema.optionalKey(
+    Schema.Array(Schema.String).check(Schema.isMaxLength(maxAgentMessageSkills))
   ),
   text: Schema.String.check(
     Schema.isMinLength(1),
@@ -372,6 +390,8 @@ export const AgentRatingRequestSchema = Schema.Struct({
 const workspace = { workspaceId: Schema.String };
 
 const chat = { ...workspace, chatId: Schema.String };
+
+const skill = { ...workspace, skillId: Schema.String };
 
 // A run's events, with a comment every 15 seconds while the model thinks,
 // so no proxy closes a quiet response.
@@ -438,7 +458,12 @@ export class AgentGroup extends HttpApiGroup.make("agent")
       success: HttpApiSchema.NoContent,
     }),
     HttpApiEndpoint.post("send", "/chats/:chatId/messages", {
-      error: [...runErrors, AssistantInputRejected, AgentMediaRejected],
+      error: [
+        ...runErrors,
+        AssistantInputRejected,
+        AgentMediaRejected,
+        AgentSkillNotFound,
+      ],
       params: chat,
       payload: AgentMessageRequestSchema,
       success: runEvents,
@@ -453,6 +478,28 @@ export class AgentGroup extends HttpApiGroup.make("agent")
       error: [Forbidden, AgentChatNotFound],
       params: { ...chat, messageId: Schema.String },
       payload: AgentRatingRequestSchema,
+      success: HttpApiSchema.NoContent,
+    }),
+    HttpApiEndpoint.get("skills", "/skills", {
+      error: Forbidden,
+      params: workspace,
+      success: AgentSkillListSchema,
+    }),
+    HttpApiEndpoint.post("createSkill", "/skills", {
+      error: [Forbidden, AgentSkillRefused],
+      params: workspace,
+      payload: AgentSkillRequestSchema,
+      success: AgentSkillSchema.pipe(HttpApiSchema.status(201)),
+    }),
+    HttpApiEndpoint.patch("updateSkill", "/skills/:skillId", {
+      error: [Forbidden, AgentSkillNotFound, AgentSkillRefused],
+      params: skill,
+      payload: AgentSkillUpdateSchema,
+      success: AgentSkillSchema,
+    }),
+    HttpApiEndpoint.delete("deleteSkill", "/skills/:skillId", {
+      error: [Forbidden, AgentSkillNotFound, AgentSkillRefused],
+      params: skill,
       success: HttpApiSchema.NoContent,
     })
   )
