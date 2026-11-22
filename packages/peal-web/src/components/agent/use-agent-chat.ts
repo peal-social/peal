@@ -161,6 +161,25 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
     }
   }, [detail, dispatch, state.loaded, state.run]);
 
+  // A tab shown again reads the chat again: another tab may have written
+  // in it meanwhile. Never during a run, which holds more than the server.
+  const running = state.run !== null;
+
+  useEffect(() => {
+    const shown = () => {
+      if (document.visibilityState === "visible" && !running) {
+        dispatch({ _tag: "stale" });
+        reread();
+      }
+    };
+
+    document.addEventListener("visibilitychange", shown);
+
+    return () => {
+      document.removeEventListener("visibilitychange", shown);
+    };
+  }, [dispatch, reread, running]);
+
   // An approval answered elsewhere, or a chat gone: read it again.
   useEffect(() => {
     const { problem } = state;

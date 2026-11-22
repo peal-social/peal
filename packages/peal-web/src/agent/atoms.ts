@@ -172,6 +172,10 @@ export const agentRun = Atom.family((chatId: string) =>
               // The run moved the chat to the top of the history, and may
               // have named it.
               get.registry.refresh(agentChats(workspaceId));
+              // The server's copy is the chat as it is: what another tab
+              // added to it too.
+              dispatch({ _tag: "stale" });
+              get.registry.refresh(agentChatDetail(workspaceId, chatId));
             }).pipe(
               Effect.andThen(
                 Effect.suspend(() =>

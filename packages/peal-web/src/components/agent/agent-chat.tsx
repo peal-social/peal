@@ -162,9 +162,18 @@ export const ChatBody = ({
 
   // A chat opens at its latest messages, as it was left.
   useEffect(() => {
-    if (state.loaded) {
-      end.current?.scrollIntoView({ block: "end" });
-    }
+    // Once the messages read are drawn.
+    const frame = state.loaded
+      ? requestAnimationFrame(() => {
+          end.current?.scrollIntoView({ block: "end" });
+        })
+      : null;
+
+    return () => {
+      if (frame !== null) {
+        cancelAnimationFrame(frame);
+      }
+    };
   }, [state.loaded]);
 
   return (
