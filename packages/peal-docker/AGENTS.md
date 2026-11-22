@@ -51,8 +51,11 @@ under Development stack.
   Blume's rate limit counts readers by the first X-Forwarded-For entry, so
   `config/docs/serve.ts` sets that header to the address the header
   `AUTH_IP_HEADERS` names carries (`cf-connecting-ip` behind the tunnel,
-  which appends to a reader's own X-Forwarded-For; Caddy replaces it), and
-  removes it otherwise. It hands Blume `DOCS_TURNSTILE_SECRET_KEY` as
+  which appends to a reader's own X-Forwarded-For; Caddy replaces it), an
+  IPv6 address cut to its /64 and an IPv4-mapped one read as IPv4
+  (`readerAddressOf`, `test/docs-serve.test.ts`: the file keeps to
+  `node:` modules, as Node runs it alone in the image), and removes it
+  otherwise. It hands Blume `DOCS_TURNSTILE_SECRET_KEY` as
   `TURNSTILE_SECRET_KEY`, which the stack cannot pass under that name: the
   server stops on `TURNSTILE_SECRET_KEY` without `TURNSTILE_SITE_KEY`.
 - The blog (`blog.Dockerfile`, profile `blog`, 127.0.0.1:4324) is Peal's

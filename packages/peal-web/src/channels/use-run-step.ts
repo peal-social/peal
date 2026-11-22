@@ -22,10 +22,23 @@ import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 // it, so a member never collects a tab per platform.
 const signInTab = "peal-sign-in";
 
+const openBlankTab = (): Window | null => {
+  try {
+    return globalThis.open("", signInTab);
+  } catch {
+    return null;
+  }
+};
+
 /**
  * Opens the tab a run's sign-ins happen in, from a click (browsers open a
  * tab only then), blank until its sign-in starts; none where the browser
  * refuses, and the step's own tab then leaves for the platform.
+ *
+ * The tab goes to other sites' pages (a platform's, any Mastodon server a
+ * member names), so it keeps no `opener`: a page there could otherwise
+ * send this signed-in tab elsewhere. The handle stays, for
+ * `location.assign` and `close()`.
  */
 export const openSignInTab = (): Window | null => {
   // A tab opened from this one starts with a copy of its storage: a
@@ -33,9 +46,21 @@ export const openSignInTab = (): Window | null => {
   // the callback page there.
   forgetConnection();
 
+  const tab = openBlankTab();
+
+  if (tab === null) {
+    return null;
+  }
+
   try {
-    return globalThis.open("", signInTab);
+    // Set while the tab is blank, so of this origin: a tab of that name
+    // left on another site's page refuses it.
+    tab.opener = null;
+
+    return tab;
   } catch {
+    tab.close();
+
     return null;
   }
 };

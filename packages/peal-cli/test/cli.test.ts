@@ -3,6 +3,7 @@ import { Effect, Layer } from "effect";
 import { CliError } from "effect/cli";
 
 import { runWith, version } from "#cli.ts";
+import { Refused } from "#refused.ts";
 
 import { cliEnvironment, fetching, output } from "./support.ts";
 
@@ -152,6 +153,68 @@ describe("the API URL", () => {
             "https://api.example.test",
             "http://127.0.0.1:4000",
           ]
+        );
+      })
+  );
+
+  it.effect(
+    "must be named for an API key, which goes to no server by default",
+    () =>
+      Effect.gen(function* keyWithoutUrl() {
+        const { transport, urls } = recordRequests();
+
+        const run = (
+          args: readonly string[],
+          env: Readonly<Record<string, string>> = {}
+        ) =>
+          runWith(args).pipe(
+            Effect.provide(
+              Layer.mergeAll(
+                cliEnvironment({
+                  PEAL_API_KEY: "peal_test_synthetic_key",
+                  ...env,
+                }),
+                transport
+              )
+            ),
+            Effect.flip
+          );
+
+        const workspace = [
+          "--workspace",
+          "5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60",
+        ];
+
+        const refused = yield* run(["drafts", "list", ...workspace]);
+
+        assert.isTrue(refused instanceof Refused);
+
+        if (refused instanceof Refused) {
+          assert.strictEqual(refused.code, "api_url_required");
+          assert.include(refused.reason, "--api-url or PEAL_API_URL");
+          assert.notInclude(refused.reason, "peal_test_synthetic_key");
+        }
+
+        yield* run(["whoami"]);
+        yield* run(["channels", "list", ...workspace]);
+
+        assert.deepStrictEqual(urls, []);
+
+        // Named, even as the default's own address, it goes there.
+        yield* run([
+          "drafts",
+          "list",
+          ...workspace,
+          "--api-url",
+          "http://localhost:3000",
+        ]);
+        yield* run(["drafts", "list", ...workspace], {
+          PEAL_API_URL: "http://localhost:3000",
+        });
+
+        assert.deepStrictEqual(
+          urls.map((url) => new URL(url).origin),
+          ["http://localhost:3000", "http://localhost:3000"]
         );
       })
   );

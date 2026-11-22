@@ -4,6 +4,7 @@ import { HttpClient, HttpClientRequest } from "effect/http";
 import { HttpApiClient } from "effect/http-api";
 import { Api, apiVersion, apiVersionHeader, OAuthApi } from "peal-contract";
 
+import { apiKeyVariable } from "#api-key.ts";
 import { display } from "#display.ts";
 import { Refused } from "#refused.ts";
 import { insecureHttpFlag, insecureHttpVariable } from "#root.ts";
@@ -30,6 +31,11 @@ export const keepsCredentialsPrivate = (baseUrl: URL): boolean =>
 export class PealApi extends Context.Service<
   PealApi,
   {
+    /**
+     * Whether the run named the server (--api-url or PEAL_API_URL), rather
+     * than taking the default.
+     */
+    readonly apiUrlNamed: boolean;
     readonly baseUrl: URL;
     readonly client: HttpApiClient.ForApi<typeof Api>;
     readonly oauth: HttpApiClient.ForApi<typeof OAuthApi>;
@@ -42,20 +48,35 @@ export class PealApi extends Context.Service<
      */
     readonly sendingCredentials: Effect.Effect<void, Refused>;
     /**
-     * The HTTP API's client, sending an OAuth access token or an API key:
-     * refused as `sendingCredentials` refuses.
+     * Refuses as `sendingCredentials` does, and also when the run did not
+     * name the server: an API key is a workspace's, made on one server,
+     * and goes to no default.
+     */
+    readonly sendingApiKey: Effect.Effect<void, Refused>;
+    /**
+     * The HTTP API's client, sending an OAuth access token: refused as
+     * `sendingCredentials` refuses.
      */
     readonly signedIn: (
       accessToken: Redacted.Redacted
+    ) => Effect.Effect<HttpApiClient.ForApi<typeof Api>, Refused>;
+    /**
+     * The HTTP API's client, sending an API key: refused as
+     * `sendingApiKey` refuses.
+     */
+    readonly withApiKey: (
+      key: Redacted.Redacted
     ) => Effect.Effect<HttpApiClient.ForApi<typeof Api>, Refused>;
   }
 >()("peal-cli/PealApi") {
   static readonly layer = (
     baseUrl: URL,
     options: {
+      /** Whether the run named the server, rather than took the default. */
+      readonly apiUrlNamed: boolean;
       /** Whether credentials may go over plain HTTP beyond this machine. */
       readonly insecureHttp?: boolean;
-    } = {}
+    }
   ) =>
     Layer.effect(
       PealApi,
@@ -78,27 +99,36 @@ export class PealApi extends Context.Service<
                 })
               );
 
+        const sendingApiKey = options.apiUrlNamed
+          ? sendingCredentials
+          : Effect.fail(
+              new Refused({
+                code: "api_url_required",
+                reason: `${apiKeyVariable} is set, and no server is named: an API key goes only to the server it was made on, so none was sent to the default, ${display(baseUrl)}. Name the server with --api-url or PEAL_API_URL, such as https://peal.example.com.`,
+              })
+            );
+
+        const bearing = (credential: Redacted.Redacted) =>
+          HttpApiClient.makeWith(Api, {
+            baseUrl,
+            httpClient: httpClient.pipe(
+              HttpClient.mapRequest(HttpClientRequest.bearerToken(credential))
+            ),
+          });
+
         return PealApi.of({
+          apiUrlNamed: options.apiUrlNamed,
           baseUrl,
           client: yield* HttpApiClient.makeWith(Api, { baseUrl, httpClient }),
           oauth: yield* HttpApiClient.makeWith(OAuthApi, {
             baseUrl,
             httpClient,
           }),
+          sendingApiKey,
           sendingCredentials,
           signedIn: (accessToken) =>
-            sendingCredentials.pipe(
-              Effect.andThen(
-                HttpApiClient.makeWith(Api, {
-                  baseUrl,
-                  httpClient: httpClient.pipe(
-                    HttpClient.mapRequest(
-                      HttpClientRequest.bearerToken(accessToken)
-                    )
-                  ),
-                })
-              )
-            ),
+            sendingCredentials.pipe(Effect.andThen(bearing(accessToken))),
+          withApiKey: (key) => sendingApiKey.pipe(Effect.andThen(bearing(key))),
         });
       })
     );

@@ -34,7 +34,7 @@ export PEAL_API_URL=https://peal.example.com
 ```
 
 `PEAL_API_URL` is the address people open Peal at. Without it, `peal` uses
-`http://localhost:3000`. There are no released builds yet: build `peal` from
+`http://localhost:3000` and sends it no API key (`api_url_required`). There are no released builds yet: build `peal` from
 the repository (`bun nx run peal-cli:build` writes `packages/peal-cli/dist/peal`).
 Without the command line, use the HTTP API with curl: see
 [references/http.md](references/http.md).

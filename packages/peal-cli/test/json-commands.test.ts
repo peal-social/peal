@@ -358,7 +358,10 @@ describe("a failure with --json", () => {
       const error = yield* failureWith(
         ["channels", "list", "--json", "--workspace", studioId],
         failing,
-        { PEAL_API_KEY: "peal_test_synthetic_key" }
+        {
+          PEAL_API_KEY: "peal_test_synthetic_key",
+          PEAL_API_URL: "http://localhost:3000",
+        }
       );
 
       assert.deepStrictEqual(error, {

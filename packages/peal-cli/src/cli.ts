@@ -1,4 +1,4 @@
-import { Effect, Layer, Stdio } from "effect";
+import { Effect, Layer, Option, Stdio } from "effect";
 import { Command } from "effect/cli";
 
 import { PealApi } from "#api.ts";
@@ -41,7 +41,7 @@ import { CredentialStore } from "#credentials.ts";
 import manifest from "#package.json" with { type: "json" };
 import { printableConsole } from "#print.ts";
 import { reporting } from "#report.ts";
-import { peal } from "#root.ts";
+import { defaultApiUrl, peal } from "#root.ts";
 
 // The command tree. Every subcommand gets the API client for the URL that
 // --api-url or PEAL_API_URL names, and the saved sign-ins; the transport
@@ -86,7 +86,10 @@ export const cli = peal.pipe(
     account,
   ]),
   Command.provide(({ apiUrl, insecureHttp }) =>
-    PealApi.layer(apiUrl, { insecureHttp })
+    PealApi.layer(
+      Option.getOrElse(apiUrl, () => new URL(defaultApiUrl)),
+      { apiUrlNamed: Option.isSome(apiUrl), insecureHttp }
+    )
   ),
   Command.provide(CredentialStore.layer)
 );

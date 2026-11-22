@@ -2,6 +2,7 @@ import { defineConfig } from "blume";
 import { anthropic } from "blume/ai";
 import { turnstile } from "blume/captcha";
 import { node } from "blume/deploy";
+import { memory } from "blume/ratelimit";
 import { openapi } from "blume/reference";
 
 import { platformVariables } from "./platform-variables.ts";
@@ -135,6 +136,13 @@ export default defineConfig({
   // The mark shows beside the title. Blume finds the favicon and the Apple
   // touch icon in public/ by their file names.
   logo: "/favicon.svg",
+  // The assistant's route is the one the docs serve that a reader can
+  // call (the playground is off, search is a static index): ten questions
+  // each ten minutes, a third of Blume's default, as each one is a paid
+  // model call. A reader is an IPv4 address or an IPv6 /64, which the
+  // docs image's serve.ts writes into X-Forwarded-For. The count is the
+  // server's own memory, exact as the image runs one process.
+  rateLimit: memory({ requests: 10, window: 600 }),
   // One tab per reader, each a folder of docs/ (DESIGN.md, Docs): the
   // loose pages at the root are Get started.
   navigation: {
