@@ -51,20 +51,10 @@ const InlineNodes = ({
       }
 
       case "link": {
-        return node.internal ? (
+        return (
           <AppLink key={key} href={node.href} className={linkClass}>
             <InlineNodes link={AppLink} nodes={node.children} />
           </AppLink>
-        ) : (
-          <a
-            key={key}
-            href={node.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={linkClass}
-          >
-            <InlineNodes link={AppLink} nodes={node.children} />
-          </a>
         );
       }
 
@@ -81,7 +71,8 @@ const InlineNodes = ({
 /**
  * The agent's answer: the markdown it may write (paragraphs, lists, bold,
  * italics, inline code, links), as elements, never as HTML. A path of this
- * origin opens through the app's `link`; any other address in a new tab.
+ * origin opens through the app's `link`; any other address is no link,
+ * only its words.
  */
 export const AgentMarkdown = ({
   link,

@@ -102,10 +102,10 @@ describe(AgentMarkdown, () => {
       html.includes("<strong"),
       html.includes("&lt;b&gt;x&lt;/b&gt;"),
       html.includes('data-app-link="" href="/s/posts/p1"'),
-      html.includes(
-        'href="https://docs.example.com/" target="_blank" rel="noopener noreferrer"'
-      ),
-    ]).toStrictEqual([true, true, true, true]);
+      // An address out of Peal stays its words: no link to follow.
+      html.includes("docs.example.com"),
+      html.includes("<li>Docs</li>"),
+    ]).toStrictEqual([true, true, true, false, true]);
   });
 });
 

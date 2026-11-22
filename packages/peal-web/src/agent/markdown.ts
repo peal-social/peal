@@ -1,7 +1,9 @@
 // The agent writes markdown limited to paragraphs, lists, bold, italics,
 // inline code and links. This reads that subset into a tree the view
 // renders as React elements: never HTML, so a tag in the text stays text,
-// and a link only where its address is this origin's path or http(s).
+// and a link only where its address is a path of this origin. Text a tool
+// answered can have the model write a link out whose query carries what
+// it read: any other address keeps its words alone.
 
 export type Inline =
   | { readonly _tag: "text"; readonly text: string }
@@ -11,9 +13,8 @@ export type Inline =
   | {
       readonly _tag: "link";
       readonly children: readonly Inline[];
+      /** A path of this origin, opened in place. */
       readonly href: string;
-      /** A path of this origin, opened in place; otherwise a new tab. */
-      readonly internal: boolean;
     }
   | { readonly _tag: "break" };
 
@@ -25,31 +26,45 @@ export type Block =
       readonly ordered: boolean;
     };
 
-/**
- * Where a link may lead: a path of this origin (`/…`, never `//…`), or an
- * http(s) address. Anything else (`javascript:`, `data:`, a relative
- * path) renders as its text alone.
- */
-export const linkTarget = (
-  href: string
-): { readonly href: string; readonly internal: boolean } | null => {
-  const address = href.trim();
+// What a browser drops or reads as a slash in an address: a backslash,
+// and the control characters (tabs and line breaks among them), which
+// could turn `/\t/site` into `//site`, another site.
+const leavesOrigin = (address: string): boolean => {
+  for (let index = 0; index < address.length; index += 1) {
+    // Each code unit: what a browser drops is never part of a pair.
+    const code = address.codePointAt(index) ?? 0;
 
-  if (address.startsWith("/")) {
-    return address.startsWith("//") || address.startsWith("/\\")
-      ? null
-      : { href: address, internal: true };
+    if (code === 0x5c || code < 0x20 || code === 0x7f) {
+      return true;
+    }
   }
 
-  if (!URL.canParse(address)) {
+  return false;
+};
+
+// A base no address of this origin's paths ever names: what resolves
+// against it elsewhere is another site.
+const base = "https://origin.invalid";
+
+/**
+ * Where a link may lead: a path of this origin (`/…`), never one a browser
+ * may read as another site (`//…`, a backslash, a control character).
+ * Anything else (another site, `javascript:`, `data:`, a relative path)
+ * renders as its text alone.
+ */
+export const linkTarget = (href: string): string | null => {
+  const address = href.trim();
+
+  if (
+    !address.startsWith("/") ||
+    address.startsWith("//") ||
+    leavesOrigin(address) ||
+    !URL.canParse(address, base)
+  ) {
     return null;
   }
 
-  const url = new URL(address);
-
-  return url.protocol === "https:" || url.protocol === "http:"
-    ? { href: url.href, internal: false }
-    : null;
+  return new URL(address, base).origin === base ? address : null;
 };
 
 const isWordCharacter = (character: string | undefined): boolean =>
@@ -177,11 +192,11 @@ const linkAt = (source: string, index: number): Read | null => {
   }
 
   const children = parseInline(source.slice(index + 1, close));
-  const target = linkTarget(source.slice(close + 2, end));
+  const href = linkTarget(source.slice(close + 2, end));
 
   return {
     next: end + 1,
-    nodes: target === null ? children : [{ _tag: "link", children, ...target }],
+    nodes: href === null ? children : [{ _tag: "link", children, href }],
   };
 };
 

@@ -870,7 +870,8 @@ things there, as they would with a colleague. Chats are the person's own.
   bubble, `{rounded.lg}`, 85% wide at most. The agent's answer full
   width, no bubble, 14 px with a relaxed line height: paragraphs, lists,
   bold (600), italics, inline code (Geist Mono on `muted`, 4 px radius)
-  and links in blue's text, a link out of Peal in a new tab. Under a
+  and links to Peal's own pages in blue's text; an address out of Peal
+  is no link, only its words. Under a
   finished answer, `xs` ghost icon buttons: thumbs up, thumbs down
   (pressed toggles) and copy.
 - **Work under way** reads as a line, never a spinner: "Thinking…"

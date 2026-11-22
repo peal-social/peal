@@ -799,7 +799,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   are kept while the tab lives, so the page and the panel show the same
   chat and a run goes on when either closes. The agent's answer is the
   markdown `#agent/markdown.ts` reads (paragraphs, lists, bold,
-  italics, inline code, links to this origin's paths or http(s)),
+  italics, inline code, links to this origin's paths only: an address
+  out of Peal, or a path a browser could read as one, keeps its words,
+  as text a tool answered could have the model write a link that
+  carries what it read),
   rendered as elements by `AgentMarkdown`, never as HTML. Cards and
   approvals show what the server sent, never the agent's words; a step
   and a change are named from their tool (`#agent/steps.ts`), with a
