@@ -112,6 +112,17 @@ peal_settings:
   # vault. X's analytics stay off: X bills each read.
   YOUTUBE_CLIENT_ID: 370547380506-ap0ocl7sbbjqgc0n9pihspup46dn9505.apps.googleusercontent.com
   X_CLIENT_ID: OTdwb0p4d0QzaWFpRU5iamYzWGU6MTpjaQ
+  # LinkedIn members' profiles: the app "Peal" on Peal's LinkedIn page
+  # serves both environments, with both redirect URLs. Company pages take
+  # a second app, for the Community Management API, not made yet.
+  LINKEDIN_CLIENT_ID: 77p5yfnzeheaa2
+  # Meta: the app "Peal" (Facebook Pages, and Instagram through a Page)
+  # and its Threads app. Both stay in development mode until App Review,
+  # so only the app's roles can connect. Unified login's configuration
+  # (META_INSTAGRAM_CONFIG_ID) does not exist in production yet. TikTok
+  # stays off: its production configuration is a draft until its audit.
+  META_APP_ID: "1687571079381805"
+  THREADS_APP_ID: "1116480518049771"
   # One WordPress.com app serves both environments, with both callbacks.
   WORDPRESS_COM_CLIENT_ID: "153160"
   # Google Ads, read only, once its own OAuth client, "Peal: Google Ads",
