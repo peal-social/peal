@@ -2,7 +2,21 @@
 
 - `src/app/mcp/` serves effect/ai's `McpServer.layerHttp` at `/api/mcp`
   (Streamable HTTP; revisions 2026-07-28, 2025-11-25 and 2025-06-18, whose
-  sessions live in memory and end with `DELETE`).
+  sessions live in memory and end with `DELETE`). effect/ai never ends a
+  session itself, so `mcpSessionGuard` (`sessions.ts`, after
+  `mcpAuthentication`) keeps track of them: a session is its opener's
+  alone (404 to another credential), `sessionsPerCredential` (16) a
+  person or a key at most, the one unused longest ended past them, any
+  unused for `sessionIdleLimit` (an hour) ended by a sweep every minute,
+  and an `initialize` past `maxInitializeBytes` (64 KiB) refused, as
+  effect/ai keeps it for the session. A session is ended through the
+  endpoint's own DELETE handler, which `SessionEndingRouter` also adds to
+  a router of its own, without the middlewares, run in the process with
+  no credential: what effect/ai keeps of it goes too
+  (`peal.mcp.sessions.ended`, by `reason` and `outcome`: `failed` is a
+  session left in memory, which a test refuses). Keep the sessionful
+  revisions while clients need them; serving only the stateless one
+  would make all of this go.
 - Tools are `Tool.make` with Effect Schema inputs and outputs, declare
   `CurrentMember`, and reach contexts through their use cases.
   `mcpAuthentication` (`#workspace/api/mcp-authentication.ts`) provides

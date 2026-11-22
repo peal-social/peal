@@ -8,6 +8,11 @@ import { MediaTools } from "#app/mcp/media-tools.ts";
 import { PostTools } from "#app/mcp/posts-tools.ts";
 import { recordedCalls } from "#app/mcp/recorded-calls.ts";
 import { ReviewTools } from "#app/mcp/review-tools.ts";
+import {
+  McpSessions,
+  mcpSessionGuard,
+  SessionEndingRouter,
+} from "#app/mcp/sessions.ts";
 import { PealTools } from "#app/mcp/tools.ts";
 import { mcpAuthentication } from "#workspace/container.ts";
 
@@ -64,10 +69,11 @@ export const mcpProtocolVersions: readonly string[] = protocols.map(
  *
  * It speaks the stateless 2026-07-28 revision and, for clients that do not
  * yet, the sessionful 2025-11-25 and 2025-06-18 ones, whose sessions live in
- * this server's memory: Peal runs one server per deployment. Sessions do not
- * expire, so clients may end theirs with DELETE, as those revisions ask them
- * to, rather than leave it in memory until the server restarts; ending one
- * takes its id and a token that works, like any other request. Requests with
+ * this server's memory: Peal runs one server per deployment. Clients end
+ * theirs with DELETE, as those revisions ask them to, which takes its id and
+ * a token that works, like any other request; `mcpSessionGuard` ends those
+ * unused for an hour and those a credential opens past its limit, and keeps
+ * each session to the credential that opened it. Requests with
  * an Origin header are refused, as no browser page calls it.
  */
 export const McpLive = McpServer.layerHttp({
@@ -82,4 +88,10 @@ export const McpLive = McpServer.layerHttp({
     Layer.provide(PealToolsLive)
   ),
   version: mcpServerVersion,
-}).pipe(Layer.provide(mcpAuthentication({ contentTools })));
+}).pipe(
+  Layer.provide(
+    mcpSessionGuard.combine(mcpAuthentication({ contentTools })).layer
+  ),
+  Layer.provide(SessionEndingRouter),
+  Layer.provide(McpSessions.layer)
+);

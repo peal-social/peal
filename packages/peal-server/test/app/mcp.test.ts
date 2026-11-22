@@ -1,11 +1,12 @@
 import { assert, layer } from "@effect/vitest";
-import { Context, Effect, Layer, Option, Schema } from "effect";
+import { Context, Effect, Layer, Metric, Option, Schema } from "effect";
 import { McpClient, McpProtocol } from "effect/ai";
 import {
   AuthorizationServerSchema,
   ProtectedResourceSchema,
 } from "peal-contract";
 
+import { endedSessions, sessionsPerCredential } from "#app/mcp/sessions.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -13,6 +14,7 @@ import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import { freshChannel, syntheticCredentials } from "#test/channels/support.ts";
 import {
+  apiKeyOf,
   bodyOf,
   origin,
   signedUpUnconfirmed,
@@ -560,6 +562,119 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.strictEqual(listed.status, 404);
       })
+    );
+
+    it.effect(
+      "keeps a credential to its sessions, as many as it may, its oldest ended past them",
+      () =>
+        Effect.gen(function* sessions() {
+          const app = yield* TestApp;
+          const fixture = yield* McpFixture;
+          const workspace = yield* workspaceOf(fixture.owner, "Arcade");
+
+          const token = yield* authorize(
+            fixture.owner,
+            fixture.clientId,
+            workspace,
+            "workspace:read"
+          );
+
+          const { key } = yield* apiKeyOf(fixture.owner, workspace, [
+            "post:read",
+          ]);
+
+          const send = (
+            authorization: string,
+            headers: Readonly<Record<string, string>>,
+            body: unknown
+          ) =>
+            Effect.promise(
+              async () =>
+                await app.handler(
+                  new Request(mcpResource, {
+                    body: JSON.stringify(body),
+                    headers: {
+                      accept: "application/json, text/event-stream",
+                      authorization: `Bearer ${authorization}`,
+                      "content-type": "application/json",
+                      ...headers,
+                    },
+                    method: "POST",
+                  })
+                )
+            );
+
+          const initialize = (name = "peal-test") => ({
+            id: 1,
+            jsonrpc: "2.0",
+            method: "initialize",
+            params: {
+              capabilities: {},
+              clientInfo: { name, version: "1.0.0" },
+              protocolVersion: "2025-11-25",
+            },
+          });
+
+          const listTools = { id: 2, jsonrpc: "2.0", method: "tools/list" };
+
+          const endedAs = (outcome: "ended" | "failed") =>
+            Metric.value(
+              Metric.withAttributes(endedSessions, {
+                outcome,
+                reason: "pastLimit",
+              })
+            ).pipe(Effect.map(({ count }) => count));
+
+          const before = {
+            ended: yield* endedAs("ended"),
+            failed: yield* endedAs("failed"),
+          };
+
+          const opened: string[] = [];
+
+          for (let count = 0; count <= sessionsPerCredential; count += 1) {
+            const answer = yield* send(token, {}, initialize());
+
+            assert.strictEqual(answer.status, 200);
+            opened.push(answer.headers.get("mcp-session-id") ?? "");
+          }
+
+          const listedIn = (authorization: string, session: string) =>
+            send(
+              authorization,
+              {
+                "mcp-protocol-version": "2025-11-25",
+                "mcp-session-id": session,
+              },
+              listTools
+            ).pipe(Effect.map(({ status }) => status));
+
+          const [oldest = "", second = ""] = opened;
+
+          // One past the limit ended the oldest, in effect/ai's memory too
+          // (its DELETE, run in the process, answered); the others stay.
+          assert.deepStrictEqual(
+            {
+              ended: (yield* endedAs("ended")) - before.ended,
+              failed: (yield* endedAs("failed")) - before.failed,
+            },
+            { ended: 1, failed: 0 }
+          );
+          assert.strictEqual(yield* listedIn(token, oldest), 404);
+          assert.strictEqual(yield* listedIn(token, second), 200);
+          // A session is its opener's alone.
+          assert.strictEqual(yield* listedIn(key, second), 404);
+
+          // What an initialize says is kept for the whole session: a large
+          // one is refused.
+          const large = yield* send(
+            token,
+            {},
+            initialize("x".repeat(70 * 1024))
+          );
+
+          assert.strictEqual(large.status, 413);
+        })
     );
   }
 );

@@ -11,7 +11,7 @@ Le client se connecte en votre nom, dans un navigateur. Il agit dans le seul esp
 
 ## Le point d’accès [#endpoint]
 
-Le point d’accès est `/api/mcp`, à l’adresse où vous ouvrez Peal, comme `https://peal.example.com/api/mcp`. Il parle Streamable HTTP, dans les révisions 2026-07-28, 2025-11-25 et 2025-06-18 du protocole.
+Le point d’accès est `/api/mcp`, à l’adresse où vous ouvrez Peal, comme `https://peal.example.com/api/mcp`. Il parle Streamable HTTP, dans les révisions 2026-07-28, 2025-11-25 et 2025-06-18 du protocole. Dans les deux plus anciennes, une session se termine après une heure inutilisée, et chaque personne ou clé en garde 16 ouvertes au plus : en ouvrir une de plus termine celle restée inutilisée le plus longtemps. Un client à qui sa session répond 404 en ouvre une nouvelle, comme ces révisions le demandent.
 
 Lancez `peal mcp`, depuis la [ligne de commande](/developers/cli#mcp), et il affiche le point d’accès et une configuration que la plupart des clients MCP acceptent :
 

@@ -11,7 +11,7 @@ The client signs in as you, in a browser. It acts in the one workspace you pick,
 
 ## The endpoint [#endpoint]
 
-The endpoint is `/api/mcp` at the address you open Peal at, such as `https://peal.example.com/api/mcp`. It speaks Streamable HTTP, in the protocol revisions 2026-07-28, 2025-11-25 and 2025-06-18.
+The endpoint is `/api/mcp` at the address you open Peal at, such as `https://peal.example.com/api/mcp`. It speaks Streamable HTTP, in the protocol revisions 2026-07-28, 2025-11-25 and 2025-06-18. In the two older ones, a session ends after an hour unused, and each person or key keeps 16 open at most: opening one more ends the one unused longest. A client told 404 for its session starts a new one, as those revisions ask.
 
 Run `peal mcp`, from the [command line](/developers/cli#mcp), and it prints the endpoint and a configuration that most MCP clients take:
 
