@@ -148,7 +148,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   New channel's order, LinkedIn's profile and pages apart, no website or
   chat, none of `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and a
   tab of the run's own (`openSignInTab`, opened from the click, as
-  browsers open one only then) runs their sign-ins one after the other
+  browsers open one only then, its `opener` cut while it is blank, as it
+  goes to other sites' pages; one of that name it cannot cut off is
+  closed, and the step's own tab leaves instead) runs their sign-ins one after the other
   while the step stays open in the first tab: the run lives in
   `localStorage` (`#channels/connect-run.ts`), which every tab reads and
   whose storage events keep the step current; `useRunStep` starts its
@@ -329,7 +331,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   Invitations go through `invite` (`#settings/invite.ts`): Better Auth's
   client types roles from its own defaults. Sign-in opens `next` in the
   language the account keeps (`landingLocale`), which account settings save
-  with `updateUser`.
+  with `updateUser`. `next` is a page of the app or nothing (`nextPathOf`,
+  `#auth/next-path.ts`, tested): never a path the server answers (`/api`,
+  where a short link redirects anywhere, `/.well-known`), a route handler
+  of the app (`/pulse`, `/emoji-data`), a path with a dot, a `%`, a
+  backslash, `//` or a control character, after a language or not, in any
+  case. A new route handler at the root joins its `notPages`.
 - Client components call Better Auth through `authClient` (`#auth/client.ts`).
   During an OAuth authorization it sends the page's signed query with every
   POST, and Better Auth resumes the authorization after any call that sets
