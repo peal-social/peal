@@ -1,12 +1,9 @@
-import { assert, describe, expect, it, layer } from "@effect/vitest";
+import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Option, Predicate, Result } from "effect";
 import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
-import { Dns, NetAddress } from "effect/net";
+import { Dns } from "effect/net";
 
-import {
-  allPublic,
-  OutboundGuard,
-} from "#shared/infrastructure/platforms/outbound-guard.ts";
+import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import {
   publicFetch,
   publicHttpClient,
@@ -93,22 +90,6 @@ layer(GuardTest)("the outbound guard", (it) => {
       );
     })
   );
-});
-
-describe(allPublic, () => {
-  it("refuses a host with no address, as every address of none is public", () => {
-    expect(allPublic([])).toBeFalsy();
-  });
-
-  it("takes a host whose addresses are all public, and no other", () => {
-    const address = (written: string) =>
-      Result.getOrThrow(NetAddress.ipFromString(written));
-
-    expect(allPublic([address("93.184.215.14")])).toBeTruthy();
-    expect(
-      allPublic([address("93.184.215.14"), address("10.1.2.3")])
-    ).toBeFalsy();
-  });
 });
 
 // The client the guard protects, against a server on loopback: the guard

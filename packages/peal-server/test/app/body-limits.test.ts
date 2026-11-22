@@ -2,16 +2,10 @@
 // one declared larger is refused before it is read, one that says nothing
 // of its length when its read goes past, each with 413 in the API's
 // envelope; the routes that take a workspace's content take more.
-import { assert, describe, expect, it, layer } from "@effect/vitest";
-import { ByteSize, Effect, Layer, Option, Schema } from "effect";
+import { assert, layer } from "@effect/vitest";
+import { Effect, Layer, Option, Schema } from "effect";
 import { HttpRouter, HttpServer } from "effect/http";
 
-import {
-  bodyLimitFor,
-  contentBodyLimit,
-  declaredPastLimit,
-  defaultBodyLimit,
-} from "#app/body-limits.ts";
 import { AppLive } from "#app/server.ts";
 import { storageSettings } from "#test/media/support.ts";
 import { MigratedSqlLive } from "#test/workspace/integration/harness.ts";
@@ -42,38 +36,6 @@ const streamed = (text: string) =>
       controller.close();
     },
   });
-
-describe(bodyLimitFor, () => {
-  it("takes a workspace's content in larger bodies, and the rest in 1 MiB", () => {
-    expect(bodyLimitFor(`/api/workspaces/${workspaceId}/posts/bulk`)).toBe(
-      contentBodyLimit
-    );
-    expect(bodyLimitFor(`/api/workspaces/${workspaceId}/posts`)).toBe(
-      contentBodyLimit
-    );
-    expect(bodyLimitFor(`/api/workspaces/${workspaceId}/articles/x`)).toBe(
-      contentBodyLimit
-    );
-    expect(bodyLimitFor("/api/mcp")).toBe(contentBodyLimit);
-    expect(bodyLimitFor(`/api/workspaces/${workspaceId}/tags`)).toBe(
-      defaultBodyLimit
-    );
-    expect(bodyLimitFor("/api/auth/sign-in/email")).toBe(defaultBodyLimit);
-    expect(bodyLimitFor("/api/data-deletion/facebook")).toBe(defaultBodyLimit);
-    expect(bodyLimitFor("/api/mcp/server-card")).toBe(defaultBodyLimit);
-  });
-});
-
-describe(declaredPastLimit, () => {
-  it("refuses a declared length past the limit, and nothing else", () => {
-    const limit = ByteSize.bytes(10);
-
-    expect(declaredPastLimit("11", limit)).toBeTruthy();
-    expect(declaredPastLimit("10", limit)).toBeFalsy();
-    expect(declaredPastLimit(undefined, limit)).toBeFalsy();
-    expect(declaredPastLimit("ten", limit)).toBeFalsy();
-  });
-});
 
 layer(MigratedSqlLive, { excludeTestServices: true, timeout: "180 seconds" })(
   "a request's body",

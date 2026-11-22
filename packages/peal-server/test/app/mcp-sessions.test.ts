@@ -62,16 +62,17 @@ describe(sessionsPastLimit, () => {
   });
 });
 
+// A person, through an application.
+const through = (clientId: string) =>
+  ownerOf({
+    _tag: "user",
+    impersonatedBy: null,
+    oauth: { clientId, scopes: ["workspace:read"], workspaceId: null },
+    userId: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+  });
+
 describe(ownerOf, () => {
   it("counts a person's sessions together, whichever application opened them", () => {
-    const through = (clientId: string) =>
-      ownerOf({
-        _tag: "user",
-        impersonatedBy: null,
-        oauth: { clientId, scopes: ["workspace:read"], workspaceId: null },
-        userId: "7c9e6679-7425-40de-944b-e07fc1f90ae7",
-      });
-
     expect(through("synthetic-one")).toBe(through("synthetic-two"));
     expect(
       ownerOf({

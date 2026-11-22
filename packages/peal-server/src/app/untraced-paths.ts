@@ -52,17 +52,22 @@ const logAnswer = (
   url: string,
   exit: Exit.Exit<{ readonly status: number }, unknown>
 ) => {
-  const [response, cause] = Exit.isSuccess(exit)
+  const [response, cause]: readonly [
+    { readonly status: number },
+    Option.Option<Cause.Cause<unknown>>,
+  ] = Exit.isSuccess(exit)
     ? [exit.value, Option.none()]
     : HttpServerError.causeResponseStripped(exit.cause);
 
-  const message = Option.match(cause, {
-    onNone: () => "Sent HTTP response",
-    onSome: (failure): unknown =>
-      Cause.hasInterruptsOnly(failure) ? "Sent HTTP response" : failure,
-  });
+  const failure = cause.pipe(
+    Option.filter((failed) => !Cause.hasInterruptsOnly(failed))
+  );
 
-  return Effect.log(message).pipe(
+  const line = Option.isSome(failure)
+    ? Effect.log(failure.value)
+    : Effect.log("Sent HTTP response");
+
+  return line.pipe(
     Effect.annotateLogs({
       "http.method": method,
       "http.status": response.status,

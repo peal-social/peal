@@ -66,19 +66,13 @@ export interface OpenSession {
  * so registering more clients opens no more sessions; or a key.
  */
 export const ownerOf = (principal: Principal): string => {
-  switch (principal._tag) {
-    case "user": {
-      return `user:${principal.userId}`;
-    }
-
-    case "apiKey": {
-      return `key:${principal.apiKeyId}`;
-    }
-
-    case "partnerKey": {
-      return `partner-key:${principal.partnerKeyId}`;
-    }
+  if (principal._tag === "apiKey") {
+    return `key:${principal.apiKeyId}`;
   }
+
+  return principal._tag === "partnerKey"
+    ? `partner-key:${principal.partnerKeyId}`
+    : `user:${principal.userId}`;
 };
 
 /** The sessions unused for longer than the limit, at `now`. */

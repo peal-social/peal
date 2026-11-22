@@ -125,6 +125,24 @@ const callTools = Effect.gen(function* callTools() {
   };
 });
 
+// An initialize of the sessionful revision, from a client of this name.
+const initialize = (name = "peal-test"): JsonRpcRequest => ({
+  id: 1,
+  jsonrpc: "2.0",
+  method: "initialize",
+  params: {
+    capabilities: {},
+    clientInfo: { name, version: "1.0.0" },
+    protocolVersion: "2025-11-25",
+  },
+});
+
+// How many sessions the server ended past a credential's limit, so far.
+const endedAs = (outcome: "ended" | "failed") =>
+  Metric.value(
+    Metric.withAttributes(endedSessions, { outcome, reason: "pastLimit" })
+  ).pipe(Effect.map(({ count }) => count));
+
 // The HTTP status and challenge a refused connection got.
 const refusedConnection = (
   token: Option.Option<string>,
@@ -586,7 +604,7 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const send = (
             authorization: string,
             headers: Readonly<Record<string, string>>,
-            body: unknown
+            body: JsonRpcRequest
           ) =>
             Effect.promise(
               async () =>
@@ -604,26 +622,11 @@ layer(McpFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
                 )
             );
 
-          const initialize = (name = "peal-test") => ({
-            id: 1,
+          const listTools: JsonRpcRequest = {
+            id: 2,
             jsonrpc: "2.0",
-            method: "initialize",
-            params: {
-              capabilities: {},
-              clientInfo: { name, version: "1.0.0" },
-              protocolVersion: "2025-11-25",
-            },
-          });
-
-          const listTools = { id: 2, jsonrpc: "2.0", method: "tools/list" };
-
-          const endedAs = (outcome: "ended" | "failed") =>
-            Metric.value(
-              Metric.withAttributes(endedSessions, {
-                outcome,
-                reason: "pastLimit",
-              })
-            ).pipe(Effect.map(({ count }) => count));
+            method: "tools/list",
+          };
 
           const before = {
             ended: yield* endedAs("ended"),
