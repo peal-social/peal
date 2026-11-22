@@ -138,22 +138,28 @@ The staff context follows these rules too. What the law has a host keep is in
   failure is only logged. A refused re-invite through the route has
   already cancelled the address's pending invitation (Better Auth cancels
   it first).
-- A person's name and a workspace's go out in invitations from Peal's own
-  domain: `typedName` (`#shared/domain/display-name.ts`) keeps one line
+- A person's name and a workspace's go out in emails from Peal's own
+  domain. `typedName` (`#shared/domain/display-name.ts`) keeps one line
   (`storableLine`), at most `maxPersonNameLength` (100) or
-  `maxWorkspaceNameLength` (120, the contract's for partners) characters,
-  and refuses one that reads as a link (`readsAsLink`: `://`, `www.`, a
-  letter or a digit, a dot and a top-level domain that ends there, two
-  letters counting only in one case, so `St. John`, `M.Sc` and `Dr.Jo`
-  pass). Better Auth's hooks apply it (`auth/display-names.ts`):
-  `/sign-up/email` in the before hook (`refuseUnfitSignUpNames`, as the
-  route answers a known address with a made-up user before any write),
-  `databaseHooks.user` on create and update (refused on `/sign-up/email`
-  and `/update-user`, 400 `INVALID_NAME`; made fit elsewhere), and the
-  organization hooks on create and update (400 `INVALID_WORKSPACE_NAME`),
-  which the web app's forms explain. A sign-in provider's name is made fit
-  instead (`fittedName` in `profileToUser`: schemes and dots taken out),
-  so the sign-in goes on. Names stored before keep what they hold.
+  `maxWorkspaceNameLength` (120) characters, and refuses a web address's
+  markers (`holdsLinkMarker`: `://`, `www.`); it never refuses a name for
+  looking like a host (`Node.js`, `Booking.com` are names). Better Auth's
+  hooks apply it (`auth/display-names.ts`): `/sign-up/email` in the before
+  hook (`refuseUnfitSignUpNames`, as the route answers a known address
+  with a made-up user before any write), `databaseHooks.user` on create
+  and update (refused on `/sign-up/email` and `/update-user`, 400
+  `INVALID_NAME`; made fit elsewhere), and the organization hooks on
+  create and update (400 `INVALID_WORKSPACE_NAME`), which the web app's
+  forms explain; the partner API takes a workspace's name through it too
+  (`PartnerWorkspaces`, `InvalidWorkspaceDetails`). A sign-in provider's
+  name is made fit instead (`fittedName` in `profileToUser`: the markers
+  taken out), so the sign-in goes on. Emails are made safe where they are
+  built: the notifications context's renderers show a name through
+  `nameForMail`, which puts the catalog's `withheldNames` ("A member", "a
+  workspace") in place of one that reads as a host or an address by a
+  broad test (`readsAsAddress`: the markers, `@`, a letter or a digit, a
+  dot and two letters of any script and case, or a dotted IPv4 address),
+  names stored before included.
 - `ResolveMember.resolveMany` decides several workspaces for one user from
   one read of the memberships (`MemberDirectory.memberships`), each through
   `actorFor` as `resolve` decides one: anything that reads across
@@ -477,8 +483,8 @@ The staff context follows these rules too. What the law has a host keep is in
   `requireIdTokenVerification`: the profile is the ID token's claims alone,
   checked for signature, issuer, audience and nonce, never the userinfo
   endpoint (`getUserInfo`); PKCE on; no offline access. The name is made
-  fit (`profileToUser`, `fittedName`: one line, never a link), the
-  picture never kept. The account id is
+  fit (`profileToUser`, `fittedName`: one line, without `://` or `www.`),
+  the picture never kept. The account id is
   the verified token's `sub` (`accountSubject`), `<issuer>|<sub>` for
   `oidc` (`oidcAccountId`): a subject belongs to its issuer, so a new
   `PEAL_OIDC_ISSUER` reaches no account the old one's subjects joined.

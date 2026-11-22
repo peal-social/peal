@@ -486,6 +486,21 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const first = yield* customerOf(key, "Boulangerie Martin", "cus_001");
 
+          // A name is one line, without a web address, as anywhere else.
+          // The contract bounds its length (400), the server its markers
+          // (422 InvalidWorkspaceDetails).
+          for (const [name, status] of [
+            ["Free money https://evil.example", 422],
+            ["a".repeat(121), 400],
+          ] as const) {
+            const refused = yield* app.request("/api/partner/workspaces", {
+              body: { name },
+              headers: bearer(key),
+            });
+
+            assert.strictEqual(refused.status, status, name);
+          }
+
           assert.strictEqual(first.externalId, "cus_001");
           assert.strictEqual(first.channels, 0);
 

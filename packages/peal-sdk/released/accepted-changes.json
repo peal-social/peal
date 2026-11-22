@@ -147,5 +147,10 @@
     "change": "Every address whose path holds a semicolon, raw or encoded (%3B, any case), answers 400 bad_request before any route runs",
     "kind": "behaviour",
     "reason": "The proxy in front of Peal drops what follows a semicolon in a segment before it picks the rule that says whether Access guards a path, so /api/admin/users/..;/..;/api/health was an open path to it and the staff console to the router. No route takes a semicolon; a query may still hold one."
+  },
+  {
+    "change": "POST /api/partner/workspaces and PATCH /api/partner/workspaces/{workspaceId} answer 422 InvalidWorkspaceDetails (field name) for a name holding `://` or `www.`, and keep a name on one line, without the marks that reorder it",
+    "kind": "behaviour",
+    "reason": "A workspace's name goes into the emails Peal sends from its own domain; it is now kept as Better Auth's routes keep a member's workspace's name. Names saved before keep what they hold, and emails leave out any name that reads as a web or email address."
   }
 ]

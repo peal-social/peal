@@ -14,9 +14,11 @@ import type { NameRefusal } from "#shared/domain/display-name.ts";
 // bodies, from Peal's own domain. Better Auth's routes take them as they
 // come (`/sign-up/email`, `/update-user`, `/organization/create`,
 // `/organization/update`): these hooks keep them one line, bounded, and
-// never a link (`typedName`), and refuse what a person typed otherwise,
-// with a code the web app's forms explain. A name a sign-in provider gives
-// is made fit instead (`fittedName`), so the sign-in goes on.
+// without a web address's markers (`typedName`), and refuse what a person
+// typed otherwise, with a code the web app's forms explain. A name a
+// sign-in provider gives is made fit instead (`fittedName`), so the
+// sign-in goes on. Emails leave out a name that still reads as an address
+// (`nameForMail`).
 
 /** The code a person's name that cannot be kept is refused with. */
 export const invalidNameCode = "INVALID_NAME";
@@ -26,20 +28,20 @@ export const invalidWorkspaceNameCode = "INVALID_WORKSPACE_NAME";
 
 const why: Readonly<Record<NameRefusal, string>> = {
   empty: "is empty",
-  link: "reads as a link: leave out addresses, `www.` and `://`",
+  link: "holds a web address: leave out `www.` and `://`",
   tooLong: "is too long",
 };
 
 const refusedName = (refusal: NameRefusal) =>
   APIError.from("BAD_REQUEST", {
     code: invalidNameCode,
-    message: `A name is one line of ${String(maxPersonNameLength)} characters at most, never a link: this one ${why[refusal]}`,
+    message: `A name is one line of ${String(maxPersonNameLength)} characters at most, without a web address: this one ${why[refusal]}`,
   });
 
 const refusedWorkspaceName = (refusal: NameRefusal) =>
   APIError.from("BAD_REQUEST", {
     code: invalidWorkspaceNameCode,
-    message: `A workspace's name is one line of ${String(maxWorkspaceNameLength)} characters at most, never a link: this one ${why[refusal]}`,
+    message: `A workspace's name is one line of ${String(maxWorkspaceNameLength)} characters at most, without a web address: this one ${why[refusal]}`,
   });
 
 // The name a person typed, as kept, or refused with `refuse`'s error.

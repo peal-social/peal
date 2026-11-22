@@ -3,41 +3,53 @@ import { Result } from "effect";
 
 import {
   fittedName,
+  holdsLinkMarker,
   maxPersonNameLength,
-  readsAsLink,
+  nameForMail,
+  readsAsAddress,
   typedName,
 } from "#shared/domain/display-name.ts";
 
-describe(readsAsLink, () => {
+describe(readsAsAddress, () => {
   it.each([
     "https://evil.example/claim",
     "Visit evil.com today",
     "WWW.EVIL.NET",
-    "www.example",
-    "bit.ly",
-    "EVIL.RU",
-    "Acme.io",
-    "xn--80ak6aa92e.xn--p1ai",
+    "login-peal.social",
+    "evil.social/login",
+    "evil.finance",
+    "Evil.Io",
+    "evil.Ru",
+    "admin@evil.social",
+    "93.184.216.34/x",
+    "пример.рф",
     "Support team evil．com",
-    "hxxp://not-a-scheme",
-  ])("reads %s as a link", (name) => {
-    expect(readsAsLink(name)).toBeTruthy();
+    "Booking.com",
+    "Node.js",
+    "Fly.io",
+  ])("reads %s as an address", (name) => {
+    expect(readsAsAddress(name)).toBeTruthy();
   });
 
   it.each([
     "St. John",
     "J.R.R. Tolkien",
-    "Jane Doe, M.Sc",
-    "Dr.Jo Martin",
     "Ph.D. candidates",
     "Acme Inc.",
     "Équipe Marketing",
     "Studio 54",
-    "St.Louis Bakery",
     "Anne-Marie O'Neil",
     "李小龍",
+    "Version 1.2",
   ])("reads %s as a name", (name) => {
-    expect(readsAsLink(name)).toBeFalsy();
+    expect(readsAsAddress(name)).toBeFalsy();
+  });
+});
+
+describe(nameForMail, () => {
+  it("shows a name as written, and the fallback for one that reads as an address", () => {
+    expect(nameForMail("St. John", "A member")).toBe("St. John");
+    expect(nameForMail("Booking.com", "A member")).toBe("A member");
   });
 });
 
@@ -48,7 +60,15 @@ describe(typedName, () => {
     ).toStrictEqual(Result.succeed("Jane Doe"));
   });
 
-  it("refuses what is empty, too long, or a link", () => {
+  it("takes names that look like hosts, which emails leave out instead", () => {
+    for (const name of ["Node.js", "Next.js Paris", "Booking.com", "J.LO"]) {
+      expect(typedName(name, maxPersonNameLength)).toStrictEqual(
+        Result.succeed(name)
+      );
+    }
+  });
+
+  it("refuses what is empty, too long, or holds a link's markers", () => {
     expect(
       typedName(` ${String.fromCodePoint(0x20_2e)} `, maxPersonNameLength)
     ).toStrictEqual(Result.fail("empty"));
@@ -58,20 +78,21 @@ describe(typedName, () => {
     expect(
       typedName("a".repeat(maxPersonNameLength), maxPersonNameLength)
     ).toStrictEqual(Result.succeed("a".repeat(maxPersonNameLength)));
-    expect(
-      typedName("Claim your prize at evil.com", maxPersonNameLength)
-    ).toStrictEqual(Result.fail("link"));
+
+    for (const name of ["Prize at https://evil.example", "see www.evil"]) {
+      expect(typedName(name, maxPersonNameLength)).toStrictEqual(
+        Result.fail("link")
+      );
+    }
   });
 });
 
 describe(fittedName, () => {
-  it("takes the link out of a name it is given, rather than refusing it", () => {
+  it("takes a link's markers out of a name it is given, rather than refusing it", () => {
     expect(fittedName("Prize at https://evil.com/x", 100)).toBe(
-      "Prize at https evil com/x"
+      "Prize at https evil.com/x"
     );
-    expect(
-      readsAsLink(fittedName("Prize at https://evil.com/x", 100))
-    ).toBeFalsy();
+    expect(holdsLinkMarker(fittedName("go to www.evil.com", 100))).toBeFalsy();
     expect(fittedName("Jane Doe", 100)).toBe("Jane Doe");
     expect(fittedName("Jane\nDoe", 4)).toBe("Jane");
   });

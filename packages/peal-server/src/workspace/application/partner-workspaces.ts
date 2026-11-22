@@ -1,9 +1,21 @@
-import { Context, DateTime, Effect, Layer, Option, Schema } from "effect";
+import {
+  Context,
+  DateTime,
+  Effect,
+  Layer,
+  Option,
+  Result,
+  Schema,
+} from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
+import {
+  maxWorkspaceNameLength,
+  typedName,
+} from "#shared/domain/display-name.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import {
@@ -46,7 +58,14 @@ const decodeCursor = Schema.decodeUnknownEffect(CursorSchema);
 
 const encodeCursor = Schema.encodeEffect(CursorSchema);
 
-const decodeName = Schema.decodeUnknownOption(WorkspaceNameSchema);
+// A workspace's name, as a person's: one line, bounded, without a web
+// address's markers (`typedName`), as Better Auth's routes keep it.
+const decodeName = (given: string): Option.Option<string> =>
+  Schema.decodeUnknownOption(WorkspaceNameSchema)(given).pipe(
+    Option.flatMap((name) =>
+      Result.getSuccess(typedName(name, maxWorkspaceNameLength))
+    )
+  );
 
 const decodeExternalId = Schema.decodeUnknownOption(ExternalIdSchema);
 
