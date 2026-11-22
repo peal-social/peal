@@ -45,7 +45,12 @@ export {
 
 export type { Round } from "#test/agent/fake-agent-model.ts";
 
-export { FakeTools, postId } from "#test/agent/fake-tools.ts";
+export {
+  channelId,
+  FakeTools,
+  postId,
+  postText,
+} from "#test/agent/fake-tools.ts";
 
 // No file is anyone's: every attached id is not found.
 const NoMediaLibrary = Layer.mock(MediaLibrary, {

@@ -894,12 +894,26 @@ things there, as they would with a colleague. Chats are the person's own.
 - **Approval card**: a change others see, that cannot be undone or that
   costs money waits for the person. White, hairline, `{rounded.lg}`,
   16 px inside: what the change does (14 px, 600: "Schedule this
-  post"), the text whole on `muted`, the channels as outline badges,
-  when on the person's clock in muted text, then **Approve** (primary,
-  `sm`) and **Decline** (outline, `sm`), with "Open the post" in
-  blue's text at the end. Once answered, an outline badge at the
-  title's end says Approved, Declined or Expired (or "Approved, not done" when the change then failed), and the buttons go.
-  Everything on it comes from the request, never from the agent's words.
+  post", "Hide this comment", "Delete this comment"), the text it sends
+  whole on `muted` (a reply; an edit's new text under "New text"; a
+  request's comment under "Your comment"), then all that goes out of the
+  post it acts on: its text on `muted`, its media as 80 px thumbnails
+  (`{rounded.md}`) with each alt text under it (12 px muted, "No alt
+  text" for none), its poll's choices, what it has instead on a channel
+  ("Instead, on Client A"), each part after it ("1st part after the
+  post, right after the one before"), each channel's settings as a list
+  of fields (the field in Geist Mono 12 px muted, its value 14 px), and
+  "Links go out shortened." when they do; each block under a 12 px 500
+  muted label, 12 px apart. Then the channels and tags as outline
+  badges, when on the person's clock (or the queue's next free slot) in
+  muted text, then **Approve** (primary, `sm`) and **Decline**
+  (outline, `sm`), with "Open the post" in blue's text at the end. Once
+  answered, an outline badge at the title's end says Approved, Declined,
+  Expired (after a day too) or "Changed since, not done" (the post was
+  edited after the card was shown), or "Approved, not done" when the
+  change then failed, and the buttons go. Everything on it comes from
+  the request, never from the agent's words; what the server cannot show
+  whole is never asked.
 - **The composer**: a white field, hairline, `{rounded.lg}`, 8 px
   inside, growing with its text to 192 px, then scrolling; the focus
   ring on the whole field. At its end the send button, primary, round

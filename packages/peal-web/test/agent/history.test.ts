@@ -169,6 +169,22 @@ describe(approvalKindOf, () => {
     // A post made with no time goes out at once.
     expect(approvalKindOf("create_post", null)).toBe("publish");
   });
+
+  it("says what moderating or marking a comment does to it, never one title for hiding and deleting", () => {
+    expect([
+      approvalKindOf("moderate_comment", null, { moderation: "hide" }),
+      approvalKindOf("moderate_comment", null, { moderation: "delete" }),
+      approvalKindOf("moderate_comment", null, { moderation: "unlike" }),
+      approvalKindOf("mark_comment_answered", null, { answered: false }),
+      approvalKindOf("tag_post", null),
+    ]).toStrictEqual([
+      "hide",
+      "deleteComment",
+      "unlike",
+      "markUnanswered",
+      "tagPost",
+    ]);
+  });
 });
 
 describe(changedKeysOf, () => {

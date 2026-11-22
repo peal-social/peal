@@ -1,4 +1,5 @@
 import type { DateTime } from "effect";
+import type { AgentApproval } from "peal-contract/agent";
 
 // What a step or a change of the agent's is about, from its tool's name
 // (the MCP endpoint's), so the chat names it in the reader's language:
@@ -111,7 +112,12 @@ export const stepKindOf = (tool: string): StepKind => {
 export type ApprovalKind =
   | "approve"
   | "delete"
+  | "deleteComment"
   | "edit"
+  | "hide"
+  | "like"
+  | "markAnswered"
+  | "markUnanswered"
   | "message"
   | "moderate"
   | "move"
@@ -122,6 +128,9 @@ export type ApprovalKind =
   | "requestChanges"
   | "schedule"
   | "tag"
+  | "tagPost"
+  | "unhide"
+  | "unlike"
   | "unpublish"
   | "unschedule";
 
@@ -134,7 +143,20 @@ const approvalKinds: Partial<Record<StepKind, ApprovalKind>> = {
   replying: "reply",
   scheduling: "schedule",
   tagCreating: "tag",
+  tagging: "tagPost",
   unpublishing: "unpublish",
+};
+
+// What moderating a comment does, each in its own words: hiding and
+// deleting never share a title.
+const moderations: Readonly<
+  Record<NonNullable<AgentApproval["moderation"]>, ApprovalKind>
+> = {
+  delete: "deleteComment",
+  hide: "hide",
+  like: "like",
+  unhide: "unhide",
+  unlike: "unlike",
 };
 
 // Changes to a scheduled post's time, each said in its own words.
@@ -146,14 +168,34 @@ const postMoves = new Map<string, ApprovalKind>([
 
 /**
  * What a change's tool does, as the approval card says it: a post made
- * with no time goes out at once.
+ * with no time goes out at once; a comment's moderation says what it does
+ * to it (`details`, from the server's request).
  */
 export const approvalKindOf = (
   tool: string,
-  at?: DateTime.Utc | null
+  at?: DateTime.Utc | null,
+  details: Partial<Pick<AgentApproval, "answered" | "moderation">> = {}
 ): ApprovalKind => {
   if (tool === "create_post" && at === null) {
     return "publish";
+  }
+
+  const { answered, moderation } = details;
+
+  if (
+    tool === "moderate_comment" &&
+    moderation !== undefined &&
+    moderation !== null
+  ) {
+    return moderations[moderation];
+  }
+
+  if (
+    tool === "mark_comment_answered" &&
+    answered !== undefined &&
+    answered !== null
+  ) {
+    return answered ? "markAnswered" : "markUnanswered";
   }
 
   const byName = postMoves.get(tool);

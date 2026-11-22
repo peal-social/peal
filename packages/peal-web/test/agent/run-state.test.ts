@@ -30,13 +30,28 @@ const event = (seconds: number, happened: AgentEvent): ChatAction => ({
 });
 
 const approval: AgentApproval = {
+  answered: null,
   at: null,
   callId: "call-2",
   channelIds: ["channel-1"],
+  comment: null,
   inReplyTo: null,
+  moderation: null,
+  part: null,
+  post: {
+    followUps: [],
+    media: [],
+    overrides: [],
+    poll: null,
+    shortenLinks: false,
+    targets: [{ channelId: "channel-1", options: null }],
+    text: "Our spring sale starts today.",
+  },
   postId: "post-1",
+  queue: null,
   state: "pending",
-  text: "Our spring sale starts today.",
+  tags: [],
+  text: null,
   threadId: null,
   tool: "publish_post",
 };

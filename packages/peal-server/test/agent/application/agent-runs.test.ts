@@ -2,26 +2,33 @@
 // allowances and the agent's tables: what a run sends, what it keeps, and
 // what it asks the person first.
 import { assert, layer } from "@effect/vitest";
-import { DateTime, Effect, Option, Ref, Stream } from "effect";
+import { DateTime, Duration, Effect, Option, Ref, Stream } from "effect";
 import { AiError } from "effect/ai";
 import { SqlClient } from "effect/sql";
+import { TestClock } from "effect/testing";
 import { CurrentMember } from "peal-contract";
 
 import { AgentDesk } from "#agent/application/agent-desk.ts";
 import type { RunAsked } from "#agent/application/agent-desk.ts";
 import { AgentChats } from "#agent/application/ports/agent-chats.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
-import { maxHistoryLength, maxRounds } from "#agent/domain/run-limits.ts";
+import {
+  approvalLifetimeHours,
+  maxHistoryLength,
+  maxRounds,
+} from "#agent/domain/run-limits.ts";
 import { Ids } from "#shared/application/ids.ts";
 import {
   agentTest,
   calls,
+  channelId,
   DatabaseTest,
   FakeAgentModel,
   FakeTools,
   fails,
   freshPerson,
   postId,
+  postText,
   says,
   saysThenCalls,
   silence,
@@ -65,6 +72,12 @@ const answer = (
 
 const detail = (person: Person, chatId: string) =>
   AgentDesk.use((desk) => desk.chat(person.actor, chatId));
+
+// The time and digest of the approval an event carries.
+const approvalIn = (event: AgentEvent | undefined) =>
+  event?._tag === "approval"
+    ? { at: event.approval.at, digest: event.approval.digest }
+    : { at: null, digest: "" };
 
 const tags = (events: readonly AgentEvent[]) =>
   events.map((event) => event._tag);
@@ -278,24 +291,64 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         const events = yield* send(person, chat.id, "Schedule it for Monday");
 
         const approval = events.find((event) => event._tag === "approval");
+        const { at, digest } = approvalIn(approval);
 
+        // All that goes out of the post, as the workspace holds it: its
+        // media, its channel's own text, its first comment, its options.
         assert.deepStrictEqual(approval, {
           _tag: "approval",
           approval: {
-            at: approval?._tag === "approval" ? approval.approval.at : null,
+            answered: null,
+            at,
             callId: "call-schedule",
-            channelIds: ["0190f0e0-0000-7000-8000-00000000c001"],
+            channelIds: [channelId],
+            comment: null,
+            digest,
             inReplyTo: null,
+            moderation: null,
+            part: null,
+            post: {
+              followUps: [
+                {
+                  delaySeconds: 0,
+                  media: [],
+                  overrides: [],
+                  text: "Shop the launch: https://shop.example.com/spring",
+                },
+              ],
+              media: [{ altText: "The new bottle", mediaId: "media-1" }],
+              overrides: [
+                {
+                  channelId,
+                  media: null,
+                  text: `${postText} Tag a friend who needs it.`,
+                },
+              ],
+              poll: null,
+              shortenLinks: false,
+              targets: [
+                {
+                  channelId,
+                  options: {
+                    collaborators: ["synthetic.partner"],
+                    platform: "instagram",
+                  },
+                },
+              ],
+              text: postText,
+            },
             postId,
+            queue: null,
             state: "pending",
-            text: "Our spring launch is here.",
+            tags: [],
+            text: null,
             threadId: null,
             tool: "schedule_post",
           },
         });
-        assert.isNotNull(
-          approval?._tag === "approval" ? approval.approval.at : null
-        );
+        assert.isNotNull(at);
+        // The digest of what the person was shown, to tell it still holds.
+        assert.match(digest, /^[0-9a-f]{64}$/u);
         assert.deepInclude(ended(events), { outcome: "awaitingApproval" });
         assert.notInclude(
           yield* FakeTools.use((tools) => tools.ran),
@@ -479,21 +532,23 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
       const events = yield* send(person, chat.id, "Thank them");
       const approval = events.find((event) => event._tag === "approval");
 
-      assert.deepInclude(approval, {
-        approval: {
+      assert.deepInclude(
+        approval?._tag === "approval" ? approval.approval : {},
+        {
           at: null,
           callId: "call-reply",
           channelIds: [],
           // The comment it answers, as the inbox holds it: never the
           // model's words.
           inReplyTo: { author: "Ada", text: "Love the new colours!" },
+          post: null,
           postId: null,
           state: "pending",
           text: "Thank you!",
           threadId: "thread-1",
           tool: "reply_to_comment",
-        },
-      });
+        }
+      );
 
       yield* script([says("I did not reply.")]);
 
@@ -590,6 +645,203 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's runs", (it) => {
         assert.notInclude(
           yield* FakeTools.use((tools) => tools.ran),
           "schedule_post"
+        );
+      }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    "does nothing when the post changed after the person was shown it, and says so",
+    () =>
+      Effect.gen(function* changes() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+
+        yield* script([calls("publish_post", { postId }, "call-publish")]);
+        yield* send(person, chat.id, "Publish it");
+
+        // A teammate edits the draft once the card was shown.
+        yield* FakeTools.use((tools) =>
+          tools.edit("Claim your prize at https://prize.example.com")
+        );
+        yield* script([says("The post changed, so I did not publish it.")]);
+
+        const after = yield* answer(person, chat.id, "call-publish", true);
+
+        assert.deepStrictEqual(tags(after), [
+          "started",
+          "approval",
+          "text",
+          "finished",
+        ]);
+        assert.isTrue(
+          after[1]?._tag === "approval" && after[1].approval.state === "changed"
+        );
+        assert.notInclude(
+          yield* FakeTools.use((tools) => tools.ran),
+          "publish_post"
+        );
+
+        const kept = yield* detail(person, chat.id);
+
+        assert.deepStrictEqual(
+          kept.messages.flatMap(({ approvals }) =>
+            approvals.map(({ state }) => state)
+          ),
+          ["changed"]
+        );
+
+        const last = (yield* prompts).at(-1);
+
+        assert.include(
+          JSON.stringify(last?.content),
+          "changed after the person"
+        );
+      }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    "never publishes a post a call of the same answer changed after its card",
+    () =>
+      Effect.gen(function* sameAnswer() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+        const usage = { inputTokens: { total: 1 }, outputTokens: { total: 1 } };
+        const phished = "Claim your prize at https://prize.example.com";
+
+        yield* script([
+          {
+            _tag: "parts",
+            parts: [
+              {
+                id: "call-publish",
+                name: "publish_post",
+                params: { postId },
+                type: "tool-call",
+              },
+              {
+                id: "call-edit",
+                name: "update_draft",
+                params: { content: { text: phished }, postId },
+                type: "tool-call",
+              },
+              { reason: "tool-calls", type: "finish", usage },
+            ],
+          },
+        ]);
+
+        const events = yield* send(person, chat.id, "Publish it");
+        const card = events.find((event) => event._tag === "approval");
+
+        const shownText =
+          card?._tag === "approval" ? card.approval.post?.text : undefined;
+
+        const after = yield* answer(person, chat.id, "call-publish", true);
+        const decided = after.find((event) => event._tag === "approval");
+
+        // Approved, it went out as the card showed it; else nothing went.
+        assert.isTrue(
+          decided?._tag === "approval" &&
+            (decided.approval.state === "changed" || shownText === phished)
+        );
+        assert.isTrue(
+          shownText === phished ||
+            !(yield* FakeTools.use((tools) => tools.ran)).includes(
+              "publish_post"
+            )
+        );
+      }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect("asks nothing it cannot show whole, and tells the model why", () =>
+    Effect.gen(function* refuses() {
+      const person = yield* freshPerson;
+      const chat = yield* newChat(person);
+
+      yield* script([
+        // A parameter the card does not show.
+        calls(
+          "moderate_comment",
+          { action: "hide", commentId: "c1", notify: true },
+          "call-extra"
+        ),
+        // A post that cannot be read.
+        calls(
+          "publish_post",
+          { postId: "0190f0e0-0000-7000-8000-00000000ffff" },
+          "call-unknown"
+        ),
+        // Shown whole: the moderation says what it does.
+        calls(
+          "moderate_comment",
+          { action: "delete", commentId: "c1" },
+          "call-delete"
+        ),
+      ]);
+
+      const events = yield* send(person, chat.id, "Clean up");
+
+      assert.deepStrictEqual(
+        events.flatMap((event) =>
+          event._tag === "step" ? [[event.step.callId, event.step.state]] : []
+        ),
+        [
+          ["call-extra", "refused"],
+          ["call-unknown", "refused"],
+        ]
+      );
+
+      const approvals = events.flatMap((event) =>
+        event._tag === "approval" ? [event.approval] : []
+      );
+
+      assert.deepStrictEqual(
+        approvals.map(({ callId, inReplyTo, moderation }) => [
+          callId,
+          moderation,
+          inReplyTo?.text,
+        ]),
+        [["call-delete", "delete", "Love the new colours!"]]
+      );
+
+      const results = JSON.stringify((yield* prompts).at(-1)?.content);
+
+      assert.include(results, "every parameter of this call");
+      assert.include(results, "could not read this post");
+      assert.notInclude(
+        yield* FakeTools.use((tools) => tools.ran),
+        "moderate_comment"
+      );
+    }).pipe(Effect.provide(agentTest()))
+  );
+
+  it.effect(
+    `lets a change lapse ${String(approvalLifetimeHours)} hours after it was asked`,
+    () =>
+      Effect.gen(function* lapses() {
+        const person = yield* freshPerson;
+        const chat = yield* newChat(person);
+
+        yield* script([calls("publish_post", { postId }, "call-old")]);
+        yield* send(person, chat.id, "Publish it");
+        yield* TestClock.adjust(Duration.hours(approvalLifetimeHours + 1));
+
+        const refused = yield* AgentDesk.use((desk) =>
+          desk.answer(person.actor, chat.id, "call-old", true, asked)
+        ).pipe(Effect.flip);
+
+        assert.strictEqual(refused._tag, "ApprovalNotPending");
+
+        const kept = yield* detail(person, chat.id);
+
+        assert.deepStrictEqual(
+          kept.messages.flatMap(({ approvals }) =>
+            approvals.map(({ state }) => state)
+          ),
+          ["expired"]
+        );
+        assert.notInclude(
+          yield* FakeTools.use((tools) => tools.ran),
+          "publish_post"
         );
       }).pipe(Effect.provide(agentTest()))
   );

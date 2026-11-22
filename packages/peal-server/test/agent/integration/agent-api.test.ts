@@ -162,6 +162,7 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Admins, who may make the workspace's skills.
           const leaving = yield* memberOf(workspaceId, "agent-leaver", "admin");
+
           const removed = yield* memberOf(
             workspaceId,
             "agent-removed",

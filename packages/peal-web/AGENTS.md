@@ -804,7 +804,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   as text a tool answered could have the model write a link that
   carries what it read),
   rendered as elements by `AgentMarkdown`, never as HTML. Cards and
-  approvals show what the server sent, never the agent's words; a step
+  approvals show what the server sent, never the agent's words, and an
+  approval all of it (`ApprovalCardView`: the post whole, its media
+  through `renderMedia`, `ApprovalMedia`; each channel's settings and
+  waits through `#agent/approval-details.ts`, tested); a change past
+  `agentApprovalLifetimeHours` reads as expired (`lapsedAt`); a step
   and a change are named from their tool (`#agent/steps.ts`), with a
   word of their own for a tool the list does not know. The panel's tabs
   and the chat shown are the browser's (`#agent/panel-state.ts`, in

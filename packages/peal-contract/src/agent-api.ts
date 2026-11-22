@@ -4,8 +4,13 @@ import { AgentGroup } from "./agent.ts";
 
 export {
   AgentApprovalAnswerSchema,
+  AgentApprovalMediaSchema,
+  AgentApprovalOverrideSchema,
+  AgentApprovalPartSchema,
+  AgentApprovalPostSchema,
   AgentApprovalSchema,
   AgentApprovalStateSchema,
+  agentApprovalLifetimeHours,
   AgentCardActionSchema,
   AgentCardSchema,
   AgentChatDetailSchema,
@@ -35,6 +40,10 @@ export {
 export type {
   AgentApproval,
   AgentApprovalAnswer,
+  AgentApprovalMedia,
+  AgentApprovalOverride,
+  AgentApprovalPart,
+  AgentApprovalPost,
   AgentApprovalState,
   AgentCard,
   AgentCardAction,
