@@ -39,6 +39,13 @@ describe(nextPathOf, () => {
     "/fr/api/l/abc123",
     "/FR/api/l/abc123",
     "/en/api/l/abc123",
+    // next-intl drops a default language's prefix one redirect at a time.
+    "/en/en/api/l/AbCd123",
+    "/fr/en/api/l/AbCd123",
+    "/EN/en/Api/l/AbCd123",
+    "/en/fr/en/api/l/AbCd123",
+    "/en/en/app",
+    "/fr/fr",
     "/.well-known/oauth-authorization-server",
     "/fr/.well-known/api-catalog",
     "/.WELL-KNOWN/api-catalog",

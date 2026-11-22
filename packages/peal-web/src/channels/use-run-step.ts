@@ -30,6 +30,18 @@ const openBlankTab = (): Window | null => {
   }
 };
 
+// Takes the tab's way back to this one, which only a tab of this origin
+// (a blank one) lets set: whether it did.
+const cutOff = (tab: Window): boolean => {
+  try {
+    tab.opener = null;
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 /**
  * Opens the tab a run's sign-ins happen in, from a click (browsers open a
  * tab only then), blank until its sign-in starts; none where the browser
@@ -48,21 +60,25 @@ export const openSignInTab = (): Window | null => {
 
   const tab = openBlankTab();
 
-  if (tab === null) {
-    return null;
-  }
-
-  try {
-    // Set while the tab is blank, so of this origin: a tab of that name
-    // left on another site's page refuses it.
-    tab.opener = null;
-
+  if (tab === null || cutOff(tab)) {
     return tab;
-  } catch {
-    tab.close();
-
-    return null;
   }
+
+  // A tab of that name left on another site's page (an earlier run's)
+  // refuses it: it closes, and the tab opened in its place is blank, of
+  // this origin. Where that one cannot be cut off either, or the browser
+  // opens no second tab from the click, the step's own tab leaves instead.
+  tab.close();
+
+  const again = openBlankTab();
+
+  if (again === null || cutOff(again)) {
+    return again;
+  }
+
+  again.close();
+
+  return null;
 };
 
 /**

@@ -36,12 +36,18 @@ const isPagePath = (next: string): boolean => {
     return false;
   }
 
-  const [first = "", second = ""] = path
+  const segments = path
     .slice(1)
     .split("/")
     .map((segment) => segment.toLowerCase());
 
-  return !notPages.has(locales.has(first) ? second : first);
+  // Every leading language, as next-intl drops a default one's prefix a
+  // redirect at a time (`/en/en/api` becomes `/en/api`, then `/api`). A
+  // page names one language at most, so a second is refused outright.
+  const languages = segments.findIndex((segment) => !locales.has(segment));
+  const named = languages === -1 ? segments.length : languages;
+
+  return named <= 1 && !notPages.has(segments[named] ?? "");
 };
 
 // A page of this app, never another site's (a second slash or a backslash

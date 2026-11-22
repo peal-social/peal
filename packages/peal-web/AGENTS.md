@@ -149,8 +149,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   chat, none of `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and a
   tab of the run's own (`openSignInTab`, opened from the click, as
   browsers open one only then, its `opener` cut while it is blank, as it
-  goes to other sites' pages; one of that name it cannot cut off is
-  closed, and the step's own tab leaves instead) runs their sign-ins one after the other
+  goes to other sites' pages; one of that name it cannot cut off, left
+  on another site, is closed and opened again blank, and only where that
+  fails too does the step's own tab leave instead) runs their sign-ins one after the other
   while the step stays open in the first tab: the run lives in
   `localStorage` (`#channels/connect-run.ts`), which every tab reads and
   whose storage events keep the step current; `useRunStep` starts its
@@ -336,7 +337,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   where a short link redirects anywhere, `/.well-known`), a route handler
   of the app (`/pulse`, `/emoji-data`), a path with a dot, a `%`, a
   backslash, `//` or a control character, after a language or not, in any
-  case. A new route handler at the root joins its `notPages`.
+  case; nor a path naming more than one language (`/en/en/api/…`, which
+  next-intl's redirects shorten to `/api/…`). A new route handler at the root joins its `notPages`.
 - Client components call Better Auth through `authClient` (`#auth/client.ts`).
   During an OAuth authorization it sends the page's signed query with every
   POST, and Better Auth resumes the authorization after any call that sets
