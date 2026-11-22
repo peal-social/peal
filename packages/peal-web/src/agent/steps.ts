@@ -27,6 +27,7 @@ export type StepKind =
   | "reviews"
   | "saved"
   | "scheduling"
+  | "skill"
   | "tagCreating"
   | "tagging"
   | "tags"
@@ -61,6 +62,7 @@ const byTool = new Map<string, StepKind>([
   ["post_analytics", "analytics"],
   ["publish_post", "publishing"],
   ["queue_post", "scheduling"],
+  ["read_skill", "skill"],
   ["remove_post_target", "deleting"],
   ["reply_to_comment", "replying"],
   ["reply_to_location_review", "replying"],

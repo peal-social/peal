@@ -54,6 +54,7 @@ const answer = (fields: Partial<AgentMessage>): AgentMessage => ({
   outcome: null,
   rating: null,
   role: "assistant",
+  skills: [],
   steps: [],
   text: "",
   ...fields,

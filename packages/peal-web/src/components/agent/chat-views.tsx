@@ -30,7 +30,7 @@ import { Button, buttonVariants } from "peal-ui/components/button";
 import { EmptyStateTitle } from "peal-ui/components/empty-state";
 import { cn } from "peal-ui/lib/utils";
 import { Fragment, useId } from "react";
-import type { KeyboardEvent, ReactNode, RefObject } from "react";
+import type { KeyboardEvent, ReactNode, Ref } from "react";
 
 import { segmentsOf } from "#agent/answer-segments.ts";
 import type { AnswerSegments } from "#agent/answer-segments.ts";
@@ -40,6 +40,7 @@ import type { ChatState, RunProblem } from "#agent/run-state.ts";
 import { approvalKindOf, stepKindOf } from "#agent/steps.ts";
 import type { ApprovalKind } from "#agent/steps.ts";
 import { AgentMarkdown } from "#components/agent/agent-markdown.tsx";
+import { MessageSkillsView } from "#components/agent/skill-picker-views.tsx";
 import type { LinkComponent } from "#components/shell/sidebar-view.tsx";
 
 type Translate = ReturnType<typeof useTranslations<"Agent">>;
@@ -568,6 +569,7 @@ export const MessageView = ({
             ))}
           </ul>
         )}
+        <MessageSkillsView skills={message.skills} />
       </div>
     );
   }
@@ -642,6 +644,7 @@ export const refusalMessage = (
       reason === "notReady"
         ? t("errors.mediaNotReady")
         : t("errors.mediaNotFound"),
+    AgentSkillNotFound: () => t("errors.skillNotFound"),
     AssistantInputRejected: ({ maxLength, reason }) =>
       reason === "empty"
         ? t("errors.empty")
@@ -775,7 +778,9 @@ export const TranscriptView = ({
 
 /**
  * The composer: Enter sends, Shift+Enter breaks the line, and its round
- * button sends, or stops the run under way.
+ * button sends, or stops the run under way. While the menu over the text
+ * is open (`menu`, the "/" menu), its keys are its own: Enter and Tab
+ * pick, Escape closes it, and none sends or leaves the field.
  */
 export const ComposerView = ({
   addMenu = null,
@@ -784,36 +789,63 @@ export const ComposerView = ({
   disabled,
   inputRef,
   label,
+  menu = null,
+  isMenuOpen,
   onChange,
   onEscape,
   onSend,
   onStop,
+  picked = false,
   placeholder,
   running,
   value,
 }: {
   /** The **+** menu, before the send button. */
   readonly addMenu?: ReactNode;
-  /** The files attached to the message, above the text. */
+  /** The files and skills attached to the message, above the text. */
   readonly attachments?: ReactNode;
   /** Something attached is not ready: sending waits. */
   readonly blocked?: boolean;
   readonly disabled: boolean;
-  readonly inputRef?: RefObject<HTMLTextAreaElement | null> | undefined;
+  readonly inputRef?: Ref<HTMLTextAreaElement> | undefined;
   readonly label: string;
+  /** The menu over the text, as the "/" menu draws it. */
+  readonly menu?: ReactNode;
+  /** Whether that menu is open, and so takes the keys it uses. */
+  readonly isMenuOpen?: (() => boolean) | undefined;
   readonly onChange: (text: string) => void;
   readonly onEscape?: (() => void) | undefined;
   readonly onSend: () => void;
   readonly onStop: () => void;
+  /** Skills are picked: the message can go without text of its own. */
+  readonly picked?: boolean;
   readonly placeholder: string;
   readonly running: boolean;
   readonly value: string;
 }) => {
   const t = useTranslations("Agent");
-  const empty = value.trim() === "";
+  const empty = value.trim() === "" && !picked;
   const tooLong = value.length > maxAgentMessageLength;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    // The open menu took the key (Enter, Tab and the arrows) before the
+    // field, or closes on it (Escape): it neither sends nor leaves.
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    // Escape is left to the menu, which closes on it unless the key was
+    // already taken.
+    if (isMenuOpen?.() === true && event.key === "Escape") {
+      return;
+    }
+
+    if (isMenuOpen?.() === true && event.key === "Enter") {
+      event.preventDefault();
+
+      return;
+    }
+
     if (event.key === "Escape") {
       event.preventDefault();
 
@@ -853,6 +885,7 @@ export const ComposerView = ({
         }}
         onKeyDown={handleKeyDown}
       />
+      {menu}
       <div className="flex items-center justify-end gap-2">
         {addMenu}
         {/* Near the limit, how much is left; past it, sending waits. */}

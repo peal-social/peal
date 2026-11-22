@@ -6,6 +6,7 @@ import type {
   AgentFailure,
   AgentMedia,
   AgentMessage,
+  AgentMessageSkill,
   AgentRating,
   AgentStep,
 } from "peal-contract/agent";
@@ -36,6 +37,8 @@ export interface ChatState {
   readonly messages: readonly AgentMessage[];
   readonly problem: RunProblem | null;
   readonly run: Run | null;
+  /** The skills picked for the message being written, as chips. */
+  readonly skills: readonly AgentMessageSkill[];
   readonly starred: boolean;
   readonly title: string | null;
 }
@@ -46,6 +49,7 @@ export const emptyChat: ChatState = {
   messages: [],
   problem: null,
   run: null,
+  skills: [],
   starred: false,
   title: null,
 };
@@ -57,10 +61,16 @@ export type ChatAction =
   | { readonly _tag: "stale" }
   | { readonly _tag: "typed"; readonly text: string }
   | {
+      readonly _tag: "picked";
+      readonly skills: readonly AgentMessageSkill[];
+    }
+  | {
       readonly _tag: "sent";
       readonly at: DateTime.Utc;
       /** The files the message attaches, shown with it at once. */
       readonly media: readonly AgentMedia[];
+      /** The skills the message picks, shown with it at once. */
+      readonly skills: readonly AgentMessageSkill[];
       readonly text: string;
     }
   | {
@@ -77,6 +87,8 @@ export type ChatAction =
   | {
       readonly _tag: "refused";
       readonly refusal: RunRefusal;
+      /** The message's skills, back in the composer; null for an answer. */
+      readonly skills: readonly AgentMessageSkill[] | null;
       /** The message's text, back in the composer; null for an answer. */
       readonly text: string | null;
     }
@@ -170,6 +182,7 @@ const answerOf = (id: string, at: DateTime.Utc): AgentMessage => ({
   outcome: null,
   rating: null,
   role: "assistant",
+  skills: [],
   steps: [],
   text: "",
 });
@@ -287,6 +300,20 @@ const onEvent = (
   }
 };
 
+// Nothing was saved: the message goes back to the composer, its skills
+// with it.
+const refused = (
+  state: ChatState,
+  action: Extract<ChatAction, { readonly _tag: "refused" }>
+): ChatState => ({
+  ...state,
+  draft: action.text ?? state.draft,
+  messages: state.messages.filter(({ id }) => id !== localUserMessageId),
+  problem: { _tag: "refused", refusal: action.refusal },
+  run: null,
+  skills: action.skills ?? state.skills,
+});
+
 /**
  * The chat once something happened to it. Pure: the page and the panel
  * fold the same actions into the same atom.
@@ -318,17 +345,23 @@ export const foldChat = (state: ChatState, action: ChatAction): ChatState => {
       return { ...state, draft: action.text };
     }
 
+    case "picked": {
+      return { ...state, skills: action.skills };
+    }
+
     case "sent": {
       const mine: AgentMessage = {
         ...answerOf(localUserMessageId, action.at),
         role: "user",
         media: action.media,
+        skills: action.skills,
         text: action.text,
       };
 
       return {
         ...state,
         draft: "",
+        skills: [],
         messages: [...state.messages.map(expirePending), mine],
         problem: null,
         run: { messageId: null, startedAt: action.at },
@@ -358,14 +391,7 @@ export const foldChat = (state: ChatState, action: ChatAction): ChatState => {
     }
 
     case "refused": {
-      // Nothing was saved: the message goes back to the composer.
-      return {
-        ...state,
-        draft: action.text ?? state.draft,
-        messages: state.messages.filter(({ id }) => id !== localUserMessageId),
-        problem: { _tag: "refused", refusal: action.refusal },
-        run: null,
-      };
+      return refused(state, action);
     }
 
     case "interrupted": {

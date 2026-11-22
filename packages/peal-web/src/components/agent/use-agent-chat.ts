@@ -9,7 +9,11 @@ import {
 import { Exit, Option } from "effect";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import type { AgentMedia, AgentRating } from "peal-contract/agent";
+import type {
+  AgentMedia,
+  AgentMessageSkill,
+  AgentRating,
+} from "peal-contract/agent";
 import { toast } from "peal-ui/components/toast";
 import { useCallback, useContext, useEffect, useMemo, useRef } from "react";
 
@@ -248,9 +252,17 @@ export const useAgentChat = (workspaceId: string, chatId: string) => {
 
       return Exit.isSuccess(exit);
     },
-    send: (text: string, media: readonly AgentMedia[] = []) => {
+    /** Picks the skills for the message being written. */
+    pick: (skills: readonly AgentMessageSkill[]) => {
+      dispatch({ _tag: "picked", skills });
+    },
+    send: (
+      text: string,
+      media: readonly AgentMedia[] = [],
+      skills: readonly AgentMessageSkill[] = []
+    ) => {
       registry.set(run, {
-        ask: { _tag: "send", media, text },
+        ask: { _tag: "send", media, skills, text },
         chatId,
         workspaceId,
       });
@@ -298,13 +310,22 @@ export const useNewAgentChat = (
   useOfferOnRefusal(state, workspaceId);
 
   return {
-    send: async (text: string, media: readonly AgentMedia[] = []) => {
+    /** Picks the skills for the message being written. */
+    pick: (skills: readonly AgentMessageSkill[]) => {
+      dispatch({ _tag: "picked", skills });
+    },
+    send: async (
+      text: string,
+      media: readonly AgentMedia[] = [],
+      skills: readonly AgentMessageSkill[] = []
+    ) => {
       dispatch({ _tag: "typed", text: "" });
+      dispatch({ _tag: "picked", skills: [] });
 
       const exit = await create({ params: { workspaceId } });
 
       if (Exit.isFailure(exit)) {
-        dispatch({ _tag: "refused", refusal: refusalOf(exit), text });
+        dispatch({ _tag: "refused", refusal: refusalOf(exit), skills, text });
 
         return;
       }
@@ -318,7 +339,7 @@ export const useNewAgentChat = (
         title: chat.title,
       });
       registry.set(agentRun(chat.id), {
-        ask: { _tag: "send", media, text },
+        ask: { _tag: "send", media, skills, text },
         chatId: chat.id,
         workspaceId,
       });

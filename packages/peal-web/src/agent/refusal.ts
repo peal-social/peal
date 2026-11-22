@@ -13,6 +13,7 @@ import {
   AgentBusy,
   AgentChatNotFound,
   AgentMediaRejected,
+  AgentSkillNotFound,
 } from "peal-contract/agent";
 
 /**
@@ -25,6 +26,7 @@ export type RunRefusal =
   | AgentBusy
   | AgentChatNotFound
   | AgentMediaRejected
+  | AgentSkillNotFound
   | AssistantInputRejected
   | AssistantQuotaExceeded
   | AssistantUnavailable
@@ -40,6 +42,7 @@ const isRefusal = Schema.is(
     AgentBusy,
     AgentChatNotFound,
     AgentMediaRejected,
+    AgentSkillNotFound,
     AssistantInputRejected,
     AssistantQuotaExceeded,
     AssistantUnavailable,

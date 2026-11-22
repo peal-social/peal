@@ -1,13 +1,17 @@
 "use client";
 
+import { useAtomValue } from "@effect/atom-react";
+import { AsyncResult } from "effect/reactivity";
 import { PanelBottomOpenIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Permission } from "peal-contract";
-import type { AgentMedia } from "peal-contract/agent";
+import type { AgentMedia, AgentMessageSkill } from "peal-contract/agent";
 import { Button } from "peal-ui/components/button";
-import { useRef, useSyncExternalStore } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 
 import { openChat } from "#agent/panel-state.ts";
+import { pickSkill } from "#agent/skill-picker.ts";
+import { agentSkills } from "#agent/skills.ts";
 import {
   ChatBody,
   useAvailability,
@@ -73,14 +77,59 @@ const subscribeExamples = (listener: () => void) => {
 const recentCount = 8;
 
 /**
+ * Picks the skill the address names (`?skill=<id>`, a skill's "Use in
+ * chat") once the person's skills are read, then drops it from the
+ * address, so a reload or a link copied picks nothing again. A skill they
+ * may not use is dropped too.
+ */
+const usePickFromAddress = ({
+  onPick,
+  picked,
+  skillId,
+  workspaceId,
+}: {
+  readonly onPick: (skills: readonly AgentMessageSkill[]) => void;
+  readonly picked: readonly AgentMessageSkill[];
+  readonly skillId: string | null;
+  readonly workspaceId: string;
+}) => {
+  const skills = useAtomValue(agentSkills(workspaceId));
+  const done = useRef(false);
+
+  useEffect(() => {
+    if (done.current || skillId === null || AsyncResult.isInitial(skills)) {
+      return;
+    }
+
+    done.current = true;
+
+    const skill = AsyncResult.isSuccess(skills)
+      ? skills.value.skills.find(({ id }) => id === skillId)
+      : undefined;
+
+    if (skill !== undefined) {
+      onPick(pickSkill(picked, skill));
+    }
+
+    const address = new URL(window.location.href);
+
+    address.searchParams.delete("skill");
+    window.history.replaceState(window.history.state, "", address);
+  }, [onPick, picked, skillId, skills]);
+};
+
+/**
  * The agent's page (`…/agent`): a new chat's composer in the centre, the
  * examples, and the person's latest chats. Sending opens the chat's page.
  */
 export const AgentHomeScreen = ({
   permissions,
+  skillId,
   workspaceId,
 }: {
   readonly permissions: readonly Permission[];
+  /** The skill the address asks to pick, if any. */
+  readonly skillId: string | null;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("Agent");
@@ -103,8 +152,19 @@ export const AgentHomeScreen = ({
     router.push(workspaceHref(workspaceId, `/agent/${chatId}`));
   });
 
-  const send = (text: string, media: readonly AgentMedia[] = []) => {
-    void chat.send(text, media);
+  usePickFromAddress({
+    onPick: chat.pick,
+    picked: chat.state.skills,
+    skillId,
+    workspaceId,
+  });
+
+  const send = (
+    text: string,
+    media: readonly AgentMedia[] = [],
+    skills: readonly AgentMessageSkill[] = []
+  ) => {
+    void chat.send(text, media, skills);
   };
 
   return (
@@ -117,8 +177,12 @@ export const AgentHomeScreen = ({
           label={t("composerLabel")}
           placeholder={t("placeholder")}
           running={false}
+          skills={chat.state.skills}
           value={chat.state.draft}
           workspaceId={workspaceId}
+          onSkills={(skills) => {
+            chat.pick(skills);
+          }}
           onChange={(text) => {
             chat.type(text);
           }}

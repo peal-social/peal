@@ -1,25 +1,16 @@
 "use client";
 
 import { useShortcut, useShortcutHint } from "@ui-sdk/react/shortcuts";
-import {
-  BarChart3Icon,
-  BoxIcon,
-  CalendarRangeIcon,
-  ClockIcon,
-  MessageSquareReplyIcon,
-  PenLineIcon,
-  PaperclipIcon,
-  PlusIcon,
-  RepeatIcon,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import { BoxIcon, PaperclipIcon, PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { MediaContentTypeSchema } from "peal-contract";
+import type { AgentSkill } from "peal-contract/agent";
 import { Button } from "peal-ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -31,49 +22,30 @@ import { useRef } from "react";
 import { panelWasLast } from "#agent/agent-surface.ts";
 import { agentChatKeys } from "#shell/keys.ts";
 
-/**
- * The agent's skills: ready-made requests for what a marketing team asks
- * most, each put in the composer to send as it is or finish.
- */
-export const agentSkills = [
-  "planWeek",
-  "draft",
-  "replies",
-  "report",
-  "adapt",
-  "bestTimes",
-] as const;
-
-export type AgentSkill = (typeof agentSkills)[number];
-
-const skillIcons: Readonly<Record<AgentSkill, LucideIcon>> = {
-  adapt: RepeatIcon,
-  bestTimes: ClockIcon,
-  draft: PenLineIcon,
-  planWeek: CalendarRangeIcon,
-  replies: MessageSquareReplyIcon,
-  report: BarChart3Icon,
-};
-
 // What the media library takes, as the uploader offers it.
 const accept = MediaContentTypeSchema.literals.join(",");
 
 /**
  * The composer's **+**: **File** (⌘⇧U), a file from the computer added to
- * the library and attached to the message, and **Skill**, a ready-made
- * request put in the composer.
+ * the library and attached to the message, and **Skill**, the person's
+ * skills the message may still pick, then "Create skill…".
  */
 export const ComposerAddMenu = ({
   disabled,
   keys,
+  onCreateSkill,
   onFiles,
   onSkill,
+  skills,
 }: {
   readonly disabled: boolean;
   /** Where ⌘⇧U acts: this chat's page or the panel, as the chat's keys. */
   readonly keys?: "page" | "panel" | undefined;
+  readonly onCreateSkill: () => void;
   readonly onFiles: (files: readonly File[]) => void;
-  readonly onSkill: (prompt: string) => void;
+  readonly onSkill: (skill: AgentSkill) => void;
+  /** The skills the message may still pick. */
+  readonly skills: readonly AgentSkill[];
 }) => {
   const t = useTranslations("Agent");
   const picker = useRef<HTMLInputElement>(null);
@@ -135,21 +107,27 @@ export const ComposerAddMenu = ({
               {t("add.skill")}
             </DropdownMenuSubTrigger>
             <DropdownMenuSubContent className="w-64">
-              {agentSkills.map((skill) => {
-                const Icon = skillIcons[skill];
-
-                return (
-                  <DropdownMenuItem
-                    key={skill}
-                    onClick={() => {
-                      onSkill(t(`skills.${skill}.prompt`));
-                    }}
-                  >
-                    <Icon aria-hidden />
-                    {t(`skills.${skill}.title`)}
-                  </DropdownMenuItem>
-                );
-              })}
+              {skills.map((skill) => (
+                <DropdownMenuItem
+                  key={skill.id}
+                  onClick={() => {
+                    onSkill(skill);
+                  }}
+                >
+                  <BoxIcon aria-hidden />
+                  <span className="truncate">{skill.name}</span>
+                  {skill.scope === "workspace" ? (
+                    <span className="text-muted-foreground ms-auto text-xs">
+                      {t("add.workspaceSkill")}
+                    </span>
+                  ) : null}
+                </DropdownMenuItem>
+              ))}
+              {skills.length === 0 ? null : <DropdownMenuSeparator />}
+              <DropdownMenuItem onClick={onCreateSkill}>
+                <PlusIcon aria-hidden />
+                {t("add.createSkill")}
+              </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
         </DropdownMenuContent>

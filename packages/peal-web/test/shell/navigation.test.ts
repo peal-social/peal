@@ -318,4 +318,43 @@ describe(navigationOf, () => {
       false,
     ]);
   });
+
+  it("puts the agent's settings in Settings for those who may use it, a skill under them", () => {
+    const asks: readonly Permission[] = ["assistant:use"];
+
+    const settings = navigationOf({
+      pathname: `${base}/settings/agent`,
+      permissions: asks,
+      workspace,
+    });
+
+    const crumbs = (path: string) =>
+      navigationOf({
+        pathname: `${base}/settings/agent${path}`,
+        permissions: asks,
+        workspace,
+      }).breadcrumb;
+
+    expect([
+      settings.current,
+      settings.section,
+      settings.breadcrumb,
+      settings.sectionLinks.some(({ page }) => page === "agentSettings"),
+      at("/settings").sectionLinks.some(({ page }) => page === "agentSettings"),
+      crumbs("/skills/new"),
+      crumbs("/skills/s1"),
+      crumbHrefOf(workspace, "agentSettings"),
+      hrefOf(workspace, "agentSettings"),
+    ]).toStrictEqual([
+      "agentSettings",
+      "settings",
+      { page: "agentSettings", trail: ["settings"] },
+      true,
+      false,
+      { page: "newSkill", trail: ["settings", "agentSettings"] },
+      { page: "skill", trail: ["settings", "agentSettings"] },
+      `${base}/settings/agent`,
+      `${base}/settings/agent`,
+    ]);
+  });
 });
