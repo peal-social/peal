@@ -113,7 +113,7 @@ export const SlashMenuView = ({
         side="top"
         align="start"
         sideOffset={8}
-        className="bg-popover text-popover-foreground ring-foreground/10 z-50 max-h-64 w-64 overflow-y-auto rounded-lg p-1 shadow-md ring-1"
+        className="bg-popover text-popover-foreground ring-foreground/10 z-50 max-h-64 w-80 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-lg p-1 shadow-md ring-1"
       >
         <TriggerMenuList aria-label={t("add.slashMenu")}>
           {skills.map((skill) => (
@@ -128,7 +128,7 @@ export const SlashMenuView = ({
               </TriggerMenuItemIcon>
               <span className="min-w-0 truncate">{skill.name}</span>
               {skill.scope === "workspace" ? (
-                <span className="text-muted-foreground ms-auto text-xs">
+                <span className="text-muted-foreground ms-auto shrink-0 ps-2 text-xs whitespace-nowrap">
                   {t("add.workspaceSkill")}
                 </span>
               ) : null}

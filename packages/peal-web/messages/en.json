@@ -5327,7 +5327,7 @@
     "retry": "Try again",
     "gone": "This skill couldn't be opened. It was deleted, or it's no longer shared with you.",
     "backToList": "See your skills",
-    "readOnly": "You can use this workspace skill, but you can't change it: another member made it.",
+    "readOnly": "You can use this workspace skill. Only the member who made it, or someone who manages the assistant's settings, can change it.",
     "form": {
       "name": "Name",
       "nameHint": "What you'll type after / to pick it. {max, number} characters at most.",
@@ -5361,7 +5361,7 @@
     "errors": {
       "nameTaken": "You can already use a skill with this name. Choose another, so / finds the right one.",
       "tooMany": "You can use {max, number} skills here, the most there can be. Delete one before you make another.",
-      "notEditable": "You can't change this skill: it's a workspace skill another member made.",
+      "notEditable": "You can't change this skill: only the member who made it, or someone who manages the assistant's settings, can.",
       "notFound": "This skill is gone. It was deleted, or it's no longer shared with you.",
       "forbidden": "Your role doesn't let you use the agent, so you can't save skills.",
       "unexpected": "The skill couldn't be saved. Try again.",

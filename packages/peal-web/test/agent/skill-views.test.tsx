@@ -275,7 +275,7 @@ describe(SkillFormView, () => {
     );
 
     expect([
-      html.includes("another member made it"),
+      html.includes("manages the assistant&#x27;s settings"),
       html.includes(">Save<"),
       html.includes('disabled=""'),
     ]).toStrictEqual([true, false, true]);

@@ -37,6 +37,7 @@ import type { AnswerSegments } from "#agent/answer-segments.ts";
 import { relativeDayOf } from "#agent/history.ts";
 import type { RunRefusal } from "#agent/refusal.ts";
 import type { ChatState, RunProblem } from "#agent/run-state.ts";
+import { writtenTextOf } from "#agent/skill-picker.ts";
 import { approvalKindOf, stepKindOf } from "#agent/steps.ts";
 import type { ApprovalKind } from "#agent/steps.ts";
 import { AgentMarkdown } from "#components/agent/agent-markdown.tsx";
@@ -543,14 +544,18 @@ export const MessageView = ({
   const t = useTranslations("Agent");
 
   if (message.role === "user") {
+    const written = writtenTextOf(message);
+
     return (
       <div className="flex flex-col items-end gap-1.5">
-        <p
-          dir="auto"
-          className="bg-muted max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap"
-        >
-          {message.text}
-        </p>
+        {written === null ? null : (
+          <p
+            dir="auto"
+            className="bg-muted max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap"
+          >
+            {written}
+          </p>
+        )}
         {message.media.length === 0 ? null : (
           <ul
             aria-label={t("add.attachments")}

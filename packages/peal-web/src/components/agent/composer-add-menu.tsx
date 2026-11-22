@@ -106,7 +106,7 @@ export const ComposerAddMenu = ({
               <BoxIcon aria-hidden />
               {t("add.skill")}
             </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-64">
+            <DropdownMenuSubContent className="w-80 max-w-[calc(100vw-2rem)]">
               {skills.map((skill) => (
                 <DropdownMenuItem
                   key={skill.id}
@@ -115,9 +115,9 @@ export const ComposerAddMenu = ({
                   }}
                 >
                   <BoxIcon aria-hidden />
-                  <span className="truncate">{skill.name}</span>
+                  <span className="min-w-0 truncate">{skill.name}</span>
                   {skill.scope === "workspace" ? (
-                    <span className="text-muted-foreground ms-auto text-xs">
+                    <span className="text-muted-foreground ms-auto shrink-0 ps-2 text-xs whitespace-nowrap">
                       {t("add.workspaceSkill")}
                     </span>
                   ) : null}

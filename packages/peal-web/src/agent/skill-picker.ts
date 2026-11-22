@@ -66,3 +66,16 @@ export const sentTextOf = (
 
   return written === "" ? picked.map(({ name }) => name).join(", ") : written;
 };
+
+/**
+ * What the person wrote in a message they sent, or null when they wrote
+ * nothing and its text is only the names of the skills it picked
+ * (`sentTextOf`): the chips say it already.
+ */
+export const writtenTextOf = (message: {
+  readonly skills: readonly AgentMessageSkill[];
+  readonly text: string;
+}): string | null =>
+  message.skills.length > 0 && message.text === sentTextOf("", message.skills)
+    ? null
+    : message.text;

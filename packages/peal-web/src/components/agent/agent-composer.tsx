@@ -197,7 +197,21 @@ const SlashSkillMenu = ({
   const open = wanted && listed !== null && !disabled;
 
   useEffect(() => {
-    openRef.current = open;
+    if (open) {
+      openRef.current = true;
+    }
+
+    // Picking with Enter closes the menu, and React may render that
+    // before the composer's own handler reads the same key, which would
+    // then send the message: the menu reads as open until the key's event
+    // is over.
+    const later = window.setTimeout(() => {
+      openRef.current = open;
+    }, 0);
+
+    return () => {
+      window.clearTimeout(later);
+    };
   }, [open, openRef]);
 
   return (

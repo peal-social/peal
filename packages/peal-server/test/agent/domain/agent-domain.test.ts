@@ -264,6 +264,12 @@ describe("the agent's domain", () => {
     );
   });
 
+  it("keeps a skill to the work it is for, not how the model speaks to the person", () => {
+    expect(agentInstructions(now, personTimeZone("UTC"))).toContain(
+      "never how you speak to the person, unless it says so"
+    );
+  });
+
   it("has the model speak of what it can do, never of its tools", () => {
     expect(agentInstructions(now, personTimeZone("UTC"))).toContain(
       "Never name a tool or show its parameters"

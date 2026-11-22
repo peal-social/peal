@@ -8,6 +8,7 @@ import {
   pickSkill,
   sentTextOf,
   slashSkillsOf,
+  writtenTextOf,
 } from "#agent/skill-picker.ts";
 
 const at = DateTime.makeUnsafe("2026-11-22T08:51:00Z");
@@ -101,5 +102,28 @@ describe(sentTextOf, () => {
         { id: "s3", name: "Monthly report" },
       ])
     ).toBe("Plan next week, Monthly report");
+  });
+});
+
+describe(writtenTextOf, () => {
+  const sentWith = [
+    { id: "s1", name: "Plan next week" },
+    { id: "s3", name: "Monthly report" },
+  ];
+
+  it("shows no text when the message is only its skills' names", () => {
+    expect(
+      writtenTextOf({
+        skills: sentWith,
+        text: "Plan next week, Monthly report",
+      })
+    ).toBeNull();
+  });
+
+  it("shows what the person wrote, even when it is a skill's name", () => {
+    expect(writtenTextOf({ skills: sentWith, text: "Plan next week" })).toBe(
+      "Plan next week"
+    );
+    expect(writtenTextOf({ skills: [], text: "" })).toBe("");
   });
 });
