@@ -38,7 +38,7 @@
     "oxlint": "1.94.0",
     "oxlint-tsgolint": "7.0.2007",
     "typescript": "7.0.2",
-    "ultracite": "8.2.1"
+    "ultracite": "8.3.1"
   },
   "overrides": {
     "@posthog/browser-common": "0.12.0",
