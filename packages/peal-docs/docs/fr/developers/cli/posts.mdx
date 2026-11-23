@@ -549,6 +549,12 @@ C’est la clé de l’espace de travail qui paie le fournisseur, et Peal ne fac
 
 Sans `--wait`, la commande affiche tout de suite l’identifiant de la vidéo de diapositives. `peal media slideshow status <id>` dit où elle en est, et `peal media slideshow list` liste les vidéos de diapositives de l’espace de travail, les plus récentes d’abord. Avec `--wait`, une vidéo en échec termine la commande avec le code de sortie 1 et la raison. Le compte Shotstack de l’espace de travail paie chaque rendu, et Peal ne facture rien. Sur Peal Cloud, le compte de facturation de l’espace de travail doit avoir un moyen de paiement.
 
+`peal media slideshow render <fichier-edit>` rend tout un Edit Shotstack, le document que fait l’éditeur de montage de l’application web, depuis un fichier JSON : ses pistes d’images, de vidéos, de sons et de textes, chaque fichier de la médiathèque nommé `peal:media/<media-id>` ([Rendre un Edit par l’API](/guides/media#render-an-edit)). Elle prend `--wait` et `--json` comme `create`, et les mêmes limites et refus que l’API. Un fichier qui ne contient pas d’objet JSON, ou plus de 1 Mio, est refusé avant tout envoi.
+
+```sh
+peal media slideshow render edit.json --wait
+```
+
 ### Voix off et transcriptions [#media-audio]
 
 `peal media voiceover --text <texte> [--voice <voix>]` fait dire le texte, de 1 à 4 000 caractères, par le fournisseur que l’espace de travail a choisi pour les voix off, dans les médias de l’espace de travail ([Créer une voix off](/guides/media#voiceover)). `--voice` est le nom que le fournisseur donne à une voix (`nova` chez OpenAI, l’identifiant d’une voix ElevenLabs) ; sans elle, c’est la voix par défaut du fournisseur, et fal n’en prend aucune. Le fichier audio est marqué comme créé par IA.

@@ -1,8 +1,19 @@
-import { Console, Duration, Effect, Option } from "effect";
+import {
+  Console,
+  Duration,
+  Effect,
+  FileSystem,
+  Option,
+  Path,
+  Schema,
+} from "effect";
 import { Argument, Command, Flag } from "effect/cli";
 import {
   defaultSecondsPerSlide,
   ImageAspectSchema,
+  maxEditClips,
+  maxEditSeconds,
+  maxEditTracks,
   maxSecondsPerSlide,
   maxSlideCaptionLength,
   maxSlides,
@@ -25,6 +36,7 @@ import type {
 
 import { explain } from "#explain.ts";
 import { jsonFlag, printJson } from "#json.ts";
+import { cannotRead } from "#media-files.ts";
 import { Refused } from "#refused.ts";
 import { inWorkspace, workspaceFlag } from "#workspace.ts";
 
@@ -126,6 +138,154 @@ const pairingRefusal = (
     : Option.none();
 };
 
+type Workspace = Effect.Success<ReturnType<typeof inWorkspace>>;
+
+/**
+ * What follows asking for a video: its id at once, or with `wait` its
+ * state read every `slideshowPollInterval` until it ends or the wait's
+ * bound passes; one that failed ends as a refusal that says why.
+ */
+const followed = Effect.fn("media.slideshow.followed")(function* followed({
+  asked,
+  client,
+  json,
+  noun,
+  url,
+  wait,
+  workspace,
+}: Workspace & {
+  readonly asked: Slideshow;
+  readonly json: boolean;
+  /** What the command calls what it asked for. */
+  readonly noun: "slide video" | "video";
+  readonly wait: boolean;
+}) {
+  if (!wait) {
+    yield* json
+      ? printJson(SlideshowSchema, asked)
+      : Console.log(
+          `Asked for ${noun} ${asked.id} in ${workspace.name}, ${String(asked.durationSeconds)} seconds long. peal media slideshow status ${asked.id} says where it stands; you are told in the app once it ends.`
+        );
+
+    return;
+  }
+
+  if (!json) {
+    yield* Console.log(
+      `Asked for ${noun} ${asked.id} in ${workspace.name}: waiting for it.`
+    );
+  }
+
+  const read = client.slideshows
+    .get({ params: { slideshowId: asked.id, workspaceId: workspace.id } })
+    .pipe(Effect.mapError(explain(url)));
+
+  const rounds = Math.ceil(
+    Duration.toMillis(slideshowWaitBound) /
+      Duration.toMillis(slideshowPollInterval)
+  );
+
+  let last = asked;
+
+  for (let round = 0; round < rounds && !ended(last); round += 1) {
+    yield* Effect.sleep(slideshowPollInterval);
+    last = yield* read;
+  }
+
+  yield* last.status === "failed"
+    ? Effect.fail(
+        new Refused({ code: "slideshow_failed", reason: slideshowLine(last) })
+      )
+    : Effect.void;
+
+  yield* json
+    ? printJson(SlideshowSchema, last)
+    : Console.log(
+        ended(last)
+          ? slideshowLine(last)
+          : `${slideshowLine(last)} Peal stopped waiting; peal media slideshow status ${last.id} says where it stands later.`
+      );
+});
+
+const waitFlag = Flag.Boolean("wait").pipe(
+  Flag.withDescription(
+    "Wait until the video is ready or failed, reading its state every 5 seconds for up to 30 minutes, then say how it ended."
+  ),
+  Flag.withDefault(false)
+);
+
+// The most a file of an edit may hold: the API takes 1 MiB a request.
+const maxEditFileBytes = 1024 * 1024;
+
+const parseEdit = Schema.decodeUnknownOption(
+  Schema.fromJsonString(Schema.JsonObject)
+);
+
+// The edit a file holds, read whole and never printed, as a file named by
+// mistake holds anything.
+const editIn = Effect.fn("media.slideshow.editIn")(function* editIn(
+  given: string
+) {
+  const fs = yield* FileSystem.FileSystem;
+  const path = yield* Path.Path;
+  const file = path.resolve(given);
+
+  const { size } = yield* fs
+    .stat(file)
+    .pipe(Effect.mapError(cannotRead(given)));
+
+  if (Number(size) > maxEditFileBytes) {
+    return yield* new Refused({
+      reason: `${given} is larger than one request takes, 1 MiB. Nothing was asked.`,
+    });
+  }
+
+  const text = yield* fs
+    .readFileString(file)
+    .pipe(Effect.mapError(cannotRead(given)));
+
+  return yield* Option.match(parseEdit(text), {
+    onNone: () =>
+      Effect.fail(
+        new Refused({
+          reason: `${given} does not hold a JSON object: write a Shotstack Edit in it, its library files as peal:media/<media-id>. Nothing was asked.`,
+        })
+      ),
+    onSome: Effect.succeed,
+  });
+});
+
+const render = Command.make(
+  "render",
+  {
+    edit: Argument.String("edit-file").pipe(
+      Argument.withDescription(
+        "A JSON file holding a Shotstack Edit (https://shotstack.io/docs/api/#tocs_edit): its timeline and output, each file of the workspace's media named peal:media/<media-id>, as peal media list shows its id."
+      )
+    ),
+    json: jsonFlag,
+    wait: waitFlag,
+    workspace: workspaceFlag,
+  },
+  Effect.fn("media.slideshow.render")(function* render(input) {
+    const edit = yield* editIn(input.edit);
+    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+
+    const asked = yield* client.slideshows
+      .createFromEdit({
+        params: { workspaceId: workspace.id },
+        payload: { edit },
+      })
+      .pipe(Effect.mapError(explain(url)));
+
+    yield* followed({ ...input, asked, client, url, workspace, noun: "video" });
+  })
+).pipe(
+  Command.withDescription(
+    `Have the workspace's Shotstack account render a whole Shotstack Edit from a JSON file, as the web app's editor makes, into an MP4 in its media: any tracks of its pictures, videos, sounds and texts, up to ${String(maxEditSeconds)} seconds, ${String(maxEditTracks)} tracks and ${String(maxEditClips)} clips, MP4 at 1080p at most in 16:9, 9:16 or 1:1. Without --wait the command answers at once with the video's id. The workspace's Shotstack account pays; on a server that bills, the workspace's billing account needs a payment method. One video at a time a workspace, slide videos included, ${String(slideshowsPerDay)} a day.`
+  )
+);
+
 const create = Command.make(
   "create",
   {
@@ -179,12 +339,7 @@ const create = Command.make(
       ),
       Flag.optional
     ),
-    wait: Flag.Boolean("wait").pipe(
-      Flag.withDescription(
-        "Wait until the video is ready or failed, reading its state every 5 seconds for up to 30 minutes, then say how it ended."
-      ),
-      Flag.withDefault(false)
-    ),
+    wait: waitFlag,
     workspace: workspaceFlag,
   },
   Effect.fn("media.slideshow.create")(function* create(input) {
@@ -232,53 +387,14 @@ const create = Command.make(
       })
       .pipe(Effect.mapError(explain(url)));
 
-    if (!input.wait) {
-      yield* input.json
-        ? printJson(SlideshowSchema, asked)
-        : Console.log(
-            `Asked for slide video ${asked.id} in ${workspace.name}, ${String(asked.durationSeconds)} seconds long. peal media slideshow status ${asked.id} says where it stands; you are told in the app once it ends.`
-          );
-
-      return;
-    }
-
-    if (!input.json) {
-      yield* Console.log(
-        `Asked for slide video ${asked.id} in ${workspace.name}: waiting for it.`
-      );
-    }
-
-    const read = client.slideshows
-      .get({ params: { slideshowId: asked.id, workspaceId: workspace.id } })
-      .pipe(Effect.mapError(explain(url)));
-
-    // Reads its state until it ends, or the wait's bound passes.
-    const rounds = Math.ceil(
-      Duration.toMillis(slideshowWaitBound) /
-        Duration.toMillis(slideshowPollInterval)
-    );
-
-    let last = asked;
-
-    for (let round = 0; round < rounds && !ended(last); round += 1) {
-      yield* Effect.sleep(slideshowPollInterval);
-      last = yield* read;
-    }
-
-    // A slide video that failed ends as a refusal, which says why.
-    yield* last.status === "failed"
-      ? Effect.fail(
-          new Refused({ code: "slideshow_failed", reason: slideshowLine(last) })
-        )
-      : Effect.void;
-
-    yield* input.json
-      ? printJson(SlideshowSchema, last)
-      : Console.log(
-          ended(last)
-            ? slideshowLine(last)
-            : `${slideshowLine(last)} Peal stopped waiting; peal media slideshow status ${last.id} says where it stands later.`
-        );
+    yield* followed({
+      ...input,
+      asked,
+      client,
+      url,
+      workspace,
+      noun: "slide video",
+    });
   })
 ).pipe(
   Command.withDescription(
@@ -367,5 +483,5 @@ export const slideshow = Command.make("slideshow").pipe(
   Command.withDescription(
     "Slide videos the service the workspace chose (Shotstack) composes from its images into its media: asking for one, and following it."
   ),
-  Command.withSubcommands([create, status, list])
+  Command.withSubcommands([create, render, status, list])
 );

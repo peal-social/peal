@@ -544,6 +544,12 @@ The workspace's own key pays the provider, and Peal bills nothing for it. A work
 
 Without `--wait`, the command prints the slide video's id at once. `peal media slideshow status <id>` says where it stands, and `peal media slideshow list` lists the workspace's slide videos, newest first. With `--wait`, one that failed ends the command with exit code 1 and the reason. The workspace's Shotstack account pays each render, and Peal bills nothing for it. On Peal Cloud, the workspace's billing account needs a payment method.
 
+`peal media slideshow render <edit-file>` renders a whole Shotstack Edit, the document the web app's editor makes, from a JSON file: its tracks of pictures, videos, sounds and texts, each library file named `peal:media/<media-id>` ([Render an edit through the API](/guides/media#render-an-edit)). It takes `--wait` and `--json` as `create` does, and the same limits and refusals as the API. A file that holds no JSON object, or more than 1 MiB, is refused before anything is sent.
+
+```sh
+peal media slideshow render edit.json --wait
+```
+
 ### Voice-overs and transcripts [#media-audio]
 
 `peal media voiceover --text <text> [--voice <voice>]` has the provider the workspace chose for voice-overs speak the text, 1 to 4,000 characters, into the workspace's media ([Create a voice-over](/guides/media#voiceover)). `--voice` is the provider's name for a voice (OpenAI's `nova`, an ElevenLabs voice's ID); left out, the provider's default speaks, and fal takes none. The audio file is marked as made by AI.

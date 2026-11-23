@@ -40,6 +40,7 @@ export const reservedWorkspaceSlugs: readonly string[] = [
   "api",
   "emoji-data",
   "pulse",
+  "studio-assets",
   "llms.txt",
   "openapi.json",
   "favicon.ico",

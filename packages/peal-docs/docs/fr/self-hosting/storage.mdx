@@ -37,7 +37,7 @@ Mettez ensuite le point d’accès `.eu.` dans `PEAL_S3_ENDPOINT` : `https://<c
 
 ## Ajouter la règle d’envoi [#cors]
 
-Les navigateurs envoient les médias directement au bucket, avec des requêtes que le serveur signe. Le bucket doit laisser l’origine de l’application web les envoyer, avec une règle CORS qui autorise `PUT` depuis cette origine, avec les en-têtes `Content-Type` et `If-None-Match`.
+Les navigateurs envoient les médias directement au bucket, avec des requêtes que le serveur signe. Le bucket doit laisser l’origine de l’application web les envoyer, avec une règle CORS qui autorise `PUT` depuis cette origine, avec les en-têtes `Content-Type` et `If-None-Match`. La même règle autorise `GET` avec un en-tête `Range`, car l’aperçu du montage vidéo dessine les fichiers de la médiathèque sur un canevas, qui ne lit que les fichiers que CORS autorise. Si vous avez posé la règle avant l’arrivée du montage, lancez la commande à nouveau.
 
 Définissez les variables du serveur, et vérifiez que `PUBLIC_URL` et `TRUSTED_ORIGINS` nomment les origines de l’application web. Cette commande pose alors la règle sur le bucket et garde ses autres règles :
 
