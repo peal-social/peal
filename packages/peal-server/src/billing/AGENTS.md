@@ -208,7 +208,9 @@
   account's last unit of a meter with an allowance without a payment
   method tells its billing managers (`AllowanceReached`, keyed
   `allowance:<holder>:<YYYY-MM>:<meter>`: once per meter and month, always
-  emailed). A server that does not bill counts nothing and refuses
+  emailed), which product analytics hears too (`allowance_reached`, the
+  meter and its allowance: `analysedBillingNotices` around the meters'
+  notices alone, in `BillingMetersLive`). A server that does not bill counts nothing and refuses
   nothing (`MeteredUsage.layerUnmetered`): production must not change
   while it bills nothing. A release before T7 does not decode the new
   ledger counters or the negative report values: do not roll back past it
@@ -699,8 +701,11 @@
   then tells the sink (`workspace_snapshot`) the days of its workspaces
   still there with a connected account (`isToldDay`), with the accounts
   the sweep gave them, read as stored in one read that writes nothing
-  (`BillingAccountStore.accountsIn`); a read or a sink that fails is
-  logged and never fails the run.
+  (`BillingAccountStore.accountsIn`), and the day's counters of the
+  ledger (`DayCounters`: the posts that went out, across platforms, and
+  the images, messages and ads claimed, from one `ofWorkspaces` read of
+  that day; none where it could not be read); a read or a sink that fails
+  is logged and never fails the run.
   The same run purges the rows past `usageRetentionDays` (400), whether the
   snapshot went through or not. `UsageReports` answers `GET …/usage`
   (billing:read, on a server that bills or not; 92 days at most, 30 by

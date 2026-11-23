@@ -457,7 +457,11 @@ The staff context follows these rules too. What the law has a host keep is in
   (`Pseudonyms.ofPlatformMember`), and a day goes after a week.
 - Product analytics (the server guide's section): the activity journal's
   adapter tells it of each change it keeps, metadata only, never for a
-  session staff act in; `as` in `security.ts` and `mcpAuthentication`
+  session staff act in; `analysedRequestLimits`, around the rate limit,
+  tells it the API or the MCP endpoint was used that day (`api_used`), by
+  a key as its workspace or an application as its person, from what the
+  credential carries alone (`actingIn` is a path's word, unchecked there),
+  never a session or a partner key; `as` in `security.ts` and `mcpAuthentication`
   provide `AnalyticsActor`, and `StaffAccess` marks staff `internal`.
   `CloseAccount`, `DeleteWorkspace` and `OffboardWorkspace` start the
   deletion at PostHog (`ProductAnalytics.erase`, a durable job) inside the

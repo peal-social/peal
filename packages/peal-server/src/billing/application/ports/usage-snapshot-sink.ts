@@ -5,9 +5,23 @@ import type { BillingAccountId } from "#billing/domain/billing-account.ts";
 
 import type { WorkspaceDayState } from "./usage-states.ts";
 
+/**
+ * What the usage ledger counted for a workspace on a day: the posts that
+ * went out, on every platform, and the units of the billing meters it
+ * claimed (none on a server that does not bill).
+ */
+export interface DayCounters {
+  readonly assistantImages: number;
+  readonly managedAds: number;
+  readonly outboundMessages: number;
+  readonly publishedPosts: number;
+}
+
 /** A workspace's day as the snapshot wrote it, with its billing account. */
 export interface ToldDayState {
   readonly state: WorkspaceDayState;
+  /** None when the ledger could not be read. */
+  readonly counters: Option.Option<DayCounters>;
   /** None when the accounts could not be read. */
   readonly billingAccountId: Option.Option<BillingAccountId>;
 }

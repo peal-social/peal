@@ -8,6 +8,7 @@ import {
   MediaAssetIdSchema,
   PostIdSchema,
   PostTargetIdSchema,
+  Uuid7Schema,
 } from "#shared/domain/ids.ts";
 import {
   sampleUserId as userId,
@@ -28,6 +29,8 @@ const postId = PostIdSchema.make("00000000-0000-7000-8000-0000000000d1");
 const targetId = PostTargetIdSchema.make(
   "00000000-0000-7000-8000-0000000000e1"
 );
+
+const articleId = Uuid7Schema.make("00000000-0000-7000-8000-0000000000f1");
 
 const at = DateTime.makeUnsafe("2026-11-18T10:00:00.000Z");
 
@@ -111,6 +114,121 @@ describe("the webhook events product analytics hears", () => {
 
         assert.strictEqual(sent?.event, "channel_disconnected");
         assert.strictEqual(sent?.properties["platform"], "wordpress");
+      })
+    );
+
+    it.effect(
+      "tells a channel to reconnect, and one expiring without when",
+      () =>
+        Effect.gen(function* unhealthy() {
+          const [needed] = yield* told({
+            event: {
+              data: { channelId, platform: "instagram", workspaceId },
+              type: "channel.reconnect_needed",
+            },
+            key: `channel:${channelId}:reconnect-needed`,
+          });
+
+          assert.strictEqual(needed?.event, "channel_reconnect_needed");
+          assert.strictEqual(needed?.distinctId, `workspace:${workspaceId}`);
+          assert.strictEqual(needed?.properties["channel_id"], channelId);
+          assert.strictEqual(needed?.properties["platform"], "instagram");
+
+          const [expiring] = yield* told({
+            event: {
+              data: {
+                channelId,
+                expiresAt: at,
+                platform: "linkedin",
+                workspaceId,
+              },
+              type: "channel.expiring",
+            },
+            key: `channel:${channelId}:expiring`,
+          });
+
+          assert.strictEqual(expiring?.event, "channel_expiring");
+          assert.strictEqual(expiring?.properties["platform"], "linkedin");
+          assert.notProperty(expiring?.properties, "expires_at");
+        })
+    );
+
+    it.effect(
+      "tells an article published or failed, never its permalink or the site's code",
+      () =>
+        Effect.gen(function* articles() {
+          const [went] = yield* told({
+            event: {
+              data: {
+                articleId,
+                channelId,
+                permalink: "https://blog.example/a-note?ref=share",
+                platform: "wordpress",
+                platformPostId: "42",
+                publishedAt: at,
+                siteStatus: "publish",
+                workspaceId,
+              },
+              type: "article.published",
+            },
+            key: `article:${articleId}:published`,
+          });
+
+          assert.strictEqual(went?.event, "article_published");
+          assert.deepStrictEqual(
+            Object.keys(went?.properties ?? {})
+              .filter((key) => !key.startsWith("$"))
+              .toSorted(),
+            [
+              "actor_kind",
+              "article_id",
+              "channel_id",
+              "environment",
+              "platform",
+              "site_status",
+              "workspace_id",
+            ]
+          );
+          assert.strictEqual(went?.properties["site_status"], "publish");
+
+          const [failed] = yield* told({
+            event: {
+              data: {
+                articleId,
+                channelId,
+                code: "rest_cannot_create",
+                failedAt: at,
+                platform: null,
+                reason: "tokenExpired",
+                workspaceId,
+              },
+              type: "article.failed",
+            },
+            key: `article:${articleId}:failed`,
+          });
+
+          assert.strictEqual(failed?.event, "article_failed");
+          assert.strictEqual(failed?.properties["reason"], "tokenExpired");
+          assert.notProperty(failed?.properties, "platform");
+          assert.notProperty(failed?.properties, "code");
+        })
+    );
+
+    it.effect("tells a file refused, with its reason", () =>
+      Effect.gen(function* refused() {
+        const mediaId = MediaAssetIdSchema.make(targetId);
+
+        const [sent] = yield* told({
+          event: {
+            data: { mediaId, reason: "unsupported", workspaceId },
+            type: "media.failed",
+          },
+          key: `media:${mediaId}:failed:unsupported`,
+        });
+
+        assert.strictEqual(sent?.event, "media_failed");
+        assert.strictEqual(sent?.properties["media_id"], mediaId);
+        assert.strictEqual(sent?.properties["reason"], "unsupported");
       })
     );
 
