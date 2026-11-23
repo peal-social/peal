@@ -101,11 +101,29 @@ const inPerson = (userId: UserId, workspaceId: WorkspaceId, role: string) =>
   });
 
 /**
+ * Whether a key holding `permissions`, made by `userId`, does more than
+ * their standing in the workspace now covers: anything once they are no
+ * longer a member (`role` none) and, holding `role`, a permission that
+ * role could not give a new key (`grantableBy`).
+ */
+export const beyondMaker = (
+  permissions: readonly Permission[],
+  userId: UserId,
+  workspaceId: WorkspaceId,
+  role: Option.Option<string>
+): boolean =>
+  Option.match(role, {
+    onNone: () => true,
+    onSome: (held) =>
+      Result.isFailure(
+        grantableBy(inPerson(userId, workspaceId, held), [...permissions])
+      ),
+  });
+
+/**
  * The keys `userId` made that their standing in the workspace no longer
- * covers: every one once they are no longer a member (`role` none) and,
- * holding `role`, those with a permission that role could not give a new
- * key (`grantableBy`), so a key never does more than its maker could. A
- * key with no recorded maker is left alone.
+ * covers (`beyondMaker`), so a key never does more than its maker could.
+ * A key with no recorded maker is left alone.
  */
 export const keysBeyond = (
   keys: readonly ApiKey[],
@@ -115,15 +133,7 @@ export const keysBeyond = (
   keys.filter(
     (key) =>
       Option.contains(key.createdBy, userId) &&
-      Option.match(role, {
-        onNone: () => true,
-        onSome: (held) =>
-          Result.isFailure(
-            grantableBy(inPerson(userId, key.workspaceId, held), [
-              ...key.permissions,
-            ])
-          ),
-      })
+      beyondMaker(key.permissions, userId, key.workspaceId, role)
   );
 
 /**

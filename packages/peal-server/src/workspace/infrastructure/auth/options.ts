@@ -473,9 +473,10 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await refuseImpersonatedChanges(ctx);
     refusePersonalSubscriptions(ctx);
     await keepPayerLeaving(ctx, hooks);
-    await settleLeavingMemberKeys(ctx, hooks.memberKeys);
     await refuseLockedOutMembers(ctx, hooks.twoStep);
     await guardTwoStepChanges(ctx, hooks.twoStep);
+    // Once nothing before it refuses the leave.
+    await settleLeavingMemberKeys(ctx, hooks.memberKeys);
     await noteTwoStepSender(ctx);
     await claimResentInvitationEmail(ctx, hooks.invitationEmail);
     noteTokenRequest(ctx);
