@@ -139,6 +139,65 @@ impl SlideshowsClient {
             .await
     }
 
+    /// Asks the service the workspace chose for slide videos (`PUT .../assistant/models/composition`, Shotstack) to render a whole [Shotstack Edit](https://shotstack.io/docs/api/#tocs_edit), as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, `queued`, as a slide video's. A file of the workspace's library is named `peal:media/<mediaId>`: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from `https://fonts.gstatic.com/`; an asset Shotstack generates from a `prompt` needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (`format` `mp4` or none), at `preview`, `mobile`, `sd`, `hd` or `1080` (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's `aspect`), at 30 frames a second at most, without `size`, `range`, `scaleTo`, `repeat`, `poster` or `thumbnail`; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops `callback` and `disk`. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (`durationSeconds` is the latest such end). The job lists every library file the edit names in `imageMediaIds`, images or not. Follow it with `GET .../media/slideshows/{id}`; once `succeeded`, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .slideshows
+    ///         .create_from_edit(
+    ///             &"workspaceId".to_string(),
+    ///             &EditRenderRequest {
+    ///                 edit: HashMap::from([("key".to_string(), serde_json::json!("value"))]),
+    ///             },
+    ///             None,
+    ///         )
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn create_from_edit(
+        &self,
+        workspace_id: &str,
+        request: &EditRenderRequest,
+        options: Option<RequestOptions>,
+    ) -> Result<Slideshow, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            o.max_retries = Some(0);
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::POST,
+                &format!("api/workspaces/{}/media/slideshows/edits", workspace_id),
+                Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
+                None,
+                options,
+            )
+            .await
+    }
+
     /// Reads where a slide video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
     ///
     /// # Arguments

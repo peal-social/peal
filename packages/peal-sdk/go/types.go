@@ -30105,12 +30105,18 @@ func (s *SlideshowNotFoundEncoded) String() string {
 type SlideshowRejection string
 
 const (
-	SlideshowRejectionImageNotFound     SlideshowRejection = "imageNotFound"
-	SlideshowRejectionImageNotSupported SlideshowRejection = "imageNotSupported"
-	SlideshowRejectionVoiceoverNotFound SlideshowRejection = "voiceoverNotFound"
-	SlideshowRejectionTooLong           SlideshowRejection = "tooLong"
-	SlideshowRejectionVoiceoverTooLong  SlideshowRejection = "voiceoverTooLong"
-	SlideshowRejectionVoiceoverTooShort SlideshowRejection = "voiceoverTooShort"
+	SlideshowRejectionImageNotFound      SlideshowRejection = "imageNotFound"
+	SlideshowRejectionImageNotSupported  SlideshowRejection = "imageNotSupported"
+	SlideshowRejectionVoiceoverNotFound  SlideshowRejection = "voiceoverNotFound"
+	SlideshowRejectionTooLong            SlideshowRejection = "tooLong"
+	SlideshowRejectionVoiceoverTooLong   SlideshowRejection = "voiceoverTooLong"
+	SlideshowRejectionVoiceoverTooShort  SlideshowRejection = "voiceoverTooShort"
+	SlideshowRejectionEditInvalid        SlideshowRejection = "editInvalid"
+	SlideshowRejectionMediaNotFound      SlideshowRejection = "mediaNotFound"
+	SlideshowRejectionMediaNotSupported  SlideshowRejection = "mediaNotSupported"
+	SlideshowRejectionEditTooLong        SlideshowRejection = "editTooLong"
+	SlideshowRejectionEditTooLarge       SlideshowRejection = "editTooLarge"
+	SlideshowRejectionOutputNotSupported SlideshowRejection = "outputNotSupported"
 )
 
 func NewSlideshowRejectionFromString(s string) (SlideshowRejection, error) {
@@ -30127,6 +30133,18 @@ func NewSlideshowRejectionFromString(s string) (SlideshowRejection, error) {
 		return SlideshowRejectionVoiceoverTooLong, nil
 	case "voiceoverTooShort":
 		return SlideshowRejectionVoiceoverTooShort, nil
+	case "editInvalid":
+		return SlideshowRejectionEditInvalid, nil
+	case "mediaNotFound":
+		return SlideshowRejectionMediaNotFound, nil
+	case "mediaNotSupported":
+		return SlideshowRejectionMediaNotSupported, nil
+	case "editTooLong":
+		return SlideshowRejectionEditTooLong, nil
+	case "editTooLarge":
+		return SlideshowRejectionEditTooLarge, nil
+	case "outputNotSupported":
+		return SlideshowRejectionOutputNotSupported, nil
 	}
 	var t SlideshowRejection
 	return "", fmt.Errorf("%s is not a valid %T", s, t)

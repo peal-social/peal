@@ -6,6 +6,12 @@ export const SlideshowRejection = {
         VoiceoverNotFound: "voiceoverNotFound",
         TooLong: "tooLong",
         VoiceoverTooLong: "voiceoverTooLong",
-        VoiceoverTooShort: "voiceoverTooShort"
+        VoiceoverTooShort: "voiceoverTooShort",
+        EditInvalid: "editInvalid",
+        MediaNotFound: "mediaNotFound",
+        MediaNotSupported: "mediaNotSupported",
+        EditTooLong: "editTooLong",
+        EditTooLarge: "editTooLarge",
+        OutputNotSupported: "outputNotSupported"
     } as const;
 export type SlideshowRejection = typeof SlideshowRejection[keyof typeof SlideshowRejection];
