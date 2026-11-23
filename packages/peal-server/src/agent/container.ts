@@ -3,7 +3,6 @@ import { Layer } from "effect";
 import { AgentDesk } from "#agent/application/agent-desk.ts";
 import { AgentRecords } from "#agent/application/agent-records.ts";
 import { AgentSkillDesk } from "#agent/application/agent-skill-desk.ts";
-import { AgentRetentionCron } from "#agent/infrastructure/crons.ts";
 import { DrizzleAgentChatsLive } from "#agent/infrastructure/drizzle-agent-chats.ts";
 import { DrizzleAgentSkillsLive } from "#agent/infrastructure/drizzle-agent-skills.ts";
 import { LanguageModelAgentRunsLive } from "#agent/infrastructure/language-model-agent-runs.ts";
@@ -26,7 +25,7 @@ export const AgentRecordsLive = AgentRecords.layer.pipe(
 );
 
 /** The daily retention of chats, for the cluster. */
-export const AgentCronsLive = AgentRetentionCron;
+export { AgentRetentionCron as AgentCronsLive } from "#agent/infrastructure/crons.ts";
 
 /**
  * The agent's use cases: the person's chats, and runs on effect/ai with

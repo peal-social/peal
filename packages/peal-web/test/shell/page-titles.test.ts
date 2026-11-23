@@ -36,7 +36,7 @@ describe("the app's pages", () => {
 
     const untitled = pages.filter(
       (page) =>
-        !/export const generateMetadata = (?:workspacePageTitle\(|setupPageTitle;|setupChannelsPageTitle;|platformPageTitle;)/u.test(
+        !/export const generateMetadata = workspacePageTitle\(|export \{ (?:setupPageTitle|setupChannelsPageTitle|platformPageTitle) as generateMetadata \} from "#shell\/page-title\.ts";/u.test(
           readFileSync(`${app}/${page}`, "utf-8")
         )
     );

@@ -11,7 +11,7 @@ import { FakeOidc } from "#test/workspace/fakes/fake-oidc.ts";
 import type { Identity, Spoiled } from "#test/workspace/fakes/fake-oidc.ts";
 import { withCookies } from "#test/workspace/support.ts";
 
-import { bodyOf, origin, password, TestApp } from "./harness.ts";
+import { bodyOf, origin, TestApp } from "./harness.ts";
 import type { Reply } from "./harness.ts";
 
 const StartedSchema = Schema.Struct({ url: Schema.String });
@@ -265,4 +265,4 @@ export const sessionUser = Effect.fn("sessionUser")(function* sessionUser(
   return (yield* bodyOf(SessionSchema, reply)).user;
 });
 
-export { password };
+export { password } from "./harness.ts";

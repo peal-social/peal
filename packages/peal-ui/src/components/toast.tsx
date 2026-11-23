@@ -6,7 +6,6 @@ import {
   ToastDescription as ToastDescriptionPrimitive,
   ToastRegion as ToastRegionPrimitive,
   ToastTitle as ToastTitlePrimitive,
-  toast,
 } from "@ui-sdk/react/toast";
 import {
   CircleCheckIcon,
@@ -142,4 +141,6 @@ const Toaster = ({
   );
 };
 
-export { Toaster, toast };
+export { Toaster };
+
+export { toast } from "@ui-sdk/react/toast";
