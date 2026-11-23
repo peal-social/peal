@@ -33,7 +33,7 @@ export const snapshotPace: SnapshotPace = {
 
 const capturedOf = (
   day: DateTime.Utc,
-  { billingAccountId, state }: ToldDayState
+  { billingAccountId, counters, state }: ToldDayState
 ): Captured => ({
   actor: Option.none(),
   asWorkspace: true,
@@ -46,6 +46,7 @@ const capturedOf = (
       day: DateTime.formatIsoDateUtc(day),
       mediaStorageBytes: state.mediaStorage,
       members: state.members,
+      ...Option.getOrElse(counters, () => ({})),
     },
   },
   workspaceId: Option.some(state.workspaceId),

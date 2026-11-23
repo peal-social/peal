@@ -1,7 +1,9 @@
 import {
   ChannelIdSchema,
+  MediaAssetIdSchema,
   PostIdSchema,
   UserIdSchema,
+  Uuid7Schema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type {
@@ -23,6 +25,10 @@ const channelId = ChannelIdSchema.make("00000000-0000-7000-8000-000000000001");
 
 const postId = PostIdSchema.make("00000000-0000-7000-8000-000000000002");
 
+const articleId = Uuid7Schema.make("00000000-0000-7000-8000-000000000003");
+
+const mediaId = MediaAssetIdSchema.make("00000000-0000-7000-8000-000000000004");
+
 /** A sample of each event, with the keys the catalogue sends it with. */
 export type ProductEventSamples = {
   readonly [Name in ProductEventName]: {
@@ -37,6 +43,13 @@ export type ProductEventSamples = {
  * does not compile until it has its sample.
  */
 export const productEventSamples: ProductEventSamples = {
+  allowance_reached: {
+    keys: ["allowed", "meter"],
+    sample: {
+      name: "allowance_reached",
+      properties: { allowed: 10_000, meter: "outboundMessages" },
+    },
+  },
   api_operation: {
     keys: ["error_code", "operation", "status", "succeeded", "via"],
     sample: {
@@ -47,6 +60,37 @@ export const productEventSamples: ProductEventSamples = {
         status: 403,
         succeeded: false,
         via: "apiKey",
+      },
+    },
+  },
+  api_used: {
+    keys: ["day", "via"],
+    sample: {
+      name: "api_used",
+      properties: { day: "2026-11-18", via: "apiKey" },
+    },
+  },
+  article_failed: {
+    keys: ["article_id", "channel_id", "platform", "reason"],
+    sample: {
+      name: "article_failed",
+      properties: {
+        articleId,
+        channelId,
+        platform: "wordpress",
+        reason: "tokenExpired",
+      },
+    },
+  },
+  article_published: {
+    keys: ["article_id", "channel_id", "platform", "site_status"],
+    sample: {
+      name: "article_published",
+      properties: {
+        articleId,
+        channelId,
+        platform: "wordpress",
+        siteStatus: "publish",
       },
     },
   },
@@ -64,6 +108,20 @@ export const productEventSamples: ProductEventSamples = {
       properties: { channelId, platform: "wordpress" },
     },
   },
+  channel_expiring: {
+    keys: ["channel_id", "platform"],
+    sample: {
+      name: "channel_expiring",
+      properties: { channelId, platform: "linkedin" },
+    },
+  },
+  channel_reconnect_needed: {
+    keys: ["channel_id", "platform"],
+    sample: {
+      name: "channel_reconnect_needed",
+      properties: { channelId, platform: "instagram" },
+    },
+  },
   mcp_tool_called: {
     keys: ["changes", "duration_ms", "error_type", "is_error", "tool"],
     sample: {
@@ -75,6 +133,13 @@ export const productEventSamples: ProductEventSamples = {
         isError: true,
         tool: "schedule_post",
       },
+    },
+  },
+  media_failed: {
+    keys: ["media_id", "reason"],
+    sample: {
+      name: "media_failed",
+      properties: { mediaId, reason: "unsupported" },
     },
   },
   post_failed: {
@@ -147,20 +212,28 @@ export const productEventSamples: ProductEventSamples = {
   },
   workspace_snapshot: {
     keys: [
+      "assistant_images",
       "assistant_requests",
       "channels",
       "day",
+      "managed_ads",
       "media_storage_bytes",
       "members",
+      "outbound_messages",
+      "published_posts",
     ],
     sample: {
       name: "workspace_snapshot",
       properties: {
+        assistantImages: 1,
         assistantRequests: 4,
         channels: 3,
         day: "2026-11-18",
+        managedAds: 2,
         mediaStorageBytes: 9_000_000_000,
         members: 2,
+        outboundMessages: 5,
+        publishedPosts: 7,
       },
     },
   },

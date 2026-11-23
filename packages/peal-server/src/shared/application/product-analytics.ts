@@ -263,8 +263,10 @@ const capturedProperties = (
     properties["$groups"] = groups;
   }
 
+  // Set once: a service identity's kind never changes, and every one of
+  // its events carries it.
   if (service) {
-    properties["$set"] = { kind: "service" };
+    properties["$set_once"] = { kind: "service" };
   }
 
   return properties;

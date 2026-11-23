@@ -18,13 +18,18 @@
   `fixtures/persisted/events/stored.json` decoding.
 - `analysedWebhookEvents` (`infrastructure/analysed-webhook-events.ts`),
   around `WebhookEvents.layer` in `webhooksWith`, tells product analytics
-  of `channel.connected`, `channel.disconnected`, `post.scheduled`,
-  `post.published` and `post.failed` once `publish` succeeded (ids,
-  platforms, counts and codes; a new type does not compile until it says
+  of `channel.connected`, `channel.disconnected`,
+  `channel.reconnect_needed`, `channel.expiring`, `post.scheduled`,
+  `post.published`, `post.failed`, `article.published`, `article.failed`
+  and `media.failed` once `publish` succeeded (ids, platforms, counts and
+  Peal's own codes, never an instant or a site's error code; what a member
+  does in a request is `api_operation`'s, and what comes in is never told;
+  a new type does not compile until it says
   whether it is told). Known and accepted: the event is queued before the
   caller's transaction commits, so a rollback leaves one for what did not
-  happen and a step run again can send one twice; only analytics reads
-  them. Tests of the context provide `ProductAnalytics.none`.
+  happen and a step run again can send one twice, and an event published
+  again under its key (a channel's daily reminder, a file probed again)
+  is told again; only analytics reads them. Tests of the context provide `ProductAnalytics.none`.
 - Contexts publish through `WebhookEvents.publish({ event, key })`, which
   joins the caller's transaction (as `Notify` does): the event, one delivery
   per endpoint that is on, subscribes and whose filters match (`wants`, with

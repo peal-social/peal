@@ -1,5 +1,6 @@
 import type { ConsentDetail } from "../consent/consent-answered";
 import type { PricingDetail } from "./pricing-changed";
+import type { SiteEventName } from "./sanitize";
 
 // Peal's own events on the site, the docs and the blog: enums and counts
 // only, never a text someone typed. A value outside a list sends nothing.
@@ -32,9 +33,9 @@ export const places = [
 
 export type Place = (typeof places)[number];
 
-/** An event to capture: its name and its properties. */
+/** An event to capture: its name, one the allowlist holds, and its properties. */
 export interface Measured {
-  readonly event: string;
+  readonly event: SiteEventName;
   readonly properties: Record<string, number | string>;
 }
 

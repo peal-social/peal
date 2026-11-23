@@ -90,7 +90,7 @@ jobs:
         with:
           bun-version-file: .bun-version
           no-cache: true
-      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
         with:
           version: 0.13.7
       - run: bun install --frozen-lockfile
@@ -124,7 +124,7 @@ jobs:
       # Builds the gem in the Ruby image scripts/languages.ts pins.
       - run: bun nx run peal-sdk-ruby:sdk:build
       # gem push, with the Ruby that builds the gem.
-      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
+      - uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
         with:
           ruby-version: 4.0.9
       # Trades this run's OIDC token for a RubyGems key that pushes gems for

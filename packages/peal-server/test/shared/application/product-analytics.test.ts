@@ -126,7 +126,10 @@ describe("product analytics", () => {
 
           assert.strictEqual(sent?.distinctId, `workspace:${workspaceId}`);
           assert.strictEqual(sent?.properties["actor_kind"], "service");
-          assert.deepStrictEqual(sent?.properties["$set"], { kind: "service" });
+          assert.deepStrictEqual(sent?.properties["$set_once"], {
+            kind: "service",
+          });
+          assert.notProperty(sent?.properties, "$set");
         })
     );
 
