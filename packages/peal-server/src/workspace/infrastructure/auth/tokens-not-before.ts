@@ -103,10 +103,6 @@ export const noteTokenRequest = (ctx: GenericEndpointContext): void => {
   }
 };
 
-const decodeRenewal = Schema.decodeUnknownOption(
-  Schema.Struct({ grant_type: Schema.Literal("refresh_token") })
-);
-
 const decodeIssued = Schema.decodeUnknownOption(
   Schema.Struct({ returned: Schema.Struct({ access_token: Schema.String }) })
 );
@@ -127,10 +123,10 @@ const subjectOf = (token: string): Option.Option<string> =>
   );
 
 /**
- * Part of Better Auth's after hook, on `/oauth2/token`: a renewal that
- * started before the account's instant, or just after it while the
- * deletion ran, and still issued tokens, wrote them after they were
- * deleted. Its tokens go too, the instant moves to now so its access token
+ * Part of Better Auth's after hook, on `/oauth2/token`: any grant (a
+ * renewal, a code's exchange, the command line's device code) that started
+ * before the account's instant, or just after it while the deletion ran,
+ * and still issued tokens, wrote them after they were deleted. Its tokens go too, the instant moves to now so its access token
  * is refused, and the client is answered `invalid_grant`.
  */
 export const refuseRenewalAcrossReset = async (
@@ -139,11 +135,7 @@ export const refuseRenewalAcrossReset = async (
   const startedAt =
     ctx.request === undefined ? undefined : started.get(ctx.request);
 
-  if (
-    ctx.path !== "/oauth2/token" ||
-    startedAt === undefined ||
-    Option.isNone(decodeRenewal(ctx.body))
-  ) {
+  if (ctx.path !== "/oauth2/token" || startedAt === undefined) {
     return;
   }
 
@@ -160,7 +152,7 @@ export const refuseRenewalAcrossReset = async (
     subject.value
   );
 
-  if (!Option.exists(notBefore, (instant) => startedAt < instant + inFlight)) {
+  if (!Option.exists(notBefore, (instant) => instant >= startedAt - inFlight)) {
     return;
   }
 

@@ -127,5 +127,13 @@ export class AccountStore extends Context.Service<
      * OAuth clients do. The partner keys they created stay, without them.
      */
     readonly deleteUser: (userId: UserId) => Effect.Effect<void, DatabaseError>;
+    /**
+     * Whether the user's address is still unconfirmed, read by an update
+     * of their row that holds only then: in a transaction, the row stays
+     * locked until it ends, so a confirmation waits for it.
+     */
+    readonly holdUnconfirmed: (
+      userId: UserId
+    ) => Effect.Effect<boolean, DatabaseError>;
   }
 >()("peal-server/workspace/application/AccountStore") {}

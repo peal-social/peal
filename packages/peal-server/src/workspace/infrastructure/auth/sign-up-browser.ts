@@ -356,6 +356,10 @@ export const bindSignUpBrowser = async (
   }
 
   if (answered.value.returned.user.id === found.user.id) {
+    // One more hash, thrown away, as `takeOver` hashes once more for an
+    // address that has an account: every answered sign-up takes as long.
+    await ctx.context.password.hash(signUp.value.password);
+
     const credential = await ctx.context.internalAdapter.findCredentialAccount(
       found.user.id
     );
@@ -416,6 +420,95 @@ export const holdsBinding = async (
   return nonce && passwordKept;
 };
 
+const isImpersonation = Schema.is(
+  Schema.Struct({ impersonatedBy: Schema.NonEmptyString })
+);
+
+/**
+ * Whether the request holds a live session of the account, read from the
+ * database, never a cookie's cached copy, and not one staff act in: its
+ * maker signed in with its password, as only a server that does not ask to
+ * confirm addresses allows.
+ */
+export const holdsOwnSession = async (
+  ctx: GenericEndpointContext,
+  userId: string
+): Promise<boolean> => {
+  const token = await ctx.getSignedCookie(
+    ctx.context.authCookies.sessionToken.name,
+    ctx.context.secret
+  );
+
+  if (token === null || token === false || token === "") {
+    return false;
+  }
+
+  const found = await ctx.context.internalAdapter.findSession(token);
+
+  return (
+    found !== null &&
+    found.user.id === userId &&
+    found.session.expiresAt.getTime() > Date.now() &&
+    !isImpersonation(found.session)
+  );
+};
+
+/**
+ * Part of Better Auth's after hook, on `/send-verification-email` that went
+ * through: a browser holding a live session of an unconfirmed account (its
+ * maker, signed in) gets a fresh nonce bound to it, so a link sent again
+ * after the first binding ran out still signs it in. Any other request
+ * binds nothing.
+ */
+export const renewSignUpBrowser = async (
+  ctx: GenericEndpointContext
+): Promise<void> => {
+  const email = decodeResend(ctx.body);
+
+  if (
+    ctx.path !== "/send-verification-email" ||
+    Option.isNone(email) ||
+    !isSent(ctx.context)
+  ) {
+    return;
+  }
+
+  const found = await ctx.context.internalAdapter.findUserByEmail(
+    email.value.email.toLowerCase()
+  );
+
+  if (
+    found === null ||
+    found.user.emailVerified ||
+    !(await holdsOwnSession(ctx, found.user.id))
+  ) {
+    return;
+  }
+
+  const credential = await ctx.context.internalAdapter.findCredentialAccount(
+    found.user.id
+  );
+
+  if (credential?.password === undefined || credential.password === null) {
+    return;
+  }
+
+  const nonce = await newNonce();
+  const cookie = signUpBrowserCookieOf(ctx);
+
+  ctx.setCookie(cookie.name, nonce, cookie.attributes);
+  await bind(ctx, found.user.id, nonce, credential.password);
+};
+
+const decodeResend = Schema.decodeUnknownOption(
+  Schema.Struct({ email: Schema.String })
+);
+
+// What the resend route answers once it sent, or pretended to.
+const isSent = Schema.is(
+  Schema.Struct({ returned: Schema.Struct({ status: Schema.Literal(true) }) })
+);
+
 /**
  * Signs the browser in as Better Auth's `autoSignInAfterVerification` did:
  * the browser's own session of the account, now confirmed, or a new one.
@@ -453,7 +546,9 @@ export type ProviderTakeover = "none" | "released" | "used";
  * the provider now vouches for the address and whoever set the password
  * may not own it; Better Auth then links the provider, finds the address
  * confirmed and signs in. An account that was used (`wasUsed`) is left
- * as it is (`used`), for the caller to close.
+ * as it is (`used`), and the caller refuses the sign-in: the person signs
+ * in with its password and confirms, or, from a confirmation link, has it
+ * closed in so many words. A provider's sign-in never erases anything.
  */
 export const releaseUnconfirmedAccount = async (
   ctx: GenericEndpointContext,

@@ -5,7 +5,6 @@ import type {
 import { getOAuthState } from "better-auth/api";
 import { Option, Schema } from "effect";
 
-import type { UnclaimedAccountCloser } from "./email-confirmation.ts";
 import { releaseUnconfirmedAccount } from "./sign-up-browser.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
 
@@ -30,10 +29,11 @@ export const providerRefusalCodes = [
   "sign_up_by_invitation",
   // The account is banned, or could not be read.
   "account_banned",
-  // Someone made an account with the address, never confirmed it and used
-  // it: it was closed, and signing in again makes the person's own.
-  "account_replaced",
-  // Such an account could not be closed: the operator can help.
+  // An account someone made with the address, never confirmed and used
+  // (a server that does not ask to confirm addresses lets it in): never
+  // joined nor changed by a provider. Its maker signs in with its
+  // password and confirms it; anyone else may have it closed from a
+  // confirmation link, in so many words.
   "account_in_use",
 ] as const;
 
@@ -233,12 +233,11 @@ const provisioned = ({ source, user }: ValidatedUser): ProvisionedUser => ({
  * confirms and releases that account first (`releaseUnconfirmedAccount`):
  * its password and sessions go, and the provider's sign-in takes it over.
  * One that was used before (a server that does not ask to confirm
- * addresses lets it in) is never handed over: it is closed
- * (`account_replaced`, the person signs in again to make their own), or
- * left as it is when it cannot be (`account_in_use`).
+ * addresses lets it in) is left as it is, and the sign-in refused
+ * (`account_in_use`): a provider's sign-in never erases anything.
  */
 export const providerAdmission =
-  (signUp: SignUpAdmission, closeUnclaimed: UnclaimedAccountCloser) =>
+  (signUp: SignUpAdmission) =>
   async (data: ValidatedUser, ctx: GenericEndpointContext) => {
     const refused = await admitProviderUser(provisioned(data), {
       // From the database, never a session's cached user: a flag turned on
@@ -282,9 +281,7 @@ export const providerAdmission =
       id !== undefined &&
       (await releaseUnconfirmedAccount(ctx, id)) === "used"
     ) {
-      return refusal(
-        (await closeUnclaimed(id)) ? "account_replaced" : "account_in_use"
-      );
+      return refusal("account_in_use");
     }
 
     return refused;

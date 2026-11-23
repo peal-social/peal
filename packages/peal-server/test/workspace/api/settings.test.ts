@@ -160,6 +160,7 @@ const PortsLive = Layer.mergeAll(
       return AccountStore.of({
         deleteUser: (id) => record(`deleteUser:${id}`).pipe(provide),
         deleteWorkspace: (id) => record(`deleteWorkspace:${id}`).pipe(provide),
+        holdUnconfirmed: () => Effect.succeed(false),
         identification: (id, workspaceIds) =>
           record(`identification:${id}:${workspaceIds.join(",")}`).pipe(
             provide,

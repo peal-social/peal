@@ -15,6 +15,7 @@ import {
   newEmail,
   password,
   TestApp,
+  apiKeyOf,
   unconfirmedEmails,
   workspaceOf,
 } from "./harness.ts";
@@ -331,11 +332,24 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const other = yield* signUp(newEmail("other-browser"), "en");
           const link = linkIn(yield* emailTo(email, /^Confirmez/u));
 
+          // The page's own post, from that browser, changes nothing: it asks.
           const opened = yield* confirmFrom(link, cookiesOf(other));
 
           assert.strictEqual(opened.status, 200);
-          assert.strictEqual(yield* outcomeOf(opened), "passwordNeeded");
+          assert.strictEqual(yield* outcomeOf(opened), "choose");
           assert.isFalse(setsSession(opened));
+
+          const untouched = yield* storedOf(email);
+
+          assert.isFalse(untouched.email_verified);
+          assert.strictEqual(untouched.passwords, 1);
+          assert.strictEqual(untouched.name, "Chosen Name");
+
+          // The person presses the button, once the page said what it does.
+          const pressed = yield* confirmFrom(link, cookiesOf(other), "confirm");
+
+          assert.strictEqual(yield* outcomeOf(pressed), "passwordNeeded");
+          assert.isFalse(setsSession(pressed));
 
           const stored = yield* storedOf(email);
 
@@ -483,12 +497,23 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const lure = yield* signUp(theirs, "en");
           const target = yield* signUp(newEmail("target"), "en");
 
-          const opened = yield* confirmFrom(
-            linkIn(yield* emailTo(theirs, confirmSubject)),
-            cookiesOf(target)
+          const link = linkIn(yield* emailTo(theirs, confirmSubject));
+
+          // The page's own post changes nothing; pressed, it confirms
+          // without signing anyone in.
+          const opened = yield* confirmFrom(link, cookiesOf(target));
+
+          assert.strictEqual(yield* outcomeOf(opened), "choose");
+          assert.isFalse(setsSession(opened));
+          assert.strictEqual((yield* storedOf(theirs)).passwords, 1);
+
+          const pressed = yield* confirmFrom(
+            link,
+            cookiesOf(target),
+            "confirm"
           );
 
-          assert.isFalse(setsSession(opened));
+          assert.isFalse(setsSession(pressed));
           assert.strictEqual((yield* storedOf(theirs)).passwords, 0);
 
           // The sign-up's own browser gets nothing back either.
@@ -723,53 +748,241 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
   }
 );
 
-// Where accounts work before their address is confirmed, someone who made
-// one with another's address can use it at once: it is closed, never
-// handed over, once the address's owner confirms.
-layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails), MigratedSqlLive), {
-  excludeTestServices: true,
-  timeout: "180 seconds",
-})("signing up where addresses need no confirmation", (it) => {
-  it.effect(
-    "closes an account used before its owner confirmed the address",
-    () =>
-      Effect.gen(function* used() {
-        const sql = yield* SqlClient.SqlClient;
-        const email = newEmail("used-before");
+// Where accounts work before their address is confirmed, an unconfirmed
+// account may be in use: its own maker's, most of the time. A link opened
+// anywhere never erases it; only the address's owner's explicit word does.
+const UnconfirmedTest = Layer.mergeAll(
+  TestApp.layerWith(unconfirmedEmails),
+  MigratedSqlLive
+);
 
-        // Signed in at once, the pre-registrant makes a workspace.
-        const made = yield* signUp(email, "en", { name: "Pre-registrant" });
-        const { user } = yield* decode(SignUpSchema, made);
+// An account signed in at once, with a workspace of its own.
+const usedAccount = Effect.fn("usedAccount")(function* usedAccount(
+  label: string
+) {
+  const email = newEmail(label);
+  const made = yield* signUp(email, "en", { name: "Maker" });
+  const { user } = yield* decode(SignUpSchema, made);
+  const person = { cookies: cookiesOf(made), email, id: user.id };
+  const workspaceId = yield* workspaceOf(person, `${label} notes`);
+  const link = linkIn(yield* emailTo(email, confirmSubject));
 
-        const workspaceId = yield* workspaceOf(
-          { cookies: cookiesOf(made), email, id: user.id },
-          "Lure"
-        );
-
-        // The owner posts the link from their own browser.
-        const confirmed = yield* confirmFrom(
-          linkIn(yield* emailTo(email, confirmSubject)),
-          ""
-        );
-
-        assert.strictEqual(yield* outcomeOf(confirmed), "replaced");
-        assert.isFalse(setsSession(confirmed));
-        assert.isUndefined(yield* maybeStoredOf(email));
-
-        const [left] = yield* sql<{ readonly workspaces: number }>`
-          SELECT count(*)::int AS workspaces FROM auth.organization
-          WHERE id = ${workspaceId}`.pipe(Effect.orDie);
-
-        assert.strictEqual(left?.workspaces, 0);
-
-        // The owner signs up afresh, with the address.
-        const fresh = yield* signUp(email, "en", { name: "Owner" });
-
-        assert.strictEqual(fresh.status, 200);
-        assert.notStrictEqual(
-          (yield* decode(SignUpSchema, fresh)).user.id,
-          user.id
-        );
-      })
-  );
+  return { email, link, made, person, workspaceId };
 });
+
+const workspacesNamed = Effect.fn("workspacesNamed")(function* workspacesNamed(
+  workspaceId: string
+) {
+  const sql = yield* SqlClient.SqlClient;
+
+  const [row] = yield* sql<{ readonly workspaces: number }>`
+    SELECT count(*)::int AS workspaces FROM auth.organization
+    WHERE id = ${workspaceId}`.pipe(Effect.orDie);
+
+  return row?.workspaces ?? 0;
+});
+
+const ResetSchema = Schema.Struct({
+  apiKeysRemoved: Schema.optional(Schema.Number),
+  status: Schema.Boolean,
+});
+
+layer(UnconfirmedTest, { excludeTestServices: true, timeout: "180 seconds" })(
+  "signing up where addresses need no confirmation",
+  (it) => {
+    it.effect(
+      "loses nothing when its maker opens the link in another browser, presses the button, or after a resend anyone asked for",
+      () =>
+        Effect.gen(function* realOwner() {
+          const app = yield* TestApp;
+          const { email, link, workspaceId } = yield* usedAccount("webview");
+
+          // Someone with no session asks for the link again: it goes to
+          // the address, and opening it changes nothing.
+          const resent = yield* app.request(
+            "/api/auth/send-verification-email",
+            { body: { callbackURL: "/verify-email", email } }
+          );
+
+          assert.strictEqual(resent.status, 200);
+
+          const [again] = yield* emailsTo(email, confirmSubject, 2);
+
+          assert.isDefined(again);
+
+          for (const opened of [link, linkIn(again)]) {
+            // A mail app's webview: no cookie of the maker's.
+            assert.strictEqual(
+              yield* outcomeOf(yield* confirmFrom(opened, "")),
+              "choose"
+            );
+            assert.strictEqual(
+              yield* outcomeOf(yield* confirmFrom(opened, "", "confirm")),
+              "inUse"
+            );
+          }
+
+          const stored = yield* storedOf(email);
+
+          assert.isFalse(stored.email_verified);
+          assert.strictEqual(stored.passwords, 1);
+          assert.strictEqual(yield* workspacesNamed(workspaceId), 1);
+          assert.strictEqual((yield* signIn(email, password)).status, 200);
+        })
+    );
+
+    it.effect(
+      "confirms from its maker's own session, the sign-up's binding gone or the password changed",
+      () =>
+        Effect.gen(function* ownSession() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+
+          const { email, link, person, workspaceId } =
+            yield* usedAccount("expired");
+
+          // The binding ran out, and the maker changed their password.
+          yield* sql`DELETE FROM auth.verification
+            WHERE identifier = ${`sign-up-browser:${person.id}`}`.pipe(
+            Effect.orDie
+          );
+
+          const changed = yield* app.request("/api/auth/change-password", {
+            body: {
+              currentPassword: password,
+              newPassword: "the maker's newer passphrase",
+            },
+            headers: { cookie: person.cookies },
+          });
+
+          assert.strictEqual(changed.status, 200, JSON.stringify(changed.body));
+
+          const cookies = withCookies(person.cookies, changed);
+
+          // Signed in on this browser, the page's own post confirms.
+          const confirmed = yield* confirmFrom(link, cookies);
+
+          assert.strictEqual(yield* outcomeOf(confirmed), "signedIn");
+
+          const stored = yield* storedOf(email);
+
+          assert.isTrue(stored.email_verified);
+          assert.strictEqual(stored.passwords, 1);
+          assert.strictEqual(yield* workspacesNamed(workspaceId), 1);
+
+          // Confirmed, the account can no longer be erased from a link.
+          assert.strictEqual(
+            yield* outcomeOf(yield* confirmFrom(link, "", "erase")),
+            "alreadyConfirmed"
+          );
+          assert.strictEqual(yield* workspacesNamed(workspaceId), 1);
+        })
+    );
+
+    it.effect(
+      "renews the binding when its maker, signed in, asks for the link again",
+      () =>
+        Effect.gen(function* renewed() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const { email, person } = yield* usedAccount("renewed");
+
+          yield* sql`DELETE FROM auth.verification
+            WHERE identifier = ${`sign-up-browser:${person.id}`}`.pipe(
+            Effect.orDie
+          );
+
+          const resent = yield* app.request(
+            "/api/auth/send-verification-email",
+            {
+              body: { callbackURL: "/verify-email", email },
+              headers: { cookie: person.cookies },
+            }
+          );
+
+          assert.strictEqual(resent.status, 200);
+          assert.isTrue(setsNonce(resent));
+
+          const [row] = yield* sql<{ readonly bindings: number }>`
+            SELECT count(*)::int AS bindings FROM auth.verification
+            WHERE identifier = ${`sign-up-browser:${person.id}`}`.pipe(
+            Effect.orDie
+          );
+
+          assert.strictEqual(row?.bindings, 1);
+        })
+    );
+
+    it.effect(
+      "closes the account only on its address's owner's explicit word",
+      () =>
+        Effect.gen(function* erased() {
+          const { email, link, person, workspaceId } =
+            yield* usedAccount("erased");
+
+          const closed = yield* confirmFrom(link, "", "erase");
+
+          assert.strictEqual(yield* outcomeOf(closed), "replaced");
+          assert.isFalse(setsSession(closed));
+          assert.isUndefined(yield* maybeStoredOf(email));
+          assert.strictEqual(yield* workspacesNamed(workspaceId), 0);
+
+          // The owner signs up afresh, with the address.
+          const fresh = yield* signUp(email, "en", { name: "Owner" });
+
+          assert.strictEqual(fresh.status, 200);
+          assert.notStrictEqual(
+            (yield* decode(SignUpSchema, fresh)).user.id,
+            person.id
+          );
+        })
+    );
+
+    it.effect(
+      "confirms on a password reset, and removes the API keys its maker made",
+      () =>
+        Effect.gen(function* reset() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const { email, person, workspaceId } = yield* usedAccount("reset");
+
+          yield* apiKeyOf(person, workspaceId, ["post:read"]);
+
+          const requested = yield* app.request(
+            "/api/auth/request-password-reset",
+            { body: { email, redirectTo: "/reset-password" } }
+          );
+
+          assert.strictEqual(requested.status, 200);
+
+          const opened = yield* open(
+            linkIn(yield* emailTo(email, /^Reset your Peal password/u)),
+            ""
+          );
+
+          const token =
+            new URL(
+              opened.headers.get("location") ?? "",
+              "http://localhost:3001"
+            ).searchParams.get("token") ?? "";
+
+          const done = yield* app.request("/api/auth/reset-password", {
+            body: { newPassword: "the owner's chosen passphrase", token },
+          });
+
+          assert.strictEqual(done.status, 200);
+          assert.strictEqual(
+            (yield* decode(ResetSchema, done)).apiKeysRemoved,
+            1
+          );
+          assert.isTrue((yield* storedOf(email)).email_verified);
+
+          const [keys] = yield* sql<{ readonly keys: number }>`
+            SELECT count(*)::int AS keys FROM auth.apikey
+            WHERE reference_id = ${workspaceId}`.pipe(Effect.orDie);
+
+          assert.strictEqual(keys?.keys, 0);
+        })
+    );
+  }
+);

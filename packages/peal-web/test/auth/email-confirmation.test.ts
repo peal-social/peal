@@ -5,7 +5,9 @@ import { confirmationResultOf } from "#auth/email-confirmation.ts";
 describe(confirmationResultOf, () => {
   it.each([
     "alreadyConfirmed",
+    "choose",
     "inUse",
+    "notErased",
     "passwordNeeded",
     "replaced",
     "signedIn",

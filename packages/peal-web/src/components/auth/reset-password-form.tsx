@@ -1,5 +1,6 @@
 "use client";
 
+import { Option, Schema } from "effect";
 import { useTranslations } from "next-intl";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
@@ -13,6 +14,12 @@ import { FormError } from "#components/auth/form-error.tsx";
 import { FormField } from "#components/auth/form-field.tsx";
 import { Link } from "#i18n/navigation.ts";
 
+// What the server answers a reset that removed the API keys someone made
+// in an account they used before its address was confirmed.
+const decodeRemoved = Schema.decodeUnknownOption(
+  Schema.Struct({ apiKeysRemoved: Schema.Number })
+);
+
 // Sets the new password with the token the emailed link carried.
 export const ResetPasswordForm = ({ token }: { readonly token: string }) => {
   const t = useTranslations("ResetPasswordPage");
@@ -22,6 +29,7 @@ export const ResetPasswordForm = ({ token }: { readonly token: string }) => {
   const [error, setError] = useState<AuthErrorKey | null>(null);
   const [mismatch, setMismatch] = useState(false);
   const [done, setDone] = useState(false);
+  const [keysRemoved, setKeysRemoved] = useState(0);
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -43,6 +51,12 @@ export const ResetPasswordForm = ({ token }: { readonly token: string }) => {
 
       if (result.error === null) {
         setError(null);
+        setKeysRemoved(
+          Option.match(decodeRemoved(result.data), {
+            onNone: () => 0,
+            onSome: ({ apiKeysRemoved }) => apiKeysRemoved,
+          })
+        );
         setDone(true);
       } else {
         setError(authErrorKey(result.error));
@@ -56,6 +70,13 @@ export const ResetPasswordForm = ({ token }: { readonly token: string }) => {
         <Alert>
           <AlertDescription>{t("done")}</AlertDescription>
         </Alert>
+        {keysRemoved > 0 ? (
+          <Alert>
+            <AlertDescription>
+              {t("keysRemoved", { count: keysRemoved })}
+            </AlertDescription>
+          </Alert>
+        ) : null}
         <Button render={<Link href="/login" />}>{t("signIn")}</Button>
       </div>
     );
