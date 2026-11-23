@@ -100,6 +100,21 @@ def test_without_the_docs_server_its_key_is_not_required() -> None:
     assert "DOCS_ANTHROPIC_API_KEY" not in ansible_render(expression, **found)
 
 
+def test_a_turnstile_site_key_requires_its_secret() -> None:
+    """The docs image built with a site key checks each question with the
+    secret: a server without it would refuse every question."""
+    expression = role_file("peal_runtime", "vars")["peal_runtime_required_credentials"]
+    resolved = _resolved("production")
+    arguments = dict(resolved["peal_static_build_args"])
+
+    with_key = {**resolved, "peal_static_build_args": {**arguments, "DOCS_TURNSTILE_SITE_KEY": "0x4AAAAAAAsynthetic"}}
+    arguments.pop("DOCS_TURNSTILE_SITE_KEY", None)
+    without_key = {**resolved, "peal_static_build_args": arguments}
+
+    assert "DOCS_TURNSTILE_SECRET_KEY" in ansible_render(expression, **with_key)
+    assert "DOCS_TURNSTILE_SECRET_KEY" not in ansible_render(expression, **without_key)
+
+
 @pytest.mark.parametrize("environment", ASSISTANT)
 def test_each_image_gets_the_build_arguments_its_dockerfile_reads(environment: str) -> None:
     """The static image builds the docs as files: a model would make it

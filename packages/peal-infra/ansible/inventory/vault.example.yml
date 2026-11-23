@@ -94,6 +94,9 @@ peal_credentials:
   # STRIPE_WEBHOOK_SECRET: REPLACE
   # STRIPE_METER_WEBHOOK_SECRET: REPLACE
   # TURNSTILE_SECRET_KEY: REPLACE
+  # The docs assistant's Turnstile secret, required once the static build
+  # arguments name DOCS_TURNSTILE_SITE_KEY.
+  # DOCS_TURNSTILE_SECRET_KEY: REPLACE
   # The support chat's identity secret, from Crisp (README.md, "Support chat").
   # PEAL_CRISP_IDENTITY_SECRET: REPLACE
   # LINKEDIN_CLIENT_SECRET: REPLACE
