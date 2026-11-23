@@ -10,6 +10,16 @@ public final class SlideshowRejection {
     public static final SlideshowRejection VOICEOVER_TOO_SHORT =
             new SlideshowRejection(Value.VOICEOVER_TOO_SHORT, "voiceoverTooShort");
 
+    public static final SlideshowRejection EDIT_INVALID = new SlideshowRejection(Value.EDIT_INVALID, "editInvalid");
+
+    public static final SlideshowRejection MEDIA_NOT_SUPPORTED =
+            new SlideshowRejection(Value.MEDIA_NOT_SUPPORTED, "mediaNotSupported");
+
+    public static final SlideshowRejection EDIT_TOO_LONG = new SlideshowRejection(Value.EDIT_TOO_LONG, "editTooLong");
+
+    public static final SlideshowRejection OUTPUT_NOT_SUPPORTED =
+            new SlideshowRejection(Value.OUTPUT_NOT_SUPPORTED, "outputNotSupported");
+
     public static final SlideshowRejection IMAGE_NOT_FOUND =
             new SlideshowRejection(Value.IMAGE_NOT_FOUND, "imageNotFound");
 
@@ -23,6 +33,12 @@ public final class SlideshowRejection {
 
     public static final SlideshowRejection IMAGE_NOT_SUPPORTED =
             new SlideshowRejection(Value.IMAGE_NOT_SUPPORTED, "imageNotSupported");
+
+    public static final SlideshowRejection EDIT_TOO_LARGE =
+            new SlideshowRejection(Value.EDIT_TOO_LARGE, "editTooLarge");
+
+    public static final SlideshowRejection MEDIA_NOT_FOUND =
+            new SlideshowRejection(Value.MEDIA_NOT_FOUND, "mediaNotFound");
 
     private final Value value;
 
@@ -58,6 +74,14 @@ public final class SlideshowRejection {
         switch (value) {
             case VOICEOVER_TOO_SHORT:
                 return visitor.visitVoiceoverTooShort();
+            case EDIT_INVALID:
+                return visitor.visitEditInvalid();
+            case MEDIA_NOT_SUPPORTED:
+                return visitor.visitMediaNotSupported();
+            case EDIT_TOO_LONG:
+                return visitor.visitEditTooLong();
+            case OUTPUT_NOT_SUPPORTED:
+                return visitor.visitOutputNotSupported();
             case IMAGE_NOT_FOUND:
                 return visitor.visitImageNotFound();
             case TOO_LONG:
@@ -68,6 +92,10 @@ public final class SlideshowRejection {
                 return visitor.visitVoiceoverNotFound();
             case IMAGE_NOT_SUPPORTED:
                 return visitor.visitImageNotSupported();
+            case EDIT_TOO_LARGE:
+                return visitor.visitEditTooLarge();
+            case MEDIA_NOT_FOUND:
+                return visitor.visitMediaNotFound();
             case UNKNOWN:
             default:
                 return visitor.visitUnknown(string);
@@ -79,6 +107,14 @@ public final class SlideshowRejection {
         switch (value) {
             case "voiceoverTooShort":
                 return VOICEOVER_TOO_SHORT;
+            case "editInvalid":
+                return EDIT_INVALID;
+            case "mediaNotSupported":
+                return MEDIA_NOT_SUPPORTED;
+            case "editTooLong":
+                return EDIT_TOO_LONG;
+            case "outputNotSupported":
+                return OUTPUT_NOT_SUPPORTED;
             case "imageNotFound":
                 return IMAGE_NOT_FOUND;
             case "tooLong":
@@ -89,6 +125,10 @@ public final class SlideshowRejection {
                 return VOICEOVER_NOT_FOUND;
             case "imageNotSupported":
                 return IMAGE_NOT_SUPPORTED;
+            case "editTooLarge":
+                return EDIT_TOO_LARGE;
+            case "mediaNotFound":
+                return MEDIA_NOT_FOUND;
             default:
                 return new SlideshowRejection(Value.UNKNOWN, value);
         }
@@ -107,6 +147,18 @@ public final class SlideshowRejection {
 
         VOICEOVER_TOO_SHORT,
 
+        EDIT_INVALID,
+
+        MEDIA_NOT_FOUND,
+
+        MEDIA_NOT_SUPPORTED,
+
+        EDIT_TOO_LONG,
+
+        EDIT_TOO_LARGE,
+
+        OUTPUT_NOT_SUPPORTED,
+
         UNKNOWN
     }
 
@@ -122,6 +174,18 @@ public final class SlideshowRejection {
         T visitVoiceoverTooLong();
 
         T visitVoiceoverTooShort();
+
+        T visitEditInvalid();
+
+        T visitMediaNotFound();
+
+        T visitMediaNotSupported();
+
+        T visitEditTooLong();
+
+        T visitEditTooLarge();
+
+        T visitOutputNotSupported();
 
         T visitUnknown(String unknownType);
     }

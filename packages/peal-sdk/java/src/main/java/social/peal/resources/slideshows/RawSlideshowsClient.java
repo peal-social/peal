@@ -30,6 +30,7 @@ import social.peal.errors.PaymentRequiredError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
+import social.peal.resources.slideshows.requests.EditRenderRequest;
 import social.peal.resources.slideshows.requests.GetSlideshowsRequest;
 import social.peal.resources.slideshows.requests.ListSlideshowsRequest;
 import social.peal.resources.slideshows.requests.SlideshowRequest;
@@ -158,6 +159,98 @@ public class RawSlideshowsClient {
                 .addPathSegment(PathSegments.validate(workspaceId))
                 .addPathSegments("media")
                 .addPathSegments("slideshows");
+        if (requestOptions != null) {
+            requestOptions.getQueryParameters().forEach((_key, _value) -> {
+                httpUrl.addQueryParameter(_key, _value);
+            });
+        }
+        RequestBody body;
+        try {
+            body = RequestBody.create(
+                    ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                    MediaTypes.APPLICATION_JSON);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to serialize request", e);
+        }
+        Request okhttpRequest = new Request.Builder()
+                .url(httpUrl.build())
+                .method("POST", body)
+                .headers(Headers.of(clientOptions.headers(requestOptions)))
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Accept", "application/json")
+                .build();
+        OkHttpClient client = clientOptions.httpClient();
+        if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
+            client = clientOptions.httpClientWithTimeout(requestOptions);
+        }
+        okhttpRequest = okhttpRequest
+                .newBuilder()
+                .tag(RetryInterceptor.MaxRetriesOverride.class, new RetryInterceptor.MaxRetriesOverride(0))
+                .build();
+        try (Response response = client.newCall(okhttpRequest).execute()) {
+            ResponseBody responseBody = response.body();
+            String responseBodyString = responseBody != null ? responseBody.string() : "{}";
+            if (response.isSuccessful()) {
+                return new PealClientHttpResponse<>(
+                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Slideshow.class), response);
+            }
+            try {
+                switch (response.code()) {
+                    case 401:
+                        throw new UnauthorizedError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
+                                response);
+                    case 402:
+                        throw new PaymentRequiredError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 403:
+                        throw new ForbiddenError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 404:
+                        throw new NotFoundError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 409:
+                        throw new ConflictError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 422:
+                        throw new UnprocessableEntityError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                    case 429:
+                        throw new TooManyRequestsError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
+                }
+            } catch (JsonProcessingException ignored) {
+                // unable to map error response, throwing generic error
+            }
+            Object errorBody = ObjectMappers.parseErrorBody(responseBodyString);
+            throw new PealClientApiException(
+                    "Error with status code " + response.code(), response.code(), errorBody, response);
+        } catch (JsonProcessingException e) {
+            throw new PealClientException("Failed to deserialize response: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new PealClientException("Network error executing HTTP request", e);
+        }
+    }
+
+    /**
+     * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
+     */
+    public PealClientHttpResponse<Slideshow> createFromEdit(String workspaceId, EditRenderRequest request) {
+        return createFromEdit(workspaceId, request, null);
+    }
+
+    /**
+     * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
+     */
+    public PealClientHttpResponse<Slideshow> createFromEdit(
+            String workspaceId, EditRenderRequest request, RequestOptions requestOptions) {
+        HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
+                .newBuilder()
+                .addPathSegments("api/workspaces")
+                .addPathSegment(PathSegments.validate(workspaceId))
+                .addPathSegments("media/slideshows")
+                .addPathSegments("edits");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
