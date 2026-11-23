@@ -1,7 +1,6 @@
 ---
 import { Font } from "astro:assets";
 import { getRelativeLocaleUrl } from "astro:i18n";
-import { AnnouncementBar } from "peal-ui/components/announcement-bar";
 import { SiteFooter } from "peal-ui/components/site-footer";
 import { SiteHeader } from "peal-ui/components/site-header";
 
@@ -9,7 +8,6 @@ import { chrome } from "../components/chrome.ts";
 import { indexable, measurement, supportWebsite } from "../config.ts";
 import { consentAttributes } from "peal-ui/lib/site/measurement/settings";
 import { supportAttributes } from "peal-ui/lib/support/settings";
-import { repository } from "peal-ui/lib/site/navigation";
 import type { PageLinks } from "peal-ui/lib/site/navigation";
 import { defaultLocale, locales, pageLocale } from "../i18n/locales.ts";
 import { messages } from "../i18n/messages.ts";
@@ -32,7 +30,6 @@ const locale = pageLocale(Astro.currentLocale);
 
 const { footer, header } = await chrome(locale, path, current);
 
-const { announcement } = messages(locale);
 
 // Canonical and alternate links need absolute URLs, so they are only emitted
 // when SITE_URL gives the site its origin.
@@ -103,7 +100,7 @@ const support =
     <slot name="head" />
   </head>
   <body class="relative flex min-h-dvh flex-col antialiased">
-    <!-- First in the tab order, before the announcement and the header. -->
+    <!-- First in the tab order, before the header. -->
     {consent !== undefined && <peal-consent {...consent} />}
     <!-- The blueprint's rails (DESIGN.md, Site): the content column's edges,
          from the header to the footer, under everything that has a fill. -->
@@ -112,10 +109,6 @@ const support =
       class="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-6xl -translate-x-1/2 border-x"
     >
     </div>
-    <AnnouncementBar
-      text={announcement.text}
-      link={{ href: repository, label: announcement.link }}
-    />
     <SiteHeader client:load {...header} />
     <main class="relative flex-1">
       <slot />

@@ -190,7 +190,7 @@ const navItems = (
     // The two products, by name, and whom each is for.
     {
       description: t.studio,
-      label: "PealStudio",
+      label: "PealCreative",
       links: menuLinks(studioRows, t, settings),
     },
     {
@@ -421,7 +421,7 @@ export const footerProps = (
   };
 
   const columns: SiteFooterColumn[] = [
-    { label: "PealStudio", links: titled(studioRows) },
+    { label: "PealCreative", links: titled(studioRows) },
     { label: "PealAPI", links: titled(developerRows) },
     resources,
     socials,

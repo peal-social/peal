@@ -155,16 +155,16 @@ describe("the home page", () => {
   );
 
   it.each(locales)(
-    "tells PealStudio from PealAPI in its FAQ in %s",
+    "tells PealCreative from PealAPI in its FAQ in %s",
     (locale) => {
       const questions = faqGroups(locale).flatMap((group) => group.questions);
 
       expect(
         questions.some(
           ({ answer, question }) =>
-            question.includes("PealStudio") &&
+            question.includes("PealCreative") &&
             question.includes("PealAPI") &&
-            answer.includes("PealStudio") &&
+            answer.includes("PealCreative") &&
             answer.includes("PealAPI")
         )
       ).toBe(true);

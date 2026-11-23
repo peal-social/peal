@@ -34,7 +34,7 @@ type StageContent =
 
 interface StageTab {
   readonly chips: readonly StageChip[];
-  /** The chips' list name, such as "PealStudio in the docs". */
+  /** The chips' list name, such as "PealCreative in the docs". */
   readonly chipsLabel: string;
   readonly content: StageContent;
   readonly label: string;
