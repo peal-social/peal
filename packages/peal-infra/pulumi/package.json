@@ -14,7 +14,7 @@
   "dependencies": {
     "@pulumi/cloudflare": "6.24.0",
     "@pulumi/pulumi": "3.277.0",
-    "effect": "4.1.4"
+    "effect": "4.1.5"
   },
   "devDependencies": {
     "@types/bun": "1.4.5",
