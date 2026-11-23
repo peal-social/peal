@@ -98,7 +98,7 @@ layer(SinkTest, { excludeTestServices: true })(
               billing_account: aloneAccountId,
               workspace: workspaceId,
             },
-            $set: { kind: "service" },
+            $set_once: { kind: "service" },
             actor_kind: "service",
             assistant_requests: 4,
             billing_account_id: aloneAccountId,

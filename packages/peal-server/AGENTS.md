@@ -523,7 +523,8 @@ and no socket, for tests.
   subscribed) is sent as the workspace's service identity
   (`asWorkspace`), never as a person who may have been erased since:
   the person behind an event is only ever the request's, or one just
-  made. Every event is encoded through `ProductEventSchema` with no key
+  made. A service identity's events set its `kind` once (`$set_once`),
+  as it never changes. Every event is encoded through `ProductEventSchema` with no key
   it does not declare, person and group properties through their own
   schemas, and no key may name an address, a name, a URL, a text or a
   token (`refusedKeyWords`).
