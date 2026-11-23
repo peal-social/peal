@@ -77,6 +77,14 @@ updates:
       tiptap:
         patterns:
           - "@tiptap/*"
+      # peal-ui's behaviour (ui-sdk): its packages are released together.
+      # It is in beta, and its releases go to the `beta` dist-tag while
+      # `latest` lags behind. Dependabot reads `latest` and may not offer
+      # what is above it: check `npm view @ui-sdk/react dist-tags` and move
+      # it by hand when `beta` is ahead.
+      ui-sdk:
+        patterns:
+          - "@ui-sdk/*"
       # The AI SDK and its providers are released together.
       ai-sdk:
         patterns:
