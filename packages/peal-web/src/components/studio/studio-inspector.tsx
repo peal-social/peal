@@ -3,6 +3,7 @@
 import { Schema } from "effect";
 import { useTranslations } from "next-intl";
 
+import { captionSourceOf } from "#studio/captions.ts";
 import {
   audioEffects,
   clipEffects,
@@ -29,6 +30,9 @@ import type {
   StudioClip,
 } from "#studio/edit-document.ts";
 
+import { AnimatedFields } from "./studio-animation.tsx";
+import { CaptionSection } from "./studio-caption-section.tsx";
+import type { CaptionSourceChoice } from "./studio-caption-section.tsx";
 import {
   ChoiceField,
   ColourField,
@@ -38,11 +42,12 @@ import {
   RangeField,
   WordsField,
 } from "./studio-fields.tsx";
+import { FigureSection } from "./studio-figure-section.tsx";
 
 // The inspector beside the stage: the chosen clip's settings, by what it
 // holds, then the video's. Every field reads the engine's document and
-// sends one change. A value Shotstack animates (keyframes) is left to the
-// document: its field shows the value at rest.
+// sends one change. A clip's offset, scale, rotation and opacity are each
+// a still value or keyframes (`studio-animation.tsx`).
 
 /** The longest text a clip takes, as the server's limits allow. */
 const maxClipText = 1000;
@@ -77,6 +82,8 @@ const percent = (value: number) => `${String(Math.round(value * 100))}%`;
 export interface InspectorActions {
   readonly onBackground: (colour: string) => void;
   readonly onClip: (changes: ClipChanges) => void;
+  /** Has the chosen caption take its words from the clip `sourceId`. */
+  readonly onLinkCaption: (sourceId: string) => void;
   readonly onOutput: (output: {
     readonly aspectRatio?: EditAspect;
     readonly fps?: number;
@@ -349,9 +356,6 @@ const LayoutSection = ({
   onClip,
 }: SectionProps & { readonly kind: ClipKind }) => {
   const t = useTranslations("Studio.inspector");
-  const offset = clip.offset ?? {};
-  const x = numberOr(offset.x, 0);
-  const y = numberOr(offset.y, 0);
 
   return (
     <FieldSection title={t("layout")}>
@@ -375,54 +379,6 @@ const LayoutSection = ({
         nameOf={(position) => t(`positions.${position}`)}
         onChange={(position) => {
           onClip({ position });
-        }}
-      />
-      <RangeField
-        disabled={disabled}
-        label={t("offsetX")}
-        min={-1}
-        max={1}
-        step={0.01}
-        format={percent}
-        value={x}
-        onCommit={(moved) => {
-          onClip({ offset: { x: moved, y } });
-        }}
-      />
-      <RangeField
-        disabled={disabled}
-        label={t("offsetY")}
-        min={-1}
-        max={1}
-        step={0.01}
-        format={percent}
-        value={y}
-        onCommit={(moved) => {
-          onClip({ offset: { x, y: moved } });
-        }}
-      />
-      <RangeField
-        disabled={disabled}
-        label={t("scale")}
-        min={0.1}
-        max={3}
-        step={0.05}
-        format={percent}
-        value={numberOr(clip.scale, 1)}
-        onCommit={(scale) => {
-          onClip({ scale });
-        }}
-      />
-      <RangeField
-        disabled={disabled}
-        label={t("opacity")}
-        min={0}
-        max={1}
-        step={0.05}
-        format={percent}
-        value={numberOr(clip.opacity, 1)}
-        onCommit={(opacity) => {
-          onClip({ opacity });
         }}
       />
     </FieldSection>
@@ -476,16 +432,23 @@ const MotionSection = ({ clip, disabled, onClip }: SectionProps) => {
           onClip({ filter });
         }}
       />
+      <AnimatedFields clip={clip} disabled={disabled} onClip={onClip} />
     </FieldSection>
   );
 };
 
 const ClipSettings = ({
+  captionSources,
   clip,
   disabled,
   kind,
   onClip,
-}: SectionProps & { readonly kind: ClipKind }) => {
+  onLinkCaption,
+}: SectionProps & {
+  readonly captionSources: readonly CaptionSourceChoice[];
+  readonly kind: ClipKind;
+  readonly onLinkCaption: (sourceId: string) => void;
+}) => {
   const { asset } = clip;
   const visual = kind !== "audio";
 
@@ -506,6 +469,21 @@ const ClipSettings = ({
           clip={clip}
           disabled={disabled}
           onClip={onClip}
+        />
+      ) : null}
+      {asset.type === "shape" ? (
+        <FigureSection asset={asset} disabled={disabled} onClip={onClip} />
+      ) : null}
+      {asset.type === "rich-caption" ? (
+        <CaptionSection
+          asset={asset}
+          disabled={disabled}
+          linked={captionSourceOf(clip)}
+          sources={captionSources}
+          onAsset={(changed) => {
+            onClip({ asset: changed });
+          }}
+          onSource={onLinkCaption}
         />
       ) : null}
       {visual ? (
@@ -583,12 +561,15 @@ const VideoSection = ({
 /** The inspector: the chosen clip's settings, then the video's. */
 export const StudioInspector = ({
   actions,
+  captionSources,
   clip,
   disabled,
   kind,
   settings,
 }: {
   readonly actions: InspectorActions;
+  /** The sounds and films a caption may take its words from. */
+  readonly captionSources: readonly CaptionSourceChoice[];
   readonly clip: StudioClip | null;
   readonly disabled: boolean;
   readonly kind: ClipKind | null;
@@ -607,11 +588,15 @@ export const StudioInspector = ({
         </p>
       ) : (
         <ClipSettings
+          captionSources={captionSources}
           clip={clip}
           disabled={disabled}
           kind={kind}
           onClip={(changes) => {
             actions.onClip(changes);
+          }}
+          onLinkCaption={(sourceId) => {
+            actions.onLinkCaption(sourceId);
           }}
         />
       )}

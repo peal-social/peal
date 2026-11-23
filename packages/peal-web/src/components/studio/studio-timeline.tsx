@@ -9,9 +9,10 @@ import {
 import { Toolbar, ToolbarButton } from "@ui-sdk/react/toolbar";
 import {
   AudioLinesIcon,
+  CaptionsIcon,
   FilmIcon,
   ImageIcon,
-  PenToolIcon,
+  PentagonIcon,
   SquareDashedIcon,
   Trash2Icon,
   TypeIcon,
@@ -43,18 +44,20 @@ import type { Edge } from "#studio/timeline-geometry.ts";
 
 const kindIcons: Readonly<Record<ClipKind, LucideIcon>> = {
   audio: AudioLinesIcon,
+  caption: CaptionsIcon,
   image: ImageIcon,
   other: SquareDashedIcon,
-  drawing: PenToolIcon,
+  figure: PentagonIcon,
   text: TypeIcon,
   video: FilmIcon,
 };
 
 const kindClasses: Readonly<Record<ClipKind, string>> = {
   audio: "bg-sun/30",
+  caption: "bg-lavender/40",
   image: "bg-brand-tint",
   other: "bg-muted",
-  drawing: "bg-muted",
+  figure: "bg-brand-tint/50",
   text: "bg-lavender/40",
   video: "bg-lavender/20",
 };

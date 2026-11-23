@@ -16,6 +16,7 @@ import { useMediaName } from "#components/media/media-preview.tsx";
 import { PageActions } from "#components/shell/frame-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
+import { captionSourcesOf } from "#studio/captions.ts";
 import { readDraft } from "#studio/draft.ts";
 import {
   emptyEdit,
@@ -200,10 +201,13 @@ const EditorToolbar = ({
       workspaceId={workspaceId}
       actions={{
         canAdd,
+        canCaption: act.canCaption,
         canEdit: !idle,
         canRedo: !idle && state?.canRedo === true,
         canUndo: !idle && state?.canUndo === true,
+        handleAddCaptions: act.addCaptions,
         handleAddFiles: act.addFiles,
+        handleAddFigure: act.addFigure,
         handleAddText: act.addText,
         handleDelete: act.deleteChosen,
         handleDuplicate: act.duplicate,
@@ -255,6 +259,22 @@ const EditorTransport = ({
   );
 };
 
+// What a clip is called: its words, its file's name, or its kind.
+const useClipLabel = (studio: StudioEngine) => {
+  const t = useTranslations("Studio");
+  const nameOf = useMediaName();
+
+  return (clip: ClipView): string => {
+    const media =
+      clip.mediaId === null ? undefined : studio.files.byId.get(clip.mediaId);
+
+    return (
+      clip.text ??
+      (media === undefined ? t(`clipKinds.${clip.kind}`) : nameOf(media))
+    );
+  };
+};
+
 // The inspector, wired to the engine's document.
 const EditorInspector = ({
   idle,
@@ -265,10 +285,21 @@ const EditorInspector = ({
   readonly initial: StudioEdit;
   readonly studio: StudioEngine;
 }) => {
-  const { chosen, engine, state } = studio;
+  const { chosen, engine, state, tracks } = studio;
+  const labelOf = useClipLabel(studio);
+  const views = tracks.flat();
+
+  const captionSources = (
+    state === null ? [] : captionSourcesOf(state.edit)
+  ).map(({ alias, id }) => {
+    const view = views.find((each) => each.id === id);
+
+    return { alias, id, label: view === undefined ? id : labelOf(view) };
+  });
 
   return (
     <StudioInspector
+      captionSources={captionSources}
       disabled={idle}
       clip={chosen?.clip ?? null}
       kind={chosen?.view.kind ?? null}
@@ -280,6 +311,11 @@ const EditorInspector = ({
         onClip: (changes) => {
           if (chosen !== null) {
             void engine?.updateClip(chosen.view.id, changes);
+          }
+        },
+        onLinkCaption: (sourceId) => {
+          if (chosen !== null) {
+            void engine?.linkCaption(chosen.view.id, sourceId);
           }
         },
         onOutput: (changes) => {
@@ -298,20 +334,9 @@ const EditorTimeline = ({
   readonly idle: boolean;
   readonly studio: StudioEngine;
 }) => {
-  const t = useTranslations("Studio");
-  const nameOf = useMediaName();
+  const labelOf = useClipLabel(studio);
   const [zoom, setZoom] = useState(defaultZoom);
   const { engine, state, tracks } = studio;
-
-  const labelOf = (clip: ClipView): string => {
-    const media =
-      clip.mediaId === null ? undefined : studio.files.byId.get(clip.mediaId);
-
-    return (
-      clip.text ??
-      (media === undefined ? t(`clipKinds.${clip.kind}`) : nameOf(media))
-    );
-  };
 
   return (
     <StudioTimeline

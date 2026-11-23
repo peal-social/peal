@@ -4,6 +4,7 @@ import type { Canvas } from "@shotstack/shotstack-studio";
 import { Schema } from "effect";
 
 import { relayedAddressOf, relayedSourceOf } from "#studio/asset-relay.ts";
+import { captionSrcOf, sdkAliasOf } from "#studio/captions.ts";
 import type {
   ClipChanges,
   StudioClip,
@@ -35,12 +36,19 @@ export interface EngineState {
 
 /** What the editor asks of the engine. */
 export interface Engine {
+  /**
+   * Adds a caption on a track of its own over the others, its words from
+   * the clip `sourceId`.
+   */
+  readonly addCaption: (caption: StudioClip, sourceId: string) => Promise<void>;
   readonly addClip: (trackIndex: number, clip: StudioClip) => Promise<void>;
   readonly addTrack: (trackIndex: number, track: StudioTrack) => Promise<void>;
   readonly deleteClip: (clipId: string) => Promise<void>;
   readonly deleteTrack: (trackIndex: number) => Promise<void>;
   readonly dispose: () => void;
   readonly fit: () => void;
+  /** Has a caption take its words from the clip `sourceId`. */
+  readonly linkCaption: (captionId: string, sourceId: string) => Promise<void>;
   /** The document as it stands, without the SDK's ids: to keep or send. */
   readonly getEdit: () => StudioEdit;
   readonly getState: () => EngineState;
@@ -244,6 +252,30 @@ export const startEngine = async (initial: StudioEdit): Promise<Engine> => {
     changed();
   };
 
+  // A caption names its source by the source's alias: one the clip has,
+  // else the one the SDK would give it, set first.
+  const link = async (captionId: string, sourceId: string) => {
+    const source = edit.getClipById(sourceId);
+    const caption = edit.getClipById(captionId);
+
+    if (source === null || caption?.asset.type !== "rich-caption") {
+      return;
+    }
+
+    const alias = source.alias ?? sdkAliasOf(sourceId);
+    const src = captionSrcOf({ alias });
+
+    if (source.alias === undefined) {
+      await edit.updateClipById(sourceId, { alias });
+    }
+
+    if (caption.asset.src !== src) {
+      await edit.updateClipById(captionId, {
+        asset: { ...caption.asset, src },
+      });
+    }
+  };
+
   // The SDK's Edit publishes no way to choose a clip: one chosen on the
   // canvas is followed through its events, one chosen on the timeline is
   // the editor's own, and the canvas keeps its last highlight.
@@ -256,6 +288,20 @@ export const startEngine = async (initial: StudioEdit): Promise<Engine> => {
   };
 
   return {
+    // The SDK links a caption added on a track to the first sound or film
+    // it finds; one asked of another clip is linked to it after.
+    addCaption: async (caption, sourceId) => {
+      await edit.addTrack(0, { clips: [caption] });
+
+      const added = edit.getEdit({ includeIds: true }).timeline.tracks[0]
+        ?.clips[0]?.id;
+
+      if (added !== undefined) {
+        await link(added, sourceId);
+      }
+
+      changed();
+    },
     addClip: async (trackIndex, clip) => {
       await settled(edit.addClip(trackIndex, clip));
     },
@@ -289,6 +335,9 @@ export const startEngine = async (initial: StudioEdit): Promise<Engine> => {
       canvas.zoomToFit();
     },
     getEdit: () => edit.getEdit(),
+    linkCaption: async (captionId, sourceId) => {
+      await settled(link(captionId, sourceId));
+    },
     getState: () => state,
     // The SDK's types brand a new start without a way to make one: a clip
     // that changes track moves there, then takes its start.

@@ -4680,7 +4680,14 @@
     "addFilesDescription": "Pictures and videos go on the chosen track, sounds on a track of their own.",
     "addFilesConfirm": "Add these files",
     "addText": "Add text",
+    "addShape": "Add shape",
+    "addCaptions": "Add captions",
     "newText": "Your text",
+    "shapes": {
+      "rectangle": "Rectangle",
+      "circle": "Circle",
+      "line": "Line"
+    },
     "undo": "Undo",
     "redo": "Redo",
     "duplicate": "Duplicate",
@@ -4692,7 +4699,8 @@
       "other": "Clip",
       "text": "Text",
       "video": "Video",
-      "drawing": "Drawing"
+      "caption": "Captions",
+      "figure": "Shape"
     },
     "keys": {
       "play": "Play or pause",
@@ -4728,7 +4736,8 @@
         "other": "Clip",
         "text": "Text",
         "video": "Video",
-        "drawing": "Drawing"
+        "caption": "Captions",
+        "figure": "Shape"
       },
       "start": "Start",
       "length": "Length",
@@ -4782,11 +4791,7 @@
         "bottom": "Bottom",
         "bottomRight": "Bottom right"
       },
-      "offsetX": "Move across",
-      "offsetY": "Move up or down",
-      "scale": "Scale",
-      "opacity": "Opacity",
-      "motion": "Motion and transitions",
+      "motion": "Motion and animation",
       "effect": "Motion",
       "transitionIn": "Comes in",
       "transitionOut": "Goes out",
@@ -4801,6 +4806,85 @@
         "lighten": "Lighten",
         "muted": "Muted",
         "negative": "Negative"
+      },
+      "properties": {
+        "offsetX": "Move across",
+        "offsetY": "Move up or down",
+        "scale": "Scale",
+        "rotate": "Rotation",
+        "opacity": "Opacity"
+      },
+      "keyframes": {
+        "animated": "Animated",
+        "animate": "Animate {property, select, offsetX {the move across} offsetY {the move up or down} scale {the scale} rotate {the rotation} opacity {the opacity} other {it}}",
+        "keyframe": "Keyframe {position, number}",
+        "remove": "Remove keyframe {position, number}",
+        "add": "Add a keyframe",
+        "from": "From",
+        "to": "To",
+        "start": "At",
+        "length": "For",
+        "interpolation": "Change",
+        "interpolations": {
+          "linear": "Steady",
+          "bezier": "Curve",
+          "constant": "Jump"
+        },
+        "easing": "Easing",
+        "easings": {
+          "ease": "Gentle",
+          "easeIn": "Speeds up",
+          "easeOut": "Slows down",
+          "easeInOut": "Speeds up, then slows down",
+          "easeInQuad": "Speeds up, quadratic",
+          "easeInCubic": "Speeds up, cubic",
+          "easeInQuart": "Speeds up, quartic",
+          "easeInQuint": "Speeds up, quintic",
+          "easeInSine": "Speeds up, sine",
+          "easeInExpo": "Speeds up, exponential",
+          "easeInCirc": "Speeds up, circular",
+          "easeInBack": "Speeds up, overshooting",
+          "easeOutQuad": "Slows down, quadratic",
+          "easeOutCubic": "Slows down, cubic",
+          "easeOutQuart": "Slows down, quartic",
+          "easeOutQuint": "Slows down, quintic",
+          "easeOutSine": "Slows down, sine",
+          "easeOutExpo": "Slows down, exponential",
+          "easeOutCirc": "Slows down, circular",
+          "easeOutBack": "Slows down, overshooting",
+          "easeInOutQuad": "Speeds up, then slows down, quadratic",
+          "easeInOutCubic": "Speeds up, then slows down, cubic",
+          "easeInOutQuart": "Speeds up, then slows down, quartic",
+          "easeInOutQuint": "Speeds up, then slows down, quintic",
+          "easeInOutSine": "Speeds up, then slows down, sine",
+          "easeInOutExpo": "Speeds up, then slows down, exponential",
+          "easeInOutCirc": "Speeds up, then slows down, circular",
+          "easeInOutBack": "Speeds up, then slows down, overshooting"
+        }
+      },
+      "shapes": {
+        "kinds": {
+          "rectangle": "Rectangle",
+          "circle": "Circle",
+          "line": "Line"
+        },
+        "fill": "Fill",
+        "fillOpacity": "Fill opacity",
+        "stroke": "Outline",
+        "strokeWidth": "Outline width",
+        "width": "Width",
+        "height": "Height",
+        "cornerRadius": "Corner radius",
+        "radius": "Radius",
+        "lineLength": "Length",
+        "thickness": "Thickness"
+      },
+      "captions": {
+        "title": "Captions",
+        "source": "Words from",
+        "missingSource": "A clip no longer in the video",
+        "hint": "Shotstack writes the words from what is said when it renders the video. Until then, the preview shows placeholder words.",
+        "spoken": "Word being said"
       },
       "video": "Video",
       "shape": "Shape",
@@ -4860,8 +4944,8 @@
       "askAnOwner": "The editor renders through your workspace's own Shotstack account. Ask an owner or an admin to connect it in the assistant settings.",
       "action": "Open the assistant settings"
     },
-    "stageEmpty": "Add a file or a text to start",
-    "stageEmptyHint": "Pictures, videos and sounds from your library, and texts, go on tracks you can move and trim below."
+    "stageEmpty": "Add a file, a text or a shape to start",
+    "stageEmptyHint": "Pictures, videos and sounds from your library, texts and shapes go on tracks you can move and trim below."
   },
   "Tags": {
     "description": "Tags file the workspace’s posts: by campaign, by subject, by client. A tag has a name and a colour, shows on the post in the drafts and on the calendar, and filters the calendar.",

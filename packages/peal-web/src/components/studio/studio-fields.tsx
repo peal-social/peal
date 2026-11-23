@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "peal-ui/components/select";
+import { Switch } from "peal-ui/components/switch";
 import { Textarea } from "peal-ui/components/textarea";
 import { useId, useState } from "react";
 import type { ReactNode } from "react";
@@ -110,7 +111,7 @@ export const NumberField = ({
   readonly onCommit: (value: number) => void;
   readonly step?: number;
   /** What follows the number, for a screen reader and the eye: "s", "px". */
-  readonly unit?: string;
+  readonly unit?: string | undefined;
   readonly value: number;
 }) => {
   const id = useId();
@@ -173,17 +174,7 @@ export const NumberField = ({
   );
 };
 
-/** A value along a range, applied when the thumb is let go. */
-export const RangeField = ({
-  disabled = false,
-  format,
-  label,
-  max,
-  min,
-  onCommit,
-  step,
-  value,
-}: {
+interface RangeProps {
   readonly disabled?: boolean;
   readonly format: (value: number) => string;
   readonly label: string;
@@ -192,48 +183,107 @@ export const RangeField = ({
   readonly onCommit: (value: number) => void;
   readonly step: number;
   readonly value: number;
-}) => {
+}
+
+/** A value along a range, applied when the thumb is let go. */
+export const RangeField = (props: RangeProps) => {
   const [moving, setMoving] = useState<number | null>(null);
-  const shown = moving ?? value;
 
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-sm leading-none font-medium select-none">
-          {label}
+          {props.label}
         </span>
         <span className="text-muted-foreground font-mono text-xs tabular-nums">
-          {format(shown)}
+          {props.format(moving ?? props.value)}
         </span>
       </div>
-      <Slider
-        value={shown}
-        min={min}
-        max={max}
-        step={step}
-        disabled={disabled}
-        format={format}
-        onValueChange={(next: number) => {
-          setMoving(next);
-        }}
-        onValueCommit={(next: number) => {
-          setMoving(null);
+      <RangeSlider {...props} onMove={setMoving} />
+    </div>
+  );
+};
 
-          if (next !== value) {
-            onCommit(next);
-          }
-        }}
-      >
-        <SliderControl className="relative flex h-5 w-full cursor-pointer touch-none items-center select-none data-[disabled]:cursor-default data-[disabled]:opacity-50">
-          <SliderTrack className="bg-border relative h-1 w-full rounded-full">
-            <SliderIndicator className="bg-primary rounded-full" />
-            <SliderThumb
-              aria-label={label}
-              className="bg-background border-primary has-[:focus-visible]:outline-ring/50 top-1/2 size-3.5 -translate-y-1/2 rounded-full border-2 shadow-sm outline-none has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2"
-            />
-          </SliderTrack>
-        </SliderControl>
-      </Slider>
+/**
+ * A range's slider alone, named by `label` for a screen reader; `onMove`
+ * follows the thumb while it moves (null once it is let go).
+ */
+export const RangeSlider = ({
+  disabled = false,
+  format,
+  label,
+  max,
+  min,
+  onCommit,
+  onMove,
+  step,
+  value,
+}: RangeProps & {
+  readonly onMove?: (value: number | null) => void;
+}) => {
+  const [moving, setMoving] = useState<number | null>(null);
+  const shown = moving ?? value;
+
+  const move = (next: number | null) => {
+    setMoving(next);
+    onMove?.(next);
+  };
+
+  return (
+    <Slider
+      value={shown}
+      min={min}
+      max={max}
+      step={step}
+      disabled={disabled}
+      format={format}
+      onValueChange={(next: number) => {
+        move(next);
+      }}
+      onValueCommit={(next: number) => {
+        move(null);
+
+        if (next !== value) {
+          onCommit(next);
+        }
+      }}
+    >
+      <SliderControl className="relative flex h-5 w-full cursor-pointer touch-none items-center select-none data-[disabled]:cursor-default data-[disabled]:opacity-50">
+        <SliderTrack className="bg-border relative h-1 w-full rounded-full">
+          <SliderIndicator className="bg-primary rounded-full" />
+          <SliderThumb
+            aria-label={label}
+            className="bg-background border-primary has-[:focus-visible]:outline-ring/50 top-1/2 size-3.5 -translate-y-1/2 rounded-full border-2 shadow-sm outline-none has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2"
+          />
+        </SliderTrack>
+      </SliderControl>
+    </Slider>
+  );
+};
+
+/** A yes or no, applied at once, its label beside it. */
+export const SwitchField = ({
+  checked,
+  disabled = false,
+  label,
+  onChange,
+}: {
+  readonly checked: boolean;
+  readonly disabled?: boolean;
+  readonly label: string;
+  readonly onChange: (checked: boolean) => void;
+}) => {
+  const id = useId();
+
+  return (
+    <div className="flex items-center gap-2">
+      <Switch
+        id={id}
+        checked={checked}
+        disabled={disabled}
+        onCheckedChange={onChange}
+      />
+      <Label htmlFor={id}>{label}</Label>
     </div>
   );
 };

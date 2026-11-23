@@ -4680,7 +4680,14 @@
     "addFilesDescription": "Les images et les vidéos vont sur la piste choisie, les sons sur une piste à part.",
     "addFilesConfirm": "Ajouter ces fichiers",
     "addText": "Ajouter du texte",
+    "addShape": "Ajouter une forme",
+    "addCaptions": "Ajouter des sous-titres",
     "newText": "Votre texte",
+    "shapes": {
+      "rectangle": "Rectangle",
+      "circle": "Cercle",
+      "line": "Ligne"
+    },
     "undo": "Annuler",
     "redo": "Rétablir",
     "duplicate": "Dupliquer",
@@ -4692,7 +4699,8 @@
       "other": "Élément",
       "text": "Texte",
       "video": "Vidéo",
-      "drawing": "Dessin"
+      "caption": "Sous-titres",
+      "figure": "Forme"
     },
     "keys": {
       "play": "Lire ou mettre en pause",
@@ -4728,7 +4736,8 @@
         "other": "Élément",
         "text": "Texte",
         "video": "Vidéo",
-        "drawing": "Dessin"
+        "caption": "Sous-titres",
+        "figure": "Forme"
       },
       "start": "Début",
       "length": "Durée",
@@ -4782,11 +4791,7 @@
         "bottom": "En bas",
         "bottomRight": "En bas à droite"
       },
-      "offsetX": "Décaler en largeur",
-      "offsetY": "Décaler en hauteur",
-      "scale": "Échelle",
-      "opacity": "Opacité",
-      "motion": "Mouvement et transitions",
+      "motion": "Mouvement et animation",
       "effect": "Mouvement",
       "transitionIn": "Entrée",
       "transitionOut": "Sortie",
@@ -4801,6 +4806,85 @@
         "lighten": "Éclairci",
         "muted": "Adouci",
         "negative": "Négatif"
+      },
+      "properties": {
+        "offsetX": "Décaler en largeur",
+        "offsetY": "Décaler en hauteur",
+        "scale": "Échelle",
+        "rotate": "Rotation",
+        "opacity": "Opacité"
+      },
+      "keyframes": {
+        "animated": "Animé",
+        "animate": "Animer {property, select, offsetX {le décalage en largeur} offsetY {le décalage en hauteur} scale {l’échelle} rotate {la rotation} opacity {l’opacité} other {la valeur}}",
+        "keyframe": "Image clé {position, number}",
+        "remove": "Retirer l’image clé {position, number}",
+        "add": "Ajouter une image clé",
+        "from": "De",
+        "to": "À",
+        "start": "Début",
+        "length": "Durée",
+        "interpolation": "Évolution",
+        "interpolations": {
+          "linear": "Régulière",
+          "bezier": "Courbe",
+          "constant": "Saut"
+        },
+        "easing": "Accélération",
+        "easings": {
+          "ease": "Douce",
+          "easeIn": "Accélère",
+          "easeOut": "Ralentit",
+          "easeInOut": "Accélère puis ralentit",
+          "easeInQuad": "Accélère, quadratique",
+          "easeInCubic": "Accélère, cubique",
+          "easeInQuart": "Accélère, quartique",
+          "easeInQuint": "Accélère, quintique",
+          "easeInSine": "Accélère, sinusoïdale",
+          "easeInExpo": "Accélère, exponentielle",
+          "easeInCirc": "Accélère, circulaire",
+          "easeInBack": "Accélère, avec dépassement",
+          "easeOutQuad": "Ralentit, quadratique",
+          "easeOutCubic": "Ralentit, cubique",
+          "easeOutQuart": "Ralentit, quartique",
+          "easeOutQuint": "Ralentit, quintique",
+          "easeOutSine": "Ralentit, sinusoïdale",
+          "easeOutExpo": "Ralentit, exponentielle",
+          "easeOutCirc": "Ralentit, circulaire",
+          "easeOutBack": "Ralentit, avec dépassement",
+          "easeInOutQuad": "Accélère puis ralentit, quadratique",
+          "easeInOutCubic": "Accélère puis ralentit, cubique",
+          "easeInOutQuart": "Accélère puis ralentit, quartique",
+          "easeInOutQuint": "Accélère puis ralentit, quintique",
+          "easeInOutSine": "Accélère puis ralentit, sinusoïdale",
+          "easeInOutExpo": "Accélère puis ralentit, exponentielle",
+          "easeInOutCirc": "Accélère puis ralentit, circulaire",
+          "easeInOutBack": "Accélère puis ralentit, avec dépassement"
+        }
+      },
+      "shapes": {
+        "kinds": {
+          "rectangle": "Rectangle",
+          "circle": "Cercle",
+          "line": "Ligne"
+        },
+        "fill": "Remplissage",
+        "fillOpacity": "Opacité du remplissage",
+        "stroke": "Contour",
+        "strokeWidth": "Épaisseur du contour",
+        "width": "Largeur",
+        "height": "Hauteur",
+        "cornerRadius": "Arrondi des coins",
+        "radius": "Rayon",
+        "lineLength": "Longueur",
+        "thickness": "Épaisseur"
+      },
+      "captions": {
+        "title": "Sous-titres",
+        "source": "Paroles de",
+        "missingSource": "Un élément qui n’est plus dans la vidéo",
+        "hint": "Shotstack écrit les paroles à partir de ce qui est dit quand il fait le rendu de la vidéo. D’ici là, l’aperçu montre des mots provisoires.",
+        "spoken": "Mot prononcé"
       },
       "video": "Vidéo",
       "shape": "Format",
@@ -4860,8 +4944,8 @@
       "askAnOwner": "Le montage rend les vidéos par le compte Shotstack de votre espace de travail. Demandez à un propriétaire ou à un administrateur de le connecter dans les réglages de l’assistant.",
       "action": "Ouvrir les réglages de l’assistant"
     },
-    "stageEmpty": "Ajoutez un fichier ou un texte pour commencer",
-    "stageEmptyHint": "Les images, vidéos et sons de votre médiathèque, et les textes, se placent sur des pistes que vous déplacez et raccourcissez en dessous."
+    "stageEmpty": "Ajoutez un fichier, un texte ou une forme pour commencer",
+    "stageEmptyHint": "Les images, vidéos et sons de votre médiathèque, les textes et les formes se placent sur des pistes que vous déplacez et raccourcissez en dessous."
   },
   "Tags": {
     "description": "Les étiquettes classent les publications de l’espace de travail : par campagne, par sujet, par client. Une étiquette a un nom et une couleur, s’affiche sur la publication dans les brouillons et sur le calendrier, et filtre le calendrier.",

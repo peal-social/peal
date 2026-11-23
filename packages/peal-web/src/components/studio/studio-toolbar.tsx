@@ -1,23 +1,38 @@
 "use client";
 
+import { MenuTrigger } from "@ui-sdk/react/menu";
 import {
   Toolbar,
   ToolbarButton,
   ToolbarSeparator,
 } from "@ui-sdk/react/toolbar";
 import {
+  CaptionsIcon,
+  ChevronDownIcon,
+  CircleIcon,
   CopyIcon,
   FilePlusIcon,
+  MinusIcon,
+  PentagonIcon,
   Redo2Icon,
+  SquareIcon,
   Trash2Icon,
   TypeIcon,
   Undo2Icon,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { Media } from "peal-contract";
 import { buttonVariants } from "peal-ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "peal-ui/components/dropdown-menu";
 
 import { MediaPicker } from "#components/posts/media-picker.tsx";
+import { figureKinds } from "#studio/figures.ts";
+import type { FigureKind } from "#studio/figures.ts";
 
 const toolButton = buttonVariants({ size: "sm", variant: "ghost" });
 
@@ -36,14 +51,24 @@ const isEditable = (media: Media): boolean =>
       (media.contentType === "image/jpeg" ||
         media.contentType === "image/png")));
 
+const figureIcons: Readonly<Record<FigureKind, LucideIcon>> = {
+  circle: CircleIcon,
+  line: MinusIcon,
+  rectangle: SquareIcon,
+};
+
 /** What the toolbar asks the editor to do, and what it may. */
 export interface ToolbarActions {
   readonly canAdd: boolean;
+  /** Whether a sound or a film is there for captions to transcribe. */
+  readonly canCaption: boolean;
   readonly canEdit: boolean;
   readonly canRedo: boolean;
   readonly canUndo: boolean;
   readonly hasChoice: boolean;
   readonly handleAddFiles: (picked: readonly Media[]) => void;
+  readonly handleAddCaptions: () => void;
+  readonly handleAddFigure: (kind: FigureKind) => void;
   readonly handleAddText: () => void;
   readonly handleDelete: () => void;
   readonly handleDuplicate: () => void;
@@ -52,10 +77,47 @@ export interface ToolbarActions {
   readonly handleUndo: () => void;
 }
 
+// Add shape: a menu of the shapes Shotstack draws, its trigger one of the
+// toolbar's items (ui-sdk's menu trigger, as its toolbar takes one).
+const FigureMenu = ({ actions }: { readonly actions: ToolbarActions }) => {
+  const t = useTranslations("Studio");
+
+  return (
+    <DropdownMenu>
+      <ToolbarButton
+        className={toolButton}
+        disabled={!actions.canAdd}
+        render={<MenuTrigger />}
+      >
+        <PentagonIcon aria-hidden />
+        {t("addShape")}
+        <ChevronDownIcon aria-hidden />
+      </ToolbarButton>
+      <DropdownMenuContent className="w-44">
+        {figureKinds.map((kind) => {
+          const Icon = figureIcons[kind];
+
+          return (
+            <DropdownMenuItem
+              key={kind}
+              onSelect={() => {
+                actions.handleAddFigure(kind);
+              }}
+            >
+              <Icon aria-hidden />
+              {t(`shapes.${kind}`)}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
 /**
  * The editor's tools, one tab stop with arrow keys between them: add
- * files or a text, undo and redo, duplicate or delete the chosen clip,
- * start over.
+ * files, a text, a shape or captions, undo and redo, duplicate or delete
+ * the chosen clip, start over.
  */
 export const StudioToolbar = ({
   actions,
@@ -92,6 +154,15 @@ export const StudioToolbar = ({
       >
         <TypeIcon aria-hidden />
         {t("addText")}
+      </ToolbarButton>
+      <FigureMenu actions={actions} />
+      <ToolbarButton
+        className={toolButton}
+        disabled={!actions.canAdd || !actions.canCaption}
+        onClick={actions.handleAddCaptions}
+      >
+        <CaptionsIcon aria-hidden />
+        {t("addCaptions")}
       </ToolbarButton>
       <ToolbarSeparator className="bg-border mx-1 h-5 w-px" />
       <ToolbarButton

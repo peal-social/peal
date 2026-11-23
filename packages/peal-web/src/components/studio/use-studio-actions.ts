@@ -6,8 +6,12 @@ import type { Media } from "peal-contract";
 
 import { typingIn } from "#components/undo.tsx";
 import { undoKey } from "#shell/keys.ts";
+import { captionClipOf, captionSourcesOf } from "#studio/captions.ts";
 import { clearDraft } from "#studio/draft.ts";
 import { endOf, laidEnd, textClipOf } from "#studio/edit-document.ts";
+import type { StudioClip } from "#studio/edit-document.ts";
+import { figureClipOf } from "#studio/figures.ts";
+import type { FigureKind } from "#studio/figures.ts";
 import { tenth } from "#studio/timeline-geometry.ts";
 
 import type { StudioEngine } from "./use-studio-engine.ts";
@@ -16,8 +20,12 @@ const notTyping = () => !typingIn(document.activeElement);
 
 /** What the editor's tools do. */
 export interface StudioActions {
+  readonly addCaptions: () => void;
   readonly addFiles: (picked: readonly Media[]) => void;
+  readonly addFigure: (kind: FigureKind) => void;
   readonly addText: () => void;
+  /** Whether a sound or a film is there for captions to transcribe. */
+  readonly canCaption: boolean;
   readonly deleteChosen: () => void;
   readonly duplicate: () => void;
   readonly startOver: () => void;
@@ -81,10 +89,9 @@ export const useStudioActions = (
     void Promise.all(adding);
   };
 
-  // A text on a track of its own over the others, at the playhead.
-  const addText = () => {
-    const clip = textClipOf(t("newText"), tenth(state?.time ?? 0));
-
+  // A clip on a track of its own over the others; the first clip starts
+  // the engine.
+  const addOnTop = (clip: StudioClip) => {
     if (engine === null) {
       studio.seedWith([{ clips: [clip] }], studio.files);
 
@@ -92,6 +99,28 @@ export const useStudioActions = (
     }
 
     void engine.addTrack(0, { clips: [clip] });
+  };
+
+  // A text or a figure at the playhead.
+  const addText = () => {
+    addOnTop(textClipOf(t("newText"), tenth(state?.time ?? 0)));
+  };
+
+  const addFigure = (kind: FigureKind) => {
+    addOnTop(figureClipOf(kind, tenth(state?.time ?? 0)));
+  };
+
+  // Captions of the chosen sound or film, else of the first the SDK finds,
+  // over its time.
+  const sources = state === null ? [] : captionSourcesOf(state.edit);
+
+  const addCaptions = () => {
+    const source =
+      sources.find(({ id }) => id === chosen?.view.id) ?? sources[0];
+
+    if (engine !== null && source !== undefined) {
+      void engine.addCaption(captionClipOf(source), source.id);
+    }
   };
 
   const duplicate = () => {
@@ -143,8 +172,11 @@ export const useStudioActions = (
   );
 
   return {
+    addCaptions,
     addFiles,
+    addFigure,
     addText,
+    canCaption: sources.length > 0,
     deleteChosen: () => {
       if (chosen !== null) {
         void engine?.deleteClip(chosen.view.id);

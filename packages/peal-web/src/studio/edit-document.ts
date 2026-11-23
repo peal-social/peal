@@ -267,7 +267,8 @@ export const textClipOf = (text: string, start: number): StudioClip => ({
 /** What a clip holds, as the timeline names and draws it. */
 export type ClipKind =
   | "audio"
-  | "drawing"
+  | "caption"
+  | "figure"
   | "image"
   | "other"
   | "text"
@@ -277,13 +278,13 @@ export type ClipKind =
 // (an HTML page, a luma matte) is a clip of its own kind.
 const kinds: ReadonlyMap<StudioAsset["type"], ClipKind> = new Map([
   ["audio", "audio"],
-  ["caption", "text"],
+  ["caption", "caption"],
   ["html", "text"],
   ["image", "image"],
   ["image-to-video", "video"],
-  ["rich-caption", "text"],
+  ["rich-caption", "caption"],
   ["rich-text", "text"],
-  ["shape", "drawing"],
+  ["shape", "figure"],
   ["svg", "image"],
   ["text", "text"],
   ["text-to-image", "image"],
