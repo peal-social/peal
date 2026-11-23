@@ -145,6 +145,17 @@ export const afterPasswordReset = async (
   await disconnectAfterPasswordReset(data);
   await confirmOnReset(ctx, data.user.id, request);
   await ctx.context.internalAdapter.deleteUserSessions(data.user.id);
+
+  // A second step begun with the old password (the two-factor plugin's
+  // challenges, `2fa-` rows valued with the user's id) can no longer end in
+  // a session.
+  await ctx.context.adapter.deleteMany({
+    model: "verification",
+    where: [
+      { field: "value", value: data.user.id },
+      { field: "identifier", operator: "starts_with", value: "2fa-" },
+    ],
+  });
 };
 
 const isResetDone = Schema.is(

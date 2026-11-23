@@ -138,6 +138,8 @@ The consent page lists what the client asks for:
 | Do what your role allows in the workspace, such as writing drafts and managing media, without scheduling or publishing anything | `workspace:write`   | Anything your [role](/guides/posts#roles) allows, reading included, except what puts posts out: nothing it does reaches a platform                                         |
 | Let it schedule and publish posts to your connected accounts, and answer comments there, where everyone can see them            | `workspace:publish` | What your role allows of what puts posts out, and reading: scheduling, moving, publishing and reposting a post, unscheduling it, cancelling it, and confirming how it went |
 
+Every authorization names the resource it is for, the MCP endpoint or the API, as MCP clients do. A client that asks for `openid`, `profile` and `email` alone, without a resource, gets no token: Peal isn't an identity provider for other applications.
+
 Publishing is a permission of its own. The consent page shows it on its own line, with a box that starts ticked. Untick it, and the client gets the rest of what it asked for, and no more. Without it, a client that may write still writes drafts, which you review and schedule yourself. One that may only read still reads.
 
 A client connected before publishing had its own permission holds the writing one alone. Until you connect it again and allow publishing, it publishes nothing, and it no longer unschedules, reposts or confirms. A connection keeps the permissions it was given until then.

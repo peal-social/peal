@@ -92,6 +92,7 @@ import type { SignUpAdmission } from "./sign-up-gate.ts";
 import {
   noteTokenRequest,
   refuseRenewalAcrossReset,
+  refuseStaleTwoStepChallenge,
 } from "./tokens-not-before.ts";
 import {
   guardTwoStepChanges,
@@ -464,6 +465,7 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await claimResentInvitationEmail(ctx, hooks.invitationEmail);
     noteTokenRequest(ctx);
     await noteSignInCredential(ctx);
+    await refuseStaleTwoStepChallenge(ctx);
   });
 
 // The columns of `auth.account` that hold what a provider issued. Peal needs
