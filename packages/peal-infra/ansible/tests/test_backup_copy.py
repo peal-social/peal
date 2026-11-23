@@ -657,7 +657,9 @@ def test_a_planted_name_that_is_no_time_stops_nothing() -> None:
 
 @pytest.mark.parametrize("content", [b"x", b"{}", b'{"objects": []}', b'{"objects": {"a": {"copy": "elsewhere"}}}',
                                      b'{"objects": {"a": {"copy": "2027-01-03T021500Z/a", "size": -1, "sha256": "", "source_etag": ""}}}',
-                                     b"[" * 100_000])
+                                     b"[" * 100_000,
+                                     # Empty values by the thousand: many times its size once parsed.
+                                     b'{"objects": [' + b"{}," * 50_000 + b"{}]}"])
 def test_a_trusted_index_that_is_none_stops_nothing(content: bytes) -> None:
     """An index the store's times make trusted, but that is not one the
     copy writes: the next run falls back on the run before, `runs` says so
@@ -1114,3 +1116,13 @@ def test_the_rules_fire_as_they_say(tmp_path: Path) -> None:
     )
 
     assert ran.returncode == 0, ran.stdout + ran.stderr
+
+
+def test_an_index_is_read_only_when_no_denser_than_its_entries() -> None:
+    """Parsing builds an object per value: a document of empty values is
+    refused before it is parsed, and an index of any size is not."""
+    entry = {"copy": "2027-01-03T021500Z-1a2b3c4d/archive/x", "size": 1, "sha256": "0" * 64, "source_etag": "e"}
+    honest = json.dumps({"objects": {f"archive/{number}": entry for number in range(5000)}}, separators=(",", ":"))
+    assert not backup_copy._dense(honest.encode())
+    assert not backup_copy._dense(b'{"objects": {}}')
+    assert backup_copy._dense(b'{"objects": [' + b"{}," * 50_000 + b"{}]}")

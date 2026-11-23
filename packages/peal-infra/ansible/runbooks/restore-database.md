@@ -339,7 +339,12 @@ against:
    both buckets' keys: on the environment's Pulumi stack,
    `pulumi up --replace` the URNs of `key-backups` and `key-backup-copy`
    (`pulumi stack --show-urns`), then `scripts/cloudflare_from_pulumi.py`
-   and `site.yml`, which write the new keys.
+   and `site.yml`, which write the new keys. That `site.yml` starts the
+   copy's timer again: set `peal_backup_copy_trust_after` to now, a quoted
+   UTC instant, in the same run, so the copy trusts nothing written while
+   the server was taken (step 7 sets it to the incident's end once known;
+   steps 3 and 4 work either way, as a `--before` at or before it ignores
+   it).
 
 2. **Note when the incident began**, in UTC, by the earliest sign of it
    (an alert, a log, the provider's console), and take a margin before it.

@@ -97,7 +97,7 @@ from typing import Any, BinaryIO, Protocol
 
 # A run's prefix: the time it began, then random characters; a name that
 # matches but is no time (2026-99-99T999999Z) is an untrusted run.
-RUN = re.compile(r"(\d{4}-\d{2}-\d{2}T\d{6}Z(?:-[0-9a-f]{1,32})?)/([^\x00-\x1f\x7f]+)")
+RUN = re.compile(r"([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{6}Z(?:-[0-9a-f]{1,32})?)/([^\x00-\x1f\x7f]+)")
 SHA256 = re.compile(r"[0-9a-f]{64}")
 # An index larger than this is not one the copy wrote: it is not read, and
 # a run whose own would be larger fails. An entry takes about 300 bytes:
@@ -532,6 +532,15 @@ def newest_trusted(found: Iterator[Run], kept: int = TRUSTED_KEPT) -> list[Run]:
     return heapq.nlargest(kept, (run for run in found if run.trusted), key=lambda run: (run.stored, run.name))
 
 
+def _dense(data: bytes) -> bool:
+    """Whether a document holds more values for its size than an index
+    does. Parsing builds an object per value, so a document of empty ones
+    costs many times its size in memory: an index's entry takes 170 bytes
+    or more for its five, and one that packs them tighter is not read."""
+    values = data.count(b"{") + data.count(b"[") + data.count(b",")
+    return values > max(len(data) // 24, 1024)
+
+
 def read_index(store: Store, run: Run) -> dict[str, Entry] | None:
     """A run's index in the shape the copy writes it, or None when it is
     not one: too large, not JSON, or any entry other than a copy key, a
@@ -544,6 +553,8 @@ def read_index(store: Store, run: Run) -> dict[str, Entry] | None:
     except Exception as error:
         if _transient(error):
             raise Unreachable(f"the store did not give {run.name}'s index") from error
+        return None
+    if _dense(data):
         return None
     try:
         document = json.loads(data)
