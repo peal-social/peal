@@ -56,11 +56,11 @@
   },
   "devDependencies": {
     "@effect/vitest": "4.1.4",
-    "@types/bun": "1.4.4",
+    "@types/bun": "1.4.5",
     "@types/pg": "8.23.1",
     "@types/sax": "1.2.7",
     "drizzle-kit": "1.0.0-rc.5",
     "typescript": "7.0.2",
-    "vitest": "5.1.0"
+    "vitest": "5.1.1"
   }
 }

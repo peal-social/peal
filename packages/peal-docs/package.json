@@ -17,7 +17,7 @@
     "peal-ui": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "1.4.4",
+    "@types/bun": "1.4.5",
     "simple-icons": "16.38.0",
     "typescript": "7.0.2"
   }
