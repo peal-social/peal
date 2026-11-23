@@ -1,5 +1,5 @@
 import { Context } from "effect";
-import type { Effect, Redacted } from "effect";
+import type { Effect, Redacted, Schema } from "effect";
 
 import type { SlideshowFailed } from "#assistant/application/slideshow-failed.ts";
 import type { CompositionProviderId } from "#assistant/domain/composition-provider.ts";
@@ -24,14 +24,26 @@ export interface ComposedSlide {
   readonly motion: SlideMotion;
 }
 
-/** What to compose, every file given by a short-lived link. */
-export interface CompositionRequest {
+/** A slide video to compose, every file given by a short-lived link. */
+export interface SlideComposition {
   readonly aspect: ImageAspect;
   readonly secondsPerSlide: number;
   readonly slides: readonly ComposedSlide[];
   readonly transition: SlideTransition;
   readonly voiceoverUrl: string | null;
 }
+
+/**
+ * A whole Shotstack Edit to render, checked when it was asked for, each
+ * library file it names swapped for a short-lived link. The adapter sets
+ * its output's destinations, cache, callback and format.
+ */
+export interface EditComposition {
+  readonly edit: Schema.JsonObject;
+}
+
+/** What to compose: a slide video, or an edit (`"edit" in request`). */
+export type CompositionRequest = EditComposition | SlideComposition;
 
 /**
  * The composition service of a workspace, with its key: one render a

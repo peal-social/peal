@@ -7,6 +7,7 @@ import type { Member } from "peal-contract";
 
 import { AssistantApiLive, SlideshowsApiLive } from "#assistant/container.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
+import { forgetSlideshowsOf } from "#test/assistant/slideshow-support.ts";
 import {
   assistantTest,
   DatabaseTest,
@@ -216,6 +217,120 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
             })
           )
         )
+    );
+
+    it.effect(
+      "render a whole edit: 202 with the job, 422 for an edit Peal does not render",
+      () =>
+        Effect.gen(function* edits() {
+          const workspaceId = yield* freshWorkspace;
+          const params = { workspaceId };
+          const editor = yield* as(workspaceId, "editor");
+
+          yield* forgetSlideshowsOf(workspaceId);
+
+          // An image Shotstack generates names no file of the library.
+          const edit = {
+            output: { aspectRatio: "1:1" },
+            timeline: {
+              tracks: [
+                {
+                  clips: [
+                    {
+                      asset: { prompt: "A synthetic harbour", type: "image" },
+                      length: 5,
+                      start: 0,
+                    },
+                  ],
+                },
+              ],
+            },
+          };
+
+          const off = yield* editor.slideshows
+            .createFromEdit({ params, payload: { edit } })
+            .pipe(Effect.flip);
+
+          assert.deepInclude(off, {
+            _tag: "CompositionUnavailable",
+            reason: "notSet",
+          });
+
+          yield* composing(workspaceId);
+
+          const refusals = yield* Effect.all(
+            [
+              { output: {}, timeline: { tracks: [] } },
+              {
+                ...edit,
+                timeline: {
+                  tracks: [
+                    {
+                      clips: [
+                        {
+                          asset: {
+                            src: "peal:media/019a0000-0000-7000-8000-00000000c001",
+                            type: "image",
+                          },
+                          length: 5,
+                          start: 0,
+                        },
+                      ],
+                    },
+                  ],
+                },
+              },
+              { ...edit, output: { format: "gif", resolution: "sd" } },
+            ].map((each) =>
+              editor.slideshows
+                .createFromEdit({ params, payload: { edit: each } })
+                .pipe(Effect.flip)
+            )
+          );
+
+          assert.deepStrictEqual(
+            refusals.map((refusal) =>
+              "reason" in refusal ? [refusal._tag, refusal.reason] : []
+            ),
+            [
+              ["SlideshowRequestRejected", "editInvalid"],
+              ["SlideshowRequestRejected", "mediaNotFound"],
+              ["SlideshowRequestRejected", "outputNotSupported"],
+            ]
+          );
+
+          const queued = yield* editor.slideshows.createFromEdit({
+            params,
+            payload: { edit },
+          });
+
+          assert.deepInclude(queued, {
+            aspect: "square",
+            durationSeconds: 5,
+            imageMediaIds: [],
+            sandbox: true,
+            status: "queued",
+            voiceoverMediaId: null,
+          });
+
+          // One at a time a workspace.
+          const busy = yield* editor.slideshows
+            .createFromEdit({ params, payload: { edit } })
+            .pipe(Effect.flip);
+
+          assert.deepInclude(busy, {
+            _tag: "CompositionBusy",
+            slideshowId: queued.id,
+          });
+
+          const viewer = yield* as(workspaceId, "viewer");
+
+          const forbidden = yield* viewer.slideshows
+            .createFromEdit({ params, payload: { edit } })
+            .pipe(Effect.flip);
+
+          assert.strictEqual(forbidden._tag, "Forbidden");
+        }).pipe(Effect.provide(assistantTest()))
     );
 
     it.effect("refuse viewers, who may not use the assistant", () =>

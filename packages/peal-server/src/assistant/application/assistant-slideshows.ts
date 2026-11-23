@@ -5,6 +5,7 @@ import { CompositionNeedsPayment } from "#assistant/application/composition-need
 import { CompositionUnavailable } from "#assistant/application/composition-unavailable.ts";
 import { openCompositionUse } from "#assistant/application/composition-uses.ts";
 import type { OpenedCompositionUse } from "#assistant/application/composition-uses.ts";
+import { EditChecker } from "#assistant/application/ports/edit-checker.ts";
 import { SlideshowJobs } from "#assistant/application/ports/slideshow-jobs.ts";
 import { SlideshowMedia } from "#assistant/application/ports/slideshow-media.ts";
 import { SlideshowNotices } from "#assistant/application/ports/slideshow-notices.ts";
@@ -12,6 +13,12 @@ import { SlideshowStore } from "#assistant/application/ports/slideshow-store.ts"
 import { SlideshowNotFound } from "#assistant/application/slideshow-not-found.ts";
 import { SlideshowsExhausted } from "#assistant/application/slideshows-exhausted.ts";
 import type { CompositionProviderId } from "#assistant/domain/composition-provider.ts";
+import {
+  editFilesOf,
+  editVideoOf,
+  withOutputDefaults,
+} from "#assistant/domain/edit-render.ts";
+import type { EditFile } from "#assistant/domain/edit-render.ts";
 import type { ImageAspect } from "#assistant/domain/image-aspect.ts";
 import { slideshowLengthOf } from "#assistant/domain/slideshow-length.ts";
 import {
@@ -24,6 +31,7 @@ import type {
   PlannedSlide,
   SlideMotion,
   SlidePlan,
+  SlideshowPlan,
   SlideshowStatus,
   SlideTransition,
 } from "#assistant/domain/slideshow.ts";
@@ -110,6 +118,7 @@ const captionOf = (caption: string | null): string | null => {
 
 type SlideshowPorts =
   | CapabilityModels
+  | EditChecker
   | Ids
   | MeteredUsage
   | ProviderConnections
@@ -151,6 +160,16 @@ export class AssistantSlideshows extends Context.Service<
     readonly request: (
       actor: Actor,
       asked: SlideshowAsked
+    ) => Effect.Effect<Slideshow, RequestSlideshowFailure>;
+    /**
+     * The same checks and recording as `request`, for a whole Shotstack
+     * Edit: Shotstack's schema accepts it, every file it names is a ready
+     * file of the workspace whose kind its place takes (or a Google font),
+     * and its output, size and length are Peal's (`edit-render.ts`).
+     */
+    readonly requestEdit: (
+      actor: Actor,
+      edit: Schema.JsonObject
     ) => Effect.Effect<Slideshow, RequestSlideshowFailure>;
     readonly view: (
       actor: Actor,
@@ -235,8 +254,9 @@ export class AssistantSlideshows extends Context.Service<
         }
       );
 
-      const request = Effect.fn("AssistantSlideshows.request")(
-        function* request(actor: Actor, asked: SlideshowAsked) {
+      // Who may ask, with which service: the same for slides and edits.
+      const admitted = Effect.fn("AssistantSlideshows.admitted")(
+        function* admitted(actor: Actor) {
           yield* Effect.fromResult(authorize(actor, "assistant:use"));
           yield* Effect.fromResult(authorize(actor, "media:upload"));
 
@@ -262,65 +282,19 @@ export class AssistantSlideshows extends Context.Service<
             return yield* new CompositionNeedsPayment();
           }
 
-          // In order, the first image refused deciding the answer.
-          const slides = yield* Effect.all(
-            asked.slides.map((slide) =>
-              imageOf(workspaceId, slide.mediaId).pipe(
-                Effect.map((mediaId): PlannedSlide => ({
-                  caption: captionOf(slide.caption),
-                  mediaId,
-                  motion: slide.motion,
-                }))
-              )
-            )
-          );
+          return use;
+        }
+      );
 
-          const voiceover =
-            asked.voiceoverMediaId === null
-              ? null
-              : yield* voiceoverOf(workspaceId, asked.voiceoverMediaId);
-
-          const length = yield* Effect.fromResult(
-            slideshowLengthOf({
-              secondsPerSlide: asked.secondsPerSlide,
-              slides: slides.length,
-              voiceoverSeconds: voiceover?.seconds ?? null,
-            })
-          );
-
-          // The largest video Peal keeps must fit before anything is asked.
-          yield* SlideshowMedia.use((media) => media.roomFor(workspaceId));
-
-          const now = yield* DateTime.now;
+      // The job and its plan recorded, and its job started, in one
+      // transaction, under the workspace's turn and day.
+      const recorded = Effect.fn("AssistantSlideshows.recorded")(
+        function* recorded(
+          slideshow: Slideshow,
+          plan: SlideshowPlan,
+          now: DateTime.Utc
+        ) {
           const window = usageWindowAt(now);
-
-          const slideshow = new Slideshow({
-            aspect: asked.aspect,
-            createdAt: now,
-            durationSeconds: length.totalSeconds,
-            finishedAt: Option.none(),
-            id: yield* newId(SlideshowIdSchema),
-            imageMediaIds: slides.map(({ mediaId }) => mediaId),
-            mediaId: Option.none(),
-            reason: Option.none(),
-            requestedBy:
-              actor.subject._tag === "user"
-                ? Option.some(actor.subject.userId)
-                : Option.none(),
-            sandbox: use.sandbox,
-            startedAt: Option.none(),
-            status: "queued",
-            voiceoverMediaId:
-              voiceover === null ? Option.none() : Option.some(voiceover.id),
-            workspaceId,
-          });
-
-          const plan: SlidePlan = {
-            secondsPerSlide: length.secondsPerSlide,
-            slides,
-            transition: asked.transition,
-          };
-
           const store = yield* SlideshowStore;
           const jobs = yield* SlideshowJobs;
           const notices = yield* SlideshowNotices;
@@ -364,6 +338,155 @@ export class AssistantSlideshows extends Context.Service<
           }
 
           return slideshow;
+        }
+      );
+
+      const request = Effect.fn("AssistantSlideshows.request")(
+        function* request(actor: Actor, asked: SlideshowAsked) {
+          const use = yield* admitted(actor);
+          const { workspaceId } = actor;
+
+          // In order, the first image refused deciding the answer.
+          const slides = yield* Effect.all(
+            asked.slides.map((slide) =>
+              imageOf(workspaceId, slide.mediaId).pipe(
+                Effect.map((mediaId): PlannedSlide => ({
+                  caption: captionOf(slide.caption),
+                  mediaId,
+                  motion: slide.motion,
+                }))
+              )
+            )
+          );
+
+          const voiceover =
+            asked.voiceoverMediaId === null
+              ? null
+              : yield* voiceoverOf(workspaceId, asked.voiceoverMediaId);
+
+          const length = yield* Effect.fromResult(
+            slideshowLengthOf({
+              secondsPerSlide: asked.secondsPerSlide,
+              slides: slides.length,
+              voiceoverSeconds: voiceover?.seconds ?? null,
+            })
+          );
+
+          // The largest video Peal keeps must fit before anything is asked.
+          yield* SlideshowMedia.use((media) => media.roomFor(workspaceId));
+
+          const now = yield* DateTime.now;
+
+          const slideshow = new Slideshow({
+            aspect: asked.aspect,
+            createdAt: now,
+            durationSeconds: length.totalSeconds,
+            finishedAt: Option.none(),
+            id: yield* newId(SlideshowIdSchema),
+            imageMediaIds: slides.map(({ mediaId }) => mediaId),
+            mediaId: Option.none(),
+            reason: Option.none(),
+            requestedBy:
+              actor.subject._tag === "user"
+                ? Option.some(actor.subject.userId)
+                : Option.none(),
+            sandbox: use.sandbox,
+            startedAt: Option.none(),
+            status: "queued",
+            voiceoverMediaId:
+              voiceover === null ? Option.none() : Option.some(voiceover.id),
+            workspaceId,
+          });
+
+          const plan: SlidePlan = {
+            secondsPerSlide: length.secondsPerSlide,
+            slides,
+            transition: asked.transition,
+          };
+
+          return yield* recorded(slideshow, plan, now);
+        }
+      );
+
+      // A file an edit names: a ready file of the workspace whose kind its
+      // place takes.
+      const editFileOf = Effect.fn("AssistantSlideshows.editFileOf")(
+        function* editFileOf(workspaceId: WorkspaceId, file: EditFile) {
+          const id = decodeAssetId(file.mediaId);
+
+          const found = Option.isSome(id)
+            ? yield* SlideshowMedia.use((media) =>
+                media.describe(workspaceId, id.value)
+              )
+            : Option.none();
+
+          if (Option.isNone(id) || Option.isNone(found)) {
+            return yield* new SlideshowRejected({ reason: "mediaNotFound" });
+          }
+
+          if (!file.kinds.has(found.value.kind)) {
+            return yield* new SlideshowRejected({
+              reason: "mediaNotSupported",
+            });
+          }
+
+          return id.value;
+        }
+      );
+
+      const requestEdit = Effect.fn("AssistantSlideshows.requestEdit")(
+        function* requestEdit(actor: Actor, asked: Schema.JsonObject) {
+          const use = yield* admitted(actor);
+          const { workspaceId } = actor;
+
+          // Shotstack's schema reads the edit with Peal's output where it
+          // says none: MP4, 1080p, 16:9.
+          const checked = yield* EditChecker.use((checker) =>
+            checker.check(withOutputDefaults(asked))
+          );
+
+          if (Option.isNone(checked)) {
+            return yield* new SlideshowRejected({ reason: "editInvalid" });
+          }
+
+          const edit = checked.value;
+
+          // In order, the first file refused deciding the answer.
+          const files = yield* Effect.fromResult(editFilesOf(edit));
+
+          const mediaIds = yield* Effect.all(
+            files.map((file) => editFileOf(workspaceId, file))
+          );
+
+          const video = yield* Effect.fromResult(editVideoOf(edit));
+
+          // The largest video Peal keeps must fit before anything is asked.
+          yield* SlideshowMedia.use((media) => media.roomFor(workspaceId));
+
+          const now = yield* DateTime.now;
+
+          const slideshow = new Slideshow({
+            aspect: video.aspect,
+            createdAt: now,
+            durationSeconds: video.durationSeconds,
+            finishedAt: Option.none(),
+            id: yield* newId(SlideshowIdSchema),
+            // Every file it names, images or not, once each, in order.
+            imageMediaIds: [...new Set(mediaIds)],
+            mediaId: Option.none(),
+            reason: Option.none(),
+            requestedBy:
+              actor.subject._tag === "user"
+                ? Option.some(actor.subject.userId)
+                : Option.none(),
+            sandbox: use.sandbox,
+            startedAt: Option.none(),
+            status: "queued",
+            voiceoverMediaId: Option.none(),
+            workspaceId,
+          });
+
+          return yield* recorded(slideshow, { edit }, now);
         }
       );
 
@@ -424,6 +547,8 @@ export class AssistantSlideshows extends Context.Service<
           ),
         request: (actor, asked) =>
           request(actor, asked).pipe(Effect.provideContext(ports)),
+        requestEdit: (actor, edit) =>
+          requestEdit(actor, edit).pipe(Effect.provideContext(ports)),
         status,
         view,
       });

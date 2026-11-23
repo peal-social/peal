@@ -7,9 +7,9 @@ import type {
   SlideshowStart,
 } from "#assistant/application/ports/slideshow-store.ts";
 import {
-  SlidePlanSchema,
   Slideshow,
   SlideshowIdSchema,
+  SlideshowPlanSchema,
 } from "#assistant/domain/slideshow.ts";
 import type { SlideshowId } from "#assistant/domain/slideshow.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
@@ -46,9 +46,10 @@ const slideshowOf = (row: Row): Option.Option<Slideshow> =>
     workspaceId: row.workspaceId,
   });
 
-const decodePlan = Schema.decodeUnknownOption(SlidePlanSchema);
+// A slide plan as earlier releases wrote it, else an edit plan.
+const decodePlan = Schema.decodeUnknownOption(SlideshowPlanSchema);
 
-const encodePlan = Schema.encodeSync(SlidePlanSchema);
+const encodePlan = Schema.encodeSync(SlideshowPlanSchema);
 
 // The workspace's turn is another job's.
 const busyWith = (id: string): SlideshowStart => ({

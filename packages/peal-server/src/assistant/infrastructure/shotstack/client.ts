@@ -8,7 +8,7 @@ import { SlideshowFailed } from "#assistant/application/slideshow-failed.ts";
 import { maxSlideshowBytes } from "#assistant/domain/slideshow-limits.ts";
 import type { SlideshowFailureReason } from "#assistant/domain/slideshow.ts";
 
-import { slideTimelineOf } from "./timeline.ts";
+import { editRenderOf, slideTimelineOf } from "./timeline.ts";
 
 /** A fetch function, guarded by the layer that builds it. */
 export type ComposerFetch = typeof globalThis.fetch;
@@ -115,15 +115,16 @@ const statusFailure = (status: number) =>
   failWith(`Status${status}`, reasonOfComposerStatus(status));
 
 /**
- * One slide video from Shotstack's Edit API, at the connection's address
- * (`…/edit/v1` or `…/edit/stage`): `POST {base}/render` with the Edit
- * (`slideTimelineOf`) and the key in `x-api-key`, sent once and never
+ * One slide video, or one edit asked for whole, from Shotstack's Edit API,
+ * at the connection's address (`…/edit/v1` or `…/edit/stage`): `POST
+ * {base}/render` with the Edit (`slideTimelineOf`, or `editRenderOf`) and
+ * the key in `x-api-key`, sent once and never
  * again; then `GET {base}/render/{id}` every `pollInterval` until `done`
  * (its temporary `url`) or `failed` (`refused`), a few polls in a row
  * failing for now tolerated; then the video downloaded through `download`,
  * without the key, bounded at `maxSlideshowBytes`. Nothing is logged but
- * the kind of failure: never the key, an address, a caption or what the
- * service said.
+ * the kind of failure: never the key, an address, a caption, the edit or
+ * what the service said.
  */
 export const composeWith = (
   fetches: ComposerFetches,
@@ -138,7 +139,11 @@ export const composeWith = (
     };
 
     const queued = yield* send(fetches.api, `${endpoint.baseUrl}/render`, {
-      body: JSON.stringify(slideTimelineOf(request)),
+      body: JSON.stringify(
+        "edit" in request
+          ? editRenderOf(request.edit)
+          : slideTimelineOf(request)
+      ),
       headers,
       method: "POST",
     });

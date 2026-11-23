@@ -1,4 +1,7 @@
-import type { CompositionRequest } from "#assistant/application/ports/own-composer.ts";
+import type { Schema } from "effect";
+
+import type { SlideComposition } from "#assistant/application/ports/own-composer.ts";
+import { jsonObjectOf, withValues } from "#assistant/domain/edit-render.ts";
 import type { ImageAspect } from "#assistant/domain/image-aspect.ts";
 import type {
   SlideMotion,
@@ -158,7 +161,7 @@ const rounded = (seconds: number): number => Math.round(seconds * 1000) / 1000;
  * cache the files it fetches (`cache: false`), so only its temporary
  * output link holds the video, which Peal downloads.
  */
-export const slideTimelineOf = (request: CompositionRequest): ShotstackEdit => {
+export const slideTimelineOf = (request: SlideComposition): ShotstackEdit => {
   const length = rounded(request.secondsPerSlide);
   const total = rounded(request.secondsPerSlide * request.slides.length);
   const transition = transitions[request.transition];
@@ -250,4 +253,30 @@ export const slideTimelineOf = (request: CompositionRequest): ShotstackEdit => {
     },
     timeline: { background: "#000000", cache: false, tracks },
   };
+};
+
+/**
+ * The body of `POST /render` for an edit asked for whole, its files
+ * already links: the edit as it was checked, with what Peal decides of its
+ * output forced, as for a slide video. MP4; no hosted copy at Shotstack
+ * (the `shotstack` destination excluded, every other destination
+ * replaced); its files not cached (`timeline.cache` false); no `callback`,
+ * which would send the render's news to an address the edit names, and no
+ * `disk`, Shotstack's choice.
+ */
+export const editRenderOf = (edit: Schema.JsonObject): Schema.JsonObject => {
+  const output = jsonObjectOf(edit["output"]) ?? {};
+  const timeline = jsonObjectOf(edit["timeline"]) ?? {};
+
+  const kept = Object.fromEntries(
+    Object.entries(edit).filter(([key]) => key !== "callback" && key !== "disk")
+  );
+
+  return withValues(kept, {
+    output: withValues(output, {
+      destinations: [{ exclude: true, provider: "shotstack" }],
+      format: "mp4",
+    }),
+    timeline: withValues(timeline, { cache: false }),
+  });
 };

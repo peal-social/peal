@@ -98,6 +98,29 @@ export const SlidePlanSchema = Schema.Struct({
 export type SlidePlan = typeof SlidePlanSchema.Type;
 
 /**
+ * What a job renders when a whole Shotstack Edit was asked for: the edit
+ * as checked (`edit-render.ts`), its library files still named
+ * `peal:media/<mediaId>`, swapped for short-lived links only when the job
+ * sends it. Kept beside the job only while it is on its way, as its text
+ * is the member's words.
+ */
+export const EditPlanSchema = Schema.Struct({ edit: Schema.JsonObject });
+
+export type EditPlan = typeof EditPlanSchema.Type;
+
+/**
+ * A job's plan, as stored: a slide plan (its keys as the release before
+ * wrote them, no tag) or an edit plan. Decoded in this order, so a row
+ * an earlier release wrote reads as it did.
+ */
+export const SlideshowPlanSchema = Schema.Union([
+  SlidePlanSchema,
+  EditPlanSchema,
+]);
+
+export type SlideshowPlan = typeof SlideshowPlanSchema.Type;
+
+/**
  * A slide video a workspace asked for, without its plan, which is kept
  * apart only while it is composed.
  */

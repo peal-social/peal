@@ -11,6 +11,9 @@ import {
 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import {
+  maxEditClips,
+  maxEditSeconds,
+  maxEditTracks,
   maxSlideCaptionLength,
   maxSlides,
   maxSlideshowSeconds,
@@ -404,6 +407,9 @@ const SlideshowDialog = ({
     t(`errors.${slideshowFailureKey(shown)}`, {
       dailyLimit:
         shown._tag === "CompositionAllowanceReached" ? shown.dailyLimit : 0,
+      maxClips: maxEditClips,
+      maxSeconds: maxEditSeconds,
+      maxTracks: maxEditTracks,
       resetsAt:
         shown._tag === "CompositionAllowanceReached"
           ? format.dateTime(DateTime.toDate(shown.resetsAt), {
