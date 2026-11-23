@@ -27,19 +27,22 @@ const email = "ada@example.test";
 const userId = UserIdSchema.make("3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f");
 const staffId = UserIdSchema.make("8b9c0d1e-2f3a-4b4c-9d5e-6f7a8b9c0db4");
 
-const account = new Account({
-  ban: Option.none(),
-  browserAnalyticsConsent: Option.none(),
-  email,
-  emailVerified: true,
-  hasPassword: true,
-  id: userId,
-  image: Option.none(),
-  locale: "en",
-  name: "Ada",
-  twoStepEnabled: false,
-  workspaces: [],
-});
+const accountWith = (emailVerified: boolean) =>
+  new Account({
+    ban: Option.none(),
+    browserAnalyticsConsent: Option.none(),
+    email,
+    emailVerified,
+    hasPassword: true,
+    id: userId,
+    image: Option.none(),
+    locale: "en",
+    name: "Ada",
+    twoStepEnabled: false,
+    workspaces: [],
+  });
+
+const account = accountWith(true);
 
 const signedInAs = (principal: UserPrincipal) => ({
   account,
@@ -156,6 +159,14 @@ describe("the support chat in GET /api/me", () => {
           }),
           userId,
         });
+
+        // An address nobody confirmed is never signed.
+        assert.isNull(
+          yield* supportChatOf({
+            ...signedInAs(inPerson),
+            account: accountWith(false),
+          }).pipe(Effect.provide(withSecret))
+        );
 
         assert.isNull(
           yield* supportChatOf(signedInAs(impersonated)).pipe(

@@ -57,11 +57,14 @@ export const browserAnalyticsOf = (
  * What the support chat names the person with: the signature of the
  * account's own email, only in the person's own session in the web app
  * (never through an application, nor while staff act as them, when the
- * web app opens no chat), and null where the server holds no secret.
+ * web app opens no chat), and null where the server holds no secret or
+ * the address is not confirmed: a signature says the address is the
+ * person's, which nobody has shown of one never confirmed.
  */
 export const supportChatOf = Effect.fn("session.supportChat")(
   function* supportChatOf({ account, principal }: CurrentAccount) {
     if (
+      !account.emailVerified ||
       Option.isSome(principal.impersonatedBy) ||
       Option.isSome(principal.oauth)
     ) {
