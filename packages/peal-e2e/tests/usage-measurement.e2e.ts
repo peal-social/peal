@@ -8,6 +8,7 @@ import { credentials, expect } from "e2e";
 import { Option, Schema } from "effect";
 
 import { projectToken, requestsFile } from "../scripts/posthog.ts";
+import { seedChannel } from "./support/channels.ts";
 import { emailedLink } from "./support/mailpit.ts";
 import { asPerson } from "./support/person.ts";
 import { openedWorkspace } from "./support/workspaces.ts";
@@ -680,5 +681,40 @@ describe("the web app's measurement", { serial: true }, () => {
     }
 
     await browser.clearCookies({ name: `ph_${projectToken}_posthog` });
+  });
+
+  test("tells PostHog of a channel the member disconnects", async ({
+    app,
+    screen,
+  }) => {
+    const handle = "@measured@social.example";
+    const channelId = await seedChannel(workspaceId, handle);
+
+    await app.open(`/${slug}/channels`);
+    await screen.getByRole("button", `Disconnect ${handle}`).tap();
+    await screen
+      .getByRole("alertdialog")
+      .getByRole("button", "Disconnect")
+      .tap();
+
+    await expect(screen.getByText(`${handle} is disconnected.`)).toBeVisible();
+
+    // The server's own event, whatever the browser's consent: the
+    // milestone a workspace's last snapshot is read with.
+    const [told] = await eventually(
+      () =>
+        received().filter(
+          (event) =>
+            event.path === serverCapture &&
+            event.event === "channel_disconnected" &&
+            event.properties["channel_id"] === channelId
+        ),
+      "the channel's disconnection"
+    );
+
+    expect(told?.distinctId).toBe(memberId);
+    expect(told?.properties["workspace_id"]).toBe(workspaceId);
+    expect(told?.properties["platform"]).toBe("mastodon");
+    expect(told?.properties["actor_kind"]).toBe("user");
   });
 });

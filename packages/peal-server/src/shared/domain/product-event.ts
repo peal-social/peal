@@ -269,7 +269,8 @@ const PropertyKeySchema = Schema.String.check(
 
 /**
  * The person properties Peal sets, and no other: `kind` and `locale`
- * replaced, `signed_up_at` and `signup_method` set once, `internal` for
+ * replaced (a service identity's `kind` set once, with each of its
+ * events), `signed_up_at` and `signup_method` set once, `internal` for
  * staff.
  */
 export const PersonPropertiesSchema = Schema.Struct({

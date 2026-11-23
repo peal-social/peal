@@ -151,7 +151,7 @@ describe("the webhook events product analytics hears", () => {
         assert.deepStrictEqual(Object.keys(sent?.properties ?? {}).toSorted(), [
           "$geoip_disable",
           "$groups",
-          "$set",
+          "$set_once",
           "actor_kind",
           "channel_id",
           "environment",

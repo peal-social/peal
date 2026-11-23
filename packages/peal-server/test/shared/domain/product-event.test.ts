@@ -61,7 +61,7 @@ describe("the properties that may leave", () => {
       isSafe({
         $geoip_disable: true,
         $groups: { workspace: workspaceId },
-        $set: { kind: "service" },
+        $set_once: { kind: "service" },
         environment: "production",
         round: 1,
         workspace_id: workspaceId,
