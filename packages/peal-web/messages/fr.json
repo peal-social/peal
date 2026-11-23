@@ -3456,6 +3456,7 @@
       "apiDescription": "Construire sur Peal avec l’API, les clés et les webhooks"
     },
     "groups": {
+      "studio": "Studio",
       "engage": "Échanger",
       "build": "Développer",
       "partners": "Partenaires"
@@ -3499,6 +3500,7 @@
       "recycling": "Répétitions",
       "followUps": "Relances",
       "commentRules": "Réponses aux commentaires",
+      "editor": "Éditeur",
       "feeds": "Flux",
       "assistant": "Assistant",
       "newPost": "Nouvelle publication",
@@ -4657,6 +4659,62 @@
       "unknownChannels": "Certains de ces canaux ne sont plus connectés. Choisissez à nouveau les canaux.",
       "invalidTimeZone": "Ce fuseau horaire n’est pas connu de Peal.",
       "setNotFound": "Le groupe de canaux choisi n’existe plus. Choisissez-en un autre, ou aucun."
+    }
+  },
+  "Studio": {
+    "export": "Exporter la vidéo",
+    "exporting": "Export…",
+    "exportedToast": "Votre vidéo est en route. Elle apparaît dans Médias une fois créée.",
+    "exportHint": "Le compte Shotstack de votre espace de travail rend la vidéo avec sa propre clé. Elle arrive dans <media>Médias</media>.",
+    "addImages": "Ajouter des images",
+    "addVoiceover": "Ajouter une voix off",
+    "replaceVoiceover": "Remplacer la voix off",
+    "removeVoiceover": "Retirer la voix off {name}",
+    "stageEmpty": "Ajoutez des images pour commencer",
+    "stageEmptyHint": "De 2 à {max, number} images JPEG ou PNG de votre médiathèque.",
+    "summary": "{clips, plural, =0 {Aucune image pour l’instant.} one {# image, {total, number} s ({max, number} s au plus).} other {# images, {total, number} s ({max, number} s au plus).}}",
+    "loadFailed": "L’éditeur n’a pas pu se charger. Actualisez la page pour réessayer.",
+    "transport": {
+      "label": "Lecture",
+      "previous": "Image précédente",
+      "play": "Lire",
+      "pause": "Pause",
+      "next": "Image suivante",
+      "playhead": "Tête de lecture",
+      "at": "À {time}"
+    },
+    "timeline": {
+      "title": "Montage",
+      "empty": "Les images que vous ajoutez s’affichent ici dans l’ordre, leurs légendes au-dessus et la voix off en dessous.",
+      "captions": "Légendes",
+      "images": "Images",
+      "voiceover": "Voix off",
+      "noVoiceover": "Pas de voix off",
+      "clip": "Image {position, number} : {name}"
+    },
+    "inspector": {
+      "label": "Inspecteur",
+      "video": "Vidéo",
+      "export": "Export",
+      "clip": "Image {position, number} sur {total, number}",
+      "caption": "Légende",
+      "captionPlaceholder": "Facultative, affichée en bas de l’image",
+      "captionCount": "{count, number}/{max, number}",
+      "motion": "Mouvement",
+      "earlier": "Avant",
+      "later": "Après",
+      "remove": "Retirer"
+    },
+    "needsPayment": {
+      "title": "Ajoutez un moyen de paiement pour utiliser l’éditeur",
+      "description": "Les vidéos sont rendues par le compte Shotstack de votre espace de travail. Sur ce serveur, il faut d’abord un moyen de paiement sur le compte de facturation de l’espace.",
+      "action": "Ajouter un moyen de paiement"
+    },
+    "notConnected": {
+      "title": "Connectez Shotstack pour créer des vidéos",
+      "description": "L’éditeur exporte par le compte Shotstack de votre espace de travail. Connectez-le dans les réglages de l’assistant et choisissez-le pour les vidéos de diapositives.",
+      "askAnOwner": "L’éditeur exporte par le compte Shotstack de votre espace de travail. Demandez à un propriétaire ou à un administrateur de le connecter dans les réglages de l’assistant.",
+      "action": "Ouvrir les réglages de l’assistant"
     }
   },
   "Tags": {

@@ -30,6 +30,12 @@ const owner: readonly Permission[] = [
 const pagesOf = (navigation: ReturnType<typeof navigationOf>) =>
   navigation.groups.flatMap(({ links }) => links.map(({ page }) => page));
 
+// The pages of the Studio's group.
+const studio = (navigation: ReturnType<typeof navigationOf>) =>
+  navigation.groups
+    .find(({ group }) => group === "studio")
+    ?.links.map(({ page }) => page);
+
 // What the breadcrumb names on an article's page.
 const articleCrumb = (path: string) =>
   navigationOf({
@@ -55,8 +61,8 @@ describe(navigationOf, () => {
     expect(pagesOf(navigation)).toStrictEqual([
       "home",
       "channels",
-      "calendar",
       "posts",
+      "calendar",
       "media",
       "inbox",
       "analytics",
@@ -64,12 +70,37 @@ describe(navigationOf, () => {
     ]);
     expect(navigation.groups.map(({ group }) => group)).toStrictEqual([
       null,
+      "studio",
       "engage",
     ]);
     expect(navigation.breadcrumb).toStrictEqual({
       page: "calendar",
       trail: [],
     });
+  });
+
+  it("opens the Studio with its editor for who may compose a video into the library", () => {
+    const composer = navigationOf({
+      pathname: `${base}/editor`,
+      permissions: [...owner, "assistant:use", "media:upload"],
+      workspace,
+    });
+
+    expect([
+      composer.mode,
+      composer.current,
+      composer.breadcrumb,
+      studio(composer),
+      hrefOf(workspace, "editor"),
+      studio(at("/editor")),
+    ]).toStrictEqual([
+      "studio",
+      "editor",
+      { page: "editor", trail: [] },
+      ["editor", "posts", "calendar", "media"],
+      `${base}/editor`,
+      ["posts", "calendar", "media"],
+    ]);
   });
 
   it("leaves out what the member's permissions do not open", () => {
@@ -84,6 +115,10 @@ describe(navigationOf, () => {
       "channels",
       "calendar",
       "media",
+    ]);
+    expect(navigation.groups.map(({ group }) => group)).toStrictEqual([
+      null,
+      "studio",
     ]);
     expect(navigation.modes.api).toBeNull();
     expect(navigation.modes.studio).toBe(base);

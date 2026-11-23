@@ -30,6 +30,7 @@ export type Page =
   | "channelSets"
   | "channels"
   | "commentRules"
+  | "editor"
   | "feeds"
   | "followUps"
   | "general"
@@ -90,7 +91,7 @@ const crumbPaths: Readonly<Record<Crumb, string>> = {
 export const crumbHrefOf = (workspace: string, crumb: Crumb): string =>
   workspacePath(workspace, crumbPaths[crumb]);
 
-export type Group = "build" | "engage" | "partners";
+export type Group = "build" | "engage" | "partners" | "studio";
 
 /**
  * The groups of a section's pages, as Settings sorts its own by concern:
@@ -186,6 +187,13 @@ const pages: Readonly<Record<Page, PageRule>> = {
     section: "settings",
   },
   channels: { may: anyone, mode: "studio", path: "/channels" },
+  // The video editor composes with the workspace's own Shotstack account,
+  // as slide videos do, so it asks what their endpoint asks.
+  editor: {
+    may: needs("assistant:use", "media:upload"),
+    mode: "studio",
+    path: "/editor",
+  },
   feeds: {
     may: needs("post:read"),
     mode: "studio",
@@ -308,7 +316,9 @@ const pages: Readonly<Record<Page, PageRule>> = {
 };
 
 // The sidebar's top level in each mode, in groups; a group without a name
-// comes first. Posts and Settings open their sections.
+// comes first. Posts and Settings open their sections. PealCreative's
+// Studio holds what makes and plans posts, Engage what answers and
+// measures them.
 const layout: Readonly<
   Record<
     Mode,
@@ -321,10 +331,8 @@ const layout: Readonly<
     { group: "partners", pages: ["partner"] },
   ],
   studio: [
-    {
-      group: null,
-      pages: ["home", "agent", "channels", "calendar", "posts", "media"],
-    },
+    { group: null, pages: ["home", "agent", "channels"] },
+    { group: "studio", pages: ["editor", "posts", "calendar", "media"] },
     { group: "engage", pages: ["inbox", "analytics", "ads"] },
   ],
 };

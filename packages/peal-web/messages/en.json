@@ -3456,6 +3456,7 @@
       "apiDescription": "Build on Peal with the API, keys and webhooks"
     },
     "groups": {
+      "studio": "Studio",
       "engage": "Engage",
       "build": "Build",
       "partners": "Partners"
@@ -3499,6 +3500,7 @@
       "recycling": "Repeating posts",
       "followUps": "Follow-ups",
       "commentRules": "Comment replies",
+      "editor": "Editor",
       "feeds": "Feeds",
       "assistant": "Assistant",
       "newPost": "New post",
@@ -4657,6 +4659,62 @@
       "unknownChannels": "Some of these channels are no longer connected. Choose the channels again.",
       "invalidTimeZone": "This time zone is not one Peal knows.",
       "setNotFound": "The channel set chosen no longer exists. Choose another, or none."
+    }
+  },
+  "Studio": {
+    "export": "Export video",
+    "exporting": "Exporting…",
+    "exportedToast": "Your video is on its way. It shows in Media once it's made.",
+    "exportHint": "Your workspace's Shotstack account renders the video with its own key. It lands in <media>Media</media>.",
+    "addImages": "Add images",
+    "addVoiceover": "Add a voice-over",
+    "replaceVoiceover": "Replace the voice-over",
+    "removeVoiceover": "Remove the voice-over {name}",
+    "stageEmpty": "Add images to start",
+    "stageEmptyHint": "2 to {max, number} JPEG or PNG images from your library.",
+    "summary": "{clips, plural, =0 {No images yet.} one {# image, {total, number} s ({max, number} s at most).} other {# images, {total, number} s ({max, number} s at most).}}",
+    "loadFailed": "The editor could not load. Refresh the page to try again.",
+    "transport": {
+      "label": "Playback",
+      "previous": "Previous image",
+      "play": "Play",
+      "pause": "Pause",
+      "next": "Next image",
+      "playhead": "Playhead",
+      "at": "At {time}"
+    },
+    "timeline": {
+      "title": "Timeline",
+      "empty": "Images you add show here in order, with their captions above them and the voice-over below.",
+      "captions": "Captions",
+      "images": "Images",
+      "voiceover": "Voice-over",
+      "noVoiceover": "No voice-over",
+      "clip": "Image {position, number}: {name}"
+    },
+    "inspector": {
+      "label": "Inspector",
+      "video": "Video",
+      "export": "Export",
+      "clip": "Image {position, number} of {total, number}",
+      "caption": "Caption",
+      "captionPlaceholder": "Optional, shown over the bottom of the image",
+      "captionCount": "{count, number}/{max, number}",
+      "motion": "Motion",
+      "earlier": "Earlier",
+      "later": "Later",
+      "remove": "Remove"
+    },
+    "needsPayment": {
+      "title": "Add a payment method to use the editor",
+      "description": "Videos are rendered by your workspace's Shotstack account. On this server, that needs a payment method on the workspace's billing account first.",
+      "action": "Add a payment method"
+    },
+    "notConnected": {
+      "title": "Connect Shotstack to make videos",
+      "description": "The editor exports through your workspace's own Shotstack account. Connect it in the assistant settings and choose it for slide videos.",
+      "askAnOwner": "The editor exports through your workspace's own Shotstack account. Ask an owner or an admin to connect it in the assistant settings.",
+      "action": "Open the assistant settings"
     }
   },
   "Tags": {
