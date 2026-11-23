@@ -9,6 +9,7 @@ import { SlideshowNotices } from "#assistant/application/ports/slideshow-notices
 import { SlideshowFailed } from "#assistant/application/slideshow-failed.ts";
 import type { Slideshow, SlideshowId } from "#assistant/domain/slideshow.ts";
 import { DrizzleSlideshowsLive } from "#assistant/infrastructure/drizzle-slideshows.ts";
+import { ShotstackEditCheckerLive } from "#assistant/infrastructure/shotstack/edit-checker.ts";
 import { MediaAssetIdSchema } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
@@ -147,6 +148,7 @@ export const slideshowPortsTest = (library: SlideshowLibraryScript = {}) =>
     DrizzleSlideshowsLive,
     TransactionsTest,
     RecordedSlideshowJobs,
+    ShotstackEditCheckerLive,
     scriptedSlideshowMedia(library)
   ).pipe(Layer.provideMerge(SlideshowRecords.layer));
 

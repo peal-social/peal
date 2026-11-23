@@ -90,7 +90,10 @@
   composition --provider shotstack`, the one use whose `--model` may be
   left out (refused for the others before any request). The studio
   answers from `test/studio-slideshows.ts` (`StudioState.slideshows`; the
-  first caption stands for the refusals).
+  first caption stands for the refusals). No command renders a whole
+  Shotstack Edit (`slideshows.createFromEdit`, the web app editor's
+  document): it is exempt from parity, and the studio queues one as it
+  is.
 - `peal media voiceover --text … [--voice …]` and `peal media transcribe
   <media-id> [--save-description]` (`commands/media-audio.ts`) follow
   `mediaAudio`: a voice-over answers the new audio file, a transcript

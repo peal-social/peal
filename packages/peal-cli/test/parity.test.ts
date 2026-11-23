@@ -325,6 +325,9 @@ const coverage = {
   "videoGenerations.get": by("media video status"),
   "videoGenerations.list": by("media video list"),
   "slideshows.create": by("media slideshow create"),
+  "slideshows.createFromEdit": exempt(
+    "A whole Shotstack Edit is the document of the web app's video editor, hundreds of nested fields: the editor sends it, or a program through the API and the SDKs; the command line makes slide videos from flags."
+  ),
   "slideshows.get": by("media slideshow status"),
   "slideshows.list": by("media slideshow list"),
   "mediaAudio.createVoiceover": by("media voiceover"),

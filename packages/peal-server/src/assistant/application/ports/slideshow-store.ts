@@ -2,10 +2,10 @@ import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
 import type {
-  SlidePlan,
   Slideshow,
   SlideshowFailureReason,
   SlideshowId,
+  SlideshowPlan,
   SlideshowStatus,
 } from "#assistant/domain/slideshow.ts";
 import type { MediaAssetId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -39,14 +39,14 @@ export type SlideshowOutcome =
 
 /** A job its run took: the job, now `running`, and its plan. */
 export interface ClaimedSlideshow {
-  readonly plan: SlidePlan;
+  readonly plan: SlideshowPlan;
   readonly slideshow: Slideshow;
 }
 
 /**
  * The slide videos workspaces asked for, one row a job
- * (`assistant.slideshows`), the plan with its captions kept beside it only
- * until the job ends. A database failure is a defect.
+ * (`assistant.slideshows`), the plan with its captions, or the edit, kept
+ * beside it only until the job ends. A database failure is a defect.
  */
 export class SlideshowStore extends Context.Service<
   SlideshowStore,
@@ -60,7 +60,7 @@ export class SlideshowStore extends Context.Service<
      */
     readonly start: (
       slideshow: Slideshow,
-      plan: SlidePlan,
+      plan: SlideshowPlan,
       rules: SlideshowStartRules
     ) => Effect.Effect<SlideshowStart>;
     /** How many jobs the workspace asked for since `since`. */

@@ -154,6 +154,7 @@
         "@better-fetch/fetch": "1.3.3",
         "@effect/platform-bun": "4.1.5",
         "@effect/sql-pg": "4.1.5",
+        "@shotstack/schemas": "1.27.0",
         "ai": "7.0.179",
         "better-auth": "1.7.27",
         "better-call": "1.4.6",
@@ -1459,6 +1460,8 @@
     "@shikijs/types": ["@shikijs/types@4.6.0", "", { "dependencies": { "@shikijs/vscode-textmate": "^10.1.0", "@types/hast": "^3.0.5" } }, "sha512-+ENG1adsKt/X7cRYw1Nl7BEpBmPOjmQ7bR/eGmHuMlT8gtOFf3KEi5l31DJYyAWhW6Y6bjP1plU7FmaxWGENFw=="],
 
     "@shikijs/vscode-textmate": ["@shikijs/vscode-textmate@10.1.0", "", {}, "sha512-cVBuhDQjBZaNMTwBquYfPydrUP+E3hE6oYGasx8h6ZrODIM7/r+gxLDXdd66oszbrggZHEntdE6j+5gYIVyMWQ=="],
+
+    "@shotstack/schemas": ["@shotstack/schemas@1.27.0", "", { "dependencies": { "zod": "^4.2.0" } }, "sha512-adTOKvF1b2FPP1hhrDO1H/dbPG/nYNSoPs2qfNQuLz7fWYiRtQEcFaoLtbp6bdwF1d6Rh0kSATV7mfQ/aGzp5g=="],
 
     "@sindresorhus/is": ["@sindresorhus/is@4.6.0", "", {}, "sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw=="],
 
