@@ -39,6 +39,9 @@ import type { LibrarySearch } from "#media/library-search.ts";
 import { failureOf } from "#posts/outcome.ts";
 
 import { GenerateImage } from "./generate-image.tsx";
+import { GenerateSlideshow, SlideshowJobs } from "./generate-slideshow.tsx";
+import { GenerateVideo, VideoJobs } from "./generate-video.tsx";
+import { GenerateVoiceover } from "./generate-voiceover.tsx";
 import { LibraryEmptyView } from "./library-empty.tsx";
 import type { HiddenFiles } from "./library-empty.tsx";
 import { SearchStatus } from "./library-status.tsx";
@@ -48,6 +51,7 @@ import { MediaThumbnail } from "./media-thumbnail.tsx";
 import { MediaUploader } from "./media-uploader.tsx";
 import type { MediaUploaderHandle } from "./media-uploader.tsx";
 import { MediaUsageNotice } from "./media-usage-notice.tsx";
+import { TranscribeMedia } from "./transcribe-media.tsx";
 import { useDebounced } from "./use-debounced.ts";
 import { useHydrated } from "./use-hydrated.ts";
 import { useMediaFacts } from "./use-media-facts.ts";
@@ -248,10 +252,14 @@ const MediaPreview = ({ media }: { readonly media: Media }) => {
 
 const MediaCard = ({
   canDelete,
+  canTranscribe,
+  canUpload,
   media,
   workspaceId,
 }: {
   readonly canDelete: boolean;
+  readonly canTranscribe: boolean;
+  readonly canUpload: boolean;
   readonly media: Media;
   readonly workspaceId: string;
 }) => {
@@ -271,9 +279,18 @@ const MediaCard = ({
               <Badge variant="secondary">{t("library.aiGenerated")}</Badge>
             ) : null}
           </span>
-          {canDelete ? (
-            <DeleteMedia media={media} workspaceId={workspaceId} />
-          ) : null}
+          <span className="flex items-center gap-1">
+            {canTranscribe ? (
+              <TranscribeMedia
+                mayDescribe={canUpload}
+                media={media}
+                workspaceId={workspaceId}
+              />
+            ) : null}
+            {canDelete ? (
+              <DeleteMedia media={media} workspaceId={workspaceId} />
+            ) : null}
+          </span>
         </div>
         {media.fileName === null ? null : (
           <p className="truncate text-sm font-medium" title={media.fileName}>
@@ -380,6 +397,8 @@ const LoadingGrid = () => {
 // deleted meanwhile never leave a gap or show twice.
 const MediaPages = ({
   canDelete,
+  canTranscribe,
+  canUpload,
   cursor,
   more,
   onClear,
@@ -389,6 +408,8 @@ const MediaPages = ({
   workspaceId,
 }: {
   readonly canDelete: boolean;
+  readonly canTranscribe: boolean;
+  readonly canUpload: boolean;
   readonly cursor: Option.Option<string>;
   // How many pages to show after this one.
   readonly more: number;
@@ -438,6 +459,8 @@ const MediaPages = ({
               <MediaCard
                 key={media.id}
                 canDelete={canDelete}
+                canTranscribe={canTranscribe}
+                canUpload={canUpload}
                 media={media}
                 workspaceId={workspaceId}
               />
@@ -446,6 +469,8 @@ const MediaPages = ({
           {Option.isSome(next) && more > 0 ? (
             <MediaPages
               canDelete={canDelete}
+              canTranscribe={canTranscribe}
+              canUpload={canUpload}
               cursor={next}
               more={more - 1}
               search={search}
@@ -476,6 +501,7 @@ const MediaPages = ({
 export const MediaLibrary = ({
   canDelete,
   canGenerate = false,
+  canTranscribe = false,
   canUpload,
   mayConfigure = false,
   workspaceId,
@@ -483,6 +509,8 @@ export const MediaLibrary = ({
   readonly canDelete: boolean;
   /** The member may have the assistant make images (assistant:use and media:upload). */
   readonly canGenerate?: boolean;
+  /** The member may have the assistant transcribe files (assistant:use and media:read). */
+  readonly canTranscribe?: boolean;
   /** The member may change the assistant's settings (assistant:configure). */
   readonly mayConfigure?: boolean;
   readonly canUpload: boolean;
@@ -560,8 +588,20 @@ export const MediaLibrary = ({
         <MediaUploader ref={uploader} workspaceId={workspaceId} />
       ) : null}
       {canGenerate && hydrated ? (
-        <div>
+        <div className="flex flex-wrap gap-2">
           <GenerateImage
+            mayConfigure={mayConfigure}
+            workspaceId={workspaceId}
+          />
+          <GenerateVideo
+            mayConfigure={mayConfigure}
+            workspaceId={workspaceId}
+          />
+          <GenerateSlideshow
+            mayConfigure={mayConfigure}
+            workspaceId={workspaceId}
+          />
+          <GenerateVoiceover
             mayConfigure={mayConfigure}
             workspaceId={workspaceId}
           />
@@ -579,9 +619,17 @@ export const MediaLibrary = ({
         {hydrated ? (
           <LibraryStatus search={asked} workspaceId={workspaceId} />
         ) : null}
+        {canGenerate && hydrated ? (
+          <>
+            <VideoJobs workspaceId={workspaceId} />
+            <SlideshowJobs workspaceId={workspaceId} />
+          </>
+        ) : null}
         {hydrated ? (
           <MediaPages
             canDelete={canDelete}
+            canTranscribe={canTranscribe && hydrated}
+            canUpload={canUpload}
             cursor={Option.none()}
             more={more}
             search={asked}

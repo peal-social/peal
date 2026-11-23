@@ -37,6 +37,7 @@ export interface OwnImageCall {
   readonly apiKey: string;
   readonly baseUrl: string;
   readonly model: string;
+  readonly provider: string;
   readonly request: ImageRequest;
 }
 
@@ -75,13 +76,14 @@ const madeFrom = (
   });
 
 const callOf = (
-  { apiKey, baseUrl, model }: OwnImageEndpoint,
+  { apiKey, baseUrl, model, provider }: OwnImageEndpoint,
   request: ImageRequest
 ): OwnImageCall => ({
   // The fake reads the key out to show which one it was sent.
   apiKey: Redacted.value(apiKey),
   baseUrl,
   model,
+  provider,
   request,
 });
 

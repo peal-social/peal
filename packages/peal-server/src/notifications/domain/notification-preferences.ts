@@ -1,6 +1,6 @@
 import { Option, Schema } from "effect";
 
-import { emailKindOf } from "./notice-event.ts";
+import { emailKindOf, inAppOnly } from "./notice-event.ts";
 import type { EmailKind, NoticeEvent } from "./notice-event.ts";
 
 /**
@@ -109,6 +109,7 @@ export const wantsEmail = (
   preferences: NotificationPreferences,
   event: NoticeEvent
 ): boolean =>
+  !inAppOnly(event) &&
   Option.match(emailKindOf(event), {
     onNone: () => true,
     onSome: (kind) => preferences.email[kind],

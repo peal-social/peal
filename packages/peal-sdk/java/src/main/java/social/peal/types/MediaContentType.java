@@ -18,7 +18,13 @@ public final class MediaContentType {
 
     public static final MediaContentType IMAGE_PNG = new MediaContentType(Value.IMAGE_PNG, "image/png");
 
+    public static final MediaContentType AUDIO_MP4 = new MediaContentType(Value.AUDIO_MP4, "audio/mp4");
+
+    public static final MediaContentType AUDIO_WAV = new MediaContentType(Value.AUDIO_WAV, "audio/wav");
+
     public static final MediaContentType VIDEO_MP4 = new MediaContentType(Value.VIDEO_MP4, "video/mp4");
+
+    public static final MediaContentType AUDIO_MPEG = new MediaContentType(Value.AUDIO_MPEG, "audio/mpeg");
 
     public static final MediaContentType VIDEO_QUICKTIME =
             new MediaContentType(Value.VIDEO_QUICKTIME, "video/quicktime");
@@ -65,8 +71,14 @@ public final class MediaContentType {
                 return visitor.visitImageJpeg();
             case IMAGE_PNG:
                 return visitor.visitImagePng();
+            case AUDIO_MP4:
+                return visitor.visitAudioMp4();
+            case AUDIO_WAV:
+                return visitor.visitAudioWav();
             case VIDEO_MP4:
                 return visitor.visitVideoMp4();
+            case AUDIO_MPEG:
+                return visitor.visitAudioMpeg();
             case VIDEO_QUICKTIME:
                 return visitor.visitVideoQuicktime();
             case UNKNOWN:
@@ -88,8 +100,14 @@ public final class MediaContentType {
                 return IMAGE_JPEG;
             case "image/png":
                 return IMAGE_PNG;
+            case "audio/mp4":
+                return AUDIO_MP4;
+            case "audio/wav":
+                return AUDIO_WAV;
             case "video/mp4":
                 return VIDEO_MP4;
+            case "audio/mpeg":
+                return AUDIO_MPEG;
             case "video/quicktime":
                 return VIDEO_QUICKTIME;
             default:
@@ -112,6 +130,12 @@ public final class MediaContentType {
 
         APPLICATION_PDF,
 
+        AUDIO_MPEG,
+
+        AUDIO_MP4,
+
+        AUDIO_WAV,
+
         UNKNOWN
     }
 
@@ -129,6 +153,12 @@ public final class MediaContentType {
         T visitVideoQuicktime();
 
         T visitApplicationPdf();
+
+        T visitAudioMpeg();
+
+        T visitAudioMp4();
+
+        T visitAudioWav();
 
         T visitUnknown(String unknownType);
     }

@@ -73,6 +73,56 @@ describe("peal assistant text-provider", () => {
   );
 
   it.effect(
+    "sets a provider by name, at its own address, and shows its name",
+    () =>
+      Effect.gen(function* named() {
+        const session = yield* signedIn();
+
+        const printed = yield* session
+          .piping(syntheticKey)
+          .printed(
+            textProvider(
+              "set",
+              "--provider",
+              "deepseek",
+              "--model",
+              "deepseek-v4-pro"
+            )
+          );
+
+        assert.include(printed, "now go to https://api.deepseek.com");
+        assert.include(
+          (yield* Ref.get(session.studio.state)).changes,
+          "text-provider:set:deepseek:https://api.deepseek.com"
+        );
+
+        const shown = yield* session.printed(textProvider("show"));
+
+        assert.include(shown, "Provider: DeepSeek (deepseek)");
+        assert.include(
+          shown,
+          "API:     an OpenAI-compatible endpoint (chat completions)"
+        );
+
+        // Another endpoint has no address of its own.
+        assert.include(
+          yield* session
+            .piping(syntheticKey)
+            .refused(
+              textProvider(
+                "set",
+                "--provider",
+                "openai-compatible",
+                "--model",
+                "synthetic-text-model"
+              )
+            ),
+          "address"
+        );
+      }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect(
     "keeps the saved key for the same address, and asks it for another",
     () =>
       Effect.gen(function* keeps() {

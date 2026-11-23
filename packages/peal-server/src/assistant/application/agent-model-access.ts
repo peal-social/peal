@@ -210,7 +210,7 @@ export class AgentModelAccess extends Context.Service<
             endpoint: Option.some({
               apiKey: apiKey.value,
               baseUrl: settings.baseUrl,
-              kind: settings.kind,
+              provider: settings.provider,
               model: settings.model,
             }),
             source: "workspace",

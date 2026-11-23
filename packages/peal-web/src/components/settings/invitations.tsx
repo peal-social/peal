@@ -25,6 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "peal-ui/components/select";
+import {
+  SettingsCard,
+  SettingsRow,
+  SettingsRowDescription,
+  SettingsSection,
+  SettingsSectionHeader,
+  SettingsSectionTitle,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
@@ -102,32 +110,34 @@ export const InviteForm = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-sm flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <SettingsError error={error} />
-      <FormField
-        id="invitee-email"
-        type="email"
-        autoComplete="off"
-        label={t("email")}
-        value={email}
-        onChange={setEmail}
-      />
-      <div className="flex flex-col gap-2">
-        <Label id={roleId}>{t("role")}</Label>
-        <Select value={role} disabled={isPending} onValueChange={handleRole}>
-          <SelectTrigger aria-labelledby={roleId}>
-            <SelectValue>{roleLabel("role", { role })}</SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {roles.map((option) => (
-              <SelectItem key={option} value={option}>
-                {roleLabel("role", { role: option })}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+        <div className="min-w-0 flex-1">
+          <FormField
+            id="invitee-email"
+            type="email"
+            autoComplete="off"
+            label={t("email")}
+            value={email}
+            onChange={setEmail}
+          />
+        </div>
+        <div className="flex flex-col gap-2 sm:w-44">
+          <Label id={roleId}>{t("role")}</Label>
+          <Select value={role} disabled={isPending} onValueChange={handleRole}>
+            <SelectTrigger aria-labelledby={roleId}>
+              <SelectValue>{roleLabel("role", { role })}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {roles.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {roleLabel("role", { role: option })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button type="submit" disabled={isPending} focusableWhenDisabled>
           {isPending ? t("sending") : t("send")}
         </Button>
@@ -234,9 +244,9 @@ const InvitationRow = ({
   };
 
   return (
-    <li className="flex flex-wrap items-center gap-4 py-4">
+    <li className="flex flex-wrap items-center gap-4 px-4 py-3">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="truncate font-medium">{email}</span>
+        <span className="truncate text-sm font-medium">{email}</span>
         <span className="text-muted-foreground text-sm">
           {t(expired ? "expired" : "expires", {
             date: format.dateTime(invitation.expiresAt, {
@@ -324,21 +334,27 @@ const LoadedInvitations = ({
       const pending = value.filter(({ status }) => status === "pending");
 
       return pending.length === 0 ? (
-        <p className="text-muted-foreground">{t("empty")}</p>
+        <SettingsCard>
+          <SettingsRow>
+            <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+          </SettingsRow>
+        </SettingsCard>
       ) : (
         <>
-          <ul className="divide-y">
-            {pending.map((invitation) => (
-              <InvitationRow
-                key={invitation.id}
-                invitation={invitation}
-                mayCancel={mayCancel}
-                mayResend={mayResend}
-                workspaceId={workspaceId}
-                onChanged={reload}
-              />
-            ))}
-          </ul>
+          <SettingsCard>
+            <ul className="divide-y">
+              {pending.map((invitation) => (
+                <InvitationRow
+                  key={invitation.id}
+                  invitation={invitation}
+                  mayCancel={mayCancel}
+                  mayResend={mayResend}
+                  workspaceId={workspaceId}
+                  onChanged={reload}
+                />
+              ))}
+            </ul>
+          </SettingsCard>
           {mayResend ? (
             <p className="text-muted-foreground text-sm">{t("linkNote")}</p>
           ) : null}
@@ -361,10 +377,12 @@ export const PendingInvitations = ({
   const t = useTranslations("WorkspaceSettings.invitations");
 
   return (
-    <section aria-labelledby="pending-title" className="flex flex-col gap-2">
-      <h2 id="pending-title" className="text-xl font-semibold">
-        {t("pendingTitle")}
-      </h2>
+    <SettingsSection aria-labelledby="pending-title">
+      <SettingsSectionHeader>
+        <SettingsSectionTitle id="pending-title">
+          {t("pendingTitle")}
+        </SettingsSectionTitle>
+      </SettingsSectionHeader>
       {useHydrated() ? (
         <InTimeZone timeZone={browserTimeZone()}>
           <LoadedInvitations
@@ -376,6 +394,6 @@ export const PendingInvitations = ({
       ) : (
         <SettingsLoading />
       )}
-    </section>
+    </SettingsSection>
   );
 };

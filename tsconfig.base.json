@@ -34,10 +34,6 @@
         // each module the code uses, by name, so one it starts to use warns
         // until it is added here.
         "allowedUnstableApis": [
-          "@effect/ai-anthropic/AnthropicClient",
-          "@effect/ai-anthropic/AnthropicLanguageModel",
-          "@effect/ai-openai-compat/OpenAiClient",
-          "@effect/ai-openai-compat/OpenAiLanguageModel",
           "@effect/atom-react/Hooks",
           "@effect/atom-react/ReactHydration",
           "@effect/atom-react/RegistryContext",

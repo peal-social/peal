@@ -286,13 +286,17 @@ describe("a new member's first post", { serial: true }, () => {
     await app.open(`/${slug}/settings`);
 
     await expect(
-      screen.getByRole("heading", "General", { level: 1 })
+      screen.getByRole("heading", "Workspace", { level: 1 })
     ).toBeVisible();
 
+    // Inviting is on Members.
     await screen
       .getByRole("navigation", "Workspace")
-      .getByRole("link", "Invitations")
+      .getByRole("link", "Members")
       .tap();
+    await expect(
+      screen.getByRole("heading", "Members", { level: 1 })
+    ).toBeVisible();
     await screen.getByLabel("Email").fill(guestAddress());
     await screen.getByRole("button", "Send the invitation").tap();
 
@@ -359,14 +363,19 @@ describe("a new member's first post", { serial: true }, () => {
     await screen.getByRole("menuitem", "Paramètres du compte").tap();
 
     await expect(
-      screen.getByRole("heading", "Compte", { level: 1 })
+      screen.getByRole("heading", "Profil", { level: 1 })
     ).toBeVisible();
     await expect(browser).toHaveURL(`/fr/${slug}/settings/account`);
 
-    // The account still keeps English, which it signed up in.
+    // The account still keeps English, which it signed up in: choosing
+    // French among the preferences saves it at once.
+    await screen
+      .getByRole("navigation", "Espace de travail")
+      .getByRole("link", "Préférences")
+      .tap();
+    await expect(browser).toHaveURL(`/fr/${slug}/settings/account/preferences`);
     await screen.getByRole("combobox", "Langue").tap();
     await screen.getByRole("option", "Français").tap();
-    await screen.getByRole("button", "Enregistrer la langue").tap();
 
     await expect(screen.getByText("Langue enregistrée.")).toBeVisible();
   });

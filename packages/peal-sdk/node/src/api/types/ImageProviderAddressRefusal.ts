@@ -7,6 +7,7 @@ export const ImageProviderAddressRefusal = {
         QueryOrFragment: "queryOrFragment",
         TooLong: "tooLong",
         NotPublic: "notPublic",
-        UnknownHost: "unknownHost"
+        UnknownHost: "unknownHost",
+        FixedAddress: "fixedAddress"
     } as const;
 export type ImageProviderAddressRefusal = typeof ImageProviderAddressRefusal[keyof typeof ImageProviderAddressRefusal];

@@ -1,3 +1,5 @@
+import { Atom } from "effect/reactivity";
+
 import { PealApi } from "#api/client.ts";
 
 // The writing assistant's status and suggestions. A request can change the
@@ -12,10 +14,7 @@ export const assistantStatus = (workspaceId: string) =>
   PealApi.query("assistant", "status", {
     params: { workspaceId },
     // The workspace's own providers change who writes and who makes images.
-    reactivityKeys: [
-      `image-provider:${workspaceId}`,
-      `text-provider:${workspaceId}`,
-    ],
+    reactivityKeys: [`ai-providers:${workspaceId}`],
   });
 
 export const suggestChange = PealApi.mutation("assistant", "suggest");
@@ -25,3 +24,57 @@ export const suggestChange = PealApi.mutation("assistant", "suggest");
  * media list's reactivity key, so the library shows the new image.
  */
 export const generateImage = PealApi.mutation("assistant", "generateImage");
+
+/** What lists a workspace's videos on their way, which asking for one refreshes. */
+export const videosKey = (workspaceId: string): string =>
+  `video-generations:${workspaceId}`;
+
+/** The videos the workspace asked for, newest first, with where each stands. */
+export const videoGenerations = Atom.family((workspaceId: string) =>
+  PealApi.query("videoGenerations", "list", {
+    params: { workspaceId },
+    query: {},
+    reactivityKeys: [videosKey(workspaceId)],
+  })
+);
+
+/**
+ * Asks for a video, which the server makes in a durable job; send it with
+ * the videos' reactivity key and the status's, so the library shows it on
+ * its way and the count left changes.
+ */
+export const generateVideo = PealApi.mutation("videoGenerations", "create");
+
+/** What lists a workspace's slide videos, which asking for one refreshes. */
+export const slideshowsKey = (workspaceId: string): string =>
+  `slideshows:${workspaceId}`;
+
+/** The slide videos the workspace asked for, newest first, with where each stands. */
+export const slideshows = Atom.family((workspaceId: string) =>
+  PealApi.query("slideshows", "list", {
+    params: { workspaceId },
+    query: {},
+    reactivityKeys: [slideshowsKey(workspaceId)],
+  })
+);
+
+/**
+ * Asks for a slide video, which the workspace's Shotstack account composes
+ * in a durable job; send it with the slide videos' reactivity key.
+ */
+export const createSlideshow = PealApi.mutation("slideshows", "create");
+
+/**
+ * Makes a voice-over into the workspace's media library; send it with the
+ * media list's reactivity key, so the library shows it.
+ */
+export const createVoiceover = PealApi.mutation(
+  "mediaAudio",
+  "createVoiceover"
+);
+
+/**
+ * Transcribes a file of the library; send it with the media list's
+ * reactivity key when the transcript is saved as its description.
+ */
+export const transcribeMedia = PealApi.mutation("mediaAudio", "transcribe");

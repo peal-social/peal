@@ -1,7 +1,12 @@
 import { DateTime, Match } from "effect";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { webhookFailingDays } from "peal-contract";
-import type { NoticeChannel, NoticeEvent } from "peal-contract";
+import type {
+  NoticeChannel,
+  NoticeEvent,
+  SlideshowFailureReason,
+  VideoFailureReason,
+} from "peal-contract";
 
 import { formatMoney } from "#ads/money.ts";
 import { useSize } from "#billing/size.ts";
@@ -32,6 +37,15 @@ export interface NoticeText {
  */
 export const useNoticeText = (workspaces: ReadonlyMap<string, string>) => {
   const t = useTranslations("Notices");
+  const videos = useTranslations("Assistant.videos");
+  const slideshows = useTranslations("Assistant.slideshows");
+
+  const videoReason = (reason: VideoFailureReason) =>
+    videos(`reasons.${reason}`);
+
+  const slideshowReason = (reason: SlideshowFailureReason) =>
+    slideshows(`reasons.${reason}`);
+
   const workspaceHref = useWorkspaceHref();
   const format = useFormatter();
   const size = useSize();
@@ -354,6 +368,26 @@ export const useNoticeText = (workspaces: ReadonlyMap<string, string>) => {
             workspace,
           })
         ),
+      // Only the member who asked for the video hears of it.
+      VideoGenerationEnded: ({ outcome, reason }) => ({
+        href: workspaceHref(workspaceId, "/media"),
+        open: t("open", { page: "media" }),
+        text: t("event.VideoGenerationEnded", {
+          outcome,
+          reason: videoReason(reason ?? "refused"),
+          workspace,
+        }),
+      }),
+      // Only the member who asked for the slide video hears of it.
+      SlideshowEnded: ({ outcome, reason }) => ({
+        href: workspaceHref(workspaceId, "/media"),
+        open: t("open", { page: "media" }),
+        text: t("event.SlideshowEnded", {
+          outcome,
+          reason: slideshowReason(reason ?? "refused"),
+          workspace,
+        }),
+      }),
       WebhookEndpointDisabled: ({ host, reason }) =>
         webhooks(
           t("event.WebhookEndpointDisabled", {

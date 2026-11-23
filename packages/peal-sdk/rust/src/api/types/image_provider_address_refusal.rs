@@ -10,6 +10,7 @@ pub enum ImageProviderAddressRefusal {
     TooLong,
     NotPublic,
     UnknownHost,
+    FixedAddress,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -25,6 +26,7 @@ impl Serialize for ImageProviderAddressRefusal {
             Self::TooLong => serializer.serialize_str("tooLong"),
             Self::NotPublic => serializer.serialize_str("notPublic"),
             Self::UnknownHost => serializer.serialize_str("unknownHost"),
+            Self::FixedAddress => serializer.serialize_str("fixedAddress"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -41,6 +43,7 @@ impl<'de> Deserialize<'de> for ImageProviderAddressRefusal {
             "tooLong" => Ok(Self::TooLong),
             "notPublic" => Ok(Self::NotPublic),
             "unknownHost" => Ok(Self::UnknownHost),
+            "fixedAddress" => Ok(Self::FixedAddress),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -56,6 +59,7 @@ impl fmt::Display for ImageProviderAddressRefusal {
             Self::TooLong => write!(f, "tooLong"),
             Self::NotPublic => write!(f, "notPublic"),
             Self::UnknownHost => write!(f, "unknownHost"),
+            Self::FixedAddress => write!(f, "fixedAddress"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

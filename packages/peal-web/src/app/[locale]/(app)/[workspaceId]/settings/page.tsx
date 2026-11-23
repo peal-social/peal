@@ -2,26 +2,29 @@ import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "peal-ui/components/card";
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowLabel,
+  SettingsRowText,
+} from "peal-ui/components/settings";
 
 import { ApprovalPolicyForm } from "#components/settings/approval-policy-form.tsx";
 import { DeleteWorkspace } from "#components/settings/delete-workspace.tsx";
-import { RenameWorkspaceForm } from "#components/settings/rename-workspace-form.tsx";
+import { WorkspaceNameRow } from "#components/settings/rename-workspace-form.tsx";
+import { SettingsGroup } from "#components/settings/settings-group.tsx";
 import { ShortLinkDefaultForm } from "#components/settings/short-link-default-form.tsx";
-import { WorkspaceAddressForm } from "#components/settings/workspace-address-form.tsx";
+import { WorkspaceAddressRow } from "#components/settings/workspace-address-form.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 
-// A workspace's general settings: its name, its address, which posts wait for an
-// approval, whether new posts shorten their links, and deleting it, for
-// those whose role allows each.
-const GeneralSettingsPage = async ({
+// The workspace itself: its name and address, which posts wait for an
+// approval, whether new posts shorten their links, and, last, deleting
+// it, for those whose role allows each.
+const WorkspacePage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/settings">) => {
   const { locale, workspaceId } = await params;
@@ -34,95 +37,82 @@ const GeneralSettingsPage = async ({
   const t = await getTranslations("WorkspaceSettings");
   const review = await getTranslations("Review");
   const shortLinks = await getTranslations("ShortLinks.settings");
+  const settings = await getTranslations("Settings");
   const may = new Set(workspace.permissions);
+  const mayUpdate = may.has("organization:update");
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <h2>{t("general.title")}</h2>
-          </CardTitle>
-          <CardDescription>
-            {may.has("organization:update")
-              ? t("general.description")
-              : t("general.readOnly")}
-          </CardDescription>
-        </CardHeader>
-        {may.has("organization:update") ? (
-          <CardContent>
-            <RenameWorkspaceForm
-              name={workspace.name}
-              workspaceId={workspace.id}
-            />
-          </CardContent>
-        ) : null}
-      </Card>
-      {may.has("organization:update") ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>{t("address.title")}</h2>
-            </CardTitle>
-            <CardDescription>{t("address.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <WorkspaceAddressForm
+    <>
+      <SettingsGroup>
+        <SettingsCard>
+          <WorkspaceNameRow
+            mayChange={mayUpdate}
+            name={workspace.name}
+            workspaceId={workspace.id}
+          />
+          {mayUpdate ? (
+            <WorkspaceAddressRow
               slug={workspace.slug}
               workspaceId={workspace.id}
             />
-          </CardContent>
-        </Card>
-      ) : null}
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <h2>{review("policy.title")}</h2>
-          </CardTitle>
-          <CardDescription>
-            {review("policy.description")}{" "}
-            {may.has("organization:update") ? null : review("policy.readOnly")}
-          </CardDescription>
-        </CardHeader>
-        {may.has("organization:update") ? (
-          <CardContent>
-            <ApprovalPolicyForm workspaceId={workspace.id} />
-          </CardContent>
-        ) : null}
-      </Card>
+          ) : null}
+        </SettingsCard>
+      </SettingsGroup>
+      <SettingsGroup
+        title={review("policy.title")}
+        description={review("policy.description")}
+      >
+        <SettingsCard>
+          {mayUpdate ? (
+            <SettingsCardBody>
+              <ApprovalPolicyForm workspaceId={workspace.id} />
+            </SettingsCardBody>
+          ) : (
+            <SettingsRow>
+              <SettingsRowDescription>
+                {review("policy.readOnly")}
+              </SettingsRowDescription>
+            </SettingsRow>
+          )}
+        </SettingsCard>
+      </SettingsGroup>
       {may.has("post:read") ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>{shortLinks("title")}</h2>
-            </CardTitle>
-            <CardDescription>{shortLinks("description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
+        <SettingsGroup
+          title={shortLinks("title")}
+          description={shortLinks("description")}
+        >
+          <SettingsCard>
             <ShortLinkDefaultForm
-              mayChange={may.has("organization:update")}
+              mayChange={mayUpdate}
               workspaceId={workspace.id}
             />
-          </CardContent>
-        </Card>
+          </SettingsCard>
+        </SettingsGroup>
       ) : null}
       {may.has("organization:delete") ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              <h2>{t("delete.title")}</h2>
-            </CardTitle>
-            <CardDescription>{t("delete.description")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <DeleteWorkspace name={workspace.name} workspaceId={workspace.id} />
-          </CardContent>
-        </Card>
+        <SettingsGroup title={settings("dangerZone")}>
+          <SettingsCard>
+            <SettingsRow>
+              <SettingsRowText>
+                <SettingsRowLabel>{t("delete.title")}</SettingsRowLabel>
+                <SettingsRowDescription>
+                  {t("delete.description")}
+                </SettingsRowDescription>
+              </SettingsRowText>
+              <SettingsRowControl>
+                <DeleteWorkspace
+                  name={workspace.name}
+                  workspaceId={workspace.id}
+                />
+              </SettingsRowControl>
+            </SettingsRow>
+          </SettingsCard>
+        </SettingsGroup>
       ) : null}
-    </div>
+    </>
   );
 };
 
 export const generateMetadata = workspacePageTitle("general");
 
-export default GeneralSettingsPage;
+export default WorkspacePage;

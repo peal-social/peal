@@ -36,28 +36,28 @@ public class MediaClient {
     }
 
     /**
-     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code> or <code>document</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
+     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
     public MediaPage list(String workspaceId) {
         return this.rawClient.list(workspaceId).body();
     }
 
     /**
-     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code> or <code>document</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
+     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
     public MediaPage list(String workspaceId, RequestOptions requestOptions) {
         return this.rawClient.list(workspaceId, requestOptions).body();
     }
 
     /**
-     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code> or <code>document</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
+     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
     public MediaPage list(String workspaceId, ListMediaRequest request) {
         return this.rawClient.list(workspaceId, request).body();
     }
 
     /**
-     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code> or <code>document</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
+     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
     public MediaPage list(String workspaceId, ListMediaRequest request, RequestOptions requestOptions) {
         return this.rawClient.list(workspaceId, request, requestOptions).body();

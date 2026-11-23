@@ -4,8 +4,19 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { maxSignaturesPerWorkspace } from "peal-contract";
 import type { SocialChannel, Signature } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowDescription,
+  SettingsSection,
+  SettingsSectionDescription,
+  SettingsSectionHeader,
+  SettingsSectionTitle,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
@@ -205,19 +216,25 @@ const LoadedSignatures = ({
     onInitial: () => <SettingsLoading />,
     onSuccess: ({ value }) =>
       value.length === 0 ? (
-        <p className="text-muted-foreground">{t("empty")}</p>
+        <SettingsCard>
+          <SettingsRow>
+            <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+          </SettingsRow>
+        </SettingsCard>
       ) : (
-        <ul className="divide-y">
-          {value.map((signature) => (
-            <SignatureRow
-              key={signature.id}
-              channels={channels}
-              mayManage={mayManage}
-              signature={signature}
-              workspaceId={workspaceId}
-            />
-          ))}
-        </ul>
+        <SettingsCard>
+          <ul className="divide-y">
+            {value.map((signature) => (
+              <SignatureRow
+                key={signature.id}
+                channels={channels}
+                mayManage={mayManage}
+                signature={signature}
+                workspaceId={workspaceId}
+              />
+            ))}
+          </ul>
+        </SettingsCard>
       ),
   });
 };
@@ -302,36 +319,47 @@ const Loaded = ({
 
   return (
     <>
-      <section
-        aria-labelledby="signatures-title"
-        className="flex flex-col gap-2"
-      >
-        <h2 id="signatures-title" className="text-xl font-semibold">
-          {t("listTitle")}
-        </h2>
+      <SettingsSection aria-labelledby="signatures-title">
+        <SettingsSectionHeader>
+          <div className="min-w-0 flex-1">
+            <SettingsSectionTitle id="signatures-title">
+              {t("listTitle")}
+            </SettingsSectionTitle>
+            <SettingsSectionDescription>
+              {t("description")}{" "}
+              {t("rules", { max: maxSignaturesPerWorkspace })}
+              {mayManage ? null : <> {t("readOnly")}</>}
+            </SettingsSectionDescription>
+          </div>
+        </SettingsSectionHeader>
         <LoadedSignatures
           channels={channels}
           mayManage={mayManage}
           workspaceId={workspaceId}
         />
-      </section>
+      </SettingsSection>
       {mayManage ? (
-        <section
-          aria-labelledby="create-signature-title"
-          className="flex flex-col gap-4"
-        >
-          <h2 id="create-signature-title" className="text-xl font-semibold">
-            {t("createTitle")}
-          </h2>
-          <CreateForm channels={channels} workspaceId={workspaceId} />
-        </section>
+        <SettingsSection aria-labelledby="create-signature-title">
+          <SettingsSectionHeader>
+            <SettingsSectionTitle id="create-signature-title">
+              {t("createTitle")}
+            </SettingsSectionTitle>
+          </SettingsSectionHeader>
+          <SettingsCard>
+            <SettingsCardBody>
+              <CreateForm channels={channels} workspaceId={workspaceId} />
+            </SettingsCardBody>
+          </SettingsCard>
+        </SettingsSection>
       ) : null}
     </>
   );
 };
 
 /**
- * The workspace's signatures: the list, and for those who may change
+ * The workspace's signatures: the list, under what signatures are for,
+ * their limits and, to a member who may not change posts, why nothing can
+ * be changed; then for those who may change
  * posts a form to add one, and to change or delete each.
  */
 export const SignaturesSettings = ({
@@ -343,13 +371,9 @@ export const SignaturesSettings = ({
 }) => {
   const hydrated = useHydrated();
 
-  return (
-    <div className="flex flex-col gap-8">
-      {hydrated ? (
-        <Loaded mayManage={mayManage} workspaceId={workspaceId} />
-      ) : (
-        <SettingsLoading />
-      )}
-    </div>
+  return hydrated ? (
+    <Loaded mayManage={mayManage} workspaceId={workspaceId} />
+  ) : (
+    <SettingsLoading />
   );
 };

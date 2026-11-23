@@ -17,6 +17,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import social.peal.core.ObjectMappers;
+import social.peal.types.AiProvider;
 import social.peal.types.TextProviderKind;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
@@ -24,24 +25,28 @@ import social.peal.types.TextProviderKind;
 public final class TextProviderChange {
     private final Optional<String> apiKey;
 
-    private final String baseUrl;
+    private final Optional<String> baseUrl;
 
-    private final TextProviderKind kind;
+    private final Optional<TextProviderKind> kind;
 
     private final String model;
+
+    private final Optional<AiProvider> provider;
 
     private final Map<String, Object> additionalProperties;
 
     private TextProviderChange(
             Optional<String> apiKey,
-            String baseUrl,
-            TextProviderKind kind,
+            Optional<String> baseUrl,
+            Optional<TextProviderKind> kind,
             String model,
+            Optional<AiProvider> provider,
             Map<String, Object> additionalProperties) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
         this.kind = kind;
         this.model = model;
+        this.provider = provider;
         this.additionalProperties = additionalProperties;
     }
 
@@ -51,18 +56,23 @@ public final class TextProviderChange {
     }
 
     @JsonProperty("baseUrl")
-    public String getBaseUrl() {
+    public Optional<String> getBaseUrl() {
         return baseUrl;
     }
 
     @JsonProperty("kind")
-    public TextProviderKind getKind() {
+    public Optional<TextProviderKind> getKind() {
         return kind;
     }
 
     @JsonProperty("model")
     public String getModel() {
         return model;
+    }
+
+    @JsonProperty("provider")
+    public Optional<AiProvider> getProvider() {
+        return provider;
     }
 
     @java.lang.Override
@@ -80,12 +90,13 @@ public final class TextProviderChange {
         return apiKey.equals(other.apiKey)
                 && baseUrl.equals(other.baseUrl)
                 && kind.equals(other.kind)
-                && model.equals(other.model);
+                && model.equals(other.model)
+                && provider.equals(other.provider);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.apiKey, this.baseUrl, this.kind, this.model);
+        return Objects.hash(this.apiKey, this.baseUrl, this.kind, this.model, this.provider);
     }
 
     @java.lang.Override
@@ -93,22 +104,14 @@ public final class TextProviderChange {
         return ObjectMappers.stringify(this);
     }
 
-    public static BaseUrlStage builder() {
+    public static ModelStage builder() {
         return new Builder();
-    }
-
-    public interface BaseUrlStage {
-        KindStage baseUrl(@NotNull String baseUrl);
-
-        Builder from(TextProviderChange other);
-    }
-
-    public interface KindStage {
-        ModelStage kind(@NotNull TextProviderKind kind);
     }
 
     public interface ModelStage {
         _FinalStage model(@NotNull String model);
+
+        Builder from(TextProviderChange other);
     }
 
     public interface _FinalStage {
@@ -121,15 +124,29 @@ public final class TextProviderChange {
         _FinalStage apiKey(Optional<String> apiKey);
 
         _FinalStage apiKey(String apiKey);
+
+        _FinalStage baseUrl(Optional<String> baseUrl);
+
+        _FinalStage baseUrl(String baseUrl);
+
+        _FinalStage kind(Optional<TextProviderKind> kind);
+
+        _FinalStage kind(TextProviderKind kind);
+
+        _FinalStage provider(Optional<AiProvider> provider);
+
+        _FinalStage provider(AiProvider provider);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements BaseUrlStage, KindStage, ModelStage, _FinalStage {
-        private String baseUrl;
-
-        private TextProviderKind kind;
-
+    public static final class Builder implements ModelStage, _FinalStage {
         private String model;
+
+        private Optional<AiProvider> provider = Optional.empty();
+
+        private Optional<TextProviderKind> kind = Optional.empty();
+
+        private Optional<String> baseUrl = Optional.empty();
 
         private Optional<String> apiKey = Optional.empty();
 
@@ -143,20 +160,7 @@ public final class TextProviderChange {
             baseUrl(other.getBaseUrl());
             kind(other.getKind());
             model(other.getModel());
-            return this;
-        }
-
-        @java.lang.Override
-        @JsonSetter("baseUrl")
-        public KindStage baseUrl(@NotNull String baseUrl) {
-            this.baseUrl = Objects.requireNonNull(baseUrl, "baseUrl must not be null");
-            return this;
-        }
-
-        @java.lang.Override
-        @JsonSetter("kind")
-        public ModelStage kind(@NotNull TextProviderKind kind) {
-            this.kind = Objects.requireNonNull(kind, "kind must not be null");
+            provider(other.getProvider());
             return this;
         }
 
@@ -164,6 +168,45 @@ public final class TextProviderChange {
         @JsonSetter("model")
         public _FinalStage model(@NotNull String model) {
             this.model = Objects.requireNonNull(model, "model must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage provider(AiProvider provider) {
+            this.provider = Optional.ofNullable(provider);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "provider", nulls = Nulls.SKIP)
+        public _FinalStage provider(Optional<AiProvider> provider) {
+            this.provider = provider;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage kind(TextProviderKind kind) {
+            this.kind = Optional.ofNullable(kind);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "kind", nulls = Nulls.SKIP)
+        public _FinalStage kind(Optional<TextProviderKind> kind) {
+            this.kind = kind;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage baseUrl(String baseUrl) {
+            this.baseUrl = Optional.ofNullable(baseUrl);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "baseUrl", nulls = Nulls.SKIP)
+        public _FinalStage baseUrl(Optional<String> baseUrl) {
+            this.baseUrl = baseUrl;
             return this;
         }
 
@@ -182,7 +225,7 @@ public final class TextProviderChange {
 
         @java.lang.Override
         public TextProviderChange build() {
-            return new TextProviderChange(apiKey, baseUrl, kind, model, additionalProperties);
+            return new TextProviderChange(apiKey, baseUrl, kind, model, provider, additionalProperties);
         }
 
         @JsonAnySetter
@@ -190,7 +233,8 @@ public final class TextProviderChange {
             if (key.equalsIgnoreCase("apiKey")
                     || key.equalsIgnoreCase("baseUrl")
                     || key.equalsIgnoreCase("kind")
-                    || key.equalsIgnoreCase("model")) {
+                    || key.equalsIgnoreCase("model")
+                    || key.equalsIgnoreCase("provider")) {
                 return;
             }
             this.additionalProperties.put(key, value);

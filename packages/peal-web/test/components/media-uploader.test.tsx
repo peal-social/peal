@@ -7,6 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { MediaUploader } from "#components/media/media-uploader.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 import { routing } from "#i18n/routing.ts";
+import { pickerAccept } from "#media/content-type.ts";
 
 const render = async (locale: (typeof routing.locales)[number]) => {
   const messages = await loadMessages(locale);
@@ -21,11 +22,15 @@ const render = async (locale: (typeof routing.locales)[number]) => {
 };
 
 describe(MediaUploader, () => {
-  it("offers every type the API takes, several files at once", async () => {
+  it("offers every type the API takes, its aliases, several files at once", async () => {
     const html = await render("en");
-    const accept = MediaContentTypeSchema.literals.join(",");
 
-    expect(html).toContain(`accept="${accept}"`);
+    expect(html).toContain(`accept="${pickerAccept}"`);
+
+    for (const type of MediaContentTypeSchema.literals) {
+      expect(pickerAccept.split(",")).toContain(type);
+    }
+
     expect(html).toMatch(/<input[^>]*type="file"[^>]*multiple/u);
   });
 

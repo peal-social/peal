@@ -25,11 +25,18 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowDescription,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
-import type { SubmitEvent } from "react";
+import type { ReactNode, SubmitEvent } from "react";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { SettingsGroup } from "#components/settings/settings-group.tsx";
 import {
   SettingsLoadFailed,
   SettingsLoading,
@@ -414,7 +421,7 @@ const CreateForm = ({
         onChange={setDraft}
       />
       {draft.mode === "queue" ? (
-        <p className="max-w-xl text-sm">{t("queueWarning")}</p>
+        <p className="text-sm">{t("queueWarning")}</p>
       ) : null}
       <div className="flex flex-wrap gap-2">
         <Button
@@ -449,6 +456,29 @@ const CreateForm = ({
   );
 };
 
+// The list's section: what a feed does and, to a member who may only
+// read them, that changing them takes another role; then its card.
+const FeedsGroup = ({
+  children,
+  mayChange,
+}: {
+  readonly children: ReactNode;
+  readonly mayChange: boolean;
+}) => {
+  const t = useTranslations("Feeds");
+
+  return (
+    <SettingsGroup
+      title={t("listTitle")}
+      description={
+        mayChange ? t("description") : `${t("description")} ${t("readOnly")}`
+      }
+    >
+      {children}
+    </SettingsGroup>
+  );
+};
+
 // The page once the workspace's feeds, channels and queues are known.
 const Loaded = ({
   highlighted,
@@ -477,76 +507,87 @@ const Loaded = ({
 
   if (AsyncResult.isFailure(feeds) || AsyncResult.isFailure(channels)) {
     return (
-      <SettingsLoadFailed
-        onRetry={() => {
-          reloadFeeds();
-          reloadChannels();
-        }}
-      />
+      <FeedsGroup mayChange={mayChange}>
+        <SettingsLoadFailed
+          onRetry={() => {
+            reloadFeeds();
+            reloadChannels();
+          }}
+        />
+      </FeedsGroup>
     );
   }
 
   if (!(AsyncResult.isSuccess(feeds) && AsyncResult.isSuccess(channels))) {
-    return <SettingsLoading />;
+    return (
+      <FeedsGroup mayChange={mayChange}>
+        <SettingsLoading />
+      </FeedsGroup>
+    );
   }
 
   return (
     <>
-      <section aria-labelledby="feeds-title" className="flex flex-col gap-2">
-        <h2 id="feeds-title" className="text-xl font-semibold">
-          {t("listTitle")}
-        </h2>
+      <FeedsGroup mayChange={mayChange}>
         {feeds.value.items.length === 0 ? (
-          <p className="text-muted-foreground">{t("empty")}</p>
+          <SettingsCard>
+            <SettingsRow>
+              <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+            </SettingsRow>
+          </SettingsCard>
         ) : (
-          <ul className="divide-y">
-            {feeds.value.items.map((feed) => (
-              <FeedRow
-                key={feed.id}
+          <SettingsCard>
+            <ul className="divide-y">
+              {feeds.value.items.map((feed) => (
+                <FeedRow
+                  key={feed.id}
+                  channels={channels.value}
+                  feed={feed}
+                  highlighted={feed.id === highlighted}
+                  mayChange={mayChange}
+                  mayQueue={mayQueue}
+                  queues={queues}
+                  workspaceId={workspaceId}
+                />
+              ))}
+            </ul>
+          </SettingsCard>
+        )}
+      </FeedsGroup>
+      {mayChange ? (
+        <SettingsGroup title={t("createTitle")}>
+          <SettingsCard>
+            <SettingsCardBody>
+              <CreateForm
                 channels={channels.value}
-                feed={feed}
-                highlighted={feed.id === highlighted}
-                mayChange={mayChange}
                 mayQueue={mayQueue}
                 queues={queues}
                 workspaceId={workspaceId}
               />
-            ))}
-          </ul>
-        )}
-      </section>
-      {mayChange ? (
-        <section
-          aria-labelledby="create-feed-title"
-          className="flex flex-col gap-4"
-        >
-          <h2 id="create-feed-title" className="text-xl font-semibold">
-            {t("createTitle")}
-          </h2>
-          <CreateForm
-            channels={channels.value}
-            mayQueue={mayQueue}
-            queues={queues}
-            workspaceId={workspaceId}
-          />
-        </section>
+            </SettingsCardBody>
+          </SettingsCard>
+        </SettingsGroup>
       ) : null}
     </>
   );
 };
 
 /**
- * The workspace's feeds: the list with each feed's state and, on demand,
- * what became of its newest items; for those who may make posts, a form
- * to preview an address and add it, and to pause, resume or delete each.
+ * The workspace's feeds: what a feed does, then the list with each
+ * feed's state and, on demand, what became of its newest items; for those
+ * who may make posts, a form to preview an address and add it, and to
+ * pause, resume or delete each.
  */
 export const FeedsSettings = (props: {
   readonly highlighted: string | null;
   readonly mayChange: boolean;
   readonly mayQueue: boolean;
   readonly workspaceId: string;
-}) => (
-  <div className="flex flex-col gap-8">
-    {useHydrated() ? <Loaded {...props} /> : <SettingsLoading />}
-  </div>
-);
+}) =>
+  useHydrated() ? (
+    <Loaded {...props} />
+  ) : (
+    <FeedsGroup mayChange={props.mayChange}>
+      <SettingsLoading />
+    </FeedsGroup>
+  );

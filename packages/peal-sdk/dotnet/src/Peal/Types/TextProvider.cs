@@ -26,6 +26,9 @@ public record TextProvider : IJsonOnDeserialized
     [JsonPropertyName("model")]
     public required string Model { get; set; }
 
+    [JsonPropertyName("provider")]
+    public required AiProvider Provider { get; set; }
+
     [JsonPropertyName("updatedAt")]
     public required string UpdatedAt { get; set; }
 

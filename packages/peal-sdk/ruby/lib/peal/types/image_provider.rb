@@ -13,6 +13,8 @@ module Peal
 
       field :model, -> { String }, optional: false, nullable: false
 
+      field :provider, -> { Peal::Types::AiImageProvider }, optional: false, nullable: false
+
       field :updated_at, -> { String }, optional: false, nullable: false, api_name: "updatedAt"
     end
   end

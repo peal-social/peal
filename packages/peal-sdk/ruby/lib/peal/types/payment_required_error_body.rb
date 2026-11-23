@@ -9,7 +9,7 @@ module Peal
 
       discriminant :type
 
-      member -> { Peal::Types::UsageAllowanceReachedEncoded }, key: "USAGE_ALLOWANCE_REACHED"
+      member -> { Peal::Types::CompositionNeedsPaymentEncoded }, key: "COMPOSITION_NEEDS_PAYMENT"
 
       member -> { Peal::Types::PlanLimitReachedEncoded }, key: "PLAN_LIMIT_REACHED"
     end

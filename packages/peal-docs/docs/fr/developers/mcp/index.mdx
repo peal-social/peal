@@ -167,4 +167,4 @@ Le point d’accès a ces limites :
 - Une connexion peut envoyer {{api-with-fr}} requêtes par minute ({{api-without-fr}} pour un compte de facturation sans moyen de paiement), comptées avec celles que la même clé ou la même application envoie à l’API. Au-delà, le point d’accès répond 429 avec un en-tête `Retry-After` ([Limites de débit](/developers/conventions/rate-limits#rate-limits)).
 - Chaque réponse porte un en-tête `X-Request-Id`. Citez-le quand vous demandez de l’aide ([Requêtes et réponses](/developers/conventions#requests)).
 
-Pour voir et déconnecter les clients que vous avez autorisés, ouvrez les **Paramètres du compte**, dans l’application web. `peal account apps` les liste depuis la [ligne de commande](/developers/cli/workspace#account). Quitter l’espace de travail arrête tous les clients qui y agissent.
+Pour voir et déconnecter les clients que vous avez autorisés, ouvrez **Sécurité et accès**, sous **Paramètres** dans l’application web. `peal account apps` les liste depuis la [ligne de commande](/developers/cli/workspace#account). Quitter l’espace de travail arrête tous les clients qui y agissent.

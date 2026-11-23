@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
 import { NextIntlClientProvider } from "next-intl";
-import type { Media } from "peal-contract";
+import type { Media, VideoGeneration } from "peal-contract";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -13,6 +13,10 @@ import {
   MediaPreviewDialog,
   useMediaName,
 } from "#components/media/media-preview.tsx";
+import {
+  SlideshowJobsView,
+  VideoJobsView,
+} from "#components/media/video-jobs-view.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 import type { LibrarySearch } from "#media/library-search.ts";
 
@@ -298,5 +302,77 @@ describe(LibraryEmptyView, () => {
     await expect(
       render("en", <LibraryEmptyView hidden="unknown" onClear={nothing} />)
     ).resolves.toContain("The filters hide every file.");
+  });
+});
+
+const job = (
+  id: string,
+  status: VideoGeneration["status"]
+): VideoGeneration => ({
+  aspect: "portrait",
+  createdAt: created,
+  durationSeconds: 5,
+  finishedAt: null,
+  id,
+  imageMediaId: null,
+  mediaId: null,
+  reason: null,
+  startedAt: null,
+  status,
+});
+
+describe(VideoJobsView, () => {
+  it("shows each video on its way in its place, with where it stands", async () => {
+    const html = await render(
+      "en",
+      <VideoJobsView jobs={[job("a", "queued"), job("b", "running")]} />
+    );
+
+    expect(html).toContain("Videos on the way");
+    expect(html).toContain("Waiting its turn");
+    expect(html).toContain("Being made");
+    expect(html).toContain("Portrait");
+
+    await expect(
+      render("fr", <VideoJobsView jobs={[job("b", "running")]} />)
+    ).resolves.toContain("En cours de création");
+  });
+
+  it("shows nothing while no video is on its way", async () => {
+    await expect(render("en", <VideoJobsView jobs={[]} />)).resolves.toBe("");
+  });
+});
+
+const slideshow = (id: string, status: "queued" | "running") => ({
+  aspect: "portrait" as const,
+  createdAt: created,
+  durationSeconds: 8,
+  finishedAt: null,
+  id,
+  imageMediaIds: ["a", "b"],
+  mediaId: null,
+  reason: null,
+  sandbox: false,
+  startedAt: null,
+  status,
+  voiceoverMediaId: null,
+});
+
+describe(SlideshowJobsView, () => {
+  it("shows each slide video on its way, with its shape and its images", async () => {
+    const html = await render(
+      "en",
+      <SlideshowJobsView jobs={[slideshow("a", "queued")]} />
+    );
+
+    expect(html).toContain("Slide videos on the way");
+    expect(html).toContain("Waiting its turn");
+    expect(html).toContain("Portrait, 2 images");
+    await expect(
+      render("fr", <SlideshowJobsView jobs={[slideshow("b", "running")]} />)
+    ).resolves.toContain("Vidéos de diapositives en route");
+    await expect(render("en", <SlideshowJobsView jobs={[]} />)).resolves.toBe(
+      ""
+    );
   });
 });

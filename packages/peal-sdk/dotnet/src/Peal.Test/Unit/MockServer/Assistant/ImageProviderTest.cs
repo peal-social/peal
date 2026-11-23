@@ -19,6 +19,7 @@ public class ImageProviderTest : BaseMockServerTest
                 "keySet": true,
                 "keyUnreadable": true,
                 "model": "model",
+                "provider": "openai",
                 "updatedAt": "updatedAt"
               }
             }
@@ -54,6 +55,7 @@ public class ImageProviderTest : BaseMockServerTest
                 "keySet": true,
                 "keyUnreadable": true,
                 "model": "model",
+                "provider": "openai",
                 "updatedAt": "updatedAt"
               }
             }

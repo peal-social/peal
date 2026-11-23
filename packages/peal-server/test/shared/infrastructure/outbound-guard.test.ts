@@ -6,6 +6,7 @@ import { Dns } from "effect/net";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import {
   publicFetch,
+  publicFetchWith,
   publicHttpClient,
   publicLibraryHttpClientWith,
 } from "#shared/infrastructure/platforms/public-http.ts";
@@ -245,6 +246,43 @@ layer(OpenClientTest)("answers from a host a user chose", (it) => {
 
       assert.strictEqual(read, '{"ok":true}');
       assert.strictEqual(fetched, '{"ok":true}');
+    }).pipe(Effect.scoped)
+  );
+
+  it.effect("are cut off past the bound a guarded fetch is given", () =>
+    Effect.gen(function* bounded() {
+      const local = yield* fakeHttpServer(() => json("x".repeat(2048)));
+      const small = yield* publicFetchWith({ maxResponseBytes: 1024 });
+      const large = yield* publicFetchWith({ maxResponseBytes: 4096 });
+
+      const read = (fetch: typeof globalThis.fetch) =>
+        Effect.tryPromise(async () => {
+          const response = await fetch(`${local.url}/answer`);
+
+          return await response.text();
+        }).pipe(Effect.result);
+
+      assert.isTrue(Result.isFailure(yield* read(small)));
+      assert.isTrue(Result.isSuccess(yield* read(large)));
+    }).pipe(Effect.scoped)
+  );
+
+  it.effect("are given up after the time a guarded fetch is given", () =>
+    Effect.gen(function* timedOut() {
+      const local = yield* fakeHttpServer(() => ({ status: 204 }));
+      const fetch = yield* publicFetchWith({ timeout: "1 millis" });
+
+      // A request that never gets its answer in a millisecond: the bound
+      // aborts it, as fetch does.
+      const failed = yield* Effect.tryPromise(
+        async () =>
+          await fetch(`${local.url}/slow`, {
+            body: "x".repeat(1_000_000),
+            method: "POST",
+          })
+      ).pipe(Effect.result);
+
+      assert.isTrue(Result.isFailure(failed));
     }).pipe(Effect.scoped)
   );
 

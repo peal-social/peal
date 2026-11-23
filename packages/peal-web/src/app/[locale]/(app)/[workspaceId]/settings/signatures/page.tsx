@@ -1,7 +1,5 @@
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { maxSignaturesPerWorkspace } from "peal-contract";
 
 import { SignaturesSettings } from "#components/signatures/signatures-settings.tsx";
 import { routing } from "#i18n/routing.ts";
@@ -26,20 +24,11 @@ const SignaturesPage = async ({
     notFound();
   }
 
-  const t = await getTranslations("Signatures");
-  const mayManage = may.has("post:update");
-
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("description")}</p>
-      <p className="text-muted-foreground text-sm">
-        {t("rules", { max: maxSignaturesPerWorkspace })}
-      </p>
-      {mayManage ? null : (
-        <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
-      )}
-      <SignaturesSettings workspaceId={workspace.id} mayManage={mayManage} />
-    </div>
+    <SignaturesSettings
+      workspaceId={workspace.id}
+      mayManage={may.has("post:update")}
+    />
   );
 };
 

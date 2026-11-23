@@ -29,6 +29,8 @@ public final class TextProvider {
 
     private final String model;
 
+    private final AiProvider provider;
+
     private final String updatedAt;
 
     private final Map<String, Object> additionalProperties;
@@ -39,6 +41,7 @@ public final class TextProvider {
             boolean keyUnreadable,
             TextProviderKind kind,
             String model,
+            AiProvider provider,
             String updatedAt,
             Map<String, Object> additionalProperties) {
         this.baseUrl = baseUrl;
@@ -46,6 +49,7 @@ public final class TextProvider {
         this.keyUnreadable = keyUnreadable;
         this.kind = kind;
         this.model = model;
+        this.provider = provider;
         this.updatedAt = updatedAt;
         this.additionalProperties = additionalProperties;
     }
@@ -75,6 +79,11 @@ public final class TextProvider {
         return model;
     }
 
+    @JsonProperty("provider")
+    public AiProvider getProvider() {
+        return provider;
+    }
+
     @JsonProperty("updatedAt")
     public String getUpdatedAt() {
         return updatedAt;
@@ -97,12 +106,14 @@ public final class TextProvider {
                 && keyUnreadable == other.keyUnreadable
                 && kind.equals(other.kind)
                 && model.equals(other.model)
+                && provider.equals(other.provider)
                 && updatedAt.equals(other.updatedAt);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.baseUrl, this.keySet, this.keyUnreadable, this.kind, this.model, this.updatedAt);
+        return Objects.hash(
+                this.baseUrl, this.keySet, this.keyUnreadable, this.kind, this.model, this.provider, this.updatedAt);
     }
 
     @java.lang.Override
@@ -133,7 +144,11 @@ public final class TextProvider {
     }
 
     public interface ModelStage {
-        UpdatedAtStage model(@NotNull String model);
+        ProviderStage model(@NotNull String model);
+    }
+
+    public interface ProviderStage {
+        UpdatedAtStage provider(@NotNull AiProvider provider);
     }
 
     public interface UpdatedAtStage {
@@ -155,6 +170,7 @@ public final class TextProvider {
                     KeyUnreadableStage,
                     KindStage,
                     ModelStage,
+                    ProviderStage,
                     UpdatedAtStage,
                     _FinalStage {
         private String baseUrl;
@@ -166,6 +182,8 @@ public final class TextProvider {
         private TextProviderKind kind;
 
         private String model;
+
+        private AiProvider provider;
 
         private String updatedAt;
 
@@ -180,6 +198,7 @@ public final class TextProvider {
             keyUnreadable(other.getKeyUnreadable());
             kind(other.getKind());
             model(other.getModel());
+            provider(other.getProvider());
             updatedAt(other.getUpdatedAt());
             return this;
         }
@@ -214,8 +233,15 @@ public final class TextProvider {
 
         @java.lang.Override
         @JsonSetter("model")
-        public UpdatedAtStage model(@NotNull String model) {
+        public ProviderStage model(@NotNull String model) {
             this.model = Objects.requireNonNull(model, "model must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("provider")
+        public UpdatedAtStage provider(@NotNull AiProvider provider) {
+            this.provider = Objects.requireNonNull(provider, "provider must not be null");
             return this;
         }
 
@@ -228,7 +254,8 @@ public final class TextProvider {
 
         @java.lang.Override
         public TextProvider build() {
-            return new TextProvider(baseUrl, keySet, keyUnreadable, kind, model, updatedAt, additionalProperties);
+            return new TextProvider(
+                    baseUrl, keySet, keyUnreadable, kind, model, provider, updatedAt, additionalProperties);
         }
 
         @JsonAnySetter
@@ -238,6 +265,7 @@ public final class TextProvider {
                     || key.equalsIgnoreCase("keyUnreadable")
                     || key.equalsIgnoreCase("kind")
                     || key.equalsIgnoreCase("model")
+                    || key.equalsIgnoreCase("provider")
                     || key.equalsIgnoreCase("updatedAt")) {
                 return;
             }

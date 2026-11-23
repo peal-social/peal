@@ -129,7 +129,7 @@ export const TagItemView = ({
   const t = useTranslations("Tags");
 
   return (
-    <li className="flex flex-col gap-4 py-4">
+    <li className="flex flex-col gap-4 px-4 py-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="flex min-w-0 items-center gap-2">
           <Tag id={nameId} colour={tag.colour}>

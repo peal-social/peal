@@ -23,6 +23,9 @@ public record ImageProvider : IJsonOnDeserialized
     [JsonPropertyName("model")]
     public required string Model { get; set; }
 
+    [JsonPropertyName("provider")]
+    public required AiImageProvider Provider { get; set; }
+
     [JsonPropertyName("updatedAt")]
     public required string UpdatedAt { get; set; }
 

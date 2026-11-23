@@ -45,6 +45,7 @@ const services: ReadonlyMap<string, string> = new Map([
   ["instagram.com", "meta"],
   ["api.openai.com", "openai"],
   ["pinterest.com", "pinterest"],
+  ["api.shotstack.io", "shotstack"],
   ["slack.com", "slack"],
   ["api.telegram.org", "telegram"],
   ["threads.com", "threads"],

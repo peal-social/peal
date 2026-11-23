@@ -3,16 +3,19 @@ import type { Option } from "effect";
 
 import type { AssistantQuotaExceeded } from "#assistant/application/assistant-quota-exceeded.ts";
 import type { AssistantUnavailable } from "#assistant/application/assistant-unavailable.ts";
+import type { CapabilityNotOffered } from "#assistant/application/capability-not-offered.ts";
 import type { ImageFailed } from "#assistant/application/image-failed.ts";
 import type { ImageNotStored } from "#assistant/application/image-not-stored.ts";
 import type { ImageProviderKeyRequired } from "#assistant/application/image-provider-key-required.ts";
 import type { ImageProviderRefused } from "#assistant/application/image-provider-refused.ts";
 import type { ImagesBusy } from "#assistant/application/images-busy.ts";
+import type { ModelRequired } from "#assistant/application/model-required.ts";
 import type { OwnImagesExhausted } from "#assistant/application/own-images-exhausted.ts";
 import type { OwnTextBusy } from "#assistant/application/own-text-busy.ts";
 import type { OwnTextExhausted } from "#assistant/application/own-text-exhausted.ts";
 import type { AssistantAllowance } from "#assistant/application/ports/assistant-allowance.ts";
 import type { AssistantUsage } from "#assistant/application/ports/assistant-usage.ts";
+import type { CapabilityModels } from "#assistant/application/ports/capability-models.ts";
 import type {
   GeneratedImage,
   GeneratedImages,
@@ -26,16 +29,29 @@ import type { OwnTextCounts } from "#assistant/application/ports/own-text-counts
 import type { OwnWritingModel } from "#assistant/application/ports/own-writing-model.ts";
 import type { PlatformLimits } from "#assistant/application/ports/platform-limits.ts";
 import type { ProviderAddressCheck } from "#assistant/application/ports/provider-address-check.ts";
+import type { ProviderConnections } from "#assistant/application/ports/provider-connections.ts";
 import type { TextProviders } from "#assistant/application/ports/text-providers.ts";
 import type { TextSlots } from "#assistant/application/ports/text-slots.ts";
 import type { WritingModel } from "#assistant/application/ports/writing-model.ts";
 import type { ProviderAddressNotPublic } from "#assistant/application/provider-address-not-public.ts";
+import type { ProviderKeyRequired } from "#assistant/application/provider-key-required.ts";
+import type { ProviderNotConnected } from "#assistant/application/provider-not-connected.ts";
 import type { ProviderSecretsNotConfigured } from "#assistant/application/provider-secrets-not-configured.ts";
+import type { TestModelRequired } from "#assistant/application/test-model-required.ts";
 import type { TextProviderKeyRequired } from "#assistant/application/text-provider-key-required.ts";
 import type { TextProviderNotSet } from "#assistant/application/text-provider-not-set.ts";
 import type { TextProviderRefused } from "#assistant/application/text-provider-refused.ts";
 import { assistantStatus } from "#assistant/application/use-cases/assistant-status.ts";
 import type { AssistantStatus } from "#assistant/application/use-cases/assistant-status.ts";
+import {
+  listModels,
+  setModel,
+  unsetModel,
+} from "#assistant/application/use-cases/capability-model-settings.ts";
+import type {
+  CapabilityModelChange,
+  CapabilityModelView,
+} from "#assistant/application/use-cases/capability-model-settings.ts";
 import { generateImage } from "#assistant/application/use-cases/generate-image.ts";
 import type { ImageGenerationRequest } from "#assistant/application/use-cases/generate-image.ts";
 import {
@@ -47,6 +63,16 @@ import type {
   ImageProviderChange,
   ImageProviderView,
 } from "#assistant/application/use-cases/image-provider-settings.ts";
+import {
+  connectProvider,
+  disconnectProvider,
+  listConnections,
+  testProvider,
+} from "#assistant/application/use-cases/provider-connection-settings.ts";
+import type {
+  ConnectionChange,
+  ConnectionView,
+} from "#assistant/application/use-cases/provider-connection-settings.ts";
 import { suggest } from "#assistant/application/use-cases/suggest.ts";
 import type { SuggestionRequest } from "#assistant/application/use-cases/suggest.ts";
 import {
@@ -60,6 +86,10 @@ import type {
   TextProviderView,
 } from "#assistant/application/use-cases/text-provider-settings.ts";
 import type { WritingFailed } from "#assistant/application/writing-failed.ts";
+import type {
+  AiCapability,
+  ConnectedProviderId,
+} from "#assistant/domain/ai-capability.ts";
 import type { AnswerRejected } from "#assistant/domain/answer-rejected.ts";
 import type { DraftRejected } from "#assistant/domain/draft-rejected.ts";
 import type { ProviderAddressRejected } from "#assistant/domain/provider-address-rejected.ts";
@@ -76,6 +106,7 @@ type AssistantPorts =
   | AssistantAllowance
   | MeteredUsage
   | AssistantUsage
+  | CapabilityModels
   | GeneratedImages
   | ImageModel
   | ImageProviders
@@ -86,6 +117,7 @@ type AssistantPorts =
   | OwnWritingModel
   | PlatformLimits
   | ProviderAddressCheck
+  | ProviderConnections
   | TextProviders
   | TextSlots
   | WritingModel;
@@ -124,6 +156,33 @@ export type SaveTextProviderFailure =
   | ProviderSecretsNotConfigured
   | ProviderSettingRejected
   | TextProviderKeyRequired;
+
+export type ConnectProviderFailure =
+  | MissingPermission
+  | ProviderAddressNotPublic
+  | ProviderAddressRejected
+  | ProviderKeyRequired
+  | ProviderSecretsNotConfigured
+  | ProviderSettingRejected;
+
+export type TestProviderFailure =
+  | AnswerRejected
+  | CapabilityNotOffered
+  | MissingPermission
+  | OwnTextBusy
+  | OwnTextExhausted
+  | ProviderNotConnected
+  | ProviderSettingRejected
+  | TestModelRequired
+  | TextProviderRefused
+  | WritingFailed;
+
+export type SetModelFailure =
+  | CapabilityNotOffered
+  | MissingPermission
+  | ModelRequired
+  | ProviderNotConnected
+  | ProviderSettingRejected;
 
 export type SuggestFailure =
   | AllowanceReached
@@ -193,6 +252,38 @@ export class WritingAssistant extends Context.Service<
     readonly testTextProvider: (
       actor: Actor
     ) => Effect.Effect<void, TestTextProviderFailure>;
+    /** The providers the workspace connected; never their keys. */
+    readonly providers: (
+      actor: Actor
+    ) => Effect.Effect<readonly ConnectionView[], MissingPermission>;
+    readonly connectProvider: (
+      actor: Actor,
+      provider: ConnectedProviderId,
+      change: ConnectionChange
+    ) => Effect.Effect<ConnectionView, ConnectProviderFailure>;
+    readonly disconnectProvider: (
+      actor: Actor,
+      provider: ConnectedProviderId
+    ) => Effect.Effect<void, MissingPermission>;
+    /** Sends a connected provider one short request for text. */
+    readonly testProvider: (
+      actor: Actor,
+      provider: ConnectedProviderId,
+      asked: { readonly model?: string }
+    ) => Effect.Effect<void, TestProviderFailure>;
+    /** Every use, chosen or not. */
+    readonly models: (
+      actor: Actor
+    ) => Effect.Effect<readonly CapabilityModelView[], MissingPermission>;
+    readonly setModel: (
+      actor: Actor,
+      capability: AiCapability,
+      change: CapabilityModelChange
+    ) => Effect.Effect<CapabilityModelView, SetModelFailure>;
+    readonly unsetModel: (
+      actor: Actor,
+      capability: AiCapability
+    ) => Effect.Effect<void, MissingPermission>;
   }
 >()("peal-server/assistant/application/WritingAssistant") {
   /** The use cases, running on the ports the layer is given. */
@@ -223,11 +314,17 @@ export class WritingAssistant extends Context.Service<
         );
 
       return WritingAssistant.of({
+        connectProvider: (actor, provider, change) =>
+          configuring(actor, connectProvider(actor, provider, change)),
+        disconnectProvider: (actor, provider) =>
+          configuring(actor, disconnectProvider(actor, provider)),
         generateImage: (actor, request) =>
           Effect.fromResult(authorize(actor, "media:upload")).pipe(
             Effect.andThen(allowed(actor, generateImage({ ...request, actor })))
           ),
         imageProvider: (actor) => configuring(actor, viewImageProvider(actor)),
+        models: (actor) => configuring(actor, listModels(actor)),
+        providers: (actor) => configuring(actor, listConnections(actor)),
         removeImageProvider: (actor) =>
           configuring(actor, removeImageProvider(actor)),
         removeTextProvider: (actor) =>
@@ -236,12 +333,18 @@ export class WritingAssistant extends Context.Service<
           configuring(actor, saveImageProvider(actor, change)),
         saveTextProvider: (actor, change) =>
           configuring(actor, saveTextProvider(actor, change)),
+        setModel: (actor, capability, change) =>
+          configuring(actor, setModel(actor, capability, change)),
         status: (actor) => allowed(actor, assistantStatus(actor.workspaceId)),
         suggest: (actor, request) =>
           allowed(actor, suggest({ ...request, actor })),
+        testProvider: (actor, provider, asked) =>
+          configuring(actor, testProvider(actor, provider, asked)),
         testTextProvider: (actor) =>
           configuring(actor, testTextProvider(actor)),
         textProvider: (actor) => configuring(actor, viewTextProvider(actor)),
+        unsetModel: (actor, capability) =>
+          configuring(actor, unsetModel(actor, capability)),
       });
     })
   );

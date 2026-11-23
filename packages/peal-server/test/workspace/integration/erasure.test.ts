@@ -111,20 +111,35 @@ const workspaceRows = {
     sql`SELECT count(*)::int AS count FROM analytics.tracked_channels WHERE workspace_id = ${id}`,
   "analytics.tracked_posts": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM analytics.tracked_posts WHERE workspace_id = ${id}`,
+  // The model it chose for each use.
+  "assistant.capability_models": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM assistant.capability_models WHERE workspace_id = ${id}`,
   "assistant.daily_usage": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM assistant.daily_usage WHERE workspace_id = ${id}`,
   // The image provider it brought, with its sealed key.
   "assistant.image_providers": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM assistant.image_providers WHERE workspace_id = ${id}`,
   // How many images it asked its own provider for, by day.
+  // How many voice-overs and transcripts it asked its own providers for.
+  "assistant.own_audio_days": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM assistant.own_audio_days WHERE workspace_id = ${id}`,
   "assistant.own_image_days": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM assistant.own_image_days WHERE workspace_id = ${id}`,
   // How many requests it sent its own text provider, by day.
   "assistant.own_text_days": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM assistant.own_text_days WHERE workspace_id = ${id}`,
+  // The providers it connected, with their sealed keys.
+  "assistant.provider_connections": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM assistant.provider_connections WHERE workspace_id = ${id}`,
+  // The slide videos it asked for, with a plan while one is on its way.
+  "assistant.slideshows": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM assistant.slideshows WHERE workspace_id = ${id}`,
   // The text provider it brought, with its sealed key.
   "assistant.text_providers": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM assistant.text_providers WHERE workspace_id = ${id}`,
+  // The videos it asked for, with a prompt while one is on its way.
+  "assistant.video_generations": (sql, id) =>
+    sql`SELECT count(*)::int AS count FROM assistant.video_generations WHERE workspace_id = ${id}`,
   "auth.apikey": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM auth.apikey WHERE reference_id = ${id}`,
   "auth.invitation": (sql, id) =>
@@ -741,6 +756,8 @@ const fill = Effect.fn("fill")(function* fill(
     VALUES (${workspaceId}, 1200, now())`;
   yield* sql`INSERT INTO assistant.own_image_days (workspace_id, day, images)
     VALUES (${workspaceId}, '2026-11-09', 3)`;
+  yield* sql`INSERT INTO assistant.own_audio_days (workspace_id, day, capability, count)
+    VALUES (${workspaceId}, '2026-11-09', 'speech', 2)`;
   // The image provider the workspace brought, its key sealed (a synthetic
   // stand-in here: nothing opens it).
   yield* sql`INSERT INTO assistant.image_providers (workspace_id, base_url, model, sealed_key, key_id, updated_at)
@@ -750,6 +767,17 @@ const fill = Effect.fn("fill")(function* fill(
     VALUES (${workspaceId}, 'anthropic', 'https://api.anthropic.com', 'synthetic-text-model', 'test-key.synthetic-iv.synthetic-sealed', 'test-key', now())`;
   yield* sql`INSERT INTO assistant.own_text_days (workspace_id, day, requests)
     VALUES (${workspaceId}, '2026-11-09', 7)`;
+  // A provider it connected, its key sealed (a stand-in), and its text on it.
+  yield* sql`INSERT INTO assistant.provider_connections (workspace_id, provider, base_url, sealed_key, key_id, created_at, updated_at)
+    VALUES (${workspaceId}, 'anthropic', 'https://api.anthropic.com', 'test-key.synthetic-iv.synthetic-sealed', 'test-key', now(), now())`;
+  yield* sql`INSERT INTO assistant.capability_models (workspace_id, capability, provider, model, updated_at)
+    VALUES (${workspaceId}, 'text', 'anthropic', 'synthetic-text-model', now())`;
+  // A video it asked for, still on its way with its prompt.
+  yield* sql`INSERT INTO assistant.video_generations (id, workspace_id, status, aspect, prompt, created_at)
+    VALUES (gen_random_uuid(), ${workspaceId}, 'queued', 'landscape', 'A synthetic harbour at dawn', now())`;
+  // A slide video it asked for, still on its way with its captions.
+  yield* sql`INSERT INTO assistant.slideshows (id, workspace_id, status, aspect, duration_seconds, image_media_ids, plan, sandbox, created_at)
+    VALUES (gen_random_uuid(), ${workspaceId}, 'queued', 'portrait', 8, ARRAY[gen_random_uuid(), gen_random_uuid()], '{"secondsPerSlide":4,"slides":[],"transition":"fade"}'::jsonb, false, now())`;
   yield* seedSubscription(workspaceId, "canceled");
 
   yield* sql`INSERT INTO billing.metered_posts (workspace_id, platform, month, posts, posts_with_links)

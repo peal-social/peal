@@ -18,6 +18,11 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsRow,
+  SettingsRowDescription,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
 
@@ -179,30 +184,37 @@ const RuleList = ({
   const rules = result.value.items;
 
   return rules.length === 0 ? (
-    <p className="text-muted-foreground">{t("empty")}</p>
+    <SettingsCard>
+      <SettingsRow>
+        <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+      </SettingsRow>
+    </SettingsCard>
   ) : (
-    <ul className="divide-y">
-      {rules.map((rule) => (
-        <RuleItemView
-          key={rule.id}
-          highlighted={rule.id === highlighted}
-          rule={rule}
-          source={
-            <Link
-              href={workspaceHref(workspaceId, `/posts/${rule.sourcePostId}`)}
-              className="underline underline-offset-4"
-            >
-              {t("source")}
-            </Link>
-          }
-          actions={
-            mayChange ? (
-              <RuleActions rule={rule} workspaceId={workspaceId} />
-            ) : null
-          }
-        />
-      ))}
-    </ul>
+    // The card clips the highlighted rule's tint to its rounded corners.
+    <SettingsCard className="overflow-hidden">
+      <ul className="divide-y">
+        {rules.map((rule) => (
+          <RuleItemView
+            key={rule.id}
+            highlighted={rule.id === highlighted}
+            rule={rule}
+            source={
+              <Link
+                href={workspaceHref(workspaceId, `/posts/${rule.sourcePostId}`)}
+                className="underline underline-offset-4"
+              >
+                {t("source")}
+              </Link>
+            }
+            actions={
+              mayChange ? (
+                <RuleActions rule={rule} workspaceId={workspaceId} />
+              ) : null
+            }
+          />
+        ))}
+      </ul>
+    </SettingsCard>
   );
 };
 

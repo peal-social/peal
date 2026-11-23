@@ -123,7 +123,7 @@ func (c *Client) GenerateImage(
 	return response.Body, nil
 }
 
-// Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+// Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 //
 // Example:
 //
@@ -150,13 +150,12 @@ func (c *Client) ImageProvider(
 	return response.Body, nil
 }
 
-// Sets the image provider the workspace brings, an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to `baseUrl` with `apiKey` as a bearer token; the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+// Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to `baseUrl` (the provider's own address when left out) with `apiKey`, through the API `provider` names (`openai-compatible` when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 //
 // Example:
 //
 //	request := &peal.ImageProviderChange{
 //	    WorkspaceID: "workspaceId",
-//	    BaseURL: "baseUrl",
 //	    Model: "model",
 //	}
 //	_, err := client.Assistant.SetImageProvider(
@@ -233,14 +232,12 @@ func (c *Client) TextProvider(
 	return response.Body, nil
 }
 
-// Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to `baseUrl` with `apiKey`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+// Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to `baseUrl` with `apiKey`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 //
 // Example:
 //
 //	request := &peal.TextProviderChange{
 //	    WorkspaceID: "workspaceId",
-//	    BaseURL: "baseUrl",
-//	    Kind: peal.TextProviderKindAnthropic,
 //	    Model: "model",
 //	}
 //	_, err := client.Assistant.SetTextProvider(
@@ -307,6 +304,201 @@ func (c *Client) TestTextProvider(
 	opts ...option.RequestOption,
 ) error {
 	_, err := c.WithRawResponse.TestTextProvider(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+//
+// Example:
+//
+//	request := &peal.ProvidersAssistantRequest{
+//	    WorkspaceID: "workspaceId",
+//	}
+//	_, err := client.Assistant.Providers(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) Providers(
+	ctx context.Context,
+	request *peal.ProvidersAssistantRequest,
+	opts ...option.RequestOption,
+) (*peal.AiProviderConnections, error) {
+	response, err := c.WithRawResponse.Providers(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `openai-compatible`, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (`PUT .../assistant/models/{capability}`), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (`fixedAddress`: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused `fixedAddress`): Shotstack takes its production API (`https://api.shotstack.io/edit/v1`, the default) or its sandbox (`https://api.shotstack.io/edit/stage`, free and watermarked), each with its own key. The provider is not called: test it with `POST .../providers/{provider}/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+//
+// Example:
+//
+//	request := &peal.AiProviderConnectionChange{
+//	    WorkspaceID: "workspaceId",
+//	    Provider: peal.AiProviderAnthropic,
+//	}
+//	_, err := client.Assistant.ConnectProvider(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) ConnectProvider(
+	ctx context.Context,
+	request *peal.AiProviderConnectionChange,
+	opts ...option.RequestOption,
+) (*peal.AiProviderConnection, error) {
+	response, err := c.WithRawResponse.ConnectProvider(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+//
+// Example:
+//
+//	request := &peal.DisconnectProviderAssistantRequest{
+//	    WorkspaceID: "workspaceId",
+//	    Provider: peal.AiProviderAnthropic,
+//	}
+//	err := client.Assistant.DisconnectProvider(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) DisconnectProvider(
+	ctx context.Context,
+	request *peal.DisconnectProviderAssistantRequest,
+	opts ...option.RequestOption,
+) error {
+	_, err := c.WithRawResponse.DisconnectProvider(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with `model` (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+//
+// Example:
+//
+//	request := &peal.AiProviderTest{
+//	    WorkspaceID: "workspaceId",
+//	    Provider: peal.AiProviderAnthropic,
+//	}
+//	err := client.Assistant.TestProvider(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) TestProvider(
+	ctx context.Context,
+	request *peal.AiProviderTest,
+	opts ...option.RequestOption,
+) error {
+	_, err := c.WithRawResponse.TestProvider(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+//
+// Example:
+//
+//	request := &peal.ModelsAssistantRequest{
+//	    WorkspaceID: "workspaceId",
+//	}
+//	_, err := client.Assistant.Models(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) Models(
+	ctx context.Context,
+	request *peal.ModelsAssistantRequest,
+	opts ...option.RequestOption,
+) (*peal.AiCapabilityModels, error) {
+	response, err := c.WithRawResponse.Models(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and `model` is required (AiModelRequired) but for `composition`, whose model is always `edit`. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+//
+// Example:
+//
+//	request := &peal.AiCapabilityModelChange{
+//	    WorkspaceID: "workspaceId",
+//	    Capability: peal.AiCapabilityText,
+//	    Provider: peal.AiProviderAnthropic,
+//	}
+//	_, err := client.Assistant.SetModel(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) SetModel(
+	ctx context.Context,
+	request *peal.AiCapabilityModelChange,
+	opts ...option.RequestOption,
+) (*peal.AiCapabilityModel, error) {
+	response, err := c.WithRawResponse.SetModel(
+		ctx,
+		request,
+		opts...,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
+}
+
+// Leaves a use to the server's model, if it has one (`serverModel`), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+//
+// Example:
+//
+//	request := &peal.UnsetModelAssistantRequest{
+//	    WorkspaceID: "workspaceId",
+//	    Capability: peal.AiCapabilityText,
+//	}
+//	err := client.Assistant.UnsetModel(
+//	    context.TODO(),
+//	    request,
+//	)
+func (c *Client) UnsetModel(
+	ctx context.Context,
+	request *peal.UnsetModelAssistantRequest,
+	opts ...option.RequestOption,
+) error {
+	_, err := c.WithRawResponse.UnsetModel(
 		ctx,
 		request,
 		opts...,

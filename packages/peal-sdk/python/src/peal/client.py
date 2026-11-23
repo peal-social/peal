@@ -32,6 +32,7 @@ if typing.TYPE_CHECKING:
     from .invitations.client import AsyncInvitationsClient, InvitationsClient
     from .lookups.client import AsyncLookupsClient, LookupsClient
     from .media.client import AsyncMediaClient, MediaClient
+    from .media_audio.client import AsyncMediaAudioClient, MediaAudioClient
     from .members.client import AsyncMembersClient, MembersClient
     from .notices.client import AsyncNoticesClient, NoticesClient
     from .notification_preferences.client import AsyncNotificationPreferencesClient, NotificationPreferencesClient
@@ -45,10 +46,12 @@ if typing.TYPE_CHECKING:
     from .session.client import AsyncSessionClient, SessionClient
     from .short_links.client import AsyncShortLinksClient, ShortLinksClient
     from .signatures.client import AsyncSignaturesClient, SignaturesClient
+    from .slideshows.client import AsyncSlideshowsClient, SlideshowsClient
     from .system.client import AsyncSystemClient, SystemClient
     from .tags.client import AsyncTagsClient, TagsClient
     from .tiktok.client import AsyncTiktokClient, TiktokClient
     from .usage.client import AsyncUsageClient, UsageClient
+    from .video_generations.client import AsyncVideoGenerationsClient, VideoGenerationsClient
     from .webhooks.client import AsyncWebhooksClient, WebhooksClient
 
 
@@ -147,9 +150,12 @@ class Peal:
         self._posts: typing.Optional[PostsClient] = None
         self._articles: typing.Optional[ArticlesClient] = None
         self._media: typing.Optional[MediaClient] = None
+        self._media_audio: typing.Optional[MediaAudioClient] = None
         self._notices: typing.Optional[NoticesClient] = None
         self._notification_preferences: typing.Optional[NotificationPreferencesClient] = None
         self._assistant: typing.Optional[AssistantClient] = None
+        self._video_generations: typing.Optional[VideoGenerationsClient] = None
+        self._slideshows: typing.Optional[SlideshowsClient] = None
         self._members: typing.Optional[MembersClient] = None
         self._invitations: typing.Optional[InvitationsClient] = None
         self._billing: typing.Optional[BillingClient] = None
@@ -245,6 +251,14 @@ class Peal:
         return self._media
 
     @property
+    def media_audio(self):
+        if self._media_audio is None:
+            from .media_audio.client import MediaAudioClient  # noqa: E402
+
+            self._media_audio = MediaAudioClient(client_wrapper=self._client_wrapper)
+        return self._media_audio
+
+    @property
     def notices(self):
         if self._notices is None:
             from .notices.client import NoticesClient  # noqa: E402
@@ -267,6 +281,22 @@ class Peal:
 
             self._assistant = AssistantClient(client_wrapper=self._client_wrapper)
         return self._assistant
+
+    @property
+    def video_generations(self):
+        if self._video_generations is None:
+            from .video_generations.client import VideoGenerationsClient  # noqa: E402
+
+            self._video_generations = VideoGenerationsClient(client_wrapper=self._client_wrapper)
+        return self._video_generations
+
+    @property
+    def slideshows(self):
+        if self._slideshows is None:
+            from .slideshows.client import SlideshowsClient  # noqa: E402
+
+            self._slideshows = SlideshowsClient(client_wrapper=self._client_wrapper)
+        return self._slideshows
 
     @property
     def members(self):
@@ -617,9 +647,12 @@ class AsyncPeal:
         self._posts: typing.Optional[AsyncPostsClient] = None
         self._articles: typing.Optional[AsyncArticlesClient] = None
         self._media: typing.Optional[AsyncMediaClient] = None
+        self._media_audio: typing.Optional[AsyncMediaAudioClient] = None
         self._notices: typing.Optional[AsyncNoticesClient] = None
         self._notification_preferences: typing.Optional[AsyncNotificationPreferencesClient] = None
         self._assistant: typing.Optional[AsyncAssistantClient] = None
+        self._video_generations: typing.Optional[AsyncVideoGenerationsClient] = None
+        self._slideshows: typing.Optional[AsyncSlideshowsClient] = None
         self._members: typing.Optional[AsyncMembersClient] = None
         self._invitations: typing.Optional[AsyncInvitationsClient] = None
         self._billing: typing.Optional[AsyncBillingClient] = None
@@ -715,6 +748,14 @@ class AsyncPeal:
         return self._media
 
     @property
+    def media_audio(self):
+        if self._media_audio is None:
+            from .media_audio.client import AsyncMediaAudioClient  # noqa: E402
+
+            self._media_audio = AsyncMediaAudioClient(client_wrapper=self._client_wrapper)
+        return self._media_audio
+
+    @property
     def notices(self):
         if self._notices is None:
             from .notices.client import AsyncNoticesClient  # noqa: E402
@@ -737,6 +778,22 @@ class AsyncPeal:
 
             self._assistant = AsyncAssistantClient(client_wrapper=self._client_wrapper)
         return self._assistant
+
+    @property
+    def video_generations(self):
+        if self._video_generations is None:
+            from .video_generations.client import AsyncVideoGenerationsClient  # noqa: E402
+
+            self._video_generations = AsyncVideoGenerationsClient(client_wrapper=self._client_wrapper)
+        return self._video_generations
+
+    @property
+    def slideshows(self):
+        if self._slideshows is None:
+            from .slideshows.client import AsyncSlideshowsClient  # noqa: E402
+
+            self._slideshows = AsyncSlideshowsClient(client_wrapper=self._client_wrapper)
+        return self._slideshows
 
     @property
     def members(self):

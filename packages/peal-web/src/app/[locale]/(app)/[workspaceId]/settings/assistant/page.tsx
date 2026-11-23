@@ -1,14 +1,14 @@
 import { hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 
-import { ImageProviderSettings } from "#components/assistant/image-provider-settings.tsx";
-import { TextProviderSettings } from "#components/assistant/text-provider-settings.tsx";
+import { AiSettings } from "#components/assistant/ai-settings.tsx";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 
-// The assistant's settings: the text and image providers the workspace
-// brings, for members with assistant:configure (owners and admins).
+// The assistant's settings: the AI providers the workspace connects with
+// its own keys, and the model it uses for each use, for members with
+// assistant:configure (owners and admins).
 const AssistantSettingsPage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/settings/assistant">) => {
@@ -24,12 +24,7 @@ const AssistantSettingsPage = async ({
     notFound();
   }
 
-  return (
-    <div className="flex flex-col gap-10">
-      <TextProviderSettings workspaceId={workspace.id} />
-      <ImageProviderSettings workspaceId={workspace.id} />
-    </div>
-  );
+  return <AiSettings workspaceId={workspace.id} />;
 };
 
 export const generateMetadata = workspacePageTitle("assistant");

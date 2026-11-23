@@ -130,6 +130,30 @@ const eventView = (event: NoticeEvent): NoticeEventView =>
       reason,
       ruleId,
     }),
+    VideoGenerationEnded: ({
+      generationId,
+      mediaId,
+      outcome,
+      reason,
+    }): NoticeEventView => ({
+      _tag: "VideoGenerationEnded",
+      generationId,
+      mediaId: Option.getOrNull(mediaId),
+      outcome,
+      reason: Option.getOrNull(reason),
+    }),
+    SlideshowEnded: ({
+      mediaId,
+      outcome,
+      reason,
+      slideshowId,
+    }): NoticeEventView => ({
+      _tag: "SlideshowEnded",
+      mediaId: Option.getOrNull(mediaId),
+      outcome,
+      reason: Option.getOrNull(reason),
+      slideshowId,
+    }),
     PostApprovalRequested: ({ postId, scheduledAt }): NoticeEventView => ({
       _tag: "PostApprovalRequested",
       postId,

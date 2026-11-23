@@ -5,7 +5,6 @@ import { Cause, Exit, Option } from "effect";
 import { AsyncResult, Atom } from "effect/reactivity";
 import { UploadIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { MediaContentTypeSchema } from "peal-contract";
 import type { Media } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import {
@@ -40,12 +39,14 @@ import {
 } from "#media/alt-text-draft.ts";
 import type { AltTextDraft, AltTextSaving } from "#media/alt-text-draft.ts";
 import { describeUpload, upload, uploadProgress } from "#media/atoms.ts";
+import { pickerAccept } from "#media/content-type.ts";
 import { UploadFailed } from "#media/upload-failed.ts";
 
 import { useFileSize } from "./use-file-size.ts";
 
-// What the file picker offers: the content types the API takes.
-const accept = MediaContentTypeSchema.literals.join(",");
+// What the file picker offers: the content types the API takes, and the
+// other names browsers give them.
+const accept = pickerAccept;
 
 // The longest description the API keeps.
 const maxAltTextLength = 2000;

@@ -6,10 +6,8 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { ApprovalPolicySchema } from "peal-contract";
 import type { ApprovalPolicy } from "peal-contract";
-import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
-import type { SubmitEvent } from "react";
 
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import {
@@ -35,7 +33,7 @@ export const PolicyFields = ({
 
   return (
     <fieldset className="flex flex-col gap-3" disabled={disabled}>
-      <legend className="mb-3 text-sm font-medium">{t("legend")}</legend>
+      <legend className="sr-only">{t("legend")}</legend>
       {ApprovalPolicySchema.literals.map((policy) => {
         const id = `${name}-${policy}`;
 
@@ -67,7 +65,8 @@ export const PolicyFields = ({
   );
 };
 
-// The form, once the workspace's policy is known.
+// The choice, once the workspace's policy is known: saved as soon as
+// another policy is chosen, and put back when it could not be.
 const LoadedForm = ({
   current,
   workspaceId,
@@ -80,37 +79,33 @@ const LoadedForm = ({
   const [policy, setPolicy] = useState(current);
   const [isPending, startTransition] = useTransition();
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleChange = (chosen: ApprovalPolicy) => {
+    if (chosen === policy) {
+      return;
+    }
+
+    const before = policy;
+
+    setPolicy(chosen);
 
     startTransition(async () => {
       const exit = await update({
         params: { workspaceId },
-        payload: { approvalPolicy: policy },
+        payload: { approvalPolicy: chosen },
         reactivityKeys: reviewKeys,
       });
 
       if (Exit.isSuccess(exit)) {
         toast.success(t("saved"));
       } else {
+        setPolicy(before);
         toast.error(t("saveFailed"));
       }
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <PolicyFields disabled={isPending} value={policy} onChange={setPolicy} />
-      <div>
-        <Button
-          type="submit"
-          disabled={isPending || policy === current}
-          focusableWhenDisabled
-        >
-          {isPending ? t("saving") : t("save")}
-        </Button>
-      </div>
-    </form>
+    <PolicyFields disabled={isPending} value={policy} onChange={handleChange} />
   );
 };
 
@@ -119,7 +114,7 @@ const LoadedPolicy = ({ workspaceId }: { readonly workspaceId: string }) => {
   const settings = useAtomValue(reviewSettings(workspaceId));
 
   if (AsyncResult.isFailure(settings)) {
-    return <p className="text-sm">{t("loadFailed")}</p>;
+    return <p className="text-muted-foreground text-sm">{t("loadFailed")}</p>;
   }
 
   return AsyncResult.isSuccess(settings) ? (

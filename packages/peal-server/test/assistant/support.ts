@@ -2,7 +2,6 @@ import type { Schema } from "effect";
 import { Context, Effect, Layer, Option, Ref, Stream } from "effect";
 import { AiError, LanguageModel } from "effect/ai";
 import type { Prompt, Response } from "effect/ai";
-import { FetchHttpClient } from "effect/http";
 import { Dns } from "effect/net";
 import { SqlClient } from "effect/sql";
 
@@ -10,19 +9,18 @@ import { AssistantAllowance } from "#assistant/application/ports/assistant-allow
 import { GeneratedImages } from "#assistant/application/ports/generated-images.ts";
 import { ProviderAddressCheck } from "#assistant/application/ports/provider-address-check.ts";
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
+import { ProviderStoresLive } from "#assistant/container.ts";
 import { ProviderAddressSchema } from "#assistant/domain/image-provider.ts";
 import { CipherProviderSecrets } from "#assistant/infrastructure/cipher-provider-secrets.ts";
 import { CountedImageSlots } from "#assistant/infrastructure/counted-image-slots.ts";
 import { CountedTextSlots } from "#assistant/infrastructure/counted-text-slots.ts";
 import { DrizzleAssistantUsageLive } from "#assistant/infrastructure/drizzle-assistant-usage.ts";
-import { DrizzleImageProvidersLive } from "#assistant/infrastructure/drizzle-image-providers.ts";
 import { DrizzleOwnImageCountsLive } from "#assistant/infrastructure/drizzle-own-image-counts.ts";
 import { DrizzleOwnTextCountsLive } from "#assistant/infrastructure/drizzle-own-text-counts.ts";
-import { DrizzleTextProvidersLive } from "#assistant/infrastructure/drizzle-text-providers.ts";
 import { GuardedProviderAddressCheck } from "#assistant/infrastructure/guarded-provider-address-check.ts";
 import { languageModelWritingModel } from "#assistant/infrastructure/language-model-writing-model.ts";
 import { LibraryGeneratedImagesLive } from "#assistant/infrastructure/library-generated-images.ts";
-import { openAiCompatibleOwnImageModel } from "#assistant/infrastructure/openai-compatible-own-image-model.ts";
+import { ownImageModel } from "#assistant/infrastructure/own-image-model.ts";
 import { PublishingPlatformLimitsLive } from "#assistant/infrastructure/publishing-platform-limits.ts";
 import { UnavailableImageModelLive } from "#assistant/infrastructure/unavailable-image-model.ts";
 import { UnavailableWritingModelLive } from "#assistant/infrastructure/unavailable-writing-model.ts";
@@ -37,9 +35,13 @@ import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { MigrationsLive } from "#shared/infrastructure/migrations.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
+import { assistantAudioTest } from "#test/assistant/audio-support.ts";
+import type { AudioScript } from "#test/assistant/audio-support.ts";
 import { FakeImageModelLive } from "#test/assistant/fake-image-model.ts";
 import { FakeOwnImageModelLive } from "#test/assistant/fake-own-image-model.ts";
 import { FakeOwnWritingModelLive } from "#test/assistant/fake-own-writing-model.ts";
+import { assistantSlideshowsTest } from "#test/assistant/slideshow-support.ts";
+import { assistantVideosTest } from "#test/assistant/video-support.ts";
 import { UnmeteredTest } from "#test/billing/support.ts";
 import { OpenOutboundGuard, TokenCipherTest } from "#test/channels/support.ts";
 import { mediaTestWith } from "#test/media/support.ts";
@@ -196,6 +198,14 @@ export const FullLibrary = Layer.succeed(
  * ones, and one that leads inside, as an attacker would set it up.
  */
 export const providerHosts = {
+  // Providers' own addresses, which a provider named alone is reached at.
+  "api.anthropic.com": ["93.184.215.16"],
+  "api.deepseek.com": ["93.184.215.17"],
+  "api.elevenlabs.io": ["93.184.215.20"],
+  "api.groq.com": ["93.184.215.21"],
+  "api.openai.com": ["93.184.215.19"],
+  "api.shotstack.io": ["93.184.215.22"],
+  "api.x.ai": ["93.184.215.18"],
   "images.example.com": ["93.184.215.14"],
   "images.internal.example": ["10.0.0.8"],
   "other-images.example.com": ["93.184.215.15"],
@@ -207,10 +217,7 @@ export const providerHosts = {
  * checked by the real outbound guard on `providerHosts`; and a fake
  * provider behind them (FakeOwnImageModel), which no request leaves.
  */
-const SealedImageProviders = Layer.mergeAll(
-  DrizzleImageProvidersLive,
-  DrizzleTextProvidersLive
-).pipe(
+const SealedImageProviders = ProviderStoresLive.pipe(
   Layer.provide(CipherProviderSecrets.pipe(Layer.provide(TokenCipherTest))),
   Layer.orDie
 );
@@ -261,9 +268,8 @@ export const LoopbackImageProvidersTest = Layer.mergeAll(
   CountedTextSlots,
   FakeOwnWritingModelLive,
   AnyProviderAddress,
-  openAiCompatibleOwnImageModel({ timeout: "10 seconds" }).pipe(
-    Layer.provide(OpenOutboundGuard),
-    Layer.provide(FetchHttpClient.layer)
+  ownImageModel({ timeout: "10 seconds" }).pipe(
+    Layer.provide(OpenOutboundGuard)
   )
 );
 
@@ -281,18 +287,26 @@ export const DatabaseTest = Layer.mergeAll(MigrationsLive, IdsLive).pipe(
  * starts with a fresh script; it needs DatabaseTest.
  */
 export const assistantTest = ({
+  audio = {},
   dailyRequests = 3,
   meters = fakeMeters({ allowed: Option.none() }),
   metered = false,
   model = "fake",
 }: {
+  /** How the audio providers and the library behave. */
+  readonly audio?: AudioScript;
   readonly dailyRequests?: number;
   /** The meters, as a server that bills claims them (`metered`). */
   readonly meters?: Layer.Layer<MeteredUsage | FakeMetersLedger>;
   readonly metered?: boolean;
   readonly model?: "fake" | "off";
 } = {}) =>
-  WritingAssistant.layer.pipe(
+  Layer.mergeAll(
+    WritingAssistant.layer,
+    assistantVideosTest(),
+    assistantSlideshowsTest(),
+    assistantAudioTest(audio)
+  ).pipe(
     Layer.provide(
       Layer.mergeAll(
         DrizzleAssistantUsageLive,
@@ -345,10 +359,19 @@ export const freshWorkspace = Effect.gen(function* freshWorkspace() {
         sql`DELETE FROM assistant.own_image_days WHERE workspace_id = ${workspaceId}`
       ),
       Effect.andThen(
+        sql`DELETE FROM assistant.own_audio_days WHERE workspace_id = ${workspaceId}`
+      ),
+      Effect.andThen(
         sql`DELETE FROM assistant.text_providers WHERE workspace_id = ${workspaceId}`
       ),
       Effect.andThen(
         sql`DELETE FROM assistant.own_text_days WHERE workspace_id = ${workspaceId}`
+      ),
+      Effect.andThen(
+        sql`DELETE FROM assistant.provider_connections WHERE workspace_id = ${workspaceId}`
+      ),
+      Effect.andThen(
+        sql`DELETE FROM assistant.video_generations WHERE workspace_id = ${workspaceId}`
       ),
       Effect.ignore
     )
@@ -425,7 +448,12 @@ export const imagesTest = ({
    */
   readonly providers?: "fake" | "loopback";
 } = {}) =>
-  WritingAssistant.layer.pipe(
+  Layer.mergeAll(
+    WritingAssistant.layer,
+    assistantVideosTest(),
+    assistantSlideshowsTest(),
+    assistantAudioTest()
+  ).pipe(
     Layer.provide(
       Layer.mergeAll(
         DrizzleAssistantUsageLive,

@@ -9,6 +9,7 @@ import { ProviderSecretsNotConfigured } from "#assistant/application/provider-se
 import {
   EncryptedTokenSchema,
   imageProviderContext,
+  providerConnectionContext,
   textProviderContext,
   TokenCipher,
   tokenKeyIdOf,
@@ -22,14 +23,21 @@ const contextOf = (
   workspaceId: WorkspaceId,
   address: string,
   use: ProviderUse
-) =>
-  use === "images"
-    ? imageProviderContext(workspaceId, address)
-    : textProviderContext(workspaceId, address);
+) => {
+  if (use === "images") {
+    return imageProviderContext(workspaceId, address);
+  }
+
+  return use === "text"
+    ? textProviderContext(workspaceId, address)
+    : providerConnectionContext(workspaceId, use.connection, address);
+};
 
 /**
  * Workspaces' provider keys on the channels context's token cipher:
  * encrypted with the server's keyring (`PEAL_TOKEN_KEYS`), bound to
+ * `assistant:provider:<workspace id>:<provider>:<address>` for a
+ * connected provider, and, for the keys the release before kept,
  * `assistant:<workspace id>:<address>` for images and
  * `assistant:text:<workspace id>:<address>` for text. Peal keeps one cipher, so a
  * rotation reaches these keys too: nothing here encrypts on its own. A

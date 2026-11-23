@@ -1,5 +1,6 @@
 import { Result, Schema } from "effect";
 
+import type { ImageAspect } from "./image-aspect.ts";
 import { ProviderAddressRejected } from "./provider-address-rejected.ts";
 import { ProviderSettingRejected } from "./provider-setting-rejected.ts";
 
@@ -33,15 +34,98 @@ export const ProviderModelSchema = Schema.NonEmptyString.check(
 export type ProviderModel = typeof ProviderModelSchema.Type;
 
 /**
- * The settings of the image provider a workspace brought: its address, its
- * model and when they were saved. Its key is kept apart, sealed, and never
- * part of them.
+ * The providers Peal makes images with (`aiImageProviders` in
+ * `peal-contract/ai-providers`, kept equal by
+ * `test/assistant/api/contract.test.ts`): each has an adapter of its own,
+ * or is any endpoint serving `/images/generations` (`openai-compatible`).
+ */
+export const ImageProviderIdSchema = Schema.Literals([
+  "openai",
+  "google",
+  "xai",
+  "togetherai",
+  "openai-compatible",
+  "fal",
+]);
+
+export type ImageProviderId = typeof ImageProviderIdSchema.Type;
+
+/**
+ * Where each provider's images API is reached when no address is given,
+ * as the contract's catalogue offers it; `openai-compatible` has none.
+ */
+export const imageProviderAddresses: Readonly<
+  Record<ImageProviderId, string | null>
+> = {
+  fal: "https://fal.run",
+  google: "https://generativelanguage.googleapis.com/v1beta",
+  openai: "https://api.openai.com/v1",
+  "openai-compatible": null,
+  togetherai: "https://api.together.xyz/v1",
+  xai: "https://api.x.ai/v1",
+};
+
+/** How an image's dimensions are asked for: in pixels, or as a ratio. */
+export type ImageDimensions =
+  | { readonly size: `${number}x${number}` }
+  | { readonly aspectRatio: `${number}:${number}` };
+
+// Width by height, as the OpenAI images API and those that speak it take
+// them: the sizes current models make.
+const pixelSizes: Readonly<Record<ImageAspect, ImageDimensions>> = {
+  landscape: { size: "1536x1024" },
+  portrait: { size: "1024x1536" },
+  square: { size: "1024x1024" },
+};
+
+// The same dimensions as ratios, for an API that takes no size.
+const ratios: Readonly<Record<ImageAspect, ImageDimensions>> = {
+  landscape: { aspectRatio: "3:2" },
+  portrait: { aspectRatio: "2:3" },
+  square: { aspectRatio: "1:1" },
+};
+
+// fal's FLUX models: its package turns these ratios into its own sizes
+// (`landscape_4_3`, `portrait_4_3`, `square_hd`).
+const falRatios: Readonly<Record<ImageAspect, ImageDimensions>> = {
+  landscape: { aspectRatio: "4:3" },
+  portrait: { aspectRatio: "3:4" },
+  square: { aspectRatio: "1:1" },
+};
+
+/**
+ * How each provider is asked for each of Peal's aspects, as the
+ * contract's catalogue says: Gemini and xAI take ratios alone, the others
+ * sizes.
+ */
+export const imageDimensionsByProvider: Readonly<
+  Record<ImageProviderId, Readonly<Record<ImageAspect, ImageDimensions>>>
+> = {
+  fal: falRatios,
+  google: ratios,
+  openai: pixelSizes,
+  "openai-compatible": pixelSizes,
+  togetherai: pixelSizes,
+  xai: ratios,
+};
+
+/** The dimensions a provider is asked for, for an image of this aspect. */
+export const imageDimensionsOf = (
+  provider: ImageProviderId,
+  aspect: ImageAspect
+): ImageDimensions => imageDimensionsByProvider[provider][aspect];
+
+/**
+ * The settings of the image provider a workspace brought: the provider,
+ * its address, its model and when they were saved. Its key is kept apart,
+ * sealed, and never part of them.
  */
 export class ImageProviderSettings extends Schema.Class<ImageProviderSettings>(
   "peal-server/assistant/domain/ImageProviderSettings"
 )({
   baseUrl: ProviderAddressSchema,
   model: ProviderModelSchema,
+  provider: ImageProviderIdSchema,
   updatedAt: Schema.DateTimeUtc,
 }) {}
 

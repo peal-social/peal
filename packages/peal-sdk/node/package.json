@@ -106,6 +106,17 @@
       },
       "default": "./dist/cjs/api/resources/media/exports.js"
     },
+    "./mediaAudio": {
+      "import": {
+        "types": "./dist/esm/api/resources/mediaAudio/exports.d.mts",
+        "default": "./dist/esm/api/resources/mediaAudio/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/mediaAudio/exports.d.ts",
+        "default": "./dist/cjs/api/resources/mediaAudio/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/mediaAudio/exports.js"
+    },
     "./notices": {
       "import": {
         "types": "./dist/esm/api/resources/notices/exports.d.mts",
@@ -138,6 +149,28 @@
         "default": "./dist/cjs/api/resources/assistant/exports.js"
       },
       "default": "./dist/cjs/api/resources/assistant/exports.js"
+    },
+    "./videoGenerations": {
+      "import": {
+        "types": "./dist/esm/api/resources/videoGenerations/exports.d.mts",
+        "default": "./dist/esm/api/resources/videoGenerations/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/videoGenerations/exports.d.ts",
+        "default": "./dist/cjs/api/resources/videoGenerations/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/videoGenerations/exports.js"
+    },
+    "./slideshows": {
+      "import": {
+        "types": "./dist/esm/api/resources/slideshows/exports.d.mts",
+        "default": "./dist/esm/api/resources/slideshows/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/slideshows/exports.d.ts",
+        "default": "./dist/cjs/api/resources/slideshows/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/slideshows/exports.js"
     },
     "./members": {
       "import": {

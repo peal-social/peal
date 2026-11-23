@@ -13,6 +13,10 @@ import { errorEnvelope } from "./error-envelope.ts";
  * - `notPublic`: its host is, or resolves to, an address that is not
  *   public (loopback, private, link-local and the like).
  * - `unknownHost`: its host name does not resolve.
+ * - `fixedAddress`: the provider is reached at its own address alone
+ *   (`fixedAddress` in `peal-contract/ai-providers`), and this is another.
+ *
+ * New reasons join the end of the list.
  */
 export const ImageProviderAddressRefusalSchema = Schema.Literals([
   "malformed",
@@ -22,6 +26,7 @@ export const ImageProviderAddressRefusalSchema = Schema.Literals([
   "tooLong",
   "notPublic",
   "unknownHost",
+  "fixedAddress",
 ]).annotate({ identifier: "ImageProviderAddressRefusal" });
 
 export type ImageProviderAddressRefusal =

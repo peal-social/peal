@@ -22,6 +22,7 @@ import { InboxRulesClient } from "./api/resources/inboxRules/client/Client.js";
 import { InvitationsClient } from "./api/resources/invitations/client/Client.js";
 import { LookupsClient } from "./api/resources/lookups/client/Client.js";
 import { MediaClient } from "./api/resources/media/client/Client.js";
+import { MediaAudioClient } from "./api/resources/mediaAudio/client/Client.js";
 import { MembersClient } from "./api/resources/members/client/Client.js";
 import { NoticesClient } from "./api/resources/notices/client/Client.js";
 import { NotificationPreferencesClient } from "./api/resources/notificationPreferences/client/Client.js";
@@ -35,10 +36,12 @@ import { ReviewClient } from "./api/resources/review/client/Client.js";
 import { SessionClient } from "./api/resources/session/client/Client.js";
 import { ShortLinksClient } from "./api/resources/shortLinks/client/Client.js";
 import { SignaturesClient } from "./api/resources/signatures/client/Client.js";
+import { SlideshowsClient } from "./api/resources/slideshows/client/Client.js";
 import { SystemClient } from "./api/resources/system/client/Client.js";
 import { TagsClient } from "./api/resources/tags/client/Client.js";
 import { TiktokClient } from "./api/resources/tiktok/client/Client.js";
 import { UsageClient } from "./api/resources/usage/client/Client.js";
+import { VideoGenerationsClient } from "./api/resources/videoGenerations/client/Client.js";
 import { WebhooksClient } from "./api/resources/webhooks/client/Client.js";
 import type { BaseClientOptions, BaseRequestOptions } from "./BaseClient.js";
 import { normalizeClientOptionsWithAuth, type NormalizedClientOptionsWithAuth } from "./BaseClient.js";
@@ -62,9 +65,12 @@ export class PealClient {
     protected _posts: PostsClient | undefined;
     protected _articles: ArticlesClient | undefined;
     protected _media: MediaClient | undefined;
+    protected _mediaAudio: MediaAudioClient | undefined;
     protected _notices: NoticesClient | undefined;
     protected _notificationPreferences: NotificationPreferencesClient | undefined;
     protected _assistant: AssistantClient | undefined;
+    protected _videoGenerations: VideoGenerationsClient | undefined;
+    protected _slideshows: SlideshowsClient | undefined;
     protected _members: MembersClient | undefined;
     protected _invitations: InvitationsClient | undefined;
     protected _billing: BillingClient | undefined;
@@ -132,6 +138,10 @@ export class PealClient {
         return (this._media ??= new MediaClient(this._options));
     }
 
+    public get mediaAudio(): MediaAudioClient {
+        return (this._mediaAudio ??= new MediaAudioClient(this._options));
+    }
+
     public get notices(): NoticesClient {
         return (this._notices ??= new NoticesClient(this._options));
     }
@@ -142,6 +152,14 @@ export class PealClient {
 
     public get assistant(): AssistantClient {
         return (this._assistant ??= new AssistantClient(this._options));
+    }
+
+    public get videoGenerations(): VideoGenerationsClient {
+        return (this._videoGenerations ??= new VideoGenerationsClient(this._options));
+    }
+
+    public get slideshows(): SlideshowsClient {
+        return (this._slideshows ??= new SlideshowsClient(this._options));
     }
 
     public get members(): MembersClient {

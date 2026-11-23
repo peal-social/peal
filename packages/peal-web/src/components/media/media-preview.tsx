@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AudioLinesIcon,
   ExternalLinkIcon,
   FileTextIcon,
   FilmIcon,
@@ -19,6 +20,7 @@ import {
 import { useMediaFacts } from "./use-media-facts.ts";
 
 const icons = {
+  audio: AudioLinesIcon,
   document: FileTextIcon,
   image: ImageIcon,
   video: FilmIcon,
@@ -35,8 +37,8 @@ export const useMediaName = (): ((media: Media) => string) => {
   return (media) => media.fileName ?? t("kind", { kind: media.kind });
 };
 
-// The file at the size the window allows: an image whole, a video to
-// play. A document is handed to the browser in a tab of its own, never
+// The file at the size the window allows: an image whole, a video or an
+// audio file to play. A document is handed to the browser in a tab of its own, never
 // shown here; neither is a file the store does not hold.
 const LargeFile = ({ media }: { readonly media: Media }) => {
   const t = useTranslations("Media.library");
@@ -66,6 +68,23 @@ const LargeFile = ({ media }: { readonly media: Media }) => {
           {t("openDocument")}
           <ExternalLinkIcon aria-hidden className="size-3.5" />
         </a>
+      </div>
+    );
+  }
+
+  if (media.kind === "audio") {
+    return (
+      <div className="bg-muted flex h-48 flex-col items-center justify-center gap-3 rounded-md px-4">
+        <AudioLinesIcon aria-hidden className="text-muted-foreground size-8" />
+        <audio
+          src={url}
+          controls
+          preload="metadata"
+          aria-label={media.altText ?? undefined}
+          className="w-full max-w-md"
+        >
+          <track kind="captions" />
+        </audio>
       </div>
     );
   }

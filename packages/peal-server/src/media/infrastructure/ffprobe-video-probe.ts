@@ -9,6 +9,7 @@ import type {
   MediaSource,
   ProbeOutcome,
 } from "#media/application/ports/media-probe.ts";
+import type { MediaContentType } from "#media/domain/media-format.ts";
 import { maxDuration, MediaMetadata } from "#media/domain/media-metadata.ts";
 import { storableLine } from "#shared/domain/platform-text.ts";
 
@@ -46,6 +47,8 @@ const positive = (value: number | undefined): Option.Option<number> =>
  */
 export const metadataFromFfprobe = (output: FfprobeOutput): MediaMetadata => {
   const video = output.streams?.find((stream) => stream.codec_type === "video");
+  // An audio file has no video stream: its codec is its audio's.
+  const audio = output.streams?.find((stream) => stream.codec_type === "audio");
 
   const rotation =
     video?.side_data_list?.find((data) => data.rotation !== undefined)
@@ -65,7 +68,7 @@ export const metadataFromFfprobe = (output: FfprobeOutput): MediaMetadata => {
   return new MediaMetadata({
     // The file names its codec: kept as one short line, like any text
     // Peal did not write.
-    codec: Option.fromUndefinedOr(video?.codec_name).pipe(
+    codec: Option.fromUndefinedOr(video?.codec_name ?? audio?.codec_name).pipe(
       Option.map((codec) => storableLine(codec, 64)),
       Option.filter((codec) => codec.length > 0)
     ),
@@ -82,16 +85,26 @@ export const metadataFromFfprobe = (output: FfprobeOutput): MediaMetadata => {
 
 const probeTimeout = Duration.minutes(1);
 
+// The demuxer each format is read with: MP4, QuickTime and M4A share one.
+const demuxers: Readonly<Partial<Record<MediaContentType, string>>> = {
+  "audio/mp4": "mov",
+  "audio/mpeg": "mp3",
+  "audio/wav": "wav",
+};
+
 // ffprobe reads the file over HTTP(S), never from disk or another protocol,
-// and only with the demuxer for MP4 and QuickTime, so a file posing as a
+// and only with the demuxer for its format, so a file posing as a
 // playlist cannot make it fetch anything else.
-const ffprobeArguments = (url: string): readonly string[] => [
+const ffprobeArguments = (
+  url: string,
+  contentType: MediaContentType
+): readonly string[] => [
   "-v",
   "error",
   "-protocol_whitelist",
   "http,https,tcp,tls",
   "-f",
-  "mov",
+  demuxers[contentType] ?? "mov",
   "-print_format",
   "json",
   "-show_entries",
@@ -133,11 +146,11 @@ export const makeFfprobeVideoProbe = Effect.fn("FfprobeVideoProbe.make")(
         )
       );
 
-    const run = (url: string) =>
+    const run = (url: string, contentType: MediaContentType) =>
       Effect.scoped(
         Effect.gen(function* runFfprobe() {
           const handle = yield* spawner.spawn(
-            ChildProcess.make(program, ffprobeArguments(url))
+            ChildProcess.make(program, ffprobeArguments(url, contentType))
           );
 
           return yield* Effect.all(
@@ -154,7 +167,7 @@ export const makeFfprobeVideoProbe = Effect.fn("FfprobeVideoProbe.make")(
     return Effect.fn("FfprobeVideoProbe.probe")(function* probe(
       source: MediaSource
     ) {
-      const ran = yield* run(source.url).pipe(
+      const ran = yield* run(source.url, source.contentType).pipe(
         Effect.map(Option.some),
         Effect.catchIf(isMissingProgram, () => Effect.succeed(Option.none())),
         Effect.timeout(probeTimeout),

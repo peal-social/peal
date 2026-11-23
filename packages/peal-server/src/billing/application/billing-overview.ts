@@ -27,7 +27,7 @@ import {
 import type { Allowances } from "#billing/domain/plans.ts";
 import { accountsCharge, rateCard } from "#billing/domain/rate-card.ts";
 import type { RateCard } from "#billing/domain/rate-card.ts";
-import { billsAt } from "#billing/domain/subscription.ts";
+import { billsAt, paidWith } from "#billing/domain/subscription.ts";
 import type {
   Subscription,
   SubscriptionStatus,
@@ -159,10 +159,6 @@ const noMonth: Month = {
 
 // Cents of the rate card's currency.
 const dollars = (amount: number): Money => ({ amount, currency: "usd" });
-
-// A subscription paid with a payment method: a trial needs none.
-const paidWith = (status: SubscriptionStatus): boolean =>
-  status === "active" || status === "past_due";
 
 const priceOfPlan = (plan: LegacyPlan): Option.Option<PlanPrice> =>
   plan === "free" ? Option.none() : Option.some(planPrices[plan]);

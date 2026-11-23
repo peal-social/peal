@@ -65,6 +65,40 @@
   text assistant stays without a command, as an agent writes its own text.
   Its answer says the file is marked as made by AI and that the post's
   options carry the platforms' AI labels.
+- `peal media video` (`commands/media-video.ts`: generate, status, list)
+  follows `videoGenerations`: `generate --prompt … [--aspect]
+  [--duration <seconds>] [--image <media-id>]` answers the queued job at
+  once; `--wait` reads it every 5 seconds (`videoPollInterval`) for up to
+  30 minutes (`videoWaitBound`), then prints the media id, or ends as a
+  refusal (`video_failed`) with the reason in words (`videoLine`). Only
+  the workspace's own provider makes videos, chosen with `peal assistant
+  models set video`. The studio answers from `test/studio-videos.ts`
+  (`StudioState.videos`: a video is running on its first read, then ends).
+- `peal media slideshow` (`commands/media-slideshow.ts`: create, status,
+  list) follows `slideshows`: `create --image <id>` (2 to 10, in order)
+  with `--caption` and `--motion` paired with them by position
+  (`slidesOf`: a blank caption is none, a single `--motion` moves every
+  slide), `--transition`, `--voiceover`, `--aspect` (portrait unless
+  given) and `--seconds`; the count, the pairing and the seconds are
+  refused before any request. `--wait` reads it as `media video` does
+  (`slideshowPollInterval`, `slideshowWaitBound`), ending as a refusal
+  (`slideshow_failed`) with the reason in words (`slideshowLine`). The
+  service is the workspace's own Shotstack, connected with `peal
+  assistant providers connect shotstack [--sandbox]` (`--sandbox` sends
+  the provider's `composition.sandboxUrl`, refused for a provider without
+  one or beside `--base-url`) and chosen with `peal assistant models set
+  composition --provider shotstack`, the one use whose `--model` may be
+  left out (refused for the others before any request). The studio
+  answers from `test/studio-slideshows.ts` (`StudioState.slideshows`; the
+  first caption stands for the refusals).
+- `peal media voiceover --text … [--voice …]` and `peal media transcribe
+  <media-id> [--save-description]` (`commands/media-audio.ts`) follow
+  `mediaAudio`: a voice-over answers the new audio file, a transcript
+  prints its text, then whether it became the description. Only the
+  workspace's own providers make them, chosen with `peal assistant models
+  set speech|transcription`. The studio answers them in `studioGroupsLive`
+  (`test/studio.ts`): a text with "unavailable" stands for a workspace
+  without a speech model, `readyMediaId` for a recording.
 - `peal channels connect-website <address> --user <login>` connects a
   WordPress site (`channels.connectSite`): the application password is
   read with `readSecret` (typed without echo, or piped in), never an
@@ -134,7 +168,11 @@
   description; `peal media delete <id>` reads `media.usage` first to say
   which drafts lose it, then asks (`confirmed`, `--yes`; `neverAsksInJson`).
 - `peal assistant image-provider` (`commands/assistant.ts`: show, set,
-  clear) keeps the workspace's own image provider (assistant:configure).
+  clear) keeps the workspace's own image provider (assistant:configure):
+  `set --provider <id>` (an image provider of `peal-contract/ai-providers`,
+  `openai-compatible` when left out), `--base-url` sent only when given,
+  the server then taking the provider's own address; `show` prints the
+  provider by its catalogue name and id.
   The key is never an argument: `set` reads it with `readSecret`
   (`src/secret-input.ts`), effect/cli's `Prompt.Hidden` (no echo) at a
   terminal, else standard input to its end (4 KiB at most, the last line
@@ -142,10 +180,25 @@
   the origin stays. `clear` asks first (`confirmed`, `--yes`). Tests pipe
   standard input with `signedIn(...).piping(text)`.
 - `peal assistant text-provider` (show, set, test, clear) keeps the
-  workspace's own text provider the same way: `set --kind anthropic|
-  openai-compatible --model …`, `--base-url` defaulting to Anthropic's
-  address for `anthropic`; `test` sends it one request. The server leaves
-  `assistant:configure` to no OAuth client but this command line.
+  workspace's own text provider the same way: `set --provider <id>
+  --model …` (an id of `peal-contract/ai-providers`), or `--kind anthropic|
+  openai-compatible` without it; `--base-url` is sent only when given, the
+  server then taking the provider's own address (`openai-compatible` has
+  none). `show` prints the provider by its catalogue name and id; `test`
+  sends it one request. The server leaves
+  `assistant:configure` to no OAuth client but this command line. Both
+  groups are deprecated, as their endpoints are (their descriptions say
+  so), and keep working on the server's connections.
+- `peal assistant providers` (list, connect, test, disconnect) keeps the
+  providers the workspace connects with its own key, one per provider:
+  `connect <provider>` (an id of `peal-contract/ai-providers`, positional)
+  with `--base-url` sent only when given and the key read with
+  `readSecret` (`--keep-key` sends none); `test <provider> [--model]`;
+  `disconnect` asks first (`confirmed`, `--yes`). `peal assistant models`
+  (list, set, unset) chooses each use's provider and model: `set
+  <capability> --provider … --model …`, `unset <capability>` (the
+  provider stays connected); `list` says the server's model or off for a
+  use without one.
 - `peal doctor` checks a configuration and changes nothing (the API URL and
   where it came from, health, readiness, the API's latest release, which
   credential is used and whether it works, the publish scope, the workspace

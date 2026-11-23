@@ -2,6 +2,11 @@ import { DateTime, Effect, Layer, Option, Ref, Result, Stream } from "effect";
 import { HttpRouter } from "effect/http";
 import { HttpApiBuilder, HttpApiError, HttpApiSchema } from "effect/http-api";
 import {
+  AiCapabilityNotOffered,
+  AiModelRequired,
+  AiProviderAddressRefused,
+  AiProviderKeyRequired,
+  AiProviderNotConnected,
   ChatNotConnected,
   SiteNotConnected,
   AlreadyMember,
@@ -10,6 +15,7 @@ import {
   ApprovalNotPending,
   AssistantQuotaExceeded,
   AssistantUnavailable,
+  AudioUnavailable,
   ImageProviderAddressRefused,
   ImageProviderKeyRequired,
   TextProviderAddressRefused,
@@ -79,6 +85,8 @@ import {
   WorkspaceNotFound,
 } from "peal-contract";
 import type {
+  AiCapabilityModel,
+  AiProviderConnection,
   Channel,
   Credential,
   CustomerHealth,
@@ -141,6 +149,14 @@ import type {
   WebhookUrlRefusal,
 } from "peal-contract";
 import {
+  aiCapabilities,
+  aiImageProviders,
+  aiProviderKind,
+  aiProviderOffers,
+  aiProviders,
+} from "peal-contract/ai-providers";
+import type { AiCapability } from "peal-contract/ai-providers";
+import {
   countHashtags,
   countLinks,
   countMentions,
@@ -172,6 +188,10 @@ import type { StudioQueue } from "./studio-queues.ts";
 import { studioRecyclingOf } from "./studio-recycling.ts";
 import { makeReviews, studioReviewsLive } from "./studio-reviews.ts";
 import type { ReviewsState } from "./studio-reviews.ts";
+import { studioSlideshowsOf } from "./studio-slideshows.ts";
+import type { StudioSlideshow } from "./studio-slideshows.ts";
+import { studioVideosOf } from "./studio-videos.ts";
+import type { StudioVideo } from "./studio-videos.ts";
 
 // A synthetic Peal instance's data, in memory, for the commands that act in
 // a workspace: two workspaces, their channels, posts, members and
@@ -1373,6 +1393,10 @@ export interface StudioState {
   readonly tags: readonly Tag[];
   /** Whether the server has the keys that encrypt signing secrets. */
   readonly signingKeys: boolean;
+  /** The slide videos the studio asked for, oldest first. */
+  readonly slideshows: readonly StudioSlideshow[];
+  /** The videos the studio asked for, oldest first. */
+  readonly videos: readonly StudioVideo[];
   readonly webhooks: readonly WebhookEndpoint[];
   /** The image provider the studio brought, and the key it was given. */
   readonly imageProvider: {
@@ -1384,6 +1408,21 @@ export interface StudioState {
     readonly apiKey: string;
     readonly provider: TextProvider;
   } | null;
+  /** The providers the studio connected, and the key each was given. */
+  readonly connections: readonly {
+    readonly apiKey: string;
+    readonly connection: AiProviderConnection;
+  }[];
+  /** The studio's model for each use it chose one for. */
+  readonly models: Partial<
+    Record<
+      AiCapability,
+      {
+        readonly model: string;
+        readonly provider: AiProviderConnection["provider"];
+      }
+    >
+  >;
 }
 
 /** A synthetic API key of a workspace, with what it may do there. */
@@ -1467,6 +1506,8 @@ export const makeStudio = (
       feeds: [],
       imageProvider: null,
       textProvider: null,
+      connections: [],
+      models: {},
       invitations: [invitation],
       links: [],
       media: [image(readyMediaId, { altText: "A synthetic catalogue cover" })],
@@ -1483,6 +1524,8 @@ export const makeStudio = (
       storeStatus: 200,
       stored: [],
       tags,
+      slideshows: [],
+      videos: [],
       webhooks,
     }),
     whileExporting: Ref.make<Effect.Effect<void>>(Effect.void),
@@ -2528,6 +2571,24 @@ const inboxRulesOfStudio = studioInboxRulesOf({
   workspaceId: studioId,
 });
 
+// The studio's videos.
+const videosOfStudio = studioVideosOf({
+  allowed,
+  now: studioNow,
+  readyImageId: readyMediaId,
+  record,
+  workspaceId: studioId,
+});
+
+// The studio's slide videos.
+const slideshowsOfStudio = studioSlideshowsOf({
+  allowed,
+  now: studioNow,
+  readyMediaId,
+  record,
+  workspaceId: studioId,
+});
+
 // The studio's feeds.
 const feedsOfStudio = studioFeedsOf({
   allowed,
@@ -3209,6 +3270,76 @@ export const studioGroupsLive = (studio: Studio) =>
     followUpsOfStudio.groupLive(studio),
     inboxRulesOfStudio.groupLive(studio),
     feedsOfStudio.groupLive(studio),
+    videosOfStudio.groupLive(studio),
+    slideshowsOfStudio.groupLive(studio),
+    // Voice-overs and transcripts: a text with "unavailable" stands for a
+    // workspace without a speech model; the studio's ready file is a
+    // recording whose transcript is fixed.
+    HttpApiBuilder.group(Api, "mediaAudio", (handlers) =>
+      handlers.handleAll({
+        createVoiceover: ({ params, payload }) =>
+          Effect.gen(function* createVoiceover() {
+            yield* allowed("assistant:use");
+            yield* allowed("media:upload");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            if (payload.text.includes("unavailable")) {
+              return yield* new AudioUnavailable({
+                capability: "speech",
+                reason: "notSet",
+              });
+            }
+
+            const { media: all } = yield* Ref.get(studio.state);
+            const id = nextId("a", all.length);
+
+            yield* record(studio, `voiceover:${payload.voice ?? "-"}:${id}`);
+
+            return yield* saveMedia(
+              studio,
+              image(id, {
+                aiGenerated: true,
+                contentType: "audio/mpeg",
+                createdAt: studioNow,
+                dimensions: null,
+                durationMs: 3000,
+                kind: "audio",
+                updatedAt: studioNow,
+              })
+            );
+          }),
+        transcribe: ({ params, payload }) =>
+          Effect.gen(function* transcribe() {
+            yield* allowed("assistant:use");
+            yield* allowed("media:read");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            if (params.mediaId !== readyMediaId) {
+              return yield* new MediaNotFound();
+            }
+
+            const saved = payload.saveAsDescription ?? false;
+
+            yield* record(
+              studio,
+              `transcribe:${params.mediaId}:${String(saved)}`
+            );
+
+            return {
+              descriptionSaved: saved,
+              durationSeconds: 3,
+              language: "en",
+              text: "A synthetic transcript.",
+            };
+          }),
+      })
+    ),
     HttpApiBuilder.group(Api, "session", (handlers) =>
       handlers.handleAll({
         me: () => inPerson.pipe(Effect.as(studio.me)),
@@ -4417,6 +4548,249 @@ export const studioGroupsLive = (studio: Studio) =>
               })
             );
           }),
+        // The studio's connected providers and its model for each use. An
+        // address on a host named `internal` stands for one that is not
+        // public; a key with "refused" in it, one the provider refuses.
+        connectProvider: ({ params, payload }) =>
+          Effect.gen(function* connectProvider() {
+            yield* allowed("assistant:configure");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            const url = URL.parse(
+              payload.baseUrl ?? aiProviders[params.provider].baseUrl ?? ""
+            );
+
+            if (url === null || url.protocol !== "https:") {
+              return yield* new AiProviderAddressRefused({
+                reason: url === null ? "malformed" : "notHttps",
+              });
+            }
+
+            if (url.hostname.includes("internal")) {
+              return yield* new AiProviderAddressRefused({
+                reason: "notPublic",
+              });
+            }
+
+            const { connections } = yield* Ref.get(studio.state);
+            const address = url.href.replace(/\/+$/u, "");
+
+            const before = connections.find(
+              ({ connection }) => connection.provider === params.provider
+            );
+
+            const apiKey =
+              payload.apiKey ??
+              (before?.connection.baseUrl === address ? before.apiKey : null);
+
+            if (apiKey === null) {
+              return yield* new AiProviderKeyRequired();
+            }
+
+            const connection: AiProviderConnection = {
+              baseUrl: address,
+              keySet: true,
+              keyUnreadable: false,
+              provider: params.provider,
+              updatedAt: studioNow,
+            };
+
+            yield* Ref.update(studio.state, (current) => ({
+              ...current,
+              connections: [
+                ...current.connections.filter(
+                  (each) => each.connection.provider !== params.provider
+                ),
+                { apiKey, connection },
+              ],
+            }));
+            yield* record(
+              studio,
+              `provider:connect:${params.provider}:${address}`
+            );
+
+            return connection;
+          }),
+        disconnectProvider: ({ params }) =>
+          Effect.gen(function* disconnectProvider() {
+            yield* allowed("assistant:configure");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            yield* Ref.update(studio.state, (current) => ({
+              ...current,
+              connections: current.connections.filter(
+                ({ connection }) => connection.provider !== params.provider
+              ),
+              models: Object.fromEntries(
+                Object.entries(current.models).filter(
+                  ([, chosen]) => chosen.provider !== params.provider
+                )
+              ),
+            }));
+
+            return yield* record(
+              studio,
+              `provider:disconnect:${params.provider}`
+            );
+          }),
+        models: ({ params }) =>
+          Effect.gen(function* models() {
+            yield* allowed("assistant:configure");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            const { models: chosen } = yield* Ref.get(studio.state);
+
+            return {
+              models: aiCapabilities.map((capability): AiCapabilityModel => ({
+                capability,
+                model: chosen[capability]?.model ?? null,
+                provider: chosen[capability]?.provider ?? null,
+                // The studio's server writes, and makes no image.
+                serverModel: capability === "text",
+                updatedAt: chosen[capability] === undefined ? null : studioNow,
+              })),
+            };
+          }),
+        providers: ({ params }) =>
+          Effect.gen(function* providers() {
+            yield* allowed("assistant:configure");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            const { connections } = yield* Ref.get(studio.state);
+
+            return {
+              providers: connections.map(({ connection }) => connection),
+            };
+          }),
+        setModel: ({ params, payload }) =>
+          Effect.gen(function* setModel() {
+            yield* allowed("assistant:configure");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            if (!aiProviderOffers(payload.provider, params.capability)) {
+              return yield* new AiCapabilityNotOffered();
+            }
+
+            // Composition takes no model: its model is always `edit`.
+            const model =
+              params.capability === "composition" ? "edit" : payload.model;
+
+            if (model === undefined) {
+              return yield* new AiModelRequired();
+            }
+
+            const { connections } = yield* Ref.get(studio.state);
+
+            if (
+              !connections.some(
+                ({ connection }) => connection.provider === payload.provider
+              )
+            ) {
+              return yield* new AiProviderNotConnected();
+            }
+
+            yield* Ref.update(studio.state, (current) => ({
+              ...current,
+              models: {
+                ...current.models,
+                [params.capability]: {
+                  model,
+                  provider: payload.provider,
+                },
+              },
+            }));
+            yield* record(
+              studio,
+              `model:set:${params.capability}:${payload.provider}:${model}`
+            );
+
+            const chosen: AiCapabilityModel = {
+              capability: params.capability,
+              model,
+              provider: payload.provider,
+              serverModel: params.capability === "text",
+              updatedAt: studioNow,
+            };
+
+            return chosen;
+          }),
+        testProvider: ({ params, payload }) =>
+          Effect.gen(function* testProvider() {
+            yield* allowed("assistant:configure");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            const { connections, models: chosen } = yield* Ref.get(
+              studio.state
+            );
+
+            const connected = connections.find(
+              ({ connection }) => connection.provider === params.provider
+            );
+
+            if (connected === undefined) {
+              return yield* new AiProviderNotConnected();
+            }
+
+            const model =
+              payload.model ??
+              (chosen.text?.provider === params.provider
+                ? chosen.text.model
+                : undefined) ??
+              aiProviders[params.provider].text?.models[0];
+
+            if (model === undefined) {
+              return yield* new AiModelRequired();
+            }
+
+            if (connected.apiKey.includes("refused")) {
+              return yield* new TextProviderRefused({
+                reason: "settingsRefused",
+                status: 401,
+              });
+            }
+
+            return yield* record(
+              studio,
+              `provider:test:${params.provider}:${model}`
+            );
+          }),
+        unsetModel: ({ params }) =>
+          Effect.gen(function* unsetModel() {
+            yield* allowed("assistant:configure");
+
+            if (params.workspaceId !== studioId) {
+              return yield* new Forbidden();
+            }
+
+            yield* Ref.update(studio.state, (current) => ({
+              ...current,
+              models: Object.fromEntries(
+                Object.entries(current.models).filter(
+                  ([capability]) => capability !== params.capability
+                )
+              ),
+            }));
+
+            return yield* record(studio, `model:unset:${params.capability}`);
+          }),
         // The studio's own image provider. An address on a host named
         // `internal` stands for one that is not public.
         imageProvider: ({ params }) =>
@@ -4454,7 +4828,13 @@ export const studioGroupsLive = (studio: Studio) =>
               return yield* new Forbidden();
             }
 
-            const url = URL.parse(payload.baseUrl);
+            // As the server reads it: `openai-compatible` unless named, at
+            // the provider's own address unless another is given.
+            const named = payload.provider ?? "openai-compatible";
+
+            const url = URL.parse(
+              payload.baseUrl ?? aiImageProviders[named].baseUrl ?? ""
+            );
 
             if (url === null || url.protocol !== "https:") {
               return yield* new ImageProviderAddressRefused({
@@ -4488,6 +4868,7 @@ export const studioGroupsLive = (studio: Studio) =>
               keySet: true,
               keyUnreadable: false,
               model: payload.model,
+              provider: named,
               updatedAt: studioNow,
             };
 
@@ -4526,7 +4907,14 @@ export const studioGroupsLive = (studio: Studio) =>
               return yield* new Forbidden();
             }
 
-            const url = URL.parse(payload.baseUrl);
+            // As the server reads it: the provider by name, else its kind's;
+            // its own address unless another is given.
+            const named =
+              payload.provider ?? payload.kind ?? "openai-compatible";
+
+            const url = URL.parse(
+              payload.baseUrl ?? aiProviders[named].text?.baseUrl ?? ""
+            );
 
             if (url === null || url.protocol !== "https:") {
               return yield* new TextProviderAddressRefused({
@@ -4558,8 +4946,9 @@ export const studioGroupsLive = (studio: Studio) =>
               baseUrl: address,
               keySet: true,
               keyUnreadable: false,
-              kind: payload.kind,
+              kind: aiProviderKind(named),
               model: payload.model,
+              provider: named,
               updatedAt: studioNow,
             };
 
@@ -4567,10 +4956,7 @@ export const studioGroupsLive = (studio: Studio) =>
               ...current,
               textProvider: { apiKey, provider },
             }));
-            yield* record(
-              studio,
-              `text-provider:set:${payload.kind}:${address}`
-            );
+            yield* record(studio, `text-provider:set:${named}:${address}`);
 
             return provider;
           }),

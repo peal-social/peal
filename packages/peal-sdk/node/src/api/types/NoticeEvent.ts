@@ -32,7 +32,9 @@ export type NoticeEvent =
     | Peal.NoticeEvent.FeedStopped
     | Peal.NoticeEvent.FollowUpsNotSent
     | Peal.NoticeEvent.FollowUpRuleStopped
-    | Peal.NoticeEvent.CommentRuleStopped;
+    | Peal.NoticeEvent.CommentRuleStopped
+    | Peal.NoticeEvent.VideoGenerationEnded
+    | Peal.NoticeEvent.SlideshowEnded;
 
 export namespace NoticeEvent {
     export interface PostPublished extends Peal.NoticeEventPostPublished {
@@ -153,5 +155,13 @@ export namespace NoticeEvent {
 
     export interface CommentRuleStopped extends Peal.NoticeEventCommentRuleStopped {
         _tag: "CommentRuleStopped";
+    }
+
+    export interface VideoGenerationEnded extends Peal.NoticeEventVideoGenerationEnded {
+        _tag: "VideoGenerationEnded";
+    }
+
+    export interface SlideshowEnded extends Peal.NoticeEventSlideshowEnded {
+        _tag: "SlideshowEnded";
     }
 }

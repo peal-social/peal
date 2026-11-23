@@ -21,11 +21,14 @@ const contentTypes = {
   ".gif": "image/gif",
   ".jpeg": "image/jpeg",
   ".jpg": "image/jpeg",
+  ".m4a": "audio/mp4",
   ".mov": "video/quicktime",
+  ".mp3": "audio/mpeg",
   ".mp4": "video/mp4",
   ".pdf": "application/pdf",
   ".png": "image/png",
   ".qt": "video/quicktime",
+  ".wav": "audio/wav",
   ".webp": "image/webp",
 } satisfies Readonly<Record<string, MediaContentType>>;
 

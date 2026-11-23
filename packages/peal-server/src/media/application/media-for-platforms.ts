@@ -26,17 +26,21 @@ export interface PlatformMedia {
   readonly duration: Option.Option<Duration.Duration>;
   /** A name for the file, with the extension of its format. */
   readonly fileName: string;
-  readonly kind: MediaKind;
+  /** Audio goes out on no platform: it is never handed out. */
+  readonly kind: Exclude<MediaKind, "audio">;
 }
 
-const platformMediaOf = (asset: MediaAsset): PlatformMedia => ({
+const platformMediaOf = (
+  asset: MediaAsset,
+  kind: PlatformMedia["kind"]
+): PlatformMedia => ({
   assetId: asset.id,
   byteSize: asset.byteSize,
   contentType: asset.contentType,
   dimensions: asset.metadata.dimensions,
   duration: asset.metadata.duration,
   fileName: `${asset.id}.${mediaFormats[asset.contentType].extension}`,
-  kind: asset.kind,
+  kind,
 });
 
 /**
@@ -95,19 +99,35 @@ export class MediaForPlatforms extends Context.Service<
         return found.value;
       });
 
+      // A ready asset of a kind a platform takes, with that kind.
+      const publishable = (workspaceId: WorkspaceId, assetId: MediaAssetId) =>
+        ready(workspaceId, assetId).pipe(
+          Effect.flatMap((asset) => {
+            const { kind } = asset;
+
+            return kind === "audio"
+              ? Effect.fail(
+                  new MediaNotPublishable({ assetId, reason: "notPublishable" })
+                )
+              : Effect.succeed({ asset, kind });
+          })
+        );
+
       return MediaForPlatforms.of({
         describe: (workspaceId, assetId) =>
-          ready(workspaceId, assetId).pipe(Effect.map(platformMediaOf)),
+          publishable(workspaceId, assetId).pipe(
+            Effect.map(({ asset, kind }) => platformMediaOf(asset, kind))
+          ),
         publicUrl: (workspaceId, assetId, expiresIn) =>
-          ready(workspaceId, assetId).pipe(
-            Effect.flatMap((asset) =>
+          publishable(workspaceId, assetId).pipe(
+            Effect.flatMap(({ asset }) =>
               storage.publicUrl(asset.storageKey, expiresIn)
             )
           ),
         read: (workspaceId, assetId) =>
           Stream.unwrap(
-            ready(workspaceId, assetId).pipe(
-              Effect.map((asset) => storage.read(asset.storageKey))
+            publishable(workspaceId, assetId).pipe(
+              Effect.map(({ asset }) => storage.read(asset.storageKey))
             )
           ),
       });

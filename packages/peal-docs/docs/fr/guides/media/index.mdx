@@ -18,12 +18,13 @@ Donnez à chaque fichier une description pour les personnes qui ne peuvent pas l
 | Images    | JPEG, PNG, GIF, WebP   | 16 Mio                |
 | Vidéos    | MP4, QuickTime (.mov)  | 1 Gio                 |
 | Documents | PDF, jusqu’à 300 pages | 100 Mio               |
+| Audio     | MP3, M4A, WAV          | 100 Mio               |
 
 Les contributeurs et au-delà peuvent envoyer des fichiers. Les éditeurs et au-delà peuvent en supprimer.
 
 ### Ce que Peal lit d’un fichier [#probe]
 
-Une fois un fichier stocké, Peal le lit une fois : les dimensions d’une image, les dimensions, la durée et le codec d’une vidéo, et le nombre de pages d’un PDF.
+Une fois un fichier stocké, Peal le lit une fois : les dimensions d’une image, les dimensions, la durée et le codec d’une vidéo, la durée et le codec d’un fichier audio, et le nombre de pages d’un PDF. Un fichier audio ne part sur aucune plateforme : il est gardé pour une [transcription](#transcribe) ou pour servir ailleurs.
 
 Un PDF est un document, que seul LinkedIn affiche, page par page. Peal le stocke et le transmet, sans jamais l’ouvrir. Un PDF de plus de 300 pages, le maximum que LinkedIn accepte, n’est pas prêt pour les publications. Un PDF dont les pages ne peuvent pas être comptées, comme un fichier chiffré, est conservé, et LinkedIn en juge.
 
@@ -103,7 +104,7 @@ Chaque récupération ajoute un nouveau fichier, lu comme un fichier envoyé. Su
 
 ## Générer une image [#generate]
 
-Quand l’espace de travail a son propre [fournisseur d’images](/guides/workspace#image-provider), ou que l’instance a un modèle d’images, l’assistant peut créer une image à partir d’une description, directement dans la médiathèque. Il vous faut le droit d’utiliser l’assistant et celui d’envoyer des médias, donc être contributeur ou au-delà.
+Quand l’espace de travail a son propre [fournisseur d’images](/guides/workspace#providers), ou que l’instance a un modèle d’images, l’assistant peut créer une image à partir d’une description, directement dans la médiathèque. Il vous faut le droit d’utiliser l’assistant et celui d’envoyer des médias, donc être contributeur ou au-delà.
 
 <Tabs>
 <Tab title="Application web">
@@ -174,6 +175,242 @@ Quand vous la joignez dans l’application web, l’éditeur active, une fois, l
 Peal ne pose pas ces mentions sur les publications créées par l’API, la ligne de commande ou MCP. Réglez alors vous-même les [options de la plateforme](/guides/posts#options).
 
 Les images sont désactivées tant que l’espace de travail n’a pas son propre fournisseur et que l’instance n’a pas de modèle d’images : voyez [Auto-hébergement](/self-hosting/assistant#ai).
+
+## Générer une vidéo [#generate-video]
+
+Quand l’espace de travail a choisi un fournisseur et un modèle pour les [vidéos](/guides/workspace#models), l’assistant peut créer une vidéo d’après une description, directement dans la médiathèque. Les vidéos viennent des modèles Veo de Google Gemini ou des modèles Grok Imagine de xAI, avec la clé de l’espace de travail : l’instance n’a pas de modèle vidéo à elle. Il vous faut le droit d’utiliser l’assistant et celui d’envoyer des fichiers, donc à partir de contributeur.
+
+<Tabs>
+<Tab title="Application web">
+
+Cliquez sur **Générer une vidéo** dans la page **Médias**. Décrivez la vidéo, choisissez son format et, quand le fournisseur les prend, sa durée et une image de la médiathèque pour la commencer. La vidéo apparaît dans la médiathèque sous forme d’emplacement avec son état, jusqu’à ce qu’elle soit prête.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media video generate --prompt "Les pages du catalogue qui tournent lentement au vent" --aspect portrait --wait
+```
+
+Voyez [`peal media video`](/developers/cli/posts#media-video).
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/videos/generations`, avec le `prompt`, l’`aspect` et, au besoin, `durationSeconds` et `imageMediaId`. La réponse est `202` avec la tâche. Suivez-la avec `GET /api/workspaces/{workspaceId}/media/videos/generations/{id}` jusqu’à ce que son `status` soit `succeeded`, avec le `mediaId` de la vidéo, ou `failed`, avec sa `reason`.
+
+</Tab>
+</Tabs>
+
+Ce que prend chaque fournisseur :
+
+| Fournisseur   | Formats                                 | Durée           | Première image |
+| ------------- | --------------------------------------- | --------------- | -------------- |
+| Google Gemini | `landscape` (16:9), `portrait` (9:16)   | choisie par Veo | oui            |
+| xAI           | `landscape`, `portrait`, `square` (1:1) | 1 à 15 secondes | oui            |
+
+La description fait de 1 à 1 000 caractères, et part telle quelle au fournisseur, avec la clé de l’espace de travail. Peal ne la garde que le temps de créer la vidéo, puis l’efface, et n’écrit jamais ni elle ni la vidéo dans ses journaux.
+
+<Callout type="warning" title="Votre fournisseur facture chaque vidéo">
+  Peal ne facture rien pour les vidéos, mais votre compte chez le fournisseur
+  paie chacune de celles qu’il crée, à ses prix. Créer une vidéo prend plusieurs
+  minutes.
+</Callout>
+
+### Comment une vidéo est créée [#video-job]
+
+Une vidéo est une tâche qui tourne sur le serveur : vous pouvez quitter la page. Elle est `queued`, puis `running` pendant que le fournisseur la crée, puis `succeeded` ou `failed`. Quand elle se termine, le membre qui l’a demandée reçoit une notification dans l’application.
+
+- Un espace de travail crée une vidéo à la fois. En demander une autre entre-temps est refusé (`VideoBusy`, 429).
+- Un espace de travail demande 20 vidéos par jour au plus (UTC), quelle que soit leur issue (`VideoAllowanceReached`, 429).
+- Avant toute demande, le stockage des médias du plan doit avoir la place de la plus grande vidéo que Peal garde, 200 Mio. La vidéo prend ensuite de la place comme tout autre fichier.
+- Peal attend le fournisseur 15 minutes au plus. Un serveur crée quatre vidéos à la fois ; les autres attendent leur tour, en file.
+- Peal ne demande jamais deux fois une même vidéo au fournisseur. Si le serveur s’arrête pendant qu’une vidéo est créée, elle échoue comme `interrupted`, car le fournisseur l’a peut-être déjà créée et facturée. Redemandez-la si vous la voulez.
+
+<Accordion>
+<AccordionItem title="Pourquoi une vidéo a échoué">
+
+| Raison             | Ce qui s’est passé                                                                            |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| `unavailable`      | Plus aucun fournisseur n’est choisi pour les vidéos                                           |
+| `keyUnreadable`    | La clé du fournisseur ne peut plus être lue : connectez de nouveau le fournisseur             |
+| `settingsRefused`  | Le fournisseur a refusé la clé, le compte ou le modèle                                        |
+| `addressRefused`   | L’adresse du fournisseur n’en est pas une à laquelle Peal envoie                              |
+| `redirected`       | Le fournisseur a répondu par une redirection, que Peal ne suit jamais                         |
+| `unreachable`      | Le fournisseur n’a pas pu être joint, ou était occupé                                         |
+| `refused`          | Le fournisseur a refusé cette demande, par exemple pour ses règles de contenu                 |
+| `timedOut`         | La vidéo a pris plus de 15 minutes                                                            |
+| `unusableAnswer`   | La réponse du fournisseur ne contenait aucune vidéo que Peal garde, ou une de plus de 200 Mio |
+| `imageUnavailable` | La première image a été supprimée, ou n’a pas pu être lue                                     |
+| `storageFull`      | Le stockage des médias du plan n’avait pas la place                                           |
+| `notStored`        | Le stockage des médias n’a pas pu la garder                                                   |
+| `interrupted`      | Le serveur s’est arrêté pendant sa création                                                   |
+
+</AccordionItem>
+</Accordion>
+
+La vidéo est un fichier MP4 de la médiathèque, marqué **Créé par IA** (`aiGenerated: true` dans l’API), sans description. Comme pour une image, réglez la mention IA de la plateforme dans les options de la publication quand Peal ne le fait pas. Aucun outil MCP ne crée de vidéo, car chacune est payée par le compte de l’espace de travail chez le fournisseur.
+
+## Créer une voix off [#voiceover]
+
+Quand l’espace de travail a choisi un fournisseur et un modèle pour les [voix off](/guides/workspace#models), l’assistant peut dire un texte dans la médiathèque, sous forme de fichier audio. Les voix off viennent d’OpenAI, Google Gemini, Mistral, xAI, ElevenLabs ou fal, avec la clé de l’espace de travail : l’instance n’en a pas à elle. Il faut le droit d’utiliser l’assistant et celui d’envoyer des fichiers, donc contributeur ou plus.
+
+<Tabs>
+<Tab title="Application web">
+
+Cliquez sur **Créer une voix off** dans la page **Médias**. Écrivez le texte et, quand le fournisseur en prend une, choisissez une voix, ou saisissez l’identifiant d’une voix pour ElevenLabs. Le fichier audio apparaît dans la médiathèque une fois créé.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media voiceover --text "Bienvenue dans le catalogue de printemps." --voice nova
+```
+
+Voir [`peal media voiceover`](/developers/cli/posts#media-audio).
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/voiceovers`, avec le `text` et, au choix, une `voice`. La réponse est `201` avec le nouveau fichier de la médiathèque.
+
+</Tab>
+</Tabs>
+
+Le texte fait de 1 à 4 000 caractères, et part tel quel chez le fournisseur. Les voix que prend chaque fournisseur :
+
+| Fournisseur   | Voix                                                                        |
+| ------------- | --------------------------------------------------------------------------- |
+| OpenAI        | `alloy`, `ash`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer` |
+| Google Gemini | `Kore`, `Puck`, `Zephyr`, `Charon` et ses autres voix prédéfinies           |
+| Mistral       | `gb_jane_neutral` et ses autres voix prédéfinies                            |
+| xAI           | `eve`, `ara`, `rex`, `sal`, `leo`                                           |
+| ElevenLabs    | l’identifiant de toute voix de la bibliothèque de votre compte              |
+| fal           | aucune : ses modèles MiniMax parlent avec leur propre voix                  |
+
+Sans voix, c’est celle par défaut du fournisseur. La voix off est un fichier MP3 (WAV pour Google Gemini), marqué **Créé par IA**, sans description. Un espace de travail en crée 50 par jour au plus (UTC), quelle qu’en soit l’issue (`AudioAllowanceReached`, 429). Avant toute demande, le stockage de l’abonnement doit avoir de la place pour la plus grande voix off que Peal garde, 48 Mio. Peal attend le fournisseur 90 secondes. Ni le texte ni l’audio ne vont dans les journaux de Peal.
+
+Aucune plateforme ne prend un fichier audio seul : utilisez la voix off dans une vidéo que vous montez, ou ailleurs.
+
+## Transcrire un fichier [#transcribe]
+
+Quand l’espace de travail a choisi un fournisseur et un modèle pour la [transcription](/guides/workspace#models), l’assistant peut écrire ce qui est dit dans un fichier audio ou vidéo de la médiathèque. Les transcriptions viennent d’OpenAI, Google Gemini, Mistral, xAI, Groq, ElevenLabs ou fal, avec la clé de l’espace de travail. Il faut le droit d’utiliser l’assistant et celui de lire les médias ; enregistrer la transcription comme description du fichier demande aussi celui d’envoyer des fichiers.
+
+<Tabs>
+<Tab title="Application web">
+
+Sur un fichier audio ou vidéo de la page **Médias**, cliquez sur le bouton de transcription, puis sur **Transcrire**. La transcription s’affiche dans la boîte de dialogue, avec **Copier** et **Utiliser comme description**.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media transcribe <media-id> --save-description
+```
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/{mediaId}/transcription`, avec `saveAsDescription` quand la transcription doit devenir la description du fichier. La réponse contient le `text`, la `language` et la `durationSeconds` quand le fournisseur les donne, et `descriptionSaved`.
+
+</Tab>
+</Tabs>
+
+Le fichier doit être prêt et faire 25 Mo au plus (`TranscriptionRejected`, 422, sinon). Peal le lit dans le stockage des médias et l’envoie en entier au fournisseur, ce qui peut prendre une minute pour un long enregistrement : Peal attend 90 secondes. Un espace de travail demande 50 transcriptions par jour au plus (UTC), quelle qu’en soit l’issue. Une transcription n’est enregistrée comme description que si elle y tient, 2 000 caractères ; sinon, elle est renvoyée et rien ne change. Peal ne la garde nulle part ailleurs, et ne l’écrit jamais dans ses journaux.
+
+<Callout
+  type="warning"
+  title="Votre fournisseur facture chaque voix off et chaque transcription"
+>
+  Peal ne facture rien pour elles, mais votre compte chez le fournisseur paie
+  chacune, à ses tarifs. Aucun outil MCP n’en crée.
+</Callout>
+
+## Créer une vidéo de diapositives [#make-a-slide-video]
+
+Une vidéo de diapositives enchaîne 2 à 10 images de la médiathèque, chacune avec une légende et un mouvement lent si vous le voulez, sur une voix off facultative, dans un seul fichier MP4. Shotstack la compose avec la clé de l’espace de travail, une fois que l’espace de travail a [connecté Shotstack](/guides/workspace#shotstack) et l’a choisi pour les vidéos de diapositives. Il vous faut le droit d’utiliser l’assistant et celui d’envoyer des fichiers, donc à partir de contributeur.
+
+<Tabs>
+<Tab title="Application web">
+
+Cliquez sur **Créer une vidéo de diapositives** dans la page **Médias**. Choisissez les images dans l’ordre où elles passent, et montez-les ou descendez-les. Donnez à chacune une légende et un mouvement si vous le voulez, puis choisissez une voix off de la médiathèque, le format, la durée de chaque diapositive et la transition. La vidéo apparaît dans la médiathèque sous forme d’emplacement avec son état, jusqu’à ce qu’elle soit prête.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media slideshow create \
+  --image <media-id> --caption "Catalogue de printemps" --motion zoomIn \
+  --image <media-id> --caption "En ligne vendredi" --motion slide \
+  --voiceover <media-id> --aspect portrait --wait
+```
+
+Voir [`peal media slideshow`](/developers/cli/posts#media-slideshow).
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/slideshows`, avec `aspect` et `slides`, chacune un `mediaId` avec `caption` et `motion` facultatifs, et au besoin `secondsPerSlide`, `transition` et `voiceoverMediaId`. La réponse est `202` avec la tâche. Suivez-la avec `GET /api/workspaces/{workspaceId}/media/slideshows/{id}` jusqu’à ce que son `status` soit `succeeded`, avec le `mediaId` de la vidéo, ou `failed`, avec sa raison (`reason`).
+
+</Tab>
+</Tabs>
+
+Ce que prend une vidéo de diapositives :
+
+| Réglage                  | Valeurs                                                                       | Par défaut                                |
+| ------------------------ | ----------------------------------------------------------------------------- | ----------------------------------------- |
+| Images                   | 2 à 10 images JPEG ou PNG prêtes de la médiathèque, dans l’ordre              | obligatoires                              |
+| Légende                  | jusqu’à 120 caractères par diapositive, en blanc sur un bandeau sombre en bas | aucune                                    |
+| Mouvement                | `none`, `zoomIn`, `zoomOut` ou `slide` (un panoramique lent), par diapositive | `none`                                    |
+| Transition               | `fade` ou `none`, entre deux diapositives                                     | `fade`                                    |
+| Voix off                 | un fichier audio prêt de la médiathèque                                       | aucune                                    |
+| Secondes par diapositive | 2 à 10, 90 secondes en tout                                                   | la voix off partagée entre elles, sinon 4 |
+| Format                   | `portrait` (9:16), `landscape` (16:9) ou `square` (1:1)                       | `portrait` dans l’application et la CLI   |
+
+La vidéo fait 1080 pixels sur son petit côté, à 25 images par seconde. Avec une voix off et sans durée donnée, chaque diapositive dure la longueur de la voix off divisée par le nombre de diapositives, ce qui doit donner 2 à 10 secondes par diapositive. Avec une durée donnée, la voix off s’arrête à la fin de la dernière diapositive.
+
+<Callout type="warning" title="Votre compte Shotstack paie chaque rendu">
+  Peal ne facture rien pour les vidéos de diapositives, et votre compte
+  Shotstack paie chacune à ses tarifs. Sur Peal Cloud, elles demandent aussi un
+  moyen de paiement sur le compte de facturation de l’espace de travail : avec
+  l’offre gratuite, **Créer une vidéo de diapositives** ouvre la fenêtre de
+  passage à une offre payante, et l’API répond `CompositionNeedsPayment` (402).
+</Callout>
+
+### Comment une vidéo de diapositives est créée [#slideshow-job]
+
+Une vidéo de diapositives est une tâche qui tourne sur le serveur, vous pouvez donc quitter la page. Elle est `queued`, puis `running` pendant que Shotstack la rend, puis `succeeded` ou `failed`. Quand elle se termine, le membre qui l’a demandée reçoit une notification dans l’application.
+
+- Peal envoie à Shotstack les diapositives avec un lien vers chaque fichier, valable une heure, et les légendes. Il demande à Shotstack de ne pas héberger la vidéo rendue, puis récupère la vidéo et la garde dans la médiathèque.
+- Shotstack récupère lui-même ces liens, depuis Internet : le stockage des médias doit donc lui être accessible. Sur un serveur auto-hébergé dont le stockage S3 est sur un réseau privé, Shotstack refuse chaque vidéo de diapositives (`refused`).
+- Un espace de travail crée une vidéo de diapositives à la fois (`CompositionBusy`, 429) et 20 par jour au plus (UTC), quelle que soit leur issue (`CompositionAllowanceReached`, 429).
+- Avant toute demande, le stockage des médias de l’offre doit avoir la place pour 200 Mio. La vidéo prend ensuite de la place comme tout autre fichier.
+- Peal lit où en est le rendu toutes les 5 secondes, pendant 20 minutes au plus.
+- Peal ne demande jamais deux fois une même vidéo à Shotstack. Si le serveur s’arrête pendant sa création, elle échoue en `interrupted`, car Shotstack l’a peut-être déjà rendue et facturée.
+
+<Accordion>
+<AccordionItem title="Pourquoi une vidéo de diapositives a échoué">
+
+| Raison             | Ce qui s’est passé                                                                          |
+| ------------------ | ------------------------------------------------------------------------------------------- |
+| `unavailable`      | Aucun service n’est plus choisi pour les vidéos de diapositives                             |
+| `keyUnreadable`    | La clé Shotstack ne peut plus être lue : connectez de nouveau Shotstack                     |
+| `settingsRefused`  | Shotstack a refusé la clé ou le compte, par exemple quand il n’a plus de crédits            |
+| `addressRefused`   | L’adresse du service n’est pas une adresse à laquelle Peal envoie                           |
+| `redirected`       | Shotstack a répondu par une redirection, que Peal ne suit jamais                            |
+| `unreachable`      | Shotstack était injoignable, ou occupé                                                      |
+| `refused`          | Shotstack a refusé cette demande, n’a pas pu récupérer ses fichiers ou n’a pas pu la rendre |
+| `timedOut`         | La vidéo a pris plus de 20 minutes                                                          |
+| `unusableAnswer`   | La réponse de Shotstack ne contenait aucune vidéo que Peal garde, ou une de plus de 200 Mio |
+| `mediaUnavailable` | Une image ou la voix off a été supprimée, ou n’a pas pu être transmise à Shotstack          |
+| `storageFull`      | Le stockage des médias de l’offre n’avait pas la place                                      |
+| `notStored`        | Le stockage des médias n’a pas pu la conserver                                              |
+| `interrupted`      | Le serveur s’est arrêté pendant sa création                                                 |
+
+</AccordionItem>
+</Accordion>
+
+La vidéo est un fichier MP4 de la médiathèque, sans description. Elle n’est pas marquée comme créée par IA, puisque Shotstack ne fait qu’assembler vos propres fichiers. Peal n’écrit jamais les légendes ni la vidéo dans ses journaux, et ne garde les légendes que le temps de créer la vidéo. Aucun outil MCP ne crée de vidéo de diapositives, car chacune est payée par le compte Shotstack de l’espace de travail.
 
 ## Ajouter des médias à une publication [#attach]
 

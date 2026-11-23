@@ -1636,7 +1636,7 @@ layer(KeepsKeysLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const [kept] = yield* sql<{
             readonly count: number;
-          }>`SELECT count(*)::int AS count FROM assistant.image_providers WHERE workspace_id = ${home}`;
+          }>`SELECT count(*)::int AS count FROM assistant.provider_connections WHERE workspace_id = ${home}`;
 
           assert.strictEqual(kept?.count, 0);
 

@@ -505,13 +505,16 @@ layer(ImagesTest, { timeout: "60 seconds" })(
 
           assert.deepInclude(made, { aiGenerated: true, kind: "image" });
           assert.deepStrictEqual(
-            (yield* ownCalls).map(({ apiKey, baseUrl, model, request }) => ({
-              apiKey,
-              aspect: request.aspect,
-              baseUrl,
-              model,
-              prompt: request.prompt,
-            })),
+            (yield* ownCalls).map(
+              ({ apiKey, baseUrl, model, provider, request }) => ({
+                apiKey,
+                aspect: request.aspect,
+                baseUrl,
+                model,
+                prompt: request.prompt,
+                provider,
+              })
+            ),
             [
               {
                 apiKey: syntheticKey,
@@ -519,6 +522,8 @@ layer(ImagesTest, { timeout: "60 seconds" })(
                 baseUrl: "https://images.example.com/v1",
                 model: "synthetic-image-model",
                 prompt: lighthouse.prompt,
+                // A change that names none is the OpenAI images API.
+                provider: "openai-compatible",
               },
             ]
           );
@@ -605,7 +610,7 @@ layer(ImagesTest, { timeout: "60 seconds" })(
           yield* bringProvider(workspaceId);
 
           // The address moved without the key being typed again.
-          yield* sql`UPDATE assistant.image_providers SET base_url = 'https://other-images.example.com/v1' WHERE workspace_id = ${workspaceId}`;
+          yield* sql`UPDATE assistant.provider_connections SET base_url = 'https://other-images.example.com/v1' WHERE workspace_id = ${workspaceId}`;
 
           const refused = yield* askOwn(
             workspaceId,

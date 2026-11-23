@@ -5,7 +5,12 @@ const mebibyte = 1024 * 1024;
 const gibibyte = 1024 * mebibyte;
 
 /** What a piece of media is, which decides its limits and how it is probed. */
-export const MediaKindSchema = Schema.Literals(["image", "video", "document"]);
+export const MediaKindSchema = Schema.Literals([
+  "image",
+  "video",
+  "document",
+  "audio",
+]);
 
 export type MediaKind = typeof MediaKindSchema.Type;
 
@@ -26,6 +31,10 @@ export type MediaKind = typeof MediaKindSchema.Type;
  *
  * A PDF is the one document Peal stores: no image or video to convert, but
  * a kind of post of its own, which LinkedIn shows page by page.
+ *
+ * Audio (MP3, M4A, WAV) goes out on no platform: a voice-over the
+ * assistant made, or a recording to transcribe, kept to be used
+ * elsewhere.
  */
 export const MediaContentTypeSchema = Schema.Literals([
   "image/gif",
@@ -35,6 +44,9 @@ export const MediaContentTypeSchema = Schema.Literals([
   "video/mp4",
   "video/quicktime",
   "application/pdf",
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/wav",
 ]);
 
 export type MediaContentType = typeof MediaContentTypeSchema.Type;
@@ -47,6 +59,9 @@ export interface MediaFormat {
 
 export const mediaFormats = {
   "application/pdf": { extension: "pdf", kind: "document" },
+  "audio/mp4": { extension: "m4a", kind: "audio" },
+  "audio/mpeg": { extension: "mp3", kind: "audio" },
+  "audio/wav": { extension: "wav", kind: "audio" },
   "image/gif": { extension: "gif", kind: "image" },
   "image/jpeg": { extension: "jpg", kind: "image" },
   "image/png": { extension: "png", kind: "image" },
@@ -68,11 +83,13 @@ export const mediaFormats = {
  *
  * - Documents, 100 MiB: LinkedIn's Documents API takes files of up to
  *   100 MB.
+ * - Audio, 100 MiB: hours of speech, more than any transcript takes.
  *
  * The limit of each platform, and of each Mastodon instance, is checked
  * when a post is scheduled.
  */
 export const maxByteSize = {
+  audio: 100 * mebibyte,
   document: 100 * mebibyte,
   image: 16 * mebibyte,
   video: gibibyte,

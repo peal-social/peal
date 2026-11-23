@@ -10,6 +10,9 @@ pub enum MediaContentType {
     VideoMp4,
     VideoQuicktime,
     ApplicationPdf,
+    AudioMpeg,
+    AudioMp4,
+    AudioWav,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -25,6 +28,9 @@ impl Serialize for MediaContentType {
             Self::VideoMp4 => serializer.serialize_str("video/mp4"),
             Self::VideoQuicktime => serializer.serialize_str("video/quicktime"),
             Self::ApplicationPdf => serializer.serialize_str("application/pdf"),
+            Self::AudioMpeg => serializer.serialize_str("audio/mpeg"),
+            Self::AudioMp4 => serializer.serialize_str("audio/mp4"),
+            Self::AudioWav => serializer.serialize_str("audio/wav"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -41,6 +47,9 @@ impl<'de> Deserialize<'de> for MediaContentType {
             "video/mp4" => Ok(Self::VideoMp4),
             "video/quicktime" => Ok(Self::VideoQuicktime),
             "application/pdf" => Ok(Self::ApplicationPdf),
+            "audio/mpeg" => Ok(Self::AudioMpeg),
+            "audio/mp4" => Ok(Self::AudioMp4),
+            "audio/wav" => Ok(Self::AudioWav),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -56,6 +65,9 @@ impl fmt::Display for MediaContentType {
             Self::VideoMp4 => write!(f, "video/mp4"),
             Self::VideoQuicktime => write!(f, "video/quicktime"),
             Self::ApplicationPdf => write!(f, "application/pdf"),
+            Self::AudioMpeg => write!(f, "audio/mpeg"),
+            Self::AudioMp4 => write!(f, "audio/mp4"),
+            Self::AudioWav => write!(f, "audio/wav"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

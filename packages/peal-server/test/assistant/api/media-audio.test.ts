@@ -1,0 +1,243 @@
+import { assert, layer } from "@effect/vitest";
+import { Effect, Layer } from "effect";
+import { HttpServer } from "effect/http";
+import { HttpApiTest } from "effect/http-api";
+import { Api } from "peal-contract";
+import type { Member } from "peal-contract";
+
+import { AssistantApiLive, MediaAudioApiLive } from "#assistant/container.ts";
+import type { WorkspaceId } from "#shared/domain/ids.ts";
+import { storedAudioId } from "#test/assistant/audio-support.ts";
+import {
+  assistantTest,
+  DatabaseTest,
+  freshWorkspace,
+} from "#test/assistant/support.ts";
+import { memberOf } from "#test/channels/support.ts";
+import { securityTest } from "#workspace/api/security.ts";
+import { permissionsFor } from "#workspace/domain/roles.ts";
+
+// The voice-over and transcript endpoints and the models' audio uses, on
+// their real use cases and Postgres, the synthetic keyring and the real
+// outbound guard on a static resolver; the providers and the library
+// scripted, so no request leaves.
+
+const syntheticKey = "sk_test_synthetic_audio_key";
+
+const clientAs = (member: Member) =>
+  HttpApiTest.groups(Api, ["assistant", "mediaAudio"]).pipe(
+    Effect.provide(
+      Layer.mergeAll(
+        Layer.merge(AssistantApiLive, MediaAudioApiLive).pipe(
+          Layer.provideMerge(securityTest(member))
+        ),
+        HttpServer.layerServices
+      )
+    )
+  );
+
+const as = (workspaceId: WorkspaceId, role: string) =>
+  clientAs(memberOf(workspaceId, permissionsFor(role)));
+
+const recordingId = "019a0000-0000-7000-8000-00000000a0d2";
+
+const files = new Map<string, Uint8Array | "tooLarge">([
+  [recordingId, new Uint8Array([0x49, 0x44, 0x33, 4, 0])],
+  ["019a0000-0000-7000-8000-00000000a0d4", "tooLarge"],
+]);
+
+layer(DatabaseTest, { timeout: "60 seconds" })(
+  "the voice-over and transcript endpoints",
+  (it) => {
+    it.effect("make a voice-over once a provider is chosen for speech", () =>
+      Effect.gen(function* voiceover() {
+        const workspaceId = yield* freshWorkspace;
+        const params = { workspaceId };
+        const owner = yield* as(workspaceId, "owner");
+        const editor = yield* as(workspaceId, "editor");
+        const payload = { text: "A synthetic voice-over.", voice: "Rachel" };
+
+        const off = yield* editor.mediaAudio
+          .createVoiceover({ params, payload })
+          .pipe(Effect.flip);
+
+        assert.deepInclude(off, {
+          _tag: "AudioUnavailable",
+          capability: "speech",
+          reason: "notSet",
+        });
+
+        // ElevenLabs is reached at its own address alone.
+        const proxied = yield* owner.assistant
+          .connectProvider({
+            params: { ...params, provider: "elevenlabs" },
+            payload: {
+              apiKey: syntheticKey,
+              baseUrl: "https://proxy.example.com",
+            },
+          })
+          .pipe(Effect.flip);
+
+        assert.deepInclude(proxied, {
+          _tag: "AiProviderAddressRefused",
+          reason: "fixedAddress",
+        });
+
+        yield* owner.assistant.connectProvider({
+          params: { ...params, provider: "elevenlabs" },
+          payload: { apiKey: syntheticKey },
+        });
+
+        // It writes no text: neither a text model nor a test.
+        const noText = yield* owner.assistant
+          .setModel({
+            params: { ...params, capability: "text" },
+            payload: { model: "synthetic", provider: "elevenlabs" },
+          })
+          .pipe(Effect.flip);
+
+        const noTest = yield* owner.assistant
+          .testProvider({
+            params: { ...params, provider: "elevenlabs" },
+            payload: {},
+          })
+          .pipe(Effect.flip);
+
+        // Nor through the deprecated text provider endpoint.
+        const noTextProvider = yield* owner.assistant
+          .setTextProvider({
+            params,
+            payload: {
+              apiKey: syntheticKey,
+              model: "synthetic",
+              provider: "elevenlabs",
+            },
+          })
+          .pipe(Effect.flip);
+
+        assert.strictEqual(noText._tag, "AiCapabilityNotOffered");
+        assert.strictEqual(noTest._tag, "AiCapabilityNotOffered");
+        assert.strictEqual(noTextProvider._tag, "AiCapabilityNotOffered");
+
+        yield* owner.assistant.setModel({
+          params: { ...params, capability: "speech" },
+          payload: { model: "eleven_multilingual_v2", provider: "elevenlabs" },
+        });
+
+        const status = yield* editor.assistant.status({ params });
+
+        assert.deepInclude(status.voiceovers, {
+          available: true,
+          maxTextLength: 4000,
+          provider: "elevenlabs",
+          remaining: 50,
+        });
+        assert.deepInclude(status.transcriptions, {
+          available: false,
+          provider: null,
+        });
+
+        const made = yield* editor.mediaAudio.createVoiceover({
+          params,
+          payload,
+        });
+
+        assert.deepInclude(made, {
+          aiGenerated: true,
+          id: storedAudioId,
+          kind: "audio",
+        });
+
+        const blank = yield* editor.mediaAudio
+          .createVoiceover({ params, payload: { text: " " } })
+          .pipe(Effect.flip);
+
+        assert.deepInclude(blank, {
+          _tag: "AssistantInputRejected",
+          reason: "empty",
+        });
+      }).pipe(Effect.provide(assistantTest()))
+    );
+
+    it.effect(
+      "transcribe a file of the library once a provider is chosen",
+      () =>
+        Effect.gen(function* transcript() {
+          const workspaceId = yield* freshWorkspace;
+          const params = { workspaceId };
+          const owner = yield* as(workspaceId, "owner");
+          const editor = yield* as(workspaceId, "editor");
+
+          yield* owner.assistant.connectProvider({
+            params: { ...params, provider: "groq" },
+            payload: { apiKey: syntheticKey },
+          });
+          yield* owner.assistant.setModel({
+            params: { ...params, capability: "transcription" },
+            payload: { model: "whisper-large-v3-turbo", provider: "groq" },
+          });
+
+          const answered = yield* editor.mediaAudio.transcribe({
+            params: { ...params, mediaId: recordingId },
+            payload: { saveAsDescription: true },
+          });
+
+          assert.deepStrictEqual(answered, {
+            descriptionSaved: true,
+            durationSeconds: 3,
+            language: "en",
+            text: "A synthetic transcript.",
+          });
+
+          const tooLarge = yield* editor.mediaAudio
+            .transcribe({
+              params: {
+                ...params,
+                mediaId: "019a0000-0000-7000-8000-00000000a0d4",
+              },
+              payload: {},
+            })
+            .pipe(Effect.flip);
+
+          const missing = yield* editor.mediaAudio
+            .transcribe({
+              params: { ...params, mediaId: "not-an-id" },
+              payload: {},
+            })
+            .pipe(Effect.flip);
+
+          assert.deepInclude(tooLarge, {
+            _tag: "TranscriptionRejected",
+            maxBytes: 25_000_000,
+            reason: "tooLarge",
+          });
+          assert.strictEqual(missing._tag, "MediaNotFound");
+        }).pipe(Effect.provide(assistantTest({ audio: { files } })))
+    );
+
+    it.effect("refuse viewers, who may not use the assistant", () =>
+      Effect.gen(function* viewers() {
+        const workspaceId = yield* freshWorkspace;
+        const params = { workspaceId };
+        const viewer = yield* as(workspaceId, "viewer");
+
+        const refusals = yield* Effect.all([
+          viewer.mediaAudio
+            .createVoiceover({ params, payload: { text: "Synthetic." } })
+            .pipe(Effect.flip),
+          viewer.mediaAudio
+            .transcribe({
+              params: { ...params, mediaId: recordingId },
+              payload: {},
+            })
+            .pipe(Effect.flip),
+        ]);
+
+        assert.deepStrictEqual(
+          refusals.map(({ _tag }) => _tag),
+          ["Forbidden", "Forbidden"]
+        );
+      }).pipe(Effect.provide(assistantTest()))
+    );
+  }
+);

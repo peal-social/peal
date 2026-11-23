@@ -108,6 +108,7 @@ export const fakeMeters = ({
               ],
             ]),
           })),
+        paymentMethod: () => Effect.succeed(Option.some(paymentMethod)),
         state: (_workspaceId, meter) =>
           Effect.gen(function* state() {
             return Option.some({

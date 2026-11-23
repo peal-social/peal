@@ -64,12 +64,12 @@ export const FeedItemView = ({
     <li
       aria-labelledby={titleId}
       aria-current={highlighted ? "true" : undefined}
-      className="aria-[current=true]:bg-muted/50 flex flex-col gap-3 py-4"
+      className="aria-[current=true]:bg-muted/50 flex flex-col gap-3 px-4 py-3"
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span id={titleId} className="font-medium break-all">
+            <span id={titleId} className="text-sm font-medium break-all">
               {feed.title ?? feed.url}
             </span>
             <Badge variant={feed.status === "active" ? "secondary" : "outline"}>
@@ -102,7 +102,7 @@ export const FeedItemView = ({
           ) : null}
         </div>
         {actions === null ? null : (
-          <div className="flex flex-wrap gap-2">{actions}</div>
+          <div className="flex flex-wrap items-center gap-2">{actions}</div>
         )}
       </div>
       {items}

@@ -39,6 +39,8 @@ class NoticeEvent extends JsonSerializableType
      *   |'FollowUpsNotSent'
      *   |'FollowUpRuleStopped'
      *   |'CommentRuleStopped'
+     *   |'VideoGenerationEnded'
+     *   |'SlideshowEnded'
      *   |'_unknown'
      * ) $type
      */
@@ -76,6 +78,8 @@ class NoticeEvent extends JsonSerializableType
      *   |NoticeEventFollowUpsNotSent
      *   |NoticeEventFollowUpRuleStopped
      *   |NoticeEventCommentRuleStopped
+     *   |NoticeEventVideoGenerationEnded
+     *   |NoticeEventSlideshowEnded
      *   |mixed
      * ) $value
      */
@@ -114,6 +118,8 @@ class NoticeEvent extends JsonSerializableType
      *   |'FollowUpsNotSent'
      *   |'FollowUpRuleStopped'
      *   |'CommentRuleStopped'
+     *   |'VideoGenerationEnded'
+     *   |'SlideshowEnded'
      *   |'_unknown'
      * ),
      *   value: (
@@ -147,6 +153,8 @@ class NoticeEvent extends JsonSerializableType
      *   |NoticeEventFollowUpsNotSent
      *   |NoticeEventFollowUpRuleStopped
      *   |NoticeEventCommentRuleStopped
+     *   |NoticeEventVideoGenerationEnded
+     *   |NoticeEventSlideshowEnded
      *   |mixed
      * ),
      * } $values
@@ -515,6 +523,30 @@ class NoticeEvent extends JsonSerializableType
         return new NoticeEvent([
             'type' => 'CommentRuleStopped',
             'value' => $commentRuleStopped,
+        ]);
+    }
+
+    /**
+     * @param NoticeEventVideoGenerationEnded $videoGenerationEnded
+     * @return NoticeEvent
+     */
+    public static function videoGenerationEnded(NoticeEventVideoGenerationEnded $videoGenerationEnded): NoticeEvent
+    {
+        return new NoticeEvent([
+            'type' => 'VideoGenerationEnded',
+            'value' => $videoGenerationEnded,
+        ]);
+    }
+
+    /**
+     * @param NoticeEventSlideshowEnded $slideshowEnded
+     * @return NoticeEvent
+     */
+    public static function slideshowEnded(NoticeEventSlideshowEnded $slideshowEnded): NoticeEvent
+    {
+        return new NoticeEvent([
+            'type' => 'SlideshowEnded',
+            'value' => $slideshowEnded,
         ]);
     }
 
@@ -1179,6 +1211,50 @@ class NoticeEvent extends JsonSerializableType
     }
 
     /**
+     * @return bool
+     */
+    public function isVideoGenerationEnded(): bool
+    {
+        return $this->value instanceof NoticeEventVideoGenerationEnded && $this->type === 'VideoGenerationEnded';
+    }
+
+    /**
+     * @return NoticeEventVideoGenerationEnded
+     */
+    public function asVideoGenerationEnded(): NoticeEventVideoGenerationEnded
+    {
+        if (!($this->value instanceof NoticeEventVideoGenerationEnded && $this->type === 'VideoGenerationEnded')) {
+            throw new Exception(
+                "Expected VideoGenerationEnded; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isSlideshowEnded(): bool
+    {
+        return $this->value instanceof NoticeEventSlideshowEnded && $this->type === 'SlideshowEnded';
+    }
+
+    /**
+     * @return NoticeEventSlideshowEnded
+     */
+    public function asSlideshowEnded(): NoticeEventSlideshowEnded
+    {
+        if (!($this->value instanceof NoticeEventSlideshowEnded && $this->type === 'SlideshowEnded')) {
+            throw new Exception(
+                "Expected SlideshowEnded; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
      * @return string
      */
     public function __toString(): string
@@ -1318,6 +1394,14 @@ class NoticeEvent extends JsonSerializableType
                 $value = $this->asCommentRuleStopped()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
+            case 'VideoGenerationEnded':
+                $value = $this->asVideoGenerationEnded()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'SlideshowEnded':
+                $value = $this->asSlideshowEnded()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
             case '_unknown':
             default:
                 if (is_null($this->value)) {
@@ -1443,6 +1527,12 @@ class NoticeEvent extends JsonSerializableType
                 break;
             case 'CommentRuleStopped':
                 $args['value'] = NoticeEventCommentRuleStopped::jsonDeserialize($data);
+                break;
+            case 'VideoGenerationEnded':
+                $args['value'] = NoticeEventVideoGenerationEnded::jsonDeserialize($data);
+                break;
+            case 'SlideshowEnded':
+                $args['value'] = NoticeEventSlideshowEnded::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

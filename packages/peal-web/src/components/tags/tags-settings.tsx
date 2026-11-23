@@ -4,8 +4,19 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { maxTagsPerPost, maxTagsPerWorkspace } from "peal-contract";
 import type { Tag } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowDescription,
+  SettingsSection,
+  SettingsSectionDescription,
+  SettingsSectionHeader,
+  SettingsSectionTitle,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
@@ -184,18 +195,24 @@ const LoadedTags = ({
     onInitial: () => <SettingsLoading />,
     onSuccess: ({ value }) =>
       value.length === 0 ? (
-        <p className="text-muted-foreground">{t("empty")}</p>
+        <SettingsCard>
+          <SettingsRow>
+            <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+          </SettingsRow>
+        </SettingsCard>
       ) : (
-        <ul className="divide-y">
-          {value.map((tag) => (
-            <TagRow
-              key={tag.id}
-              mayManage={mayManage}
-              tag={tag}
-              workspaceId={workspaceId}
-            />
-          ))}
-        </ul>
+        <SettingsCard>
+          <ul className="divide-y">
+            {value.map((tag) => (
+              <TagRow
+                key={tag.id}
+                mayManage={mayManage}
+                tag={tag}
+                workspaceId={workspaceId}
+              />
+            ))}
+          </ul>
+        </SettingsCard>
       ),
   });
 };
@@ -274,8 +291,10 @@ export const CreateTagForm = ({
 };
 
 /**
- * The workspace's tags: the list, and for those who may change posts a
- * form to add one, and to rename, recolour or delete each.
+ * The workspace's tags: the list, under what tags are for, their limits
+ * and, to a member who may not change posts, why nothing can be changed;
+ * then for those who may a form to add one, and to rename, recolour or
+ * delete each.
  */
 export const TagsSettings = ({
   mayManage,
@@ -288,28 +307,43 @@ export const TagsSettings = ({
   const hydrated = useHydrated();
 
   return (
-    <div className="flex flex-col gap-8">
-      <section aria-labelledby="tags-title" className="flex flex-col gap-2">
-        <h2 id="tags-title" className="text-xl font-semibold">
-          {t("listTitle")}
-        </h2>
+    <>
+      <SettingsSection aria-labelledby="tags-title">
+        <SettingsSectionHeader>
+          <div className="min-w-0 flex-1">
+            <SettingsSectionTitle id="tags-title">
+              {t("listTitle")}
+            </SettingsSectionTitle>
+            <SettingsSectionDescription>
+              {t("description")}{" "}
+              {t("rules", {
+                max: maxTagsPerWorkspace,
+                perPost: maxTagsPerPost,
+              })}
+              {mayManage ? null : <> {t("readOnly")}</>}
+            </SettingsSectionDescription>
+          </div>
+        </SettingsSectionHeader>
         {hydrated ? (
           <LoadedTags mayManage={mayManage} workspaceId={workspaceId} />
         ) : (
           <SettingsLoading />
         )}
-      </section>
+      </SettingsSection>
       {mayManage ? (
-        <section
-          aria-labelledby="create-tag-title"
-          className="flex flex-col gap-4"
-        >
-          <h2 id="create-tag-title" className="text-xl font-semibold">
-            {t("createTitle")}
-          </h2>
-          <CreateTagForm idPrefix="new" workspaceId={workspaceId} />
-        </section>
+        <SettingsSection aria-labelledby="create-tag-title">
+          <SettingsSectionHeader>
+            <SettingsSectionTitle id="create-tag-title">
+              {t("createTitle")}
+            </SettingsSectionTitle>
+          </SettingsSectionHeader>
+          <SettingsCard>
+            <SettingsCardBody>
+              <CreateTagForm idPrefix="new" workspaceId={workspaceId} />
+            </SettingsCardBody>
+          </SettingsCard>
+        </SettingsSection>
       ) : null}
-    </div>
+    </>
   );
 };

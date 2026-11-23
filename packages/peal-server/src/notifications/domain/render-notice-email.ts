@@ -276,6 +276,34 @@ const contentOf = (
       messages: catalog.commentRuleStopped,
       values: [["reason", catalog.commentRuleStopReasons[reason]]],
     }),
+    VideoGenerationEnded: ({ outcome, reason }): Content =>
+      outcome === "succeeded"
+        ? { messages: catalog.videoGenerated, values: [] }
+        : {
+            messages: catalog.videoFailed,
+            values: [
+              [
+                "reason",
+                catalog.videoFailureReasons[
+                  Option.getOrElse(reason, () => "refused" as const)
+                ],
+              ],
+            ],
+          },
+    SlideshowEnded: ({ outcome, reason }): Content =>
+      outcome === "succeeded"
+        ? { messages: catalog.slideshowComposed, values: [] }
+        : {
+            messages: catalog.slideshowFailed,
+            values: [
+              [
+                "reason",
+                catalog.slideshowFailureReasons[
+                  Option.getOrElse(reason, () => "refused" as const)
+                ],
+              ],
+            ],
+          },
     PostApprovalRequested: ({ scheduledAt }): Content => ({
       messages: catalog.postApprovalRequested,
       values: [["scheduledAt", instantIn(scheduledAt, locale)]],

@@ -55,6 +55,31 @@
     "tag": "AdsUnavailable"
   },
   {
+    "code": "ai_capability_not_offered",
+    "status": 422,
+    "tag": "AiCapabilityNotOffered"
+  },
+  {
+    "code": "ai_model_required",
+    "status": 422,
+    "tag": "AiModelRequired"
+  },
+  {
+    "code": "ai_provider_address_refused",
+    "status": 422,
+    "tag": "AiProviderAddressRefused"
+  },
+  {
+    "code": "ai_provider_key_required",
+    "status": 422,
+    "tag": "AiProviderKeyRequired"
+  },
+  {
+    "code": "ai_provider_not_connected",
+    "status": 404,
+    "tag": "AiProviderNotConnected"
+  },
+  {
     "code": "already_member",
     "status": 409,
     "tag": "AlreadyMember"
@@ -128,6 +153,21 @@
     "code": "assistant_unavailable",
     "status": 503,
     "tag": "AssistantUnavailable"
+  },
+  {
+    "code": "audio_allowance_reached",
+    "status": 429,
+    "tag": "AudioAllowanceReached"
+  },
+  {
+    "code": "audio_provider_failed",
+    "status": 502,
+    "tag": "AudioProviderFailed"
+  },
+  {
+    "code": "audio_unavailable",
+    "status": 409,
+    "tag": "AudioUnavailable"
   },
   {
     "code": "bad_request",
@@ -248,6 +288,26 @@
     "code": "comment_rule_not_possible",
     "status": 422,
     "tag": "CommentRuleNotPossible"
+  },
+  {
+    "code": "composition_allowance_reached",
+    "status": 429,
+    "tag": "CompositionAllowanceReached"
+  },
+  {
+    "code": "composition_busy",
+    "status": 429,
+    "tag": "CompositionBusy"
+  },
+  {
+    "code": "composition_needs_payment",
+    "status": 402,
+    "tag": "CompositionNeedsPayment"
+  },
+  {
+    "code": "composition_unavailable",
+    "status": 409,
+    "tag": "CompositionUnavailable"
   },
   {
     "code": "connect_failed",
@@ -810,6 +870,16 @@
     "tag": "SiteNotConnected"
   },
   {
+    "code": "slideshow_not_found",
+    "status": 404,
+    "tag": "SlideshowNotFound"
+  },
+  {
+    "code": "slideshow_request_rejected",
+    "status": 422,
+    "tag": "SlideshowRequestRejected"
+  },
+  {
     "code": "spend_ceiling_exceeded",
     "status": 409,
     "tag": "SpendCeilingExceeded"
@@ -960,6 +1030,11 @@
     "tag": "TooManyWebhookSends"
   },
   {
+    "code": "transcription_rejected",
+    "status": 422,
+    "tag": "TranscriptionRejected"
+  },
+  {
     "code": "transfer_not_found",
     "status": 404,
     "tag": "TransferNotFound"
@@ -1018,6 +1093,36 @@
     "code": "user_not_found",
     "status": 404,
     "tag": "UserNotFound"
+  },
+  {
+    "code": "video_allowance_reached",
+    "status": 429,
+    "tag": "VideoAllowanceReached"
+  },
+  {
+    "code": "video_busy",
+    "status": 429,
+    "tag": "VideoBusy"
+  },
+  {
+    "code": "video_generation_not_found",
+    "status": 404,
+    "tag": "VideoGenerationNotFound"
+  },
+  {
+    "code": "video_request_rejected",
+    "status": 422,
+    "tag": "VideoRequestRejected"
+  },
+  {
+    "code": "video_unavailable",
+    "status": 409,
+    "tag": "VideoUnavailable"
+  },
+  {
+    "code": "voice_not_offered",
+    "status": 422,
+    "tag": "VoiceNotOffered"
   },
   {
     "code": "webhook_delivery_not_found",

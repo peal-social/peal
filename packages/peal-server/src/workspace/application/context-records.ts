@@ -4,6 +4,8 @@ import type { DateTime, Effect } from "effect";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type {
   AgentChatRecord,
+  AiModelRecord,
+  AiProviderRecord,
   AgentSkillRecord,
   ArticleRecord,
   AccountSnapshotRecord,
@@ -33,9 +35,11 @@ import type {
   SentReviewReplyRecord,
   SavedItemsRecord,
   ShortLinkRecord,
+  SlideshowRecord,
   StaffActionRecord,
   UsageRecord,
   UserReviewRecord,
+  VideoGenerationRecord,
   WebhookRecord,
 } from "#shared/application/personal-data.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
@@ -69,6 +73,10 @@ export interface WorkspaceContent {
   readonly analytics: readonly AnalyticsRecord[];
   /** Its articles, for its websites. */
   readonly articles: readonly ArticleRecord[];
+  /** The model it chose for each use of the assistant. */
+  readonly assistantModels: readonly AiModelRecord[];
+  /** The providers it connected to the assistant, without their keys. */
+  readonly assistantProviders: readonly AiProviderRecord[];
   /** The image provider it brought, without its key; null when none. */
   readonly assistantImageProvider: ImageProviderRecord | null;
   /** How many images it asked that provider for, by day. */
@@ -78,6 +86,10 @@ export interface WorkspaceContent {
   /** The text provider it brought, without its key; null when none. */
   readonly assistantTextProvider: TextProviderRecord | null;
   readonly assistantUsage: readonly UsageRecord[];
+  /** The videos it asked its own provider for, without their prompts. */
+  readonly assistantVideos: readonly VideoGenerationRecord[];
+  /** The slide videos it asked for, without their captions. */
+  readonly assistantSlideshows: readonly SlideshowRecord[];
   readonly billing: BillingRecord;
   readonly channels: readonly ChannelRecord[];
   /** Its rules that answer comments by keyword, with what each did. */

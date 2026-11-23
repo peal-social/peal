@@ -60,11 +60,11 @@ const StoreTest = Layer.mergeAll(
   DrizzleMediaAssetsLive
 ).pipe(Layer.provideMerge(DatabaseTest), Layer.provide(storageSettings));
 
-const provider: ImageProviderChange = {
+const provider = {
   apiKey: syntheticKey,
   baseUrl: "https://images.example.com/v1/",
   model: "synthetic-image-model",
-};
+} satisfies ImageProviderChange;
 
 // The tag and the fields an answer failed with.
 const refusalOf = <A, E extends { readonly _tag: string }>(
@@ -228,6 +228,59 @@ layer(StoreTest, { timeout: "60 seconds" })(
             kept.provider?.baseUrl,
             "https://images.example.com/v1"
           );
+        }).pipe(Effect.provide(imagesTest()))
+    );
+
+    it.effect(
+      "names its provider, reached at the catalogue's address unless another is given",
+      () =>
+        Effect.gen(function* named() {
+          const workspaceId = yield* freshWorkspace;
+          const params = { workspaceId };
+          const admin = yield* as(workspaceId, "admin");
+
+          // A change that names none is the OpenAI images API at its address.
+          const generic = yield* admin.assistant.setImageProvider({
+            params,
+            payload: provider,
+          });
+
+          assert.strictEqual(generic.provider, "openai-compatible");
+
+          const xai = yield* admin.assistant.setImageProvider({
+            params,
+            payload: {
+              apiKey: syntheticKey,
+              model: "grok-imagine-image-2.0",
+              provider: "xai",
+            },
+          });
+
+          assert.deepInclude(xai, {
+            baseUrl: "https://api.x.ai/v1",
+            provider: "xai",
+          });
+
+          const read = yield* admin.assistant.imageProvider({ params });
+
+          assert.strictEqual(read.provider?.provider, "xai");
+
+          // The generic endpoint has no address of its own.
+          const addressless = yield* refusalOf(
+            admin.assistant.setImageProvider({
+              params,
+              payload: {
+                apiKey: syntheticKey,
+                model: provider.model,
+                provider: "openai-compatible",
+              },
+            })
+          );
+
+          assert.deepInclude(addressless, {
+            _tag: "ImageProviderAddressRefused",
+            reason: "malformed",
+          });
         }).pipe(Effect.provide(imagesTest()))
     );
 

@@ -142,6 +142,52 @@ export const AutomationStopReasonSchema = Schema.Literals([
 
 export type AutomationStopReason = typeof AutomationStopReasonSchema.Type;
 
+/**
+ * Why a video the assistant was asked for failed, as the assistant names
+ * it (the contract's `VideoFailureReason`, kept equal by
+ * `test/notifications/domain/notices.test.ts`).
+ */
+export const VideoNoticeReasonSchema = Schema.Literals([
+  "unavailable",
+  "keyUnreadable",
+  "settingsRefused",
+  "addressRefused",
+  "redirected",
+  "unreachable",
+  "refused",
+  "timedOut",
+  "unusableAnswer",
+  "imageUnavailable",
+  "storageFull",
+  "notStored",
+  "interrupted",
+]);
+
+export type VideoNoticeReason = typeof VideoNoticeReasonSchema.Type;
+
+/**
+ * Why a slide video failed, as the assistant names it (the contract's
+ * `SlideshowFailureReason`, kept equal by
+ * `test/notifications/domain/notices.test.ts`).
+ */
+export const SlideshowNoticeReasonSchema = Schema.Literals([
+  "unavailable",
+  "keyUnreadable",
+  "settingsRefused",
+  "addressRefused",
+  "redirected",
+  "unreachable",
+  "refused",
+  "timedOut",
+  "unusableAnswer",
+  "mediaUnavailable",
+  "storageFull",
+  "notStored",
+  "interrupted",
+]);
+
+export type SlideshowNoticeReason = typeof SlideshowNoticeReasonSchema.Type;
+
 // A post's channel is none when it was disconnected before the notice was
 // made: the notice still says what happened to the post.
 const postOn = {
@@ -371,6 +417,24 @@ export const NoticeEventSchema = Schema.Union([
     reason: AutomationStopReasonSchema,
     ruleId: Uuid7Schema,
   }),
+  // A video the reader asked for ended: a file of the library, or why
+  // not, as the assistant names it. Only the member who asked hears, in
+  // the app.
+  Schema.TaggedStruct("VideoGenerationEnded", {
+    generationId: Uuid7Schema,
+    mediaId: Schema.Option(Uuid7Schema),
+    outcome: Schema.Literals(["succeeded", "failed"]),
+    reason: Schema.Option(VideoNoticeReasonSchema),
+  }),
+  // A slide video the reader asked for ended: a file of the library, or
+  // why not, as the assistant names it. Only the member who asked hears,
+  // in the app.
+  Schema.TaggedStruct("SlideshowEnded", {
+    mediaId: Schema.Option(Uuid7Schema),
+    outcome: Schema.Literals(["succeeded", "failed"]),
+    reason: Schema.Option(SlideshowNoticeReasonSchema),
+    slideshowId: Uuid7Schema,
+  }),
   // An ad network refused a member's sign-in: the ad accounts it connects
   // are no longer read until they sign in again.
   Schema.TaggedStruct("AdConnectionReconnectRequired", {
@@ -437,6 +501,9 @@ export const emailKindOf = (event: NoticeEvent): Option.Option<EmailKind> =>
     FollowUpsNotSent: () => Option.some<EmailKind>("automations"),
     FollowUpRuleStopped: () => Option.some<EmailKind>("automations"),
     CommentRuleStopped: () => Option.some<EmailKind>("automations"),
+    // Told in the app alone (`inAppOnly`).
+    VideoGenerationEnded: () => Option.none<EmailKind>(),
+    SlideshowEnded: () => Option.none<EmailKind>(),
     PostApprovalRequested: () => Option.some<EmailKind>("postReview"),
     PostApproved: () => Option.some<EmailKind>("postReview"),
     PostChangesRequested: () => Option.some<EmailKind>("postReview"),
@@ -481,6 +548,8 @@ export const audienceOf = (event: NoticeEvent): Permission =>
     FollowUpsNotSent: (): Permission => "post:schedule",
     FollowUpRuleStopped: (): Permission => "post:schedule",
     CommentRuleStopped: (): Permission => "engagement:reply",
+    VideoGenerationEnded: (): Permission => "media:upload",
+    SlideshowEnded: (): Permission => "media:upload",
     PostApprovalRequested: (): Permission => "post:approve",
     PostApproved: (): Permission => "post:schedule",
     PostChangesRequested: (): Permission => "post:schedule",
@@ -516,6 +585,8 @@ export const isAboutPost = (event: NoticeEvent): boolean =>
     FollowUpsNotSent: () => true,
     FollowUpRuleStopped: () => true,
     CommentRuleStopped: () => true,
+    VideoGenerationEnded: () => false,
+    SlideshowEnded: () => false,
     PostApprovalRequested: () => true,
     PostApproved: () => true,
     PostChangesRequested: () => true,
@@ -622,6 +693,15 @@ export const recipientsOf = (
       return false;
     }
 
+    // A video is told to the member who asked for it alone, while they
+    // may still upload.
+    if (
+      event._tag === "VideoGenerationEnded" ||
+      event._tag === "SlideshowEnded"
+    ) {
+      return member.mayAct && Option.contains(present, member.userId);
+    }
+
     if (!isAboutPost(event)) {
       return member.mayAct;
     }
@@ -645,6 +725,13 @@ export const recipientsOf = (
   return members.flatMap((member) => (hears(member) ? [member.userId] : []));
 };
 
+/**
+ * Whether the event reaches the app alone, never an email: a video or a
+ * slide video the reader asked for, which they follow on the media page.
+ */
+export const inAppOnly = (event: NoticeEvent): boolean =>
+  event._tag === "VideoGenerationEnded" || event._tag === "SlideshowEnded";
+
 /** The web app's page for the event, where the reader acts on it. */
 export const pageOf = (event: NoticeEvent, workspaceId: WorkspaceId): string =>
   Match.valueTags(event, {
@@ -663,6 +750,8 @@ export const pageOf = (event: NoticeEvent, workspaceId: WorkspaceId): string =>
     FollowUpRuleStopped: ({ ruleId }) =>
       `/${workspaceId}/settings/follow-ups?rule=${ruleId}`,
     CommentRuleStopped: () => `/${workspaceId}/settings/comment-rules`,
+    VideoGenerationEnded: () => `/${workspaceId}/media`,
+    SlideshowEnded: () => `/${workspaceId}/media`,
     PostApprovalRequested: ({ postId }) => `/${workspaceId}/posts/${postId}`,
     PostApproved: ({ postId }) => `/${workspaceId}/posts/${postId}`,
     PostChangesRequested: ({ postId }) => `/${workspaceId}/posts/${postId}`,

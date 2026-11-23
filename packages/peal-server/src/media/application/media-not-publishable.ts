@@ -5,12 +5,13 @@ import { MediaAssetIdSchema } from "#media/domain/media-asset-id.ts";
 /**
  * The asset cannot go out on a platform: the workspace has none with this
  * id (`notFound`, as when it was deleted), or its file was not checked and
- * probed yet, or was refused (`notReady`).
+ * probed yet, or was refused (`notReady`), or it is of a kind no platform
+ * takes (`notPublishable`: audio).
  */
 export class MediaNotPublishable extends Schema.TaggedError<MediaNotPublishable>()(
   "MediaNotPublishable",
   {
     assetId: MediaAssetIdSchema,
-    reason: Schema.Literals(["notFound", "notReady"]),
+    reason: Schema.Literals(["notFound", "notReady", "notPublishable"]),
   }
 ) {}

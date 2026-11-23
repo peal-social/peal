@@ -88,9 +88,10 @@ describe("the configured language model", () => {
       const answer = yield* write.pipe(
         Effect.provide(
           writingModelFor({
-            _tag: "Anthropic",
-            apiKey: Redacted.make("sk-ant-synthetic"),
-            baseUrl: Option.some(server.url),
+            _tag: "On",
+            provider: "anthropic",
+            apiKey: Option.some(Redacted.make("sk-ant-synthetic")),
+            baseUrl: server.url,
             model: "claude-opus-5-5",
           })
         )
@@ -130,7 +131,8 @@ describe("the configured language model", () => {
       const answer = yield* write.pipe(
         Effect.provide(
           writingModelFor({
-            _tag: "OpenAiCompatible",
+            _tag: "On",
+            provider: "openai-compatible",
             apiKey: Option.some(Redacted.make("sk-synthetic")),
             baseUrl: `${server.url}/v1`,
             model: "synthetic-model-8b",
@@ -172,7 +174,8 @@ describe("the configured language model", () => {
       yield* write.pipe(
         Effect.provide(
           writingModelFor({
-            _tag: "OpenAiCompatible",
+            _tag: "On",
+            provider: "openai-compatible",
             apiKey: Option.none(),
             baseUrl: `${server.url}/v1`,
             model: "synthetic-model-8b",
@@ -195,7 +198,8 @@ describe("the configured language model", () => {
       const refused = yield* write.pipe(
         Effect.provide(
           writingModelFor({
-            _tag: "OpenAiCompatible",
+            _tag: "On",
+            provider: "openai-compatible",
             apiKey: Option.none(),
             baseUrl: `${server.url}/v1`,
             model: "synthetic-model-8b",
@@ -216,7 +220,8 @@ describe("the configured language model", () => {
       const unreadable = yield* write.pipe(
         Effect.provide(
           writingModelFor({
-            _tag: "OpenAiCompatible",
+            _tag: "On",
+            provider: "openai-compatible",
             apiKey: Option.none(),
             baseUrl: `${invalid.url}/v1`,
             model: "synthetic-model-8b",

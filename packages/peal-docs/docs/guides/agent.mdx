@@ -64,7 +64,7 @@ The agent doesn't manage members, API keys, webhooks, feeds or automations, does
 
 ## Who answers [#model]
 
-The agent uses the workspace's own [text provider](/guides/workspace#text-provider) when it has one. Otherwise it uses the AI provider the Peal instance's administrator chose. When neither is set, the agent page says it's off, and an owner or an admin can set up a text provider in the assistant settings.
+The agent uses the workspace's own [text provider](/guides/workspace#providers) when it has one. Otherwise it uses the AI provider the Peal instance's administrator chose. When neither is set, the agent page says it's off, and an owner or an admin can set up a text provider in the assistant settings.
 
 Each request the agent sends the model counts as one of the [writing assistant's requests](/guides/posts/assistant#limits). One answer can take several, up to 8, when the agent looks things up before it answers. In a long chat, each request sends the model the latest messages only, about 120,000 characters, so the agent may not recall the start of it: start a new chat for a new task. With the workspace's own provider, Peal's requests aren't spent, and the provider's own daily limit applies. On Peal Cloud, the instance's model needs a payment method on the billing account.
 

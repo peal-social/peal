@@ -35,6 +35,7 @@ import { InboxApi } from "./inbox.ts";
 import { InvitationsApi } from "./invitations.ts";
 import { LegalApi } from "./legal.ts";
 import { LookupsApi } from "./lookups.ts";
+import { MediaAudioApi } from "./media-audio.ts";
 import { MediaApi } from "./media.ts";
 import { MembersApi } from "./members.ts";
 import { NoticesApi } from "./notices.ts";
@@ -50,11 +51,13 @@ import { ReviewApi } from "./review.ts";
 import { SessionApi } from "./session.ts";
 import { ShortLinksApi } from "./short-links.ts";
 import { SignaturesApi } from "./signatures.ts";
+import { SlideshowsApi } from "./slideshows.ts";
 import { StaffApi } from "./staff.ts";
 import { SystemApi } from "./system.ts";
 import { TagsApi } from "./tags.ts";
 import { TikTokApi } from "./tiktok.ts";
 import { UsageApi } from "./usage.ts";
+import { VideoGenerationsApi } from "./video-generations.ts";
 import { WebhooksApi } from "./webhooks.ts";
 import { WorkspacesApi } from "./workspaces.ts";
 
@@ -658,12 +661,23 @@ export {
 export type { ApiKey, ApiKeyMaker, NewApiKey } from "./api-keys.ts";
 
 export {
+  AiCapabilityModelChangeSchema,
+  AiCapabilityModelSchema,
+  AiCapabilityModelsSchema,
+  AiProviderConnectionChangeSchema,
+  AiProviderConnectionSchema,
+  AiProviderConnectionsSchema,
+  AiProviderTestSchema,
   AssistantActionSchema,
   AssistantImageSourceSchema,
   AssistantImagesStatusSchema,
   AssistantStatusSchema,
   AssistantTextSourceSchema,
   AssistantToneSchema,
+  AssistantSlideshowsStatusSchema,
+  AssistantTranscriptionsStatusSchema,
+  AssistantVideosStatusSchema,
+  AssistantVoiceoversStatusSchema,
   anthropicApiAddress,
   ImageAspectSchema,
   ImageProviderChangeSchema,
@@ -688,12 +702,23 @@ export {
 } from "./assistant.ts";
 
 export type {
+  AiCapabilityModel,
+  AiCapabilityModelChange,
+  AiCapabilityModels,
+  AiProviderConnection,
+  AiProviderConnectionChange,
+  AiProviderConnections,
+  AiProviderTest,
   AssistantAction,
   AssistantImageSource,
   AssistantImagesStatus,
   AssistantStatus,
   AssistantTextSource,
   AssistantTone,
+  AssistantSlideshowsStatus,
+  AssistantTranscriptionsStatus,
+  AssistantVideosStatus,
+  AssistantVoiceoversStatus,
   ImageAspect,
   ImageProvider,
   ImageProviderChange,
@@ -715,6 +740,16 @@ export { AssistantInputRejected } from "./assistant-input-rejected.ts";
 export { AssistantQuotaExceeded } from "./assistant-quota-exceeded.ts";
 
 export { AssistantSecretsNotConfigured } from "./assistant-secrets-not-configured.ts";
+
+export { AiCapabilityNotOffered } from "./ai-capability-not-offered.ts";
+
+export { AiModelRequired } from "./ai-model-required.ts";
+
+export { AiProviderAddressRefused } from "./ai-provider-address-refused.ts";
+
+export { AiProviderKeyRequired } from "./ai-provider-key-required.ts";
+
+export { AiProviderNotConnected } from "./ai-provider-not-connected.ts";
 
 export { AssistantUnavailable } from "./assistant-unavailable.ts";
 
@@ -1384,6 +1419,118 @@ export { ImageProviderKeyRequired } from "./image-provider-key-required.ts";
 export { ImageProviderRefused } from "./image-provider-refused.ts";
 
 export { OwnImageLimitReached } from "./own-image-limit-reached.ts";
+
+export {
+  maxVideoDurationSeconds,
+  maxVideoGenerationsListed,
+  maxVideoPromptLength,
+  VideoFailureReasonSchema,
+  VideoGenerationRequestSchema,
+  VideoGenerationSchema,
+  VideoGenerationsApi,
+  VideoGenerationsSchema,
+  VideoGenerationStatusSchema,
+  videosPerDay,
+} from "./video-generations.ts";
+
+export type {
+  VideoFailureReason,
+  VideoGeneration,
+  VideoGenerationRequest,
+  VideoGenerations,
+  VideoGenerationStatus,
+} from "./video-generations.ts";
+
+export { VideoAllowanceReached } from "./video-allowance-reached.ts";
+
+export { VideoBusy } from "./video-busy.ts";
+
+export { VideoGenerationNotFound } from "./video-generation-not-found.ts";
+
+export { VideoRequestRejected } from "./video-request-rejected.ts";
+
+export { VideoUnavailable } from "./video-unavailable.ts";
+
+export {
+  defaultSecondsPerSlide,
+  maxSecondsPerSlide,
+  maxSlideCaptionLength,
+  maxSlides,
+  maxSlideshowSeconds,
+  maxSlideshowsListed,
+  minSecondsPerSlide,
+  minSlides,
+  SlideMotionSchema,
+  SlideSchema,
+  SlideshowFailureReasonSchema,
+  SlideshowRequestSchema,
+  SlideshowSchema,
+  SlideshowsApi,
+  SlideshowsSchema,
+  SlideshowStatusSchema,
+  slideshowsPerDay,
+  SlideTransitionSchema,
+} from "./slideshows.ts";
+
+export type {
+  Slide,
+  SlideMotion,
+  Slideshow,
+  SlideshowFailureReason,
+  SlideshowRequest,
+  Slideshows,
+  SlideshowStatus,
+  SlideTransition,
+} from "./slideshows.ts";
+
+export { CompositionAllowanceReached } from "./composition-allowance-reached.ts";
+
+export { CompositionBusy } from "./composition-busy.ts";
+
+export { CompositionNeedsPayment } from "./composition-needs-payment.ts";
+
+export { CompositionUnavailable } from "./composition-unavailable.ts";
+
+export { SlideshowNotFound } from "./slideshow-not-found.ts";
+
+export {
+  SlideshowRejectionSchema,
+  SlideshowRequestRejected,
+} from "./slideshow-request-rejected.ts";
+
+export type { SlideshowRejection } from "./slideshow-request-rejected.ts";
+
+export {
+  maxTranscriptionBytes,
+  maxVoiceoverTextLength,
+  MediaAudioApi,
+  TranscriptionRequestSchema,
+  TranscriptSchema,
+  transcriptionsPerDay,
+  VoiceoverRequestSchema,
+  voiceoversPerDay,
+} from "./media-audio.ts";
+
+export type {
+  Transcript,
+  TranscriptionRequest,
+  VoiceoverRequest,
+} from "./media-audio.ts";
+
+export { AudioAllowanceReached } from "./audio-allowance-reached.ts";
+
+export {
+  AudioFailureReasonSchema,
+  AudioProviderFailed,
+} from "./audio-provider-failed.ts";
+
+export type { AudioFailureReason } from "./audio-provider-failed.ts";
+
+export { AudioUnavailable } from "./audio-unavailable.ts";
+
+export { TranscriptionRejected } from "./transcription-rejected.ts";
+
+export { VoiceNotOffered } from "./voice-not-offered.ts";
 
 export { OwnTextLimitReached } from "./own-text-limit-reached.ts";
 
@@ -2536,10 +2683,13 @@ export class Api extends HttpApi.make("peal")
   .add(PostsApi)
   .add(ArticlesApi)
   .add(MediaApi)
+  .add(MediaAudioApi)
   .add(NoticesApi)
   .add(NotificationPreferencesApi)
   .add(BrowserAnalyticsApi)
   .add(AssistantApi)
+  .add(VideoGenerationsApi)
+  .add(SlideshowsApi)
   .add(WorkspacesApi)
   .add(MembersApi)
   .add(InvitationsApi)

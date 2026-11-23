@@ -98,7 +98,7 @@ Dans chaque espace de travail que possède le compte, la clé détient les [perm
 
 - `channel:*`, `media:*`, `post:*`, `analytics:read`, `assistant:use`, `webhook:*` et `billing:read`.
 - `engagement:read` et `engagement:reply`, pour les [commentaires](/guides/engage/inbox) sous les publications d’un client et pour y répondre en public au nom de son compte. Ces commentaires ont été écrits par d’autres personnes : ne les donnez à une clé que si votre produit les montre ou y répond.
-- `assistant:configure`, pour régler le [fournisseur d’images](/guides/workspace#image-provider) de chaque client avec `PUT /api/workspaces/{workspaceId}/assistant/image-provider`, un espace de travail à la fois, avec la clé du client.
+- `assistant:configure`, pour régler le [fournisseur d’images](/guides/workspace#providers) de chaque client avec `PUT /api/workspaces/{workspaceId}/assistant/image-provider`, un espace de travail à la fois, avec la clé du client.
 - `activity:read`, qui lit le [journal d’activité](/guides/workspace#activity) de l’espace de travail : ce que votre clé a demandé d’y changer, et les comptes connectés par des liens de connexion.
 
 Une clé partenaire n’obtient jamais les permissions des [messages privés](/guides/engage/inbox#direct-messages) (`engagement:readMessages`, `engagement:message`). Seul un propriétaire d’un espace de travail, en personne, peut y donner accès à une application, et l’espace de travail d’un client n’a pas de propriétaire.

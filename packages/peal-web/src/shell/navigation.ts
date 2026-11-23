@@ -15,6 +15,7 @@ export type Section = "posts" | "settings";
 /** The workspace pages the sidebar links to. */
 export type Page =
   | "account"
+  | "accountSecurity"
   | "ads"
   | "agent"
   | "agentSettings"
@@ -34,7 +35,6 @@ export type Page =
   | "general"
   | "import"
   | "inbox"
-  | "invitations"
   | "media"
   | "members"
   | "messages"
@@ -42,6 +42,7 @@ export type Page =
   | "notifications"
   | "partner"
   | "posts"
+  | "preferences"
   | "queues"
   | "recycling"
   | "security"
@@ -91,6 +92,17 @@ export const crumbHrefOf = (workspace: string, crumb: Crumb): string =>
 
 export type Group = "build" | "engage" | "partners";
 
+/**
+ * The groups of a section's pages, as Settings sorts its own by concern:
+ * the person's own pages first, then the workspace's publishing tools and
+ * automations, then what administers it.
+ */
+export type SectionGroup =
+  | "administration"
+  | "automations"
+  | "personal"
+  | "publishing";
+
 interface PageRule {
   /** Under /<workspace>; "" is the section's own address. */
   readonly path: string;
@@ -114,13 +126,19 @@ const needs =
     required.every((permission) => permissions.has(permission));
 
 // What each page asks of its member, as the page itself checks it.
-// The person's own pages (their account, their notifications) are in every
-// workspace's settings, for anyone.
+// The person's own pages (their profile, preferences, notifications and
+// security) are in every workspace's settings, for anyone.
 const pages: Readonly<Record<Page, PageRule>> = {
   account: {
     may: anyone,
     mode: "studio",
     path: "/settings/account",
+    section: "settings",
+  },
+  accountSecurity: {
+    may: anyone,
+    mode: "studio",
+    path: "/settings/account/security",
     section: "settings",
   },
   ads: { may: needs("ads:read"), mode: "studio", path: "/ads" },
@@ -193,12 +211,6 @@ const pages: Readonly<Record<Page, PageRule>> = {
     path: "/inbox",
     split: true,
   },
-  invitations: {
-    may: needs("invitation:create"),
-    mode: "studio",
-    path: "/settings/invitations",
-    section: "settings",
-  },
   media: { may: anyone, mode: "studio", path: "/media" },
   members: {
     may: anyone,
@@ -239,6 +251,12 @@ const pages: Readonly<Record<Page, PageRule>> = {
     mode: "studio",
     path: "/posts",
     section: "posts",
+  },
+  preferences: {
+    may: anyone,
+    mode: "studio",
+    path: "/settings/account/preferences",
+    section: "settings",
   },
   queues: {
     may: needs("post:read", "channel:read"),
@@ -311,30 +329,46 @@ const layout: Readonly<
   ],
 };
 
-const sectionPages: Readonly<Record<Section, readonly Page[]>> = {
-  posts: ["posts", "articles", "import"],
+// Each section's pages, in groups; a group without a name comes first.
+const sectionLayout: Readonly<
+  Record<
+    Section,
+    readonly {
+      readonly group: SectionGroup | null;
+      readonly pages: readonly Page[];
+    }[]
+  >
+> = {
+  posts: [{ group: null, pages: ["posts", "articles", "import"] }],
   settings: [
-    "general",
-    "members",
-    "invitations",
-    "security",
-    "billing",
-    "tags",
-    "signatures",
-    "channelSets",
-    "queues",
-    "recycling",
-    "followUps",
-    "commentRules",
-    "messages",
-    "feeds",
-    "assistant",
-    "agentSettings",
-    "account",
-    "notifications",
-    "notificationSettings",
+    {
+      group: "personal",
+      pages: [
+        "account",
+        "preferences",
+        "notifications",
+        "notificationSettings",
+        "accountSecurity",
+        "agentSettings",
+      ],
+    },
+    {
+      group: "publishing",
+      pages: ["tags", "signatures", "channelSets", "messages", "assistant"],
+    },
+    {
+      group: "automations",
+      pages: ["queues", "recycling", "followUps", "commentRules", "feeds"],
+    },
+    {
+      group: "administration",
+      pages: ["general", "members", "security", "billing"],
+    },
   ],
 };
+
+const sectionPages = (section: Section): readonly Page[] =>
+  sectionLayout[section].flatMap(({ pages: listed }) => listed);
 
 export interface Link {
   readonly page: Page;
@@ -357,6 +391,11 @@ export interface Navigation {
   }[];
   /** The open section's pages, when there is one. */
   readonly sectionLinks: readonly Link[];
+  /** The same pages in their groups, as the sidebar lists them. */
+  readonly sectionGroups: readonly {
+    readonly group: SectionGroup | null;
+    readonly links: readonly Link[];
+  }[];
   /** Settings, at the sidebar's foot, which opens its section. */
   readonly settings: Link;
   /** Where each mode starts, or null for a mode the member may not use. */
@@ -389,7 +428,8 @@ const pageNames: readonly Page[] = [
   ...Object.values(layout).flatMap((groups) =>
     groups.flatMap(({ pages: listed }) => listed)
   ),
-  ...Object.values(sectionPages).flat(),
+  ...sectionPages("posts"),
+  ...sectionPages("settings"),
 ];
 
 // The page a path inside a workspace shows: its own path, or the longest
@@ -487,8 +527,8 @@ export interface PageLink {
 const menuOrder: readonly Page[] = [
   ...new Set([
     ...layout.studio.flatMap(({ pages: listed }) => listed),
-    ...sectionPages.posts,
-    ...sectionPages.settings,
+    ...sectionPages("posts"),
+    ...sectionPages("settings"),
     ...layout.api.flatMap(({ pages: listed }) => listed),
   ]),
 ];
@@ -561,10 +601,17 @@ export const navigationOf = ({
     }))
     .filter(({ links }) => links.length > 0);
 
-  const sectionLinks =
+  const sectionGroups =
     section === null
       ? []
-      : sectionPages[section].filter(allowed).map((page) => linkOf(page, null));
+      : sectionLayout[section]
+          .map(({ group, pages: listed }) => ({
+            group,
+            links: listed.filter(allowed).map((page) => linkOf(page, null)),
+          }))
+          .filter(({ links }) => links.length > 0);
+
+  const sectionLinks = sectionGroups.flatMap(({ links }) => links);
 
   const firstOf = (of: Mode): string | null => {
     const page = layout[of]
@@ -584,6 +631,7 @@ export const navigationOf = ({
     mode,
     modes: { api: firstOf("api"), studio: firstOf("studio") },
     section,
+    sectionGroups,
     sectionLinks,
     settings: linkOf("general", "settings"),
     split: current !== null && pages[current].split === true,

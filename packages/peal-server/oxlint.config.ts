@@ -42,12 +42,45 @@ const testHelpers = {
   message: "Production code never imports test helpers.",
 };
 
+// The AI SDK is reached through one seam, the assistant's adapter
+// (`src/assistant/infrastructure/ai-sdk/`), which keeps its globals, its
+// errors and its keys in hand; everything else talks to effect/ai.
+const aiSeam = {
+  group: ["/ai", "/ai/**", "@ai-sdk/**"],
+  message:
+    "Only src/assistant/infrastructure/ai-sdk/ imports the AI SDK: use effect/ai and the adapter there.",
+};
+
+// The SDK's hosted gateway sends prompts to its vendor's service: never
+// imported, anywhere.
+const gatewayMessage =
+  "Peal never sends a prompt through the AI SDK's hosted gateway.";
+
+const noGateway = [
+  { message: gatewayMessage, name: "@ai-sdk/gateway" },
+  {
+    importNames: ["gateway", "createGateway"],
+    message: gatewayMessage,
+    name: "ai",
+  },
+];
+
+type AiImports = "seam" | "allowed";
+
 const restrict = (
   message: string,
-  group: readonly string[]
+  group: readonly string[],
+  ai: AiImports = "seam"
 ): NonNullable<Rules["no-restricted-imports"]> => [
   "error",
-  { patterns: [{ group: [...group], message }, testHelpers] },
+  {
+    paths: noGateway,
+    patterns: [
+      { group: [...group], message },
+      testHelpers,
+      ...(ai === "seam" ? [aiSeam] : []),
+    ],
+  },
 ];
 
 // Domain: entities and rules, built on Effect's core only.
@@ -74,7 +107,7 @@ const application = (context: Kernel) =>
 
 // Infrastructure: adapters behind the ports. Any package; other contexts only
 // through their use cases.
-const infrastructure = (context: Kernel) =>
+const infrastructure = (context: Kernel, ai: AiImports = "seam") =>
   restrict(
     "Adapters may use any package, their own context, the shared kernel and other contexts' application layer, never another context's internals or an api layer.",
     [
@@ -86,7 +119,8 @@ const infrastructure = (context: Kernel) =>
       `!#${context}/domain/**`,
       `!#${context}/infrastructure/**`,
       "!#shared/**",
-    ]
+    ],
+    ai
   );
 
 // Api: HttpApiBuilder handlers for peal-contract. Use cases come from the
@@ -205,9 +239,24 @@ export default defineConfig({
       // The composition root and entry point, which no layer rule covers.
       files: ["src/**"],
       rules: {
-        "no-restricted-imports": ["error", { patterns: [testHelpers] }],
+        "no-restricted-imports": [
+          "error",
+          { paths: noGateway, patterns: [testHelpers, aiSeam] },
+        ],
       },
     },
+    {
+      // Tests may drive the SDK (its mock models), never its gateway.
+      files: ["test/**"],
+      rules: { "no-restricted-imports": ["error", { paths: noGateway }] },
+    },
     ...layerOverrides,
+    {
+      // The one seam where the AI SDK is used.
+      files: ["src/assistant/infrastructure/ai-sdk/**"],
+      rules: {
+        "no-restricted-imports": infrastructure("assistant", "allowed"),
+      },
+    },
   ],
 });

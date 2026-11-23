@@ -9,6 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "peal-ui/components/card";
+import {
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowLabel,
+  SettingsRowText,
+} from "peal-ui/components/settings";
 
 interface ChoiceButtonsProps {
   readonly onChoose: (choice: BrowserAnalyticsChoice) => void;
@@ -121,12 +128,16 @@ export const ConsentSettingView = ({
       : t(consent === "granted" ? "allowed" : "refused", { date: decidedAt });
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm">{standing}</p>
+    <SettingsRow>
+      <SettingsRowText>
+        <SettingsRowLabel>{t("title")}</SettingsRowLabel>
+        <SettingsRowDescription>{t("description")}</SettingsRowDescription>
+        <SettingsRowDescription>{standing}</SettingsRowDescription>
+        {failed ? <Failure text={t("failed")} /> : null}
+      </SettingsRowText>
+      <SettingsRowControl>
         <ChoiceButtons onChoose={onChoose} pending={pending} />
-      </div>
-      {failed ? <Failure text={t("failed")} /> : null}
-    </div>
+      </SettingsRowControl>
+    </SettingsRow>
   );
 };

@@ -112,7 +112,7 @@ const endpointAt = (
 ): OwnTextEndpoint => ({
   apiKey: Redacted.make(syntheticKey),
   baseUrl: ProviderAddressSchema.make(baseUrl),
-  kind,
+  provider: kind,
   model: ProviderModelSchema.make(syntheticModel),
 });
 

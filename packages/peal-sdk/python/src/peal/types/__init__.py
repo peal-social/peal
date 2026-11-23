@@ -80,6 +80,18 @@ if typing.TYPE_CHECKING:
     from .ads_mode import AdsMode
     from .ads_status import AdsStatus
     from .ads_unavailable_encoded import AdsUnavailableEncoded
+    from .ai_capability import AiCapability
+    from .ai_capability_model import AiCapabilityModel
+    from .ai_capability_models import AiCapabilityModels
+    from .ai_capability_not_offered_encoded import AiCapabilityNotOfferedEncoded
+    from .ai_image_provider import AiImageProvider
+    from .ai_model_required_encoded import AiModelRequiredEncoded
+    from .ai_provider import AiProvider
+    from .ai_provider_address_refused_encoded import AiProviderAddressRefusedEncoded
+    from .ai_provider_connection import AiProviderConnection
+    from .ai_provider_connections import AiProviderConnections
+    from .ai_provider_key_required_encoded import AiProviderKeyRequiredEncoded
+    from .ai_provider_not_connected_encoded import AiProviderNotConnectedEncoded
     from .allowance_reason import AllowanceReason
     from .already_member_encoded import AlreadyMemberEncoded
     from .alt_text_too_long_encoded import AltTextTooLongEncoded
@@ -187,12 +199,26 @@ if typing.TYPE_CHECKING:
     from .assistant_quota_exceeded_encoded import AssistantQuotaExceededEncoded
     from .assistant_secrets_not_configured_encoded import AssistantSecretsNotConfiguredEncoded
     from .assistant_secrets_not_configured_encoded_tag import AssistantSecretsNotConfiguredEncodedTag
+    from .assistant_slideshows_status import AssistantSlideshowsStatus
     from .assistant_status import AssistantStatus
     from .assistant_text_source import AssistantTextSource
     from .assistant_tone import AssistantTone
+    from .assistant_transcriptions_status import AssistantTranscriptionsStatus
     from .assistant_unavailable_encoded import AssistantUnavailableEncoded
     from .assistant_unavailable_encoded_tag import AssistantUnavailableEncodedTag
+    from .assistant_videos_status import AssistantVideosStatus
+    from .assistant_voiceovers_status import AssistantVoiceoversStatus
     from .attempt_result import AttemptResult
+    from .audio_allowance_reached_encoded import AudioAllowanceReachedEncoded
+    from .audio_allowance_reached_encoded_capability import AudioAllowanceReachedEncodedCapability
+    from .audio_failure_reason import AudioFailureReason
+    from .audio_provider_failed_encoded import AudioProviderFailedEncoded
+    from .audio_provider_failed_encoded_capability import AudioProviderFailedEncodedCapability
+    from .audio_provider_failed_encoded_tag import AudioProviderFailedEncodedTag
+    from .audio_unavailable_encoded import AudioUnavailableEncoded
+    from .audio_unavailable_encoded_capability import AudioUnavailableEncodedCapability
+    from .audio_unavailable_encoded_reason import AudioUnavailableEncodedReason
+    from .audio_unavailable_encoded_tag import AudioUnavailableEncodedTag
     from .authorization import Authorization
     from .automation_stop_reason import AutomationStopReason
     from .bad_gateway_error_body import (
@@ -308,6 +334,12 @@ if typing.TYPE_CHECKING:
     from .comment_rule_status import CommentRuleStatus
     from .comment_selection import CommentSelection
     from .comment_selection_located import CommentSelectionLocated
+    from .composition_allowance_reached_encoded import CompositionAllowanceReachedEncoded
+    from .composition_busy_encoded import CompositionBusyEncoded
+    from .composition_needs_payment_encoded import CompositionNeedsPaymentEncoded
+    from .composition_unavailable_encoded import CompositionUnavailableEncoded
+    from .composition_unavailable_encoded_reason import CompositionUnavailableEncodedReason
+    from .composition_unavailable_encoded_tag import CompositionUnavailableEncodedTag
     from .conflict_error_body import (
         ConflictErrorBody,
         ConflictErrorBody_FollowUpRuleTaken,
@@ -731,11 +763,13 @@ if typing.TYPE_CHECKING:
         NoticeEvent_PostPublished,
         NoticeEvent_PostUnconfirmed,
         NoticeEvent_RecyclingEnded,
+        NoticeEvent_SlideshowEnded,
         NoticeEvent_SubscriptionCancelled,
         NoticeEvent_SubscriptionRenewing,
         NoticeEvent_SubscriptionStarted,
         NoticeEvent_SubscriptionWithdrawn,
         NoticeEvent_TrialEnding,
+        NoticeEvent_VideoGenerationEnded,
         NoticeEvent_WebhookDeliveriesFailing,
         NoticeEvent_WebhookEndpointDisabled,
         NoticeEvent_XSpendCeiling,
@@ -763,11 +797,15 @@ if typing.TYPE_CHECKING:
     from .notice_event_post_published import NoticeEventPostPublished
     from .notice_event_post_unconfirmed import NoticeEventPostUnconfirmed
     from .notice_event_recycling_ended import NoticeEventRecyclingEnded
+    from .notice_event_slideshow_ended import NoticeEventSlideshowEnded
+    from .notice_event_slideshow_ended_outcome import NoticeEventSlideshowEndedOutcome
     from .notice_event_subscription_cancelled import NoticeEventSubscriptionCancelled
     from .notice_event_subscription_renewing import NoticeEventSubscriptionRenewing
     from .notice_event_subscription_started import NoticeEventSubscriptionStarted
     from .notice_event_subscription_withdrawn import NoticeEventSubscriptionWithdrawn
     from .notice_event_trial_ending import NoticeEventTrialEnding
+    from .notice_event_video_generation_ended import NoticeEventVideoGenerationEnded
+    from .notice_event_video_generation_ended_outcome import NoticeEventVideoGenerationEndedOutcome
     from .notice_event_webhook_deliveries_failing import NoticeEventWebhookDeliveriesFailing
     from .notice_event_webhook_endpoint_disabled import NoticeEventWebhookEndpointDisabled
     from .notice_event_x_spend_ceiling import NoticeEventXSpendCeiling
@@ -818,8 +856,8 @@ if typing.TYPE_CHECKING:
     from .partner_usage_report_day import PartnerUsageReportDay
     from .payment_required_error_body import (
         PaymentRequiredErrorBody,
+        PaymentRequiredErrorBody_CompositionNeedsPayment,
         PaymentRequiredErrorBody_PlanLimitReached,
-        PaymentRequiredErrorBody_UsageAllowanceReached,
     )
     from .period_usage import PeriodUsage
     from .permission import Permission
@@ -1016,6 +1054,18 @@ if typing.TYPE_CHECKING:
     from .site_not_connected_reason import SiteNotConnectedReason
     from .site_platform import SitePlatform
     from .slack_options import SlackOptions
+    from .slide import Slide
+    from .slide_motion import SlideMotion
+    from .slide_transition import SlideTransition
+    from .slideshow import Slideshow
+    from .slideshow_duration_seconds import SlideshowDurationSeconds
+    from .slideshow_failure_reason import SlideshowFailureReason
+    from .slideshow_not_found_encoded import SlideshowNotFoundEncoded
+    from .slideshow_rejection import SlideshowRejection
+    from .slideshow_request_rejected_encoded import SlideshowRequestRejectedEncoded
+    from .slideshow_request_rejected_encoded_tag import SlideshowRequestRejectedEncodedTag
+    from .slideshow_status import SlideshowStatus
+    from .slideshows import Slideshows
     from .slot_time import SlotTime
     from .special_ad_category import SpecialAdCategory
     from .spend_ceiling_exceeded_encoded import SpendCeilingExceededEncoded
@@ -1107,6 +1157,11 @@ if typing.TYPE_CHECKING:
     from .too_many_webhook_endpoints_encoded_tag import TooManyWebhookEndpointsEncodedTag
     from .too_many_webhook_sends_encoded import TooManyWebhookSendsEncoded
     from .top_post import TopPost
+    from .transcript import Transcript
+    from .transcript_duration_seconds import TranscriptDurationSeconds
+    from .transcription_rejected_encoded import TranscriptionRejectedEncoded
+    from .transcription_rejected_encoded_reason import TranscriptionRejectedEncodedReason
+    from .transcription_rejected_encoded_tag import TranscriptionRejectedEncodedTag
     from .translation_language import TranslationLanguage
     from .trial_offer import TrialOffer
     from .unauthenticated_encoded import UnauthenticatedEncoded
@@ -1142,6 +1197,19 @@ if typing.TYPE_CHECKING:
     from .usage_period import UsagePeriod
     from .usage_sharing import UsageSharing
     from .usage_totals import UsageTotals
+    from .video_allowance_reached_encoded import VideoAllowanceReachedEncoded
+    from .video_busy_encoded import VideoBusyEncoded
+    from .video_failure_reason import VideoFailureReason
+    from .video_generation import VideoGeneration
+    from .video_generation_not_found_encoded import VideoGenerationNotFoundEncoded
+    from .video_generation_status import VideoGenerationStatus
+    from .video_generations import VideoGenerations
+    from .video_request_rejected_encoded import VideoRequestRejectedEncoded
+    from .video_request_rejected_encoded_reason import VideoRequestRejectedEncodedReason
+    from .video_unavailable_encoded import VideoUnavailableEncoded
+    from .video_unavailable_encoded_reason import VideoUnavailableEncodedReason
+    from .video_unavailable_encoded_tag import VideoUnavailableEncodedTag
+    from .voice_not_offered_encoded import VoiceNotOfferedEncoded
     from .webhook_attempt_error import WebhookAttemptError
     from .webhook_bulk_redelivery import WebhookBulkRedelivery
     from .webhook_delivery import WebhookDelivery
@@ -1261,6 +1329,18 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AdsMode": ".ads_mode",
     "AdsStatus": ".ads_status",
     "AdsUnavailableEncoded": ".ads_unavailable_encoded",
+    "AiCapability": ".ai_capability",
+    "AiCapabilityModel": ".ai_capability_model",
+    "AiCapabilityModels": ".ai_capability_models",
+    "AiCapabilityNotOfferedEncoded": ".ai_capability_not_offered_encoded",
+    "AiImageProvider": ".ai_image_provider",
+    "AiModelRequiredEncoded": ".ai_model_required_encoded",
+    "AiProvider": ".ai_provider",
+    "AiProviderAddressRefusedEncoded": ".ai_provider_address_refused_encoded",
+    "AiProviderConnection": ".ai_provider_connection",
+    "AiProviderConnections": ".ai_provider_connections",
+    "AiProviderKeyRequiredEncoded": ".ai_provider_key_required_encoded",
+    "AiProviderNotConnectedEncoded": ".ai_provider_not_connected_encoded",
     "AllowanceReason": ".allowance_reason",
     "AlreadyMemberEncoded": ".already_member_encoded",
     "AltTextTooLongEncoded": ".alt_text_too_long_encoded",
@@ -1362,12 +1442,26 @@ _dynamic_imports: typing.Dict[str, str] = {
     "AssistantQuotaExceededEncoded": ".assistant_quota_exceeded_encoded",
     "AssistantSecretsNotConfiguredEncoded": ".assistant_secrets_not_configured_encoded",
     "AssistantSecretsNotConfiguredEncodedTag": ".assistant_secrets_not_configured_encoded_tag",
+    "AssistantSlideshowsStatus": ".assistant_slideshows_status",
     "AssistantStatus": ".assistant_status",
     "AssistantTextSource": ".assistant_text_source",
     "AssistantTone": ".assistant_tone",
+    "AssistantTranscriptionsStatus": ".assistant_transcriptions_status",
     "AssistantUnavailableEncoded": ".assistant_unavailable_encoded",
     "AssistantUnavailableEncodedTag": ".assistant_unavailable_encoded_tag",
+    "AssistantVideosStatus": ".assistant_videos_status",
+    "AssistantVoiceoversStatus": ".assistant_voiceovers_status",
     "AttemptResult": ".attempt_result",
+    "AudioAllowanceReachedEncoded": ".audio_allowance_reached_encoded",
+    "AudioAllowanceReachedEncodedCapability": ".audio_allowance_reached_encoded_capability",
+    "AudioFailureReason": ".audio_failure_reason",
+    "AudioProviderFailedEncoded": ".audio_provider_failed_encoded",
+    "AudioProviderFailedEncodedCapability": ".audio_provider_failed_encoded_capability",
+    "AudioProviderFailedEncodedTag": ".audio_provider_failed_encoded_tag",
+    "AudioUnavailableEncoded": ".audio_unavailable_encoded",
+    "AudioUnavailableEncodedCapability": ".audio_unavailable_encoded_capability",
+    "AudioUnavailableEncodedReason": ".audio_unavailable_encoded_reason",
+    "AudioUnavailableEncodedTag": ".audio_unavailable_encoded_tag",
     "Authorization": ".authorization",
     "AutomationStopReason": ".automation_stop_reason",
     "BadGatewayErrorBody": ".bad_gateway_error_body",
@@ -1484,6 +1578,12 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CommentRuleStatus": ".comment_rule_status",
     "CommentSelection": ".comment_selection",
     "CommentSelectionLocated": ".comment_selection_located",
+    "CompositionAllowanceReachedEncoded": ".composition_allowance_reached_encoded",
+    "CompositionBusyEncoded": ".composition_busy_encoded",
+    "CompositionNeedsPaymentEncoded": ".composition_needs_payment_encoded",
+    "CompositionUnavailableEncoded": ".composition_unavailable_encoded",
+    "CompositionUnavailableEncodedReason": ".composition_unavailable_encoded_reason",
+    "CompositionUnavailableEncodedTag": ".composition_unavailable_encoded_tag",
     "ConflictErrorBody": ".conflict_error_body",
     "ConflictErrorBody_FollowUpRuleTaken": ".conflict_error_body",
     "ConflictErrorBody_TooManyFollowUpRules": ".conflict_error_body",
@@ -1898,11 +1998,15 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NoticeEventPostPublished": ".notice_event_post_published",
     "NoticeEventPostUnconfirmed": ".notice_event_post_unconfirmed",
     "NoticeEventRecyclingEnded": ".notice_event_recycling_ended",
+    "NoticeEventSlideshowEnded": ".notice_event_slideshow_ended",
+    "NoticeEventSlideshowEndedOutcome": ".notice_event_slideshow_ended_outcome",
     "NoticeEventSubscriptionCancelled": ".notice_event_subscription_cancelled",
     "NoticeEventSubscriptionRenewing": ".notice_event_subscription_renewing",
     "NoticeEventSubscriptionStarted": ".notice_event_subscription_started",
     "NoticeEventSubscriptionWithdrawn": ".notice_event_subscription_withdrawn",
     "NoticeEventTrialEnding": ".notice_event_trial_ending",
+    "NoticeEventVideoGenerationEnded": ".notice_event_video_generation_ended",
+    "NoticeEventVideoGenerationEndedOutcome": ".notice_event_video_generation_ended_outcome",
     "NoticeEventWebhookDeliveriesFailing": ".notice_event_webhook_deliveries_failing",
     "NoticeEventWebhookEndpointDisabled": ".notice_event_webhook_endpoint_disabled",
     "NoticeEventXSpendCeiling": ".notice_event_x_spend_ceiling",
@@ -1928,11 +2032,13 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NoticeEvent_PostPublished": ".notice_event",
     "NoticeEvent_PostUnconfirmed": ".notice_event",
     "NoticeEvent_RecyclingEnded": ".notice_event",
+    "NoticeEvent_SlideshowEnded": ".notice_event",
     "NoticeEvent_SubscriptionCancelled": ".notice_event",
     "NoticeEvent_SubscriptionRenewing": ".notice_event",
     "NoticeEvent_SubscriptionStarted": ".notice_event",
     "NoticeEvent_SubscriptionWithdrawn": ".notice_event",
     "NoticeEvent_TrialEnding": ".notice_event",
+    "NoticeEvent_VideoGenerationEnded": ".notice_event",
     "NoticeEvent_WebhookDeliveriesFailing": ".notice_event",
     "NoticeEvent_WebhookEndpointDisabled": ".notice_event",
     "NoticeEvent_XSpendCeiling": ".notice_event",
@@ -1980,8 +2086,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PartnerUsageReport": ".partner_usage_report",
     "PartnerUsageReportDay": ".partner_usage_report_day",
     "PaymentRequiredErrorBody": ".payment_required_error_body",
+    "PaymentRequiredErrorBody_CompositionNeedsPayment": ".payment_required_error_body",
     "PaymentRequiredErrorBody_PlanLimitReached": ".payment_required_error_body",
-    "PaymentRequiredErrorBody_UsageAllowanceReached": ".payment_required_error_body",
     "PeriodUsage": ".period_usage",
     "Permission": ".permission",
     "PinterestBoard": ".pinterest_board",
@@ -2172,6 +2278,18 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SiteNotConnectedReason": ".site_not_connected_reason",
     "SitePlatform": ".site_platform",
     "SlackOptions": ".slack_options",
+    "Slide": ".slide",
+    "SlideMotion": ".slide_motion",
+    "SlideTransition": ".slide_transition",
+    "Slideshow": ".slideshow",
+    "SlideshowDurationSeconds": ".slideshow_duration_seconds",
+    "SlideshowFailureReason": ".slideshow_failure_reason",
+    "SlideshowNotFoundEncoded": ".slideshow_not_found_encoded",
+    "SlideshowRejection": ".slideshow_rejection",
+    "SlideshowRequestRejectedEncoded": ".slideshow_request_rejected_encoded",
+    "SlideshowRequestRejectedEncodedTag": ".slideshow_request_rejected_encoded_tag",
+    "SlideshowStatus": ".slideshow_status",
+    "Slideshows": ".slideshows",
     "SlotTime": ".slot_time",
     "SpecialAdCategory": ".special_ad_category",
     "SpendCeilingExceededEncoded": ".spend_ceiling_exceeded_encoded",
@@ -2265,6 +2383,11 @@ _dynamic_imports: typing.Dict[str, str] = {
     "TooManyWebhookEndpointsEncodedTag": ".too_many_webhook_endpoints_encoded_tag",
     "TooManyWebhookSendsEncoded": ".too_many_webhook_sends_encoded",
     "TopPost": ".top_post",
+    "Transcript": ".transcript",
+    "TranscriptDurationSeconds": ".transcript_duration_seconds",
+    "TranscriptionRejectedEncoded": ".transcription_rejected_encoded",
+    "TranscriptionRejectedEncodedReason": ".transcription_rejected_encoded_reason",
+    "TranscriptionRejectedEncodedTag": ".transcription_rejected_encoded_tag",
     "TranslationLanguage": ".translation_language",
     "TrialOffer": ".trial_offer",
     "UnauthenticatedEncoded": ".unauthenticated_encoded",
@@ -2300,6 +2423,19 @@ _dynamic_imports: typing.Dict[str, str] = {
     "UsagePeriod": ".usage_period",
     "UsageSharing": ".usage_sharing",
     "UsageTotals": ".usage_totals",
+    "VideoAllowanceReachedEncoded": ".video_allowance_reached_encoded",
+    "VideoBusyEncoded": ".video_busy_encoded",
+    "VideoFailureReason": ".video_failure_reason",
+    "VideoGeneration": ".video_generation",
+    "VideoGenerationNotFoundEncoded": ".video_generation_not_found_encoded",
+    "VideoGenerationStatus": ".video_generation_status",
+    "VideoGenerations": ".video_generations",
+    "VideoRequestRejectedEncoded": ".video_request_rejected_encoded",
+    "VideoRequestRejectedEncodedReason": ".video_request_rejected_encoded_reason",
+    "VideoUnavailableEncoded": ".video_unavailable_encoded",
+    "VideoUnavailableEncodedReason": ".video_unavailable_encoded_reason",
+    "VideoUnavailableEncodedTag": ".video_unavailable_encoded_tag",
+    "VoiceNotOfferedEncoded": ".voice_not_offered_encoded",
     "WebhookAttemptError": ".webhook_attempt_error",
     "WebhookBulkRedelivery": ".webhook_bulk_redelivery",
     "WebhookDelivery": ".webhook_delivery",
@@ -2443,6 +2579,18 @@ __all__ = [
     "AdsMode",
     "AdsStatus",
     "AdsUnavailableEncoded",
+    "AiCapability",
+    "AiCapabilityModel",
+    "AiCapabilityModels",
+    "AiCapabilityNotOfferedEncoded",
+    "AiImageProvider",
+    "AiModelRequiredEncoded",
+    "AiProvider",
+    "AiProviderAddressRefusedEncoded",
+    "AiProviderConnection",
+    "AiProviderConnections",
+    "AiProviderKeyRequiredEncoded",
+    "AiProviderNotConnectedEncoded",
     "AllowanceReason",
     "AlreadyMemberEncoded",
     "AltTextTooLongEncoded",
@@ -2544,12 +2692,26 @@ __all__ = [
     "AssistantQuotaExceededEncoded",
     "AssistantSecretsNotConfiguredEncoded",
     "AssistantSecretsNotConfiguredEncodedTag",
+    "AssistantSlideshowsStatus",
     "AssistantStatus",
     "AssistantTextSource",
     "AssistantTone",
+    "AssistantTranscriptionsStatus",
     "AssistantUnavailableEncoded",
     "AssistantUnavailableEncodedTag",
+    "AssistantVideosStatus",
+    "AssistantVoiceoversStatus",
     "AttemptResult",
+    "AudioAllowanceReachedEncoded",
+    "AudioAllowanceReachedEncodedCapability",
+    "AudioFailureReason",
+    "AudioProviderFailedEncoded",
+    "AudioProviderFailedEncodedCapability",
+    "AudioProviderFailedEncodedTag",
+    "AudioUnavailableEncoded",
+    "AudioUnavailableEncodedCapability",
+    "AudioUnavailableEncodedReason",
+    "AudioUnavailableEncodedTag",
     "Authorization",
     "AutomationStopReason",
     "BadGatewayErrorBody",
@@ -2666,6 +2828,12 @@ __all__ = [
     "CommentRuleStatus",
     "CommentSelection",
     "CommentSelectionLocated",
+    "CompositionAllowanceReachedEncoded",
+    "CompositionBusyEncoded",
+    "CompositionNeedsPaymentEncoded",
+    "CompositionUnavailableEncoded",
+    "CompositionUnavailableEncodedReason",
+    "CompositionUnavailableEncodedTag",
     "ConflictErrorBody",
     "ConflictErrorBody_FollowUpRuleTaken",
     "ConflictErrorBody_TooManyFollowUpRules",
@@ -3080,11 +3248,15 @@ __all__ = [
     "NoticeEventPostPublished",
     "NoticeEventPostUnconfirmed",
     "NoticeEventRecyclingEnded",
+    "NoticeEventSlideshowEnded",
+    "NoticeEventSlideshowEndedOutcome",
     "NoticeEventSubscriptionCancelled",
     "NoticeEventSubscriptionRenewing",
     "NoticeEventSubscriptionStarted",
     "NoticeEventSubscriptionWithdrawn",
     "NoticeEventTrialEnding",
+    "NoticeEventVideoGenerationEnded",
+    "NoticeEventVideoGenerationEndedOutcome",
     "NoticeEventWebhookDeliveriesFailing",
     "NoticeEventWebhookEndpointDisabled",
     "NoticeEventXSpendCeiling",
@@ -3110,11 +3282,13 @@ __all__ = [
     "NoticeEvent_PostPublished",
     "NoticeEvent_PostUnconfirmed",
     "NoticeEvent_RecyclingEnded",
+    "NoticeEvent_SlideshowEnded",
     "NoticeEvent_SubscriptionCancelled",
     "NoticeEvent_SubscriptionRenewing",
     "NoticeEvent_SubscriptionStarted",
     "NoticeEvent_SubscriptionWithdrawn",
     "NoticeEvent_TrialEnding",
+    "NoticeEvent_VideoGenerationEnded",
     "NoticeEvent_WebhookDeliveriesFailing",
     "NoticeEvent_WebhookEndpointDisabled",
     "NoticeEvent_XSpendCeiling",
@@ -3162,8 +3336,8 @@ __all__ = [
     "PartnerUsageReport",
     "PartnerUsageReportDay",
     "PaymentRequiredErrorBody",
+    "PaymentRequiredErrorBody_CompositionNeedsPayment",
     "PaymentRequiredErrorBody_PlanLimitReached",
-    "PaymentRequiredErrorBody_UsageAllowanceReached",
     "PeriodUsage",
     "Permission",
     "PinterestBoard",
@@ -3354,6 +3528,18 @@ __all__ = [
     "SiteNotConnectedReason",
     "SitePlatform",
     "SlackOptions",
+    "Slide",
+    "SlideMotion",
+    "SlideTransition",
+    "Slideshow",
+    "SlideshowDurationSeconds",
+    "SlideshowFailureReason",
+    "SlideshowNotFoundEncoded",
+    "SlideshowRejection",
+    "SlideshowRequestRejectedEncoded",
+    "SlideshowRequestRejectedEncodedTag",
+    "SlideshowStatus",
+    "Slideshows",
     "SlotTime",
     "SpecialAdCategory",
     "SpendCeilingExceededEncoded",
@@ -3447,6 +3633,11 @@ __all__ = [
     "TooManyWebhookEndpointsEncodedTag",
     "TooManyWebhookSendsEncoded",
     "TopPost",
+    "Transcript",
+    "TranscriptDurationSeconds",
+    "TranscriptionRejectedEncoded",
+    "TranscriptionRejectedEncodedReason",
+    "TranscriptionRejectedEncodedTag",
     "TranslationLanguage",
     "TrialOffer",
     "UnauthenticatedEncoded",
@@ -3482,6 +3673,19 @@ __all__ = [
     "UsagePeriod",
     "UsageSharing",
     "UsageTotals",
+    "VideoAllowanceReachedEncoded",
+    "VideoBusyEncoded",
+    "VideoFailureReason",
+    "VideoGeneration",
+    "VideoGenerationNotFoundEncoded",
+    "VideoGenerationStatus",
+    "VideoGenerations",
+    "VideoRequestRejectedEncoded",
+    "VideoRequestRejectedEncodedReason",
+    "VideoUnavailableEncoded",
+    "VideoUnavailableEncodedReason",
+    "VideoUnavailableEncodedTag",
+    "VoiceNotOfferedEncoded",
     "WebhookAttemptError",
     "WebhookBulkRedelivery",
     "WebhookDelivery",

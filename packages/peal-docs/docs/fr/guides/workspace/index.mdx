@@ -9,19 +9,28 @@ Les paramètres d’un espace de travail appartiennent à ses membres, et votre 
 
 ## Trouver les paramètres [#workspace]
 
-Dans un espace de travail, cliquez sur **Paramètres** en bas de la barre latérale. La barre liste alors les pages de paramètres, et vous voyez celles que votre rôle vous permet d’ouvrir :
+Dans un espace de travail, cliquez sur **Paramètres** en bas de la barre latérale. La barre liste alors les pages de paramètres en quatre groupes :
 
-| Page            | Qui la voit                                |
-| --------------- | ------------------------------------------ |
-| **Général**     | Chaque membre                              |
-| **Membres**     | Chaque membre                              |
-| **Sécurité**    | Chaque membre                              |
-| **Invitations** | Les membres qui peuvent inviter            |
-| **Assistant**   | Les propriétaires et les administrateurs   |
-| **Clés d’API**  | Les membres qui peuvent gérer les clés     |
-| **Webhooks**    | Les membres qui peuvent gérer les webhooks |
+- **Personnel** : votre compte et vos notifications, les mêmes dans chaque espace de travail ([Votre compte](/guides/workspace/account), [Notifications](/guides/workspace/notifications)), et les compétences de l’agent.
+- **Publication** : **Étiquettes**, **Signatures**, **Groupes de canaux**, **Messages privés** et **Assistant**.
+- **Automatisations** : **Files d’attente**, **Répétitions**, **Relances**, **Réponses aux commentaires** et **Flux**.
+- **Administration** : l’espace de travail lui-même, ses membres, sa sécurité et sa facturation.
 
-**Clés d’API** et **Webhooks** ne sont pas sous **Paramètres**. Passez la barre latérale de **Studio** à **Console** pour les trouver sous **Développer**, avec **Partenaire** sous **Partenaires**.
+Vous voyez les pages que votre rôle vous permet d’ouvrir. Voici celles de l’espace de travail :
+
+| Page                  | Qui la voit                                 |
+| --------------------- | ------------------------------------------- |
+| **Espace de travail** | Chaque membre                               |
+| **Membres**           | Chaque membre                               |
+| **Sécurité**          | Chaque membre                               |
+| **Facturation**       | Les membres qui peuvent voir la facturation |
+| **Assistant**         | Les propriétaires et les administrateurs    |
+| **Clés d’API**        | Les membres qui peuvent gérer les clés      |
+| **Webhooks**          | Les membres qui peuvent gérer les webhooks  |
+
+**Clés d’API** et **Webhooks** ne sont pas sous **Paramètres**. Passez la barre latérale de **PealCreative** à **PealAPI** pour les trouver sous **Développer**, avec **Partenaire** sous **Partenaires**.
+
+La plupart des réglages s’enregistrent dès que vous les changez, sans bouton **Enregistrer**. Les formulaires qui créent quelque chose, invitent une personne ou changent votre mot de passe gardent leur bouton.
 
 Voici ce que chaque rôle peut faire dans les paramètres :
 
@@ -33,7 +42,7 @@ Voici ce que chaque rôle peut faire dans les paramètres :
 | Contributeur   | Voit les membres                                                                                                                                                                                                                                  |
 | Lecteur        | Voit les membres                                                                                                                                                                                                                                  |
 
-Sous **Général**, les propriétaires et les administrateurs règlent aussi **Approbations**, qui décide si les publications attendent une approbation avant d’être programmées. Voyez [Relecture et approbation](/guides/posts/review#policy).
+Sur **Espace de travail**, les propriétaires et les administrateurs saisissent sur place le **Nom** et l’**Adresse** de l’espace. Peal enregistre chacun quand vous quittez le champ ou appuyez sur Entrée. Ils règlent aussi **Approbations**, qui décide si les publications attendent une approbation avant d’être programmées. Le choix est enregistré dès que vous le faites. Voyez [Relecture et approbation](/guides/posts/review#policy).
 
 ### Gérer les membres [#members]
 
@@ -56,7 +65,7 @@ Dans l’espace de travail principal d’un [compte partenaire](/developers/embe
 <Steps>
 <Step title="Envoyer l’invitation">
 
-Sous **Invitations**, saisissez une adresse e-mail et sélectionnez un rôle, puis cliquez sur **Envoyer l’invitation**. Seuls les propriétaires peuvent inviter des propriétaires.
+Sur **Membres**, sous **Inviter une personne**, saisissez une adresse e-mail et sélectionnez un rôle, puis cliquez sur **Envoyer l’invitation**. Seuls les propriétaires peuvent inviter des propriétaires.
 
 </Step>
 <Step title="La personne rejoint l’espace">
@@ -66,7 +75,7 @@ Elle reçoit un lien pour rejoindre l’espace, valable 7 jours. Il est dans sa 
 </Step>
 </Steps>
 
-Les invitations en attente sont listées avec leur date d’expiration. Pour chacune, vous pouvez :
+**Invitations en attente**, sur la même page, les liste avec leur date d’expiration. Pour chacune, vous pouvez :
 
 - Cliquer sur **Renvoyer** pour envoyer de nouveau le lien par e-mail, valable 7 jours de plus.
 - Cliquer sur **Révoquer** pour rendre le lien inutilisable.
@@ -141,79 +150,83 @@ Sous **Webhooks**, les propriétaires et les administrateurs ajoutent les adress
 
 L’équipe qui agit à la place d’un membre ne peut pas changer les webhooks. [Webhooks](/developers/webhooks) liste les événements et montre comment vérifier une livraison.
 
-### Utiliser votre propre fournisseur d’images [#image-provider]
+### Connecter vos fournisseurs d’IA [#providers]
 
-Sous **Assistant**, les propriétaires et les administrateurs peuvent régler le fournisseur d’images de l’espace de travail. Les [images que crée l’assistant](/guides/media#generate) viennent alors de votre compte chez lui, au lieu du modèle de l’instance. Le régler demande `assistant:configure`, qui peut aussi être donné à une [clé d’API](#api-keys) ou à une [clé partenaire](/developers/embedding#account).
+Sous **Assistant**, les propriétaires et les administrateurs connectent les fournisseurs d’IA propres à l’espace de travail, chacun avec la clé de votre compte chez lui. L’[assistant de rédaction](/guides/posts/assistant#assistant), l’[agent](/guides/agent) et les [images que crée l’assistant](/guides/media#generate) peuvent alors utiliser votre compte au lieu des modèles de l’instance, hors de l’allocation de l’instance, quel que soit l’abonnement. En connecter un demande `assistant:configure`, qu’une [clé d’API](#api-keys) ou une [clé partenaire](/developers/embedding#account) peut aussi recevoir.
 
-Remplissez trois champs :
+Dans **Fournisseurs d’IA**, cliquez sur **Connecter un fournisseur**, choisissez-le dans **Fournisseur** et ajoutez votre clé. Peal connaît ceux-ci par leur nom : Anthropic, OpenAI, Google Gemini, Mistral, xAI, Groq, Together AI, DeepSeek, OpenRouter, Cerebras, Fireworks AI, ElevenLabs et fal, qui n’écrivent pas de texte et créent des voix off, des transcriptions et, pour fal, des images, ainsi que [Shotstack](#shotstack), qui compose des vidéos de diapositives. Il remplit l’adresse de chacun, vous n’ajoutez que la clé. ElevenLabs, fal et Shotstack ne se joignent qu’à leur propre adresse : leur boîte de dialogue n’en a pas. Pour tout autre point d’accès qui parle l’API de complétions de conversation d’OpenAI, son API d’images ou les deux, choisissez **Un autre fournisseur** et saisissez son adresse. Chaque fournisseur connecté est une ligne, avec son adresse quand ce n’est pas celle du fournisseur et **Clé enregistrée**. Cliquez sur **Modifier** pour le changer. Les champs de la boîte de dialogue :
 
-| Champ       | Ce qu’il faut saisir                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Adresse** | L’adresse de base d’un point d’accès qui parle l’API d’images d’OpenAI, celle à laquelle Peal ajoute `/images/generations`, par exemple `https://images.example.com/v1`. Beaucoup de fournisseurs en proposent une, dite « compatible OpenAI ». Peal envoie une seule forme de requête, `{ model, n, prompt, size }`, et lit en retour une image en base64 ou à une adresse. Il ne peut pas promettre qu’un fournisseur donné l’accepte. |
-| **Modèle**  | Le modèle de votre fournisseur, tel que sa documentation le nomme. Vous pouvez changer le modèle seul.                                                                                                                                                                                                                                                                                                                                   |
-| **Clé**     | La clé de votre compte chez le fournisseur, envoyée comme jeton porteur. Peal la garde chiffrée, pour cet espace de travail et cette adresse exacte seulement. Une clé enregistrée s’affiche comme enregistrée et reste tant que vous n’en saisissez pas une autre.                                                                                                                                                                      |
+| Champ           | Ce qu’il faut saisir                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Fournisseur** | L’un des fournisseurs ci-dessus, ou **Un autre fournisseur**. Pour Anthropic, Peal ajoute `/v1/messages` à l’adresse et envoie la clé en `x-api-key`. Pour tous les autres, il ajoute `/chat/completions` pour le texte et `/images/generations` pour les images, et envoie la clé comme jeton porteur.                                                                                                 |
+| **Clé**         | La clé de votre compte chez le fournisseur. Peal la garde chiffrée, pour cet espace de travail, ce fournisseur et cette adresse exacte seulement. Une clé enregistrée apparaît comme enregistrée et reste jusqu’à ce que vous en saisissiez une autre.                                                                                                                                                  |
+| **Adresse**     | L’adresse du fournisseur, que la boîte de dialogue remplit pour vous et range sous **Avancé**. Ne la changez que pour passer par un proxy à vous. Pour **Un autre fournisseur**, l’adresse que suivent `/chat/completions` et `/images/generations`, par exemple `https://ai.example.com/v1`. En HTTPS sur le port par défaut, sur un hôte public, sans utilisateur, mot de passe, requête ni fragment. |
 
-L’adresse doit être en HTTPS sur le port par défaut, sur un hôte public, sans nom d’utilisateur, mot de passe, requête ni fragment.
+Peal ne montre plus jamais la clé et ne l’écrit jamais dans ses journaux. Tout changement de l’adresse, de son hôte ou de son chemin redemande la clé, car Peal n’envoie jamais une clé à une adresse pour laquelle elle n’a pas été donnée. Peal n’appelle pas le fournisseur à l’enregistrement.
 
-Peal ne montre plus jamais la clé et ne l’écrit jamais dans ses journaux. Tout changement de l’adresse, de son hôte ou de son chemin redemande la clé, car Peal n’envoie jamais une clé à une adresse pour laquelle elle n’a pas été donnée.
+- Cliquez sur **Tester**, pour un fournisseur qui rédige du texte, pour lui envoyer une courte demande, la réécriture d’une phrase fixe, avec le modèle avec lequel l’espace de travail y rédige, ou le premier que Peal suggère. Peal dit s’il a répondu par une suggestion que l’assistant peut utiliser, ou pourquoi non. Le test compte parmi les demandes propres de l’espace de travail ce jour-là.
+- Quand les clés de l’instance changent et que la clé enregistrée ne peut plus être lue, la ligne indique **Clé illisible** et la boîte de dialogue la redemande.
+- Cliquez sur **Retirer** et confirmez pour supprimer la clé. Ce à quoi servait le fournisseur revient aux modèles de l’instance, s’il en a, dans l’allocation de l’espace de travail.
 
-Une fois le fournisseur enregistré, les descriptions d’images de l’espace de travail partent à cette adresse avec cette clé. Le modèle de Peal ne leur est jamais demandé, même quand votre fournisseur refuse. À quoi vous attendre :
-
-- Ses images ne consomment aucune des demandes à l’assistant de l’espace de travail, quel que soit l’abonnement, gratuit et essai compris, jusqu’à 50 par jour. Elles occupent toujours le stockage de l’abonnement.
-- Peal n’appelle pas le fournisseur à l’enregistrement. La première image vous dit si les réglages fonctionnent.
-- Quand le fournisseur refuse la clé, le compte, le modèle ou l’adresse, aucune image n’est créée et la fenêtre le dit.
-- Quand les clés de l’instance changent et que la clé enregistrée ne peut plus être lue, la page la redemande.
-- Cliquez sur **Retirer** et confirmez pour supprimer la clé. Les images viennent alors de nouveau du modèle de l’instance, s’il en a un.
-
-La [ligne de commande](/developers/cli/posts#assistant) a `peal assistant image-provider`. Aucun outil MCP ne le lit ni ne le règle, car une clé saisie dans une conversation atteint un modèle.
+La [ligne de commande](/developers/cli/posts#assistant) a `peal assistant providers`. Aucun outil MCP ne les lit ni ne les règle, car une clé saisie dans une conversation parvient à un modèle.
 
 <Accordion>
 <AccordionItem title="Les adresses que Peal refuse">
 
 Peal refuse une adresse, et dit pourquoi en toutes lettres, avec l’un de ces codes :
 
-| Code              | L’adresse                           |
-| ----------------- | ----------------------------------- |
-| `notHttps`        | n’est pas en HTTPS                  |
-| `credentials`     | contient des identifiants           |
-| `queryOrFragment` | contient une requête ou un fragment |
-| `tooLong`         | est trop longue                     |
-| `malformed`       | n’est pas une adresse               |
-| `notPublic`       | a un hôte qui n’est pas public      |
-| `unknownHost`     | a un hôte qui ne se résout pas      |
+| Code              | L’adresse                                            |
+| ----------------- | ---------------------------------------------------- |
+| `notHttps`        | n’est pas en HTTPS                                   |
+| `credentials`     | contient des identifiants                            |
+| `queryOrFragment` | contient une requête ou un fragment                  |
+| `tooLong`         | est trop longue                                      |
+| `malformed`       | n’est pas une adresse                                |
+| `notPublic`       | a un hôte qui n’est pas public                       |
+| `unknownHost`     | a un hôte dont le nom ne se résout pas               |
+| `fixedAddress`    | n’est pas celle d’ElevenLabs, de fal ou de Shotstack |
 
-Un serveur dont l’opérateur n’a pas défini de clés pour chiffrer les secrets ne garde aucune clé (`AssistantSecretsNotConfigured`).
+Un serveur dont l’opérateur n’a défini aucune clé pour chiffrer les secrets ne garde aucune clé (`AssistantSecretsNotConfigured`).
 
 </AccordionItem>
 </Accordion>
 
-### Utiliser votre propre fournisseur de texte [#text-provider]
+### Choisir un modèle pour chaque usage [#models]
 
-Sous **Assistant**, les propriétaires et les administrateurs peuvent aussi régler le fournisseur de texte de l’espace de travail. L’[assistant de rédaction](/guides/posts/assistant#assistant) écrit alors avec votre compte chez lui, au lieu du modèle de l’instance. C’est ainsi qu’un espace de travail utilise l’assistant hors de l’allocation de l’instance : ses demandes n’y sont pas comptées, quel que soit l’abonnement.
+Sous **Modèles**, chaque usage est une ligne : **Texte**, pour l’assistant de rédaction et l’agent, **Images**, pour les images créées dans la médiathèque, **Vidéo**, pour les [vidéos](/guides/media#generate-video) qui y sont créées, **Voix**, pour les [voix off](/guides/media#voiceover), **Transcription**, pour les [transcriptions](/guides/media#transcribe) de ses fichiers audio et vidéo, et **Vidéos de diapositives**, pour les [vidéos de diapositives](/guides/media#make-a-slide-video) que compose Shotstack, sans modèle à choisir. À son bout, choisissez l’un des fournisseurs connectés qui le propose, puis son modèle. Peal propose les modèles actuels du fournisseur ; **Un autre modèle…** ouvre un champ pour un modèle qu’il ne liste pas, enregistré quand vous le quittez ou appuyez sur Entrée. **Un autre fournisseur** n’a pas de liste, vous saisissez donc son modèle. Chaque changement s’applique tout de suite.
 
-Remplissez quatre champs :
+Choisissez **Le modèle de ce serveur** pour laisser un usage au modèle de l’instance, dans l’allocation de l’espace de travail, ou **Désactivé** quand l’instance n’en a pas. Le fournisseur reste connecté.
 
-| Champ       | Ce qu’il faut saisir                                                                                                                                                                                                                                                                                                                                                  |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **API**     | **Anthropic** (l’API Messages d’Anthropic : Peal ajoute `/v1/messages` à l’adresse et envoie la clé dans `x-api-key`) ou **Compatible OpenAI** (tout point d’accès qui sert l’API de complétions de conversation : Peal ajoute `/chat/completions` et envoie la clé comme jeton porteur).                                                                             |
-| **Adresse** | `https://api.anthropic.com` pour Anthropic, que la page remplit pour vous. Pour un point d’accès compatible OpenAI, l’adresse que suit `/chat/completions`, par exemple `https://text.example.com/v1`. Les règles du fournisseur d’images s’appliquent : HTTPS sur le port par défaut, sur un hôte public, sans nom d’utilisateur, mot de passe, requête ni fragment. |
-| **Modèle**  | Le modèle de votre fournisseur, tel que sa documentation le nomme. L’assistant lui demande une sortie structurée (une réponse qui suit un schéma JSON). Un modèle qui ne sait pas en donner échoue donc à chaque demande.                                                                                                                                             |
-| **Clé**     | La clé de votre compte chez le fournisseur. Peal la garde et l’affiche comme celle du fournisseur d’images : chiffrée, pour cet espace de travail et cette adresse exacte seulement, jamais montrée de nouveau, jamais journalisée, et redemandée quand l’adresse change.                                                                                             |
+Les images ne viennent que d’OpenAI, Google Gemini, xAI, Together AI, fal (ses modèles FLUX) ou d’**Un autre fournisseur**. Google Gemini et xAI prennent la forme de l’image en proportion (`1:1`, `3:2`, `2:3`), fal en `1:1`, `4:3` ou `3:4`, les autres en taille (`1024x1024`, `1536x1024`, `1024x1536`).
 
-Une fois le fournisseur enregistré, les textes sur lesquels les membres sollicitent l’assistant, et les sujets des publications qu’il rédige, partent à cette adresse avec cette clé, selon les conditions de ce fournisseur. Le modèle de l’instance ne leur est jamais demandé, même quand votre fournisseur refuse. À quoi vous attendre :
+Les vidéos ne viennent que de Google Gemini (ses modèles Veo) ou de xAI (ses modèles Grok Imagine), avec la clé de l’espace de travail : l’instance n’a pas de modèle vidéo, et **Vidéo** ne propose donc pas **Le modèle de ce serveur**. Peal ne facture rien pour les vidéos ; votre compte chez le fournisseur paie chacune d’elles. Un espace de travail crée une vidéo à la fois et en demande 20 par jour au plus, chacune prenant plusieurs minutes. Le membre qui l’a demandée reçoit une notification dans l’application quand elle est prête ou a échoué. Une vidéo que le serveur créait quand il s’est arrêté échoue comme `interrupted` et n’est jamais redemandée, car le fournisseur l’a peut-être déjà facturée.
 
-- Ces demandes ne consomment aucune des demandes à l’assistant de l’espace de travail, jusqu’à 500 par jour. Chacune compte, quelle que soit son issue.
-- Quatre au plus partent à la fois. Une cinquième envoyée entre-temps est refusée (`TextProviderBusy`) et ne compte pas.
-- Cliquez sur **Tester** pour envoyer à votre fournisseur une courte demande, la réécriture d’une phrase fixe. Peal dit s’il a répondu par une suggestion que l’assistant peut utiliser, ou pourquoi non. Le test compte parmi les 500.
-- Quand votre fournisseur refuse la clé, le compte, le modèle ou l’adresse, l’assistant le dit, et rien de l’allocation de l’instance n’est dépensé.
-- Cliquez sur **Retirer** et confirmez pour supprimer la clé. L’assistant utilise alors de nouveau le modèle de l’instance, s’il en a un, dans l’allocation de l’espace de travail.
+Les voix off viennent d’OpenAI, Google Gemini, Mistral, xAI, ElevenLabs ou fal, et les transcriptions d’OpenAI, Google Gemini, Mistral, xAI, Groq, ElevenLabs ou fal, avec la clé de l’espace de travail uniquement : l’instance n’en a pas, et aucune de ces lignes ne propose donc **Le modèle de ce serveur**. Chacun en crée 50 par jour au plus. Peal ne facture rien pour elles ; votre compte chez le fournisseur paie.
+
+### Vidéos de diapositives avec Shotstack [#shotstack]
+
+Les vidéos de diapositives sont composées par [Shotstack](https://shotstack.io), avec la clé de votre compte Shotstack : Peal ne rend rien lui-même. Connectez **Shotstack** dans **Fournisseurs d’IA** avec sa clé, puis choisissez-le dans la ligne **Vidéos de diapositives**, qui n’a pas de modèle à choisir. Votre compte Shotstack paie chaque rendu à ses tarifs, et Peal ne facture rien.
+
+- **Production**, par défaut, rend avec les crédits de votre compte et sans filigrane. Shotstack donne à un nouveau compte 10 crédits gratuits, un par minute de vidéo, valables 30 jours.
+- **Bac à sable**, sous **Avancé**, est gratuit et filigrane chaque vidéo. Il prend la clé du bac à sable de votre compte, pas celle de production, et Shotstack demande au moins un crédit sur le compte pour s’en servir.
+
+Sur Peal Cloud, les vidéos de diapositives sont réservées aux espaces de travail dont le compte de facturation a un moyen de paiement : avec l’offre gratuite, **Créer une vidéo de diapositives** ouvre à la place la fenêtre de passage à une offre payante. Une instance qui ne facture pas n’a pas cette limite. Un espace de travail crée une vidéo de diapositives à la fois et 20 par jour au plus. La [ligne de commande](/developers/cli/posts#media-slideshow) le connecte avec `peal assistant providers connect shotstack [--sandbox]`.
+
+Une fois un usage sur votre fournisseur, ce que les membres envoient pour lui y part avec votre clé, selon les conditions de ce fournisseur. Le modèle de l’instance n’est jamais sollicité à sa place, même quand votre fournisseur refuse. À quoi vous attendre :
+
+- Les demandes de texte n’utilisent aucune des demandes à l’assistant de l’espace de travail, jusqu’à 500 par jour, et quatre au plus tournent en même temps : une cinquième envoyée entre-temps est refusée (`TextProviderBusy`) et ne compte pas. Chaque demande compte, quelle qu’en soit l’issue.
+- Les images n’utilisent aucune des demandes à l’assistant de l’espace de travail, offre gratuite et essai compris, jusqu’à 50 par jour. Elles prennent quand même de la place dans le stockage de l’abonnement.
+- Le modèle pour le texte doit donner une sortie structurée (une réponse qui suit un schéma JSON), sinon chaque demande échoue.
+- Quand votre fournisseur refuse la clé, le compte, le modèle ou l’adresse, rien n’est créé, la page le dit, et rien de l’allocation de l’instance n’est dépensé.
+
+La [ligne de commande](/developers/cli/posts#assistant) a `peal assistant models`.
 
 ### Qui peut régler les fournisseurs [#providers-access]
 
 Seuls ceux-ci peuvent régler les fournisseurs d’images et de texte :
 
 - un membre, dans sa propre session
-- la [ligne de commande](/developers/cli/posts#assistant) de Peal (`peal assistant text-provider`)
+- la [ligne de commande](/developers/cli/posts#assistant) de Peal (`peal assistant providers` et `peal assistant models`)
 - une [clé d’API](#api-keys) ou une [clé partenaire](/developers/embedding#account) à qui `assistant:configure` a été donné.
 
 Aucune autre application connectée par OAuth ne détient cette permission, un client [MCP](/developers/mcp) compris, quelles que soient les permissions qui lui ont été accordées. Aucune ne peut donc envoyer les brouillons de l’espace de travail à une adresse à elle. L’équipe qui agit à la place d’un membre ne peut ni régler les fournisseurs ni leur demander quoi que ce soit, car le compte de l’espace de travail chez le fournisseur paierait.
@@ -270,7 +283,7 @@ Un compte ne se ferme qu’une fois qu’il ne possède plus aucun espace de tra
 
 ### Supprimer un espace de travail [#delete-workspace]
 
-Dans **Général**, les propriétaires cliquent sur **Supprimer cet espace de travail…**, puis saisissent son nom pour confirmer.
+Sur **Espace de travail**, sous **Zone de danger**, les propriétaires cliquent sur **Supprimer cet espace de travail…**, puis saisissent son nom pour confirmer.
 
 <Callout
   type="danger"
@@ -314,11 +327,11 @@ Une fois l’espace de travail supprimé, Peal envoie une confirmation à votre 
 
 ## Vos espaces de travail [#your-workspaces]
 
-À la connexion, ou quand vous allez à l’adresse de Peal, vous arrivez dans l’espace de travail que vous avez créé ou choisi en dernier, sinon dans le premier des vôtres. À l’inscription, une page à part vous demande de nommer votre premier espace de travail et de choisir son adresse. Il remplit les deux pour vous (_Espace d’Ada_, à `/espace-dada`), et vous pouvez changer l’un ou l’autre, tant qu’aucun autre espace n’a cette adresse. Si une invitation vous attend, vous rejoignez cet espace à la place. Vous pourrez changer le nom et l’adresse plus tard dans les réglages généraux de l’espace.
+À la connexion, ou quand vous allez à l’adresse de Peal, vous arrivez dans l’espace de travail que vous avez créé ou choisi en dernier, sinon dans le premier des vôtres. À l’inscription, une page à part vous demande de nommer votre premier espace de travail et de choisir son adresse. Il remplit les deux pour vous (_Espace d’Ada_, à `/espace-dada`), et vous pouvez changer l’un ou l’autre, tant qu’aucun autre espace n’a cette adresse. Si une invitation vous attend, vous rejoignez cet espace à la place. Vous pourrez changer le nom et l’adresse plus tard, sur la page **Espace de travail** sous **Paramètres**.
 
 Pour créer un autre espace de travail, ouvrez le menu des espaces en haut de la barre latérale et cliquez sur **Nouvel espace de travail**, qui ouvre la même page, le nom vide. **Retour**, en haut, ramène à votre espace de travail. Les pages d’un espace ont une adresse tirée de son nom, comme `/espace-dada/posts`. Cette adresse ne change pas quand vous renommez l’espace, et les liens qui contiennent l’identifiant de l’espace, comme ceux des e-mails de Peal, mènent à la même page.
 
-Votre compte et vos notifications sont à vous dans chaque espace de travail : ils sont sous **Paramètres** dans chacun, après les réglages de l’espace ([Compte](/guides/workspace/account), [Notifications](/guides/workspace/notifications)).
+Votre compte et vos notifications sont à vous dans chaque espace de travail : ils sont sous **Paramètres** dans chacun, dans le groupe **Personnel** ([Compte](/guides/workspace/account), [Notifications](/guides/workspace/notifications)).
 
 Chaque espace de travail garde ses propres publications, canaux, boîte de réception et statistiques, et vous les voyez depuis cet espace : aucune page, aucun point d’accès, aucune commande ni aucun outil MCP ne les rassemble d’un espace à l’autre. Pour voir un autre espace, passez-y depuis le menu des espaces. Vos [notifications](/guides/workspace/notifications) et le [récapitulatif hebdomadaire](/guides/workspace/notifications#digest) sont les seuls endroits qui couvrent tous vos espaces à la fois.
 

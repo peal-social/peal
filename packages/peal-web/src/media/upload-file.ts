@@ -1,6 +1,7 @@
 import { Cause, Effect, Option } from "effect";
 import type { Media, NewUpload, PreparedUpload } from "peal-contract";
 
+import { declaredTypeOf } from "#media/content-type.ts";
 import { completeRetrySchedule, withRetry } from "#media/retry.ts";
 import type { TransferFailed } from "#media/transfer-failed.ts";
 import { Transfer } from "#media/transfer.ts";
@@ -61,7 +62,7 @@ export const uploadFile = Effect.fn("uploadFile")(function* uploadFile(
   const prepared = yield* api.create({
     altText: altText === "" ? null : altText,
     byteSize: file.size,
-    contentType: file.type,
+    contentType: declaredTypeOf(file.type),
     // A file the person chose has a name, which the library finds it by.
     fileName: file instanceof File ? file.name : null,
   });

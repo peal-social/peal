@@ -146,6 +146,14 @@ public final class NoticeEvent {
         return new NoticeEvent(new CommentRuleStoppedValue(value));
     }
 
+    public static NoticeEvent videoGenerationEnded(NoticeEventVideoGenerationEnded value) {
+        return new NoticeEvent(new VideoGenerationEndedValue(value));
+    }
+
+    public static NoticeEvent slideshowEnded(NoticeEventSlideshowEnded value) {
+        return new NoticeEvent(new SlideshowEndedValue(value));
+    }
+
     public boolean isPostPublished() {
         return value instanceof PostPublishedValue;
     }
@@ -264,6 +272,14 @@ public final class NoticeEvent {
 
     public boolean isCommentRuleStopped() {
         return value instanceof CommentRuleStoppedValue;
+    }
+
+    public boolean isVideoGenerationEnded() {
+        return value instanceof VideoGenerationEndedValue;
+    }
+
+    public boolean isSlideshowEnded() {
+        return value instanceof SlideshowEndedValue;
     }
 
     public boolean _isUnknown() {
@@ -480,6 +496,20 @@ public final class NoticeEvent {
         return Optional.empty();
     }
 
+    public Optional<NoticeEventVideoGenerationEnded> getVideoGenerationEnded() {
+        if (isVideoGenerationEnded()) {
+            return Optional.of(((VideoGenerationEndedValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<NoticeEventSlideshowEnded> getSlideshowEnded() {
+        if (isSlideshowEnded()) {
+            return Optional.of(((SlideshowEndedValue) value).value);
+        }
+        return Optional.empty();
+    }
+
     public Optional<Object> _getUnknown() {
         if (_isUnknown()) {
             return Optional.of(((_UnknownValue) value).value);
@@ -569,6 +599,10 @@ public final class NoticeEvent {
 
         T visitCommentRuleStopped(NoticeEventCommentRuleStopped commentRuleStopped);
 
+        T visitVideoGenerationEnded(NoticeEventVideoGenerationEnded videoGenerationEnded);
+
+        T visitSlideshowEnded(NoticeEventSlideshowEnded slideshowEnded);
+
         T _visitUnknown(Object unknownType);
     }
 
@@ -603,7 +637,9 @@ public final class NoticeEvent {
         @JsonSubTypes.Type(FeedStoppedValue.class),
         @JsonSubTypes.Type(FollowUpsNotSentValue.class),
         @JsonSubTypes.Type(FollowUpRuleStoppedValue.class),
-        @JsonSubTypes.Type(CommentRuleStoppedValue.class)
+        @JsonSubTypes.Type(CommentRuleStoppedValue.class),
+        @JsonSubTypes.Type(VideoGenerationEndedValue.class),
+        @JsonSubTypes.Type(SlideshowEndedValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
@@ -1797,6 +1833,86 @@ public final class NoticeEvent {
         }
 
         private boolean equalTo(CommentRuleStoppedValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "NoticeEvent{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("VideoGenerationEnded")
+    @JsonIgnoreProperties("_tag")
+    private static final class VideoGenerationEndedValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private NoticeEventVideoGenerationEnded value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private VideoGenerationEndedValue() {}
+
+        private VideoGenerationEndedValue(NoticeEventVideoGenerationEnded value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitVideoGenerationEnded(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof VideoGenerationEndedValue && equalTo((VideoGenerationEndedValue) other);
+        }
+
+        private boolean equalTo(VideoGenerationEndedValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "NoticeEvent{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("SlideshowEnded")
+    @JsonIgnoreProperties("_tag")
+    private static final class SlideshowEndedValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private NoticeEventSlideshowEnded value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private SlideshowEndedValue() {}
+
+        private SlideshowEndedValue(NoticeEventSlideshowEnded value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitSlideshowEnded(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof SlideshowEndedValue && equalTo((SlideshowEndedValue) other);
+        }
+
+        private boolean equalTo(SlideshowEndedValue other) {
             return value.equals(other.value);
         }
 

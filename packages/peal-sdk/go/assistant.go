@@ -10,6 +10,117 @@ import (
 )
 
 var (
+	aiProviderConnectionChangeFieldWorkspaceID = big.NewInt(1 << 0)
+	aiProviderConnectionChangeFieldProvider    = big.NewInt(1 << 1)
+	aiProviderConnectionChangeFieldAPIKey      = big.NewInt(1 << 2)
+	aiProviderConnectionChangeFieldBaseURL     = big.NewInt(1 << 3)
+)
+
+type AiProviderConnectionChange struct {
+	WorkspaceID string     `json:"-" url:"-"`
+	Provider    AiProvider `json:"-" url:"-"`
+	APIKey      *string    `json:"apiKey,omitempty" url:"-"`
+	BaseURL     *string    `json:"baseUrl,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (a *AiProviderConnectionChange) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnectionChange) SetWorkspaceID(workspaceID string) {
+	a.WorkspaceID = workspaceID
+	a.require(aiProviderConnectionChangeFieldWorkspaceID)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnectionChange) SetProvider(provider AiProvider) {
+	a.Provider = provider
+	a.require(aiProviderConnectionChangeFieldProvider)
+}
+
+// SetAPIKey sets the APIKey field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnectionChange) SetAPIKey(apiKey *string) {
+	a.APIKey = apiKey
+	a.require(aiProviderConnectionChangeFieldAPIKey)
+}
+
+// SetBaseURL sets the BaseURL field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnectionChange) SetBaseURL(baseURL *string) {
+	a.BaseURL = baseURL
+	a.require(aiProviderConnectionChangeFieldBaseURL)
+}
+
+func (a *AiProviderConnectionChange) UnmarshalJSON(data []byte) error {
+	type unmarshaler AiProviderConnectionChange
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*a = AiProviderConnectionChange(body)
+	return nil
+}
+
+func (a *AiProviderConnectionChange) MarshalJSON() ([]byte, error) {
+	type embed AiProviderConnectionChange
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
+	disconnectProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
+	disconnectProviderAssistantRequestFieldProvider    = big.NewInt(1 << 1)
+)
+
+type DisconnectProviderAssistantRequest struct {
+	WorkspaceID string     `json:"-" url:"-"`
+	Provider    AiProvider `json:"-" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (d *DisconnectProviderAssistantRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if d.explicitFields != nil {
+		next.Set(d.explicitFields)
+	}
+	next.Or(next, field)
+	d.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DisconnectProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
+	d.WorkspaceID = workspaceID
+	d.require(disconnectProviderAssistantRequestFieldWorkspaceID)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (d *DisconnectProviderAssistantRequest) SetProvider(provider AiProvider) {
+	d.Provider = provider
+	d.require(disconnectProviderAssistantRequestFieldProvider)
+}
+
+var (
 	imageRequestFieldWorkspaceID = big.NewInt(1 << 0)
 	imageRequestFieldAspect      = big.NewInt(1 << 1)
 	imageRequestFieldPrompt      = big.NewInt(1 << 2)
@@ -103,6 +214,60 @@ func (i *ImageProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
 }
 
 var (
+	modelsAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
+)
+
+type ModelsAssistantRequest struct {
+	WorkspaceID string `json:"-" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (m *ModelsAssistantRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if m.explicitFields != nil {
+		next.Set(m.explicitFields)
+	}
+	next.Or(next, field)
+	m.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *ModelsAssistantRequest) SetWorkspaceID(workspaceID string) {
+	m.WorkspaceID = workspaceID
+	m.require(modelsAssistantRequestFieldWorkspaceID)
+}
+
+var (
+	providersAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
+)
+
+type ProvidersAssistantRequest struct {
+	WorkspaceID string `json:"-" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (p *ProvidersAssistantRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if p.explicitFields != nil {
+		next.Set(p.explicitFields)
+	}
+	next.Or(next, field)
+	p.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *ProvidersAssistantRequest) SetWorkspaceID(workspaceID string) {
+	p.WorkspaceID = workspaceID
+	p.require(providersAssistantRequestFieldWorkspaceID)
+}
+
+var (
 	removeImageProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
 )
 
@@ -161,13 +326,15 @@ var (
 	imageProviderChangeFieldAPIKey      = big.NewInt(1 << 1)
 	imageProviderChangeFieldBaseURL     = big.NewInt(1 << 2)
 	imageProviderChangeFieldModel       = big.NewInt(1 << 3)
+	imageProviderChangeFieldProvider    = big.NewInt(1 << 4)
 )
 
 type ImageProviderChange struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	APIKey      *string `json:"apiKey,omitempty" url:"-"`
-	BaseURL     string  `json:"baseUrl" url:"-"`
-	Model       string  `json:"model" url:"-"`
+	WorkspaceID string           `json:"-" url:"-"`
+	APIKey      *string          `json:"apiKey,omitempty" url:"-"`
+	BaseURL     *string          `json:"baseUrl,omitempty" url:"-"`
+	Model       string           `json:"model" url:"-"`
+	Provider    *AiImageProvider `json:"provider,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -198,7 +365,7 @@ func (i *ImageProviderChange) SetAPIKey(apiKey *string) {
 
 // SetBaseURL sets the BaseURL field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (i *ImageProviderChange) SetBaseURL(baseURL string) {
+func (i *ImageProviderChange) SetBaseURL(baseURL *string) {
 	i.BaseURL = baseURL
 	i.require(imageProviderChangeFieldBaseURL)
 }
@@ -208,6 +375,13 @@ func (i *ImageProviderChange) SetBaseURL(baseURL string) {
 func (i *ImageProviderChange) SetModel(model string) {
 	i.Model = model
 	i.require(imageProviderChangeFieldModel)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *ImageProviderChange) SetProvider(provider *AiImageProvider) {
+	i.Provider = provider
+	i.require(imageProviderChangeFieldProvider)
 }
 
 func (i *ImageProviderChange) UnmarshalJSON(data []byte) error {
@@ -232,19 +406,96 @@ func (i *ImageProviderChange) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	aiCapabilityModelChangeFieldWorkspaceID = big.NewInt(1 << 0)
+	aiCapabilityModelChangeFieldCapability  = big.NewInt(1 << 1)
+	aiCapabilityModelChangeFieldModel       = big.NewInt(1 << 2)
+	aiCapabilityModelChangeFieldProvider    = big.NewInt(1 << 3)
+)
+
+type AiCapabilityModelChange struct {
+	WorkspaceID string       `json:"-" url:"-"`
+	Capability  AiCapability `json:"-" url:"-"`
+	Model       *string      `json:"model,omitempty" url:"-"`
+	Provider    AiProvider   `json:"provider" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (a *AiCapabilityModelChange) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModelChange) SetWorkspaceID(workspaceID string) {
+	a.WorkspaceID = workspaceID
+	a.require(aiCapabilityModelChangeFieldWorkspaceID)
+}
+
+// SetCapability sets the Capability field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModelChange) SetCapability(capability AiCapability) {
+	a.Capability = capability
+	a.require(aiCapabilityModelChangeFieldCapability)
+}
+
+// SetModel sets the Model field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModelChange) SetModel(model *string) {
+	a.Model = model
+	a.require(aiCapabilityModelChangeFieldModel)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModelChange) SetProvider(provider AiProvider) {
+	a.Provider = provider
+	a.require(aiCapabilityModelChangeFieldProvider)
+}
+
+func (a *AiCapabilityModelChange) UnmarshalJSON(data []byte) error {
+	type unmarshaler AiCapabilityModelChange
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*a = AiCapabilityModelChange(body)
+	return nil
+}
+
+func (a *AiCapabilityModelChange) MarshalJSON() ([]byte, error) {
+	type embed AiCapabilityModelChange
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	textProviderChangeFieldWorkspaceID = big.NewInt(1 << 0)
 	textProviderChangeFieldAPIKey      = big.NewInt(1 << 1)
 	textProviderChangeFieldBaseURL     = big.NewInt(1 << 2)
 	textProviderChangeFieldKind        = big.NewInt(1 << 3)
 	textProviderChangeFieldModel       = big.NewInt(1 << 4)
+	textProviderChangeFieldProvider    = big.NewInt(1 << 5)
 )
 
 type TextProviderChange struct {
-	WorkspaceID string           `json:"-" url:"-"`
-	APIKey      *string          `json:"apiKey,omitempty" url:"-"`
-	BaseURL     string           `json:"baseUrl" url:"-"`
-	Kind        TextProviderKind `json:"kind" url:"-"`
-	Model       string           `json:"model" url:"-"`
+	WorkspaceID string            `json:"-" url:"-"`
+	APIKey      *string           `json:"apiKey,omitempty" url:"-"`
+	BaseURL     *string           `json:"baseUrl,omitempty" url:"-"`
+	Kind        *TextProviderKind `json:"kind,omitempty" url:"-"`
+	Model       string            `json:"model" url:"-"`
+	Provider    *AiProvider       `json:"provider,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -275,14 +526,14 @@ func (t *TextProviderChange) SetAPIKey(apiKey *string) {
 
 // SetBaseURL sets the BaseURL field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TextProviderChange) SetBaseURL(baseURL string) {
+func (t *TextProviderChange) SetBaseURL(baseURL *string) {
 	t.BaseURL = baseURL
 	t.require(textProviderChangeFieldBaseURL)
 }
 
 // SetKind sets the Kind field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TextProviderChange) SetKind(kind TextProviderKind) {
+func (t *TextProviderChange) SetKind(kind *TextProviderKind) {
 	t.Kind = kind
 	t.require(textProviderChangeFieldKind)
 }
@@ -292,6 +543,13 @@ func (t *TextProviderChange) SetKind(kind TextProviderKind) {
 func (t *TextProviderChange) SetModel(model string) {
 	t.Model = model
 	t.require(textProviderChangeFieldModel)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (t *TextProviderChange) SetProvider(provider *AiProvider) {
+	t.Provider = provider
+	t.require(textProviderChangeFieldProvider)
 }
 
 func (t *TextProviderChange) UnmarshalJSON(data []byte) error {
@@ -409,6 +667,72 @@ func (s *SuggestionRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
+	aiProviderTestFieldWorkspaceID = big.NewInt(1 << 0)
+	aiProviderTestFieldProvider    = big.NewInt(1 << 1)
+	aiProviderTestFieldModel       = big.NewInt(1 << 2)
+)
+
+type AiProviderTest struct {
+	WorkspaceID string     `json:"-" url:"-"`
+	Provider    AiProvider `json:"-" url:"-"`
+	Model       *string    `json:"model,omitempty" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (a *AiProviderTest) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderTest) SetWorkspaceID(workspaceID string) {
+	a.WorkspaceID = workspaceID
+	a.require(aiProviderTestFieldWorkspaceID)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderTest) SetProvider(provider AiProvider) {
+	a.Provider = provider
+	a.require(aiProviderTestFieldProvider)
+}
+
+// SetModel sets the Model field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderTest) SetModel(model *string) {
+	a.Model = model
+	a.require(aiProviderTestFieldModel)
+}
+
+func (a *AiProviderTest) UnmarshalJSON(data []byte) error {
+	type unmarshaler AiProviderTest
+	var body unmarshaler
+	if err := json.Unmarshal(data, &body); err != nil {
+		return err
+	}
+	*a = AiProviderTest(body)
+	return nil
+}
+
+func (a *AiProviderTest) MarshalJSON() ([]byte, error) {
+	type embed AiProviderTest
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+var (
 	testTextProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
 )
 
@@ -460,6 +784,621 @@ func (t *TextProviderAssistantRequest) require(field *big.Int) {
 func (t *TextProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
 	t.WorkspaceID = workspaceID
 	t.require(textProviderAssistantRequestFieldWorkspaceID)
+}
+
+type AiCapability string
+
+const (
+	AiCapabilityText          AiCapability = "text"
+	AiCapabilityImage         AiCapability = "image"
+	AiCapabilityVideo         AiCapability = "video"
+	AiCapabilitySpeech        AiCapability = "speech"
+	AiCapabilityTranscription AiCapability = "transcription"
+	AiCapabilityComposition   AiCapability = "composition"
+)
+
+func NewAiCapabilityFromString(s string) (AiCapability, error) {
+	switch s {
+	case "text":
+		return AiCapabilityText, nil
+	case "image":
+		return AiCapabilityImage, nil
+	case "video":
+		return AiCapabilityVideo, nil
+	case "speech":
+		return AiCapabilitySpeech, nil
+	case "transcription":
+		return AiCapabilityTranscription, nil
+	case "composition":
+		return AiCapabilityComposition, nil
+	}
+	var t AiCapability
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (a AiCapability) Ptr() *AiCapability {
+	return &a
+}
+
+var (
+	aiCapabilityModelFieldCapability  = big.NewInt(1 << 0)
+	aiCapabilityModelFieldModel       = big.NewInt(1 << 1)
+	aiCapabilityModelFieldProvider    = big.NewInt(1 << 2)
+	aiCapabilityModelFieldServerModel = big.NewInt(1 << 3)
+	aiCapabilityModelFieldUpdatedAt   = big.NewInt(1 << 4)
+)
+
+// aiCapabilityModelNullableFields maps the wire names of AiCapabilityModel's nullable fields (required or optional) to their field bits.
+var aiCapabilityModelNullableFields = map[string]*big.Int{
+	"model":     aiCapabilityModelFieldModel,
+	"provider":  aiCapabilityModelFieldProvider,
+	"updatedAt": aiCapabilityModelFieldUpdatedAt,
+}
+
+type AiCapabilityModel struct {
+	Capability  AiCapability `json:"capability" url:"capability"`
+	Model       *string      `json:"model,omitempty" url:"model,omitempty"`
+	Provider    *AiProvider  `json:"provider,omitempty" url:"provider,omitempty"`
+	ServerModel bool         `json:"serverModel" url:"serverModel"`
+	UpdatedAt   *string      `json:"updatedAt,omitempty" url:"updatedAt,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AiCapabilityModel) GetCapability() AiCapability {
+	if a == nil {
+		return ""
+	}
+	return a.Capability
+}
+
+func (a *AiCapabilityModel) GetModel() *string {
+	if a == nil {
+		return nil
+	}
+	return a.Model
+}
+
+func (a *AiCapabilityModel) GetProvider() *AiProvider {
+	if a == nil {
+		return nil
+	}
+	return a.Provider
+}
+
+func (a *AiCapabilityModel) GetServerModel() bool {
+	if a == nil {
+		return false
+	}
+	return a.ServerModel
+}
+
+func (a *AiCapabilityModel) GetUpdatedAt() *string {
+	if a == nil {
+		return nil
+	}
+	return a.UpdatedAt
+}
+
+func (a *AiCapabilityModel) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AiCapabilityModel) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetCapability sets the Capability field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModel) SetCapability(capability AiCapability) {
+	a.Capability = capability
+	a.require(aiCapabilityModelFieldCapability)
+}
+
+// SetModel sets the Model field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModel) SetModel(model *string) {
+	a.Model = model
+	a.require(aiCapabilityModelFieldModel)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModel) SetProvider(provider *AiProvider) {
+	a.Provider = provider
+	a.require(aiCapabilityModelFieldProvider)
+}
+
+// SetServerModel sets the ServerModel field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModel) SetServerModel(serverModel bool) {
+	a.ServerModel = serverModel
+	a.require(aiCapabilityModelFieldServerModel)
+}
+
+// SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModel) SetUpdatedAt(updatedAt *string) {
+	a.UpdatedAt = updatedAt
+	a.require(aiCapabilityModelFieldUpdatedAt)
+}
+
+func (a *AiCapabilityModel) UnmarshalJSON(data []byte) error {
+	type unmarshaler AiCapabilityModel
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AiCapabilityModel(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, aiCapabilityModelNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		a.require(presentFields)
+	}
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AiCapabilityModel) MarshalJSON() ([]byte, error) {
+	type embed AiCapabilityModel
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AiCapabilityModel) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	aiCapabilityModelsFieldModels = big.NewInt(1 << 0)
+)
+
+type AiCapabilityModels struct {
+	Models []*AiCapabilityModel `json:"models" url:"models"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AiCapabilityModels) GetModels() []*AiCapabilityModel {
+	if a == nil {
+		return nil
+	}
+	return a.Models
+}
+
+func (a *AiCapabilityModels) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AiCapabilityModels) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetModels sets the Models field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiCapabilityModels) SetModels(models []*AiCapabilityModel) {
+	a.Models = models
+	a.require(aiCapabilityModelsFieldModels)
+}
+
+func (a *AiCapabilityModels) UnmarshalJSON(data []byte) error {
+	type unmarshaler AiCapabilityModels
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AiCapabilityModels(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AiCapabilityModels) MarshalJSON() ([]byte, error) {
+	type embed AiCapabilityModels
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AiCapabilityModels) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+type AiImageProvider string
+
+const (
+	AiImageProviderOpenai           AiImageProvider = "openai"
+	AiImageProviderGoogle           AiImageProvider = "google"
+	AiImageProviderXai              AiImageProvider = "xai"
+	AiImageProviderTogetherai       AiImageProvider = "togetherai"
+	AiImageProviderOpenaiCompatible AiImageProvider = "openai-compatible"
+	AiImageProviderFal              AiImageProvider = "fal"
+)
+
+func NewAiImageProviderFromString(s string) (AiImageProvider, error) {
+	switch s {
+	case "openai":
+		return AiImageProviderOpenai, nil
+	case "google":
+		return AiImageProviderGoogle, nil
+	case "xai":
+		return AiImageProviderXai, nil
+	case "togetherai":
+		return AiImageProviderTogetherai, nil
+	case "openai-compatible":
+		return AiImageProviderOpenaiCompatible, nil
+	case "fal":
+		return AiImageProviderFal, nil
+	}
+	var t AiImageProvider
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (a AiImageProvider) Ptr() *AiImageProvider {
+	return &a
+}
+
+type AiProvider string
+
+const (
+	AiProviderAnthropic        AiProvider = "anthropic"
+	AiProviderOpenai           AiProvider = "openai"
+	AiProviderGoogle           AiProvider = "google"
+	AiProviderMistral          AiProvider = "mistral"
+	AiProviderXai              AiProvider = "xai"
+	AiProviderGroq             AiProvider = "groq"
+	AiProviderTogetherai       AiProvider = "togetherai"
+	AiProviderDeepseek         AiProvider = "deepseek"
+	AiProviderOpenrouter       AiProvider = "openrouter"
+	AiProviderCerebras         AiProvider = "cerebras"
+	AiProviderFireworks        AiProvider = "fireworks"
+	AiProviderOpenaiCompatible AiProvider = "openai-compatible"
+	AiProviderElevenlabs       AiProvider = "elevenlabs"
+	AiProviderFal              AiProvider = "fal"
+	AiProviderShotstack        AiProvider = "shotstack"
+)
+
+func NewAiProviderFromString(s string) (AiProvider, error) {
+	switch s {
+	case "anthropic":
+		return AiProviderAnthropic, nil
+	case "openai":
+		return AiProviderOpenai, nil
+	case "google":
+		return AiProviderGoogle, nil
+	case "mistral":
+		return AiProviderMistral, nil
+	case "xai":
+		return AiProviderXai, nil
+	case "groq":
+		return AiProviderGroq, nil
+	case "togetherai":
+		return AiProviderTogetherai, nil
+	case "deepseek":
+		return AiProviderDeepseek, nil
+	case "openrouter":
+		return AiProviderOpenrouter, nil
+	case "cerebras":
+		return AiProviderCerebras, nil
+	case "fireworks":
+		return AiProviderFireworks, nil
+	case "openai-compatible":
+		return AiProviderOpenaiCompatible, nil
+	case "elevenlabs":
+		return AiProviderElevenlabs, nil
+	case "fal":
+		return AiProviderFal, nil
+	case "shotstack":
+		return AiProviderShotstack, nil
+	}
+	var t AiProvider
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (a AiProvider) Ptr() *AiProvider {
+	return &a
+}
+
+var (
+	aiProviderConnectionFieldBaseURL       = big.NewInt(1 << 0)
+	aiProviderConnectionFieldKeySet        = big.NewInt(1 << 1)
+	aiProviderConnectionFieldKeyUnreadable = big.NewInt(1 << 2)
+	aiProviderConnectionFieldProvider      = big.NewInt(1 << 3)
+	aiProviderConnectionFieldUpdatedAt     = big.NewInt(1 << 4)
+)
+
+type AiProviderConnection struct {
+	BaseURL       string     `json:"baseUrl" url:"baseUrl"`
+	KeySet        bool       `json:"keySet" url:"keySet"`
+	KeyUnreadable bool       `json:"keyUnreadable" url:"keyUnreadable"`
+	Provider      AiProvider `json:"provider" url:"provider"`
+	UpdatedAt     string     `json:"updatedAt" url:"updatedAt"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AiProviderConnection) GetBaseURL() string {
+	if a == nil {
+		return ""
+	}
+	return a.BaseURL
+}
+
+func (a *AiProviderConnection) GetKeySet() bool {
+	if a == nil {
+		return false
+	}
+	return a.KeySet
+}
+
+func (a *AiProviderConnection) GetKeyUnreadable() bool {
+	if a == nil {
+		return false
+	}
+	return a.KeyUnreadable
+}
+
+func (a *AiProviderConnection) GetProvider() AiProvider {
+	if a == nil {
+		return ""
+	}
+	return a.Provider
+}
+
+func (a *AiProviderConnection) GetUpdatedAt() string {
+	if a == nil {
+		return ""
+	}
+	return a.UpdatedAt
+}
+
+func (a *AiProviderConnection) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AiProviderConnection) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetBaseURL sets the BaseURL field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnection) SetBaseURL(baseURL string) {
+	a.BaseURL = baseURL
+	a.require(aiProviderConnectionFieldBaseURL)
+}
+
+// SetKeySet sets the KeySet field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnection) SetKeySet(keySet bool) {
+	a.KeySet = keySet
+	a.require(aiProviderConnectionFieldKeySet)
+}
+
+// SetKeyUnreadable sets the KeyUnreadable field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnection) SetKeyUnreadable(keyUnreadable bool) {
+	a.KeyUnreadable = keyUnreadable
+	a.require(aiProviderConnectionFieldKeyUnreadable)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnection) SetProvider(provider AiProvider) {
+	a.Provider = provider
+	a.require(aiProviderConnectionFieldProvider)
+}
+
+// SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnection) SetUpdatedAt(updatedAt string) {
+	a.UpdatedAt = updatedAt
+	a.require(aiProviderConnectionFieldUpdatedAt)
+}
+
+func (a *AiProviderConnection) UnmarshalJSON(data []byte) error {
+	type unmarshaler AiProviderConnection
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AiProviderConnection(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AiProviderConnection) MarshalJSON() ([]byte, error) {
+	type embed AiProviderConnection
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AiProviderConnection) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	aiProviderConnectionsFieldProviders = big.NewInt(1 << 0)
+)
+
+type AiProviderConnections struct {
+	Providers []*AiProviderConnection `json:"providers" url:"providers"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AiProviderConnections) GetProviders() []*AiProviderConnection {
+	if a == nil {
+		return nil
+	}
+	return a.Providers
+}
+
+func (a *AiProviderConnections) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AiProviderConnections) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetProviders sets the Providers field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AiProviderConnections) SetProviders(providers []*AiProviderConnection) {
+	a.Providers = providers
+	a.require(aiProviderConnectionsFieldProviders)
+}
+
+func (a *AiProviderConnections) UnmarshalJSON(data []byte) error {
+	type unmarshaler AiProviderConnections
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AiProviderConnections(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AiProviderConnections) MarshalJSON() ([]byte, error) {
+	type embed AiProviderConnections
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AiProviderConnections) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
 }
 
 type AssistantAction struct {
@@ -1571,15 +2510,197 @@ func (a AssistantOffReason) Ptr() *AssistantOffReason {
 }
 
 var (
-	assistantStatusFieldAvailable     = big.NewInt(1 << 0)
-	assistantStatusFieldDailyLimit    = big.NewInt(1 << 1)
-	assistantStatusFieldImages        = big.NewInt(1 << 2)
-	assistantStatusFieldMaxTextLength = big.NewInt(1 << 3)
-	assistantStatusFieldMonth         = big.NewInt(1 << 4)
-	assistantStatusFieldReason        = big.NewInt(1 << 5)
-	assistantStatusFieldRemaining     = big.NewInt(1 << 6)
-	assistantStatusFieldResetsAt      = big.NewInt(1 << 7)
-	assistantStatusFieldSource        = big.NewInt(1 << 8)
+	assistantSlideshowsStatusFieldAvailable             = big.NewInt(1 << 0)
+	assistantSlideshowsStatusFieldDailyLimit            = big.NewInt(1 << 1)
+	assistantSlideshowsStatusFieldPaymentMethodRequired = big.NewInt(1 << 2)
+	assistantSlideshowsStatusFieldProvider              = big.NewInt(1 << 3)
+	assistantSlideshowsStatusFieldRemaining             = big.NewInt(1 << 4)
+	assistantSlideshowsStatusFieldSandbox               = big.NewInt(1 << 5)
+)
+
+// assistantSlideshowsStatusNullableFields maps the wire names of AssistantSlideshowsStatus's nullable fields (required or optional) to their field bits.
+var assistantSlideshowsStatusNullableFields = map[string]*big.Int{
+	"provider": assistantSlideshowsStatusFieldProvider,
+}
+
+type AssistantSlideshowsStatus struct {
+	Available             bool        `json:"available" url:"available"`
+	DailyLimit            int         `json:"dailyLimit" url:"dailyLimit"`
+	PaymentMethodRequired bool        `json:"paymentMethodRequired" url:"paymentMethodRequired"`
+	Provider              *AiProvider `json:"provider,omitempty" url:"provider,omitempty"`
+	Remaining             int         `json:"remaining" url:"remaining"`
+	Sandbox               bool        `json:"sandbox" url:"sandbox"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AssistantSlideshowsStatus) GetAvailable() bool {
+	if a == nil {
+		return false
+	}
+	return a.Available
+}
+
+func (a *AssistantSlideshowsStatus) GetDailyLimit() int {
+	if a == nil {
+		return 0
+	}
+	return a.DailyLimit
+}
+
+func (a *AssistantSlideshowsStatus) GetPaymentMethodRequired() bool {
+	if a == nil {
+		return false
+	}
+	return a.PaymentMethodRequired
+}
+
+func (a *AssistantSlideshowsStatus) GetProvider() *AiProvider {
+	if a == nil {
+		return nil
+	}
+	return a.Provider
+}
+
+func (a *AssistantSlideshowsStatus) GetRemaining() int {
+	if a == nil {
+		return 0
+	}
+	return a.Remaining
+}
+
+func (a *AssistantSlideshowsStatus) GetSandbox() bool {
+	if a == nil {
+		return false
+	}
+	return a.Sandbox
+}
+
+func (a *AssistantSlideshowsStatus) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AssistantSlideshowsStatus) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetAvailable sets the Available field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantSlideshowsStatus) SetAvailable(available bool) {
+	a.Available = available
+	a.require(assistantSlideshowsStatusFieldAvailable)
+}
+
+// SetDailyLimit sets the DailyLimit field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantSlideshowsStatus) SetDailyLimit(dailyLimit int) {
+	a.DailyLimit = dailyLimit
+	a.require(assistantSlideshowsStatusFieldDailyLimit)
+}
+
+// SetPaymentMethodRequired sets the PaymentMethodRequired field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantSlideshowsStatus) SetPaymentMethodRequired(paymentMethodRequired bool) {
+	a.PaymentMethodRequired = paymentMethodRequired
+	a.require(assistantSlideshowsStatusFieldPaymentMethodRequired)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantSlideshowsStatus) SetProvider(provider *AiProvider) {
+	a.Provider = provider
+	a.require(assistantSlideshowsStatusFieldProvider)
+}
+
+// SetRemaining sets the Remaining field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantSlideshowsStatus) SetRemaining(remaining int) {
+	a.Remaining = remaining
+	a.require(assistantSlideshowsStatusFieldRemaining)
+}
+
+// SetSandbox sets the Sandbox field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantSlideshowsStatus) SetSandbox(sandbox bool) {
+	a.Sandbox = sandbox
+	a.require(assistantSlideshowsStatusFieldSandbox)
+}
+
+func (a *AssistantSlideshowsStatus) UnmarshalJSON(data []byte) error {
+	type unmarshaler AssistantSlideshowsStatus
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AssistantSlideshowsStatus(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, assistantSlideshowsStatusNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		a.require(presentFields)
+	}
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AssistantSlideshowsStatus) MarshalJSON() ([]byte, error) {
+	type embed AssistantSlideshowsStatus
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AssistantSlideshowsStatus) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	assistantStatusFieldAvailable      = big.NewInt(1 << 0)
+	assistantStatusFieldDailyLimit     = big.NewInt(1 << 1)
+	assistantStatusFieldImages         = big.NewInt(1 << 2)
+	assistantStatusFieldMaxTextLength  = big.NewInt(1 << 3)
+	assistantStatusFieldMonth          = big.NewInt(1 << 4)
+	assistantStatusFieldReason         = big.NewInt(1 << 5)
+	assistantStatusFieldRemaining      = big.NewInt(1 << 6)
+	assistantStatusFieldResetsAt       = big.NewInt(1 << 7)
+	assistantStatusFieldSlideshows     = big.NewInt(1 << 8)
+	assistantStatusFieldSource         = big.NewInt(1 << 9)
+	assistantStatusFieldTranscriptions = big.NewInt(1 << 10)
+	assistantStatusFieldVideos         = big.NewInt(1 << 11)
+	assistantStatusFieldVoiceovers     = big.NewInt(1 << 12)
 )
 
 // assistantStatusNullableFields maps the wire names of AssistantStatus's nullable fields (required or optional) to their field bits.
@@ -1590,15 +2711,19 @@ var assistantStatusNullableFields = map[string]*big.Int{
 }
 
 type AssistantStatus struct {
-	Available     bool                   `json:"available" url:"available"`
-	DailyLimit    int                    `json:"dailyLimit" url:"dailyLimit"`
-	Images        *AssistantImagesStatus `json:"images" url:"images"`
-	MaxTextLength int                    `json:"maxTextLength" url:"maxTextLength"`
-	Month         *AssistantMonth        `json:"month,omitempty" url:"month,omitempty"`
-	Reason        *AssistantOffReason    `json:"reason,omitempty" url:"reason,omitempty"`
-	Remaining     int                    `json:"remaining" url:"remaining"`
-	ResetsAt      string                 `json:"resetsAt" url:"resetsAt"`
-	Source        *AssistantTextSource   `json:"source,omitempty" url:"source,omitempty"`
+	Available      bool                           `json:"available" url:"available"`
+	DailyLimit     int                            `json:"dailyLimit" url:"dailyLimit"`
+	Images         *AssistantImagesStatus         `json:"images" url:"images"`
+	MaxTextLength  int                            `json:"maxTextLength" url:"maxTextLength"`
+	Month          *AssistantMonth                `json:"month,omitempty" url:"month,omitempty"`
+	Reason         *AssistantOffReason            `json:"reason,omitempty" url:"reason,omitempty"`
+	Remaining      int                            `json:"remaining" url:"remaining"`
+	ResetsAt       string                         `json:"resetsAt" url:"resetsAt"`
+	Slideshows     *AssistantSlideshowsStatus     `json:"slideshows" url:"slideshows"`
+	Source         *AssistantTextSource           `json:"source,omitempty" url:"source,omitempty"`
+	Transcriptions *AssistantTranscriptionsStatus `json:"transcriptions" url:"transcriptions"`
+	Videos         *AssistantVideosStatus         `json:"videos" url:"videos"`
+	Voiceovers     *AssistantVoiceoversStatus     `json:"voiceovers" url:"voiceovers"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1663,11 +2788,39 @@ func (a *AssistantStatus) GetResetsAt() string {
 	return a.ResetsAt
 }
 
+func (a *AssistantStatus) GetSlideshows() *AssistantSlideshowsStatus {
+	if a == nil {
+		return nil
+	}
+	return a.Slideshows
+}
+
 func (a *AssistantStatus) GetSource() *AssistantTextSource {
 	if a == nil {
 		return nil
 	}
 	return a.Source
+}
+
+func (a *AssistantStatus) GetTranscriptions() *AssistantTranscriptionsStatus {
+	if a == nil {
+		return nil
+	}
+	return a.Transcriptions
+}
+
+func (a *AssistantStatus) GetVideos() *AssistantVideosStatus {
+	if a == nil {
+		return nil
+	}
+	return a.Videos
+}
+
+func (a *AssistantStatus) GetVoiceovers() *AssistantVoiceoversStatus {
+	if a == nil {
+		return nil
+	}
+	return a.Voiceovers
 }
 
 func (a *AssistantStatus) GetExtraProperties() map[string]interface{} {
@@ -1742,11 +2895,39 @@ func (a *AssistantStatus) SetResetsAt(resetsAt string) {
 	a.require(assistantStatusFieldResetsAt)
 }
 
+// SetSlideshows sets the Slideshows field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantStatus) SetSlideshows(slideshows *AssistantSlideshowsStatus) {
+	a.Slideshows = slideshows
+	a.require(assistantStatusFieldSlideshows)
+}
+
 // SetSource sets the Source field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (a *AssistantStatus) SetSource(source *AssistantTextSource) {
 	a.Source = source
 	a.require(assistantStatusFieldSource)
+}
+
+// SetTranscriptions sets the Transcriptions field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantStatus) SetTranscriptions(transcriptions *AssistantTranscriptionsStatus) {
+	a.Transcriptions = transcriptions
+	a.require(assistantStatusFieldTranscriptions)
+}
+
+// SetVideos sets the Videos field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantStatus) SetVideos(videos *AssistantVideosStatus) {
+	a.Videos = videos
+	a.require(assistantStatusFieldVideos)
+}
+
+// SetVoiceovers sets the Voiceovers field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantStatus) SetVoiceovers(voiceovers *AssistantVoiceoversStatus) {
+	a.Voiceovers = voiceovers
+	a.require(assistantStatusFieldVoiceovers)
 }
 
 func (a *AssistantStatus) UnmarshalJSON(data []byte) error {
@@ -1851,29 +3032,490 @@ func (a AssistantTone) Ptr() *AssistantTone {
 	return &a
 }
 
-type ImageAspect string
-
-const (
-	ImageAspectSquare    ImageAspect = "square"
-	ImageAspectLandscape ImageAspect = "landscape"
-	ImageAspectPortrait  ImageAspect = "portrait"
+var (
+	assistantTranscriptionsStatusFieldAvailable  = big.NewInt(1 << 0)
+	assistantTranscriptionsStatusFieldDailyLimit = big.NewInt(1 << 1)
+	assistantTranscriptionsStatusFieldMaxBytes   = big.NewInt(1 << 2)
+	assistantTranscriptionsStatusFieldProvider   = big.NewInt(1 << 3)
+	assistantTranscriptionsStatusFieldRemaining  = big.NewInt(1 << 4)
 )
 
-func NewImageAspectFromString(s string) (ImageAspect, error) {
-	switch s {
-	case "square":
-		return ImageAspectSquare, nil
-	case "landscape":
-		return ImageAspectLandscape, nil
-	case "portrait":
-		return ImageAspectPortrait, nil
-	}
-	var t ImageAspect
-	return "", fmt.Errorf("%s is not a valid %T", s, t)
+// assistantTranscriptionsStatusNullableFields maps the wire names of AssistantTranscriptionsStatus's nullable fields (required or optional) to their field bits.
+var assistantTranscriptionsStatusNullableFields = map[string]*big.Int{
+	"provider": assistantTranscriptionsStatusFieldProvider,
 }
 
-func (i ImageAspect) Ptr() *ImageAspect {
-	return &i
+type AssistantTranscriptionsStatus struct {
+	Available  bool        `json:"available" url:"available"`
+	DailyLimit int         `json:"dailyLimit" url:"dailyLimit"`
+	MaxBytes   int         `json:"maxBytes" url:"maxBytes"`
+	Provider   *AiProvider `json:"provider,omitempty" url:"provider,omitempty"`
+	Remaining  int         `json:"remaining" url:"remaining"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AssistantTranscriptionsStatus) GetAvailable() bool {
+	if a == nil {
+		return false
+	}
+	return a.Available
+}
+
+func (a *AssistantTranscriptionsStatus) GetDailyLimit() int {
+	if a == nil {
+		return 0
+	}
+	return a.DailyLimit
+}
+
+func (a *AssistantTranscriptionsStatus) GetMaxBytes() int {
+	if a == nil {
+		return 0
+	}
+	return a.MaxBytes
+}
+
+func (a *AssistantTranscriptionsStatus) GetProvider() *AiProvider {
+	if a == nil {
+		return nil
+	}
+	return a.Provider
+}
+
+func (a *AssistantTranscriptionsStatus) GetRemaining() int {
+	if a == nil {
+		return 0
+	}
+	return a.Remaining
+}
+
+func (a *AssistantTranscriptionsStatus) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AssistantTranscriptionsStatus) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetAvailable sets the Available field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantTranscriptionsStatus) SetAvailable(available bool) {
+	a.Available = available
+	a.require(assistantTranscriptionsStatusFieldAvailable)
+}
+
+// SetDailyLimit sets the DailyLimit field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantTranscriptionsStatus) SetDailyLimit(dailyLimit int) {
+	a.DailyLimit = dailyLimit
+	a.require(assistantTranscriptionsStatusFieldDailyLimit)
+}
+
+// SetMaxBytes sets the MaxBytes field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantTranscriptionsStatus) SetMaxBytes(maxBytes int) {
+	a.MaxBytes = maxBytes
+	a.require(assistantTranscriptionsStatusFieldMaxBytes)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantTranscriptionsStatus) SetProvider(provider *AiProvider) {
+	a.Provider = provider
+	a.require(assistantTranscriptionsStatusFieldProvider)
+}
+
+// SetRemaining sets the Remaining field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantTranscriptionsStatus) SetRemaining(remaining int) {
+	a.Remaining = remaining
+	a.require(assistantTranscriptionsStatusFieldRemaining)
+}
+
+func (a *AssistantTranscriptionsStatus) UnmarshalJSON(data []byte) error {
+	type unmarshaler AssistantTranscriptionsStatus
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AssistantTranscriptionsStatus(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, assistantTranscriptionsStatusNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		a.require(presentFields)
+	}
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AssistantTranscriptionsStatus) MarshalJSON() ([]byte, error) {
+	type embed AssistantTranscriptionsStatus
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AssistantTranscriptionsStatus) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	assistantVideosStatusFieldAvailable       = big.NewInt(1 << 0)
+	assistantVideosStatusFieldDailyLimit      = big.NewInt(1 << 1)
+	assistantVideosStatusFieldMaxPromptLength = big.NewInt(1 << 2)
+	assistantVideosStatusFieldProvider        = big.NewInt(1 << 3)
+	assistantVideosStatusFieldRemaining       = big.NewInt(1 << 4)
+)
+
+// assistantVideosStatusNullableFields maps the wire names of AssistantVideosStatus's nullable fields (required or optional) to their field bits.
+var assistantVideosStatusNullableFields = map[string]*big.Int{
+	"provider": assistantVideosStatusFieldProvider,
+}
+
+type AssistantVideosStatus struct {
+	Available       bool        `json:"available" url:"available"`
+	DailyLimit      int         `json:"dailyLimit" url:"dailyLimit"`
+	MaxPromptLength int         `json:"maxPromptLength" url:"maxPromptLength"`
+	Provider        *AiProvider `json:"provider,omitempty" url:"provider,omitempty"`
+	Remaining       int         `json:"remaining" url:"remaining"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AssistantVideosStatus) GetAvailable() bool {
+	if a == nil {
+		return false
+	}
+	return a.Available
+}
+
+func (a *AssistantVideosStatus) GetDailyLimit() int {
+	if a == nil {
+		return 0
+	}
+	return a.DailyLimit
+}
+
+func (a *AssistantVideosStatus) GetMaxPromptLength() int {
+	if a == nil {
+		return 0
+	}
+	return a.MaxPromptLength
+}
+
+func (a *AssistantVideosStatus) GetProvider() *AiProvider {
+	if a == nil {
+		return nil
+	}
+	return a.Provider
+}
+
+func (a *AssistantVideosStatus) GetRemaining() int {
+	if a == nil {
+		return 0
+	}
+	return a.Remaining
+}
+
+func (a *AssistantVideosStatus) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AssistantVideosStatus) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetAvailable sets the Available field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVideosStatus) SetAvailable(available bool) {
+	a.Available = available
+	a.require(assistantVideosStatusFieldAvailable)
+}
+
+// SetDailyLimit sets the DailyLimit field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVideosStatus) SetDailyLimit(dailyLimit int) {
+	a.DailyLimit = dailyLimit
+	a.require(assistantVideosStatusFieldDailyLimit)
+}
+
+// SetMaxPromptLength sets the MaxPromptLength field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVideosStatus) SetMaxPromptLength(maxPromptLength int) {
+	a.MaxPromptLength = maxPromptLength
+	a.require(assistantVideosStatusFieldMaxPromptLength)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVideosStatus) SetProvider(provider *AiProvider) {
+	a.Provider = provider
+	a.require(assistantVideosStatusFieldProvider)
+}
+
+// SetRemaining sets the Remaining field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVideosStatus) SetRemaining(remaining int) {
+	a.Remaining = remaining
+	a.require(assistantVideosStatusFieldRemaining)
+}
+
+func (a *AssistantVideosStatus) UnmarshalJSON(data []byte) error {
+	type unmarshaler AssistantVideosStatus
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AssistantVideosStatus(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, assistantVideosStatusNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		a.require(presentFields)
+	}
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AssistantVideosStatus) MarshalJSON() ([]byte, error) {
+	type embed AssistantVideosStatus
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AssistantVideosStatus) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	assistantVoiceoversStatusFieldAvailable     = big.NewInt(1 << 0)
+	assistantVoiceoversStatusFieldDailyLimit    = big.NewInt(1 << 1)
+	assistantVoiceoversStatusFieldMaxTextLength = big.NewInt(1 << 2)
+	assistantVoiceoversStatusFieldProvider      = big.NewInt(1 << 3)
+	assistantVoiceoversStatusFieldRemaining     = big.NewInt(1 << 4)
+)
+
+// assistantVoiceoversStatusNullableFields maps the wire names of AssistantVoiceoversStatus's nullable fields (required or optional) to their field bits.
+var assistantVoiceoversStatusNullableFields = map[string]*big.Int{
+	"provider": assistantVoiceoversStatusFieldProvider,
+}
+
+type AssistantVoiceoversStatus struct {
+	Available     bool        `json:"available" url:"available"`
+	DailyLimit    int         `json:"dailyLimit" url:"dailyLimit"`
+	MaxTextLength int         `json:"maxTextLength" url:"maxTextLength"`
+	Provider      *AiProvider `json:"provider,omitempty" url:"provider,omitempty"`
+	Remaining     int         `json:"remaining" url:"remaining"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *AssistantVoiceoversStatus) GetAvailable() bool {
+	if a == nil {
+		return false
+	}
+	return a.Available
+}
+
+func (a *AssistantVoiceoversStatus) GetDailyLimit() int {
+	if a == nil {
+		return 0
+	}
+	return a.DailyLimit
+}
+
+func (a *AssistantVoiceoversStatus) GetMaxTextLength() int {
+	if a == nil {
+		return 0
+	}
+	return a.MaxTextLength
+}
+
+func (a *AssistantVoiceoversStatus) GetProvider() *AiProvider {
+	if a == nil {
+		return nil
+	}
+	return a.Provider
+}
+
+func (a *AssistantVoiceoversStatus) GetRemaining() int {
+	if a == nil {
+		return 0
+	}
+	return a.Remaining
+}
+
+func (a *AssistantVoiceoversStatus) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *AssistantVoiceoversStatus) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetAvailable sets the Available field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVoiceoversStatus) SetAvailable(available bool) {
+	a.Available = available
+	a.require(assistantVoiceoversStatusFieldAvailable)
+}
+
+// SetDailyLimit sets the DailyLimit field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVoiceoversStatus) SetDailyLimit(dailyLimit int) {
+	a.DailyLimit = dailyLimit
+	a.require(assistantVoiceoversStatusFieldDailyLimit)
+}
+
+// SetMaxTextLength sets the MaxTextLength field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVoiceoversStatus) SetMaxTextLength(maxTextLength int) {
+	a.MaxTextLength = maxTextLength
+	a.require(assistantVoiceoversStatusFieldMaxTextLength)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVoiceoversStatus) SetProvider(provider *AiProvider) {
+	a.Provider = provider
+	a.require(assistantVoiceoversStatusFieldProvider)
+}
+
+// SetRemaining sets the Remaining field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *AssistantVoiceoversStatus) SetRemaining(remaining int) {
+	a.Remaining = remaining
+	a.require(assistantVoiceoversStatusFieldRemaining)
+}
+
+func (a *AssistantVoiceoversStatus) UnmarshalJSON(data []byte) error {
+	type unmarshaler AssistantVoiceoversStatus
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = AssistantVoiceoversStatus(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, assistantVoiceoversStatusNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		a.require(presentFields)
+	}
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *AssistantVoiceoversStatus) MarshalJSON() ([]byte, error) {
+	type embed AssistantVoiceoversStatus
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *AssistantVoiceoversStatus) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
 }
 
 var (
@@ -1881,15 +3523,17 @@ var (
 	imageProviderFieldKeySet        = big.NewInt(1 << 1)
 	imageProviderFieldKeyUnreadable = big.NewInt(1 << 2)
 	imageProviderFieldModel         = big.NewInt(1 << 3)
-	imageProviderFieldUpdatedAt     = big.NewInt(1 << 4)
+	imageProviderFieldProvider      = big.NewInt(1 << 4)
+	imageProviderFieldUpdatedAt     = big.NewInt(1 << 5)
 )
 
 type ImageProvider struct {
-	BaseURL       string `json:"baseUrl" url:"baseUrl"`
-	KeySet        bool   `json:"keySet" url:"keySet"`
-	KeyUnreadable bool   `json:"keyUnreadable" url:"keyUnreadable"`
-	Model         string `json:"model" url:"model"`
-	UpdatedAt     string `json:"updatedAt" url:"updatedAt"`
+	BaseURL       string          `json:"baseUrl" url:"baseUrl"`
+	KeySet        bool            `json:"keySet" url:"keySet"`
+	KeyUnreadable bool            `json:"keyUnreadable" url:"keyUnreadable"`
+	Model         string          `json:"model" url:"model"`
+	Provider      AiImageProvider `json:"provider" url:"provider"`
+	UpdatedAt     string          `json:"updatedAt" url:"updatedAt"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1924,6 +3568,13 @@ func (i *ImageProvider) GetModel() string {
 		return ""
 	}
 	return i.Model
+}
+
+func (i *ImageProvider) GetProvider() AiImageProvider {
+	if i == nil {
+		return ""
+	}
+	return i.Provider
 }
 
 func (i *ImageProvider) GetUpdatedAt() string {
@@ -1975,6 +3626,13 @@ func (i *ImageProvider) SetKeyUnreadable(keyUnreadable bool) {
 func (i *ImageProvider) SetModel(model string) {
 	i.Model = model
 	i.require(imageProviderFieldModel)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (i *ImageProvider) SetProvider(provider AiImageProvider) {
+	i.Provider = provider
+	i.require(imageProviderFieldProvider)
 }
 
 // SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
@@ -2428,7 +4086,8 @@ var (
 	textProviderFieldKeyUnreadable = big.NewInt(1 << 2)
 	textProviderFieldKind          = big.NewInt(1 << 3)
 	textProviderFieldModel         = big.NewInt(1 << 4)
-	textProviderFieldUpdatedAt     = big.NewInt(1 << 5)
+	textProviderFieldProvider      = big.NewInt(1 << 5)
+	textProviderFieldUpdatedAt     = big.NewInt(1 << 6)
 )
 
 type TextProvider struct {
@@ -2437,6 +4096,7 @@ type TextProvider struct {
 	KeyUnreadable bool             `json:"keyUnreadable" url:"keyUnreadable"`
 	Kind          TextProviderKind `json:"kind" url:"kind"`
 	Model         string           `json:"model" url:"model"`
+	Provider      AiProvider       `json:"provider" url:"provider"`
 	UpdatedAt     string           `json:"updatedAt" url:"updatedAt"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -2479,6 +4139,13 @@ func (t *TextProvider) GetModel() string {
 		return ""
 	}
 	return t.Model
+}
+
+func (t *TextProvider) GetProvider() AiProvider {
+	if t == nil {
+		return ""
+	}
+	return t.Provider
 }
 
 func (t *TextProvider) GetUpdatedAt() string {
@@ -2537,6 +4204,13 @@ func (t *TextProvider) SetKind(kind TextProviderKind) {
 func (t *TextProvider) SetModel(model string) {
 	t.Model = model
 	t.require(textProviderFieldModel)
+}
+
+// SetProvider sets the Provider field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (t *TextProvider) SetProvider(provider AiProvider) {
+	t.Provider = provider
+	t.require(textProviderFieldProvider)
 }
 
 // SetUpdatedAt sets the UpdatedAt field and marks it as non-optional;
@@ -2752,4 +4426,40 @@ func NewTranslationLanguageFromString(s string) (TranslationLanguage, error) {
 
 func (t TranslationLanguage) Ptr() *TranslationLanguage {
 	return &t
+}
+
+var (
+	unsetModelAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
+	unsetModelAssistantRequestFieldCapability  = big.NewInt(1 << 1)
+)
+
+type UnsetModelAssistantRequest struct {
+	WorkspaceID string       `json:"-" url:"-"`
+	Capability  AiCapability `json:"-" url:"-"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+}
+
+func (u *UnsetModelAssistantRequest) require(field *big.Int) {
+	next := new(big.Int)
+	if u.explicitFields != nil {
+		next.Set(u.explicitFields)
+	}
+	next.Or(next, field)
+	u.explicitFields = next
+}
+
+// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UnsetModelAssistantRequest) SetWorkspaceID(workspaceID string) {
+	u.WorkspaceID = workspaceID
+	u.require(unsetModelAssistantRequestFieldWorkspaceID)
+}
+
+// SetCapability sets the Capability field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (u *UnsetModelAssistantRequest) SetCapability(capability AiCapability) {
+	u.Capability = capability
+	u.require(unsetModelAssistantRequestFieldCapability)
 }

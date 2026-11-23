@@ -24,6 +24,8 @@ public readonly record struct ImageProviderAddressRefusal : IStringEnum
 
     public static readonly ImageProviderAddressRefusal UnknownHost = new(Values.UnknownHost);
 
+    public static readonly ImageProviderAddressRefusal FixedAddress = new(Values.FixedAddress);
+
     public ImageProviderAddressRefusal(string value)
     {
         Value = value;
@@ -134,5 +136,7 @@ public readonly record struct ImageProviderAddressRefusal : IStringEnum
         public const string NotPublic = "notPublic";
 
         public const string UnknownHost = "unknownHost";
+
+        public const string FixedAddress = "fixedAddress";
     }
 }

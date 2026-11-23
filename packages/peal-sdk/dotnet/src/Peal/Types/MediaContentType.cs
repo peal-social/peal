@@ -22,6 +22,12 @@ public readonly record struct MediaContentType : IStringEnum
 
     public static readonly MediaContentType ApplicationPdf = new(Values.ApplicationPdf);
 
+    public static readonly MediaContentType AudioMpeg = new(Values.AudioMpeg);
+
+    public static readonly MediaContentType AudioMp4 = new(Values.AudioMp4);
+
+    public static readonly MediaContentType AudioWav = new(Values.AudioWav);
+
     public MediaContentType(string value)
     {
         Value = value;
@@ -131,5 +137,11 @@ public readonly record struct MediaContentType : IStringEnum
         public const string VideoQuicktime = "video/quicktime";
 
         public const string ApplicationPdf = "application/pdf";
+
+        public const string AudioMpeg = "audio/mpeg";
+
+        public const string AudioMp4 = "audio/mp4";
+
+        public const string AudioWav = "audio/wav";
     }
 }

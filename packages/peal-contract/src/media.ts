@@ -35,14 +35,23 @@ export const MediaContentTypeSchema = Schema.Literals([
   "video/mp4",
   "video/quicktime",
   "application/pdf",
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/wav",
 ]).annotate({ identifier: "MediaContentType" });
 
 export type MediaContentType = typeof MediaContentTypeSchema.Type;
 
+/**
+ * What a file is. `audio` (MP3, M4A, WAV: a voice-over, a recording to
+ * transcribe) goes out on no platform; new kinds join the end of the
+ * list.
+ */
 export const MediaKindSchema = Schema.Literals([
   "image",
   "video",
   "document",
+  "audio",
 ]).annotate({ identifier: "MediaKind" });
 
 export type MediaKind = typeof MediaKindSchema.Type;
@@ -50,8 +59,8 @@ export type MediaKind = typeof MediaKindSchema.Type;
 const PixelsSchema = Schema.Int.check(Schema.isGreaterThan(0));
 
 /**
- * An image, a video or a document (a PDF, which LinkedIn shows page by
- * page) of the workspace.
+ * An image, a video, a document (a PDF, which LinkedIn shows page by
+ * page) or an audio file of the workspace.
  */
 export const MediaSchema = Schema.Struct({
   // Whether the writing assistant made the file (POST …/assistant/images).
@@ -62,7 +71,8 @@ export const MediaSchema = Schema.Struct({
   // What it shows, for people who cannot see it.
   altText: Schema.NullOr(Schema.String),
   byteSize: ByteCountSchema,
-  // The video codec, as ffprobe names it (h264, hevc…), once probed.
+  // The video codec, or an audio file's, as ffprobe names it (h264,
+  // hevc, mp3…), once probed.
   codec: Schema.NullOr(Schema.String),
   contentType: MediaContentTypeSchema,
   createdAt: Schema.DateTimeUtc,
@@ -70,7 +80,7 @@ export const MediaSchema = Schema.Struct({
   dimensions: Schema.NullOr(
     Schema.Struct({ height: PixelsSchema, width: PixelsSchema })
   ),
-  // A video's duration in milliseconds, once probed.
+  // A video's or an audio file's duration in milliseconds, once probed.
   durationMs: Schema.NullOr(Schema.Int),
   // What the file was called where it came from: the name the client gave
   // its upload, or the last segment of the address it was imported from,
@@ -264,7 +274,7 @@ export class MediaApi extends HttpApiGroup.make("media")
       .annotate(HttpApi.RedactedNames, { query: ["q"] })
       .annotateMerge(
         OpenApi.annotations({
-          description: `Lists the workspace's media, newest first, ${defaultMediaPageSize} a page unless \`limit\` (at most ${maxMediaPageSize}) says otherwise. Every filter given must hold: \`kind\` (\`image\`, \`video\` or \`document\`), and \`q\`, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's \`nextCursor\` as \`cursor\`, with the same filters, for the next one. Needs media:read.`,
+          description: `Lists the workspace's media, newest first, ${defaultMediaPageSize} a page unless \`limit\` (at most ${maxMediaPageSize}) says otherwise. Every filter given must hold: \`kind\` (\`image\`, \`video\`, \`document\` or \`audio\`), and \`q\`, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's \`nextCursor\` as \`cursor\`, with the same filters, for the next one. Needs media:read.`,
           summary: "List media",
         })
       ),

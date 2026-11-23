@@ -195,7 +195,7 @@ describe("the composer's comforts", { serial: true }, () => {
     app,
     screen,
   }) => {
-    await app.open(`/${slug}/settings/invitations`);
+    await app.open(`/${slug}/settings/members`);
     await screen.getByLabel("Email").fill(guest());
     await screen.getByRole("button", "Send the invitation").tap();
 

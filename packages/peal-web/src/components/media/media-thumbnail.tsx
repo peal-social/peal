@@ -1,10 +1,16 @@
 "use client";
 
-import { FileTextIcon, FilmIcon, ImageIcon } from "lucide-react";
+import {
+  AudioLinesIcon,
+  FileTextIcon,
+  FilmIcon,
+  ImageIcon,
+} from "lucide-react";
 import Image from "next/image";
 import type { Media } from "peal-contract";
 
 const icons = {
+  audio: AudioLinesIcon,
   document: FileTextIcon,
   image: ImageIcon,
   video: FilmIcon,
@@ -12,7 +18,8 @@ const icons = {
 
 /**
  * The file itself, shown small and filling its box: images as they are,
- * videos by their first frame. A document shows as its kind's icon: Peal
+ * videos by their first frame. A document or an audio file shows as its
+ * kind's icon: Peal
  * stores a PDF and hands it to the platform, and never opens it. Nothing is
  * stored yet for pending media, nor any more for rejected, so their kind's
  * icon stands in too. `sizes` is how
@@ -27,7 +34,7 @@ export const MediaThumbnail = ({
 }) => {
   const { url } = media;
 
-  if (url === null || media.kind === "document") {
+  if (url === null || media.kind === "document" || media.kind === "audio") {
     const Icon = icons[media.kind];
 
     return (

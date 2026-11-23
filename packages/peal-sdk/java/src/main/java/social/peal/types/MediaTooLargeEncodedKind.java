@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class MediaTooLargeEncodedKind {
+    public static final MediaTooLargeEncodedKind AUDIO = new MediaTooLargeEncodedKind(Value.AUDIO, "audio");
+
     public static final MediaTooLargeEncodedKind IMAGE = new MediaTooLargeEncodedKind(Value.IMAGE, "image");
 
     public static final MediaTooLargeEncodedKind DOCUMENT = new MediaTooLargeEncodedKind(Value.DOCUMENT, "document");
@@ -46,6 +48,8 @@ public final class MediaTooLargeEncodedKind {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case AUDIO:
+                return visitor.visitAudio();
             case IMAGE:
                 return visitor.visitImage();
             case DOCUMENT:
@@ -61,6 +65,8 @@ public final class MediaTooLargeEncodedKind {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static MediaTooLargeEncodedKind valueOf(String value) {
         switch (value) {
+            case "audio":
+                return AUDIO;
             case "image":
                 return IMAGE;
             case "document":
@@ -79,6 +85,8 @@ public final class MediaTooLargeEncodedKind {
 
         DOCUMENT,
 
+        AUDIO,
+
         UNKNOWN
     }
 
@@ -88,6 +96,8 @@ public final class MediaTooLargeEncodedKind {
         T visitVideo();
 
         T visitDocument();
+
+        T visitAudio();
 
         T visitUnknown(String unknownType);
     }

@@ -1,6 +1,6 @@
 ---
 title: Writing assistant
-description: Turn on the writing assistant and its images with Anthropic or any OpenAI-compatible endpoint.
+description: Turn on the writing assistant and its images with a provider Peal knows by name or any OpenAI-compatible endpoint.
 sidebar:
   icon: sparkles
 ---
@@ -9,14 +9,14 @@ The composer's writing assistant rewrites a post in a tone, shortens it to fit a
 
 ## Name a text provider [#ai]
 
-Until `PEAL_AI_PROVIDER` names a provider, the web app hides the assistant and its endpoints answer `AssistantUnavailable`. It works with Anthropic's API or any OpenAI-compatible endpoint, such as a model server you run:
+Until `PEAL_AI_PROVIDER` names a provider, the web app hides the assistant and its endpoints answer `AssistantUnavailable`. Peal knows these providers by name: `anthropic`, `openai`, `google` (Gemini), `mistral`, `xai`, `groq`, `togetherai`, `deepseek`, `openrouter`, `cerebras` and `fireworks`. Any other endpoint that serves `/chat/completions` works as `openai-compatible`, such as a model server you run:
 
-| Setting            | With Anthropic                                  | With an OpenAI-compatible endpoint                                          |
-| ------------------ | ----------------------------------------------- | --------------------------------------------------------------------------- |
-| `PEAL_AI_PROVIDER` | `anthropic`                                     | `openai-compatible`                                                         |
-| `PEAL_AI_API_KEY`  | Required                                        | If it asks for one                                                          |
-| `PEAL_AI_MODEL`    | `claude-opus-5-5` unless it names another model | One of its models                                                           |
-| `PEAL_AI_BASE_URL` | Anthropic's API unless it names a proxy         | The address `/chat/completions` follows, such as `http://127.0.0.1:8000/v1` |
+| Setting            | With Anthropic                                  | With another provider named above   | With an OpenAI-compatible endpoint                                          |
+| ------------------ | ----------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------- |
+| `PEAL_AI_PROVIDER` | `anthropic`                                     | Its name, such as `deepseek`        | `openai-compatible`                                                         |
+| `PEAL_AI_API_KEY`  | Required                                        | Required                            | If it asks for one                                                          |
+| `PEAL_AI_MODEL`    | `claude-opus-5-5` unless it names another model | One of its models                   | One of its models                                                           |
+| `PEAL_AI_BASE_URL` | Anthropic's API unless it names a proxy         | Its own API unless it names a proxy | The address `/chat/completions` follows, such as `http://127.0.0.1:8000/v1` |
 
 If you name a provider without the settings it needs, the server stops at startup, and the error names the missing variable.
 
@@ -24,9 +24,9 @@ The server calls the provider directly. It doesn't go through the guard that kee
 
 ### A workspace's own provider [#workspace-provider]
 
-A workspace may also bring its own [text provider](/guides/workspace#text-provider), Anthropic or OpenAI-compatible, with its own key. That works whether or not your instance sets one.
+A workspace may also [connect its own providers](/guides/workspace#providers), the same ones or any OpenAI-compatible endpoint, each with its own key, and [choose one and a model for each use](/guides/workspace#models): text, images. That works whether or not your instance sets one. A use the workspace leaves unset falls back to your instance's model, within the workspace's allowance.
 
-Its requests then go there, never to the instance's provider, and through the guard, so only to public HTTPS. They count against none of the workspace's daily requests, and are capped at 500 a day. The server keeps the workspace's key encrypted with `PEAL_TOKEN_KEYS`, and keeps none without it.
+Its requests then go there, never to the instance's provider, and through the guard, so only to public HTTPS. They count against none of the workspace's daily requests, and are capped at 500 a day. The server keeps each of the workspace's keys encrypted with `PEAL_TOKEN_KEYS`, bound to the workspace, the provider and its address, and keeps none without it. A server upgraded from a release that kept one text and one image provider per workspace moves them to connections when it starts, once.
 
 ### Set the daily requests [#daily-requests]
 
@@ -51,20 +51,20 @@ The server never logs or traces the text or the answer, and saves neither. It se
 
 Images the assistant makes into the media library ([Generate an image](/guides/media#generate)) need an image model of their own, because a writing model may make none. Until you set these, images are off:
 
-| Setting                  | What it is                                |
-| ------------------------ | ----------------------------------------- |
-| `PEAL_AI_IMAGE_PROVIDER` | `openai-compatible`                       |
-| `PEAL_AI_IMAGE_BASE_URL` | The address `/images/generations` follows |
-| `PEAL_AI_IMAGE_MODEL`    | One of its models                         |
-| `PEAL_AI_IMAGE_API_KEY`  | Its key, if it asks for one               |
+| Setting                  | What it is                                                                                                           |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `PEAL_AI_IMAGE_PROVIDER` | `openai`, `google`, `xai` or `togetherai`, or `openai-compatible` for any endpoint that serves `/images/generations` |
+| `PEAL_AI_IMAGE_BASE_URL` | The address `/images/generations` follows, for `openai-compatible`; for the others, only behind a proxy              |
+| `PEAL_AI_IMAGE_MODEL`    | One of its models                                                                                                    |
+| `PEAL_AI_IMAGE_API_KEY`  | Its key: required but for an `openai-compatible` endpoint that asks for none                                         |
 
-The server asks for one image of 1024×1024, 1536×1024 or 1024×1536. It reads the image in base64, or fetches the address the provider answers through the guard, and stores it as it came.
+The server asks for one image in the shape a member picks: a size of 1024×1024, 1536×1024 or 1024×1536, or for Google Gemini and xAI, which take a ratio, 1:1, 3:2 or 2:3. It reads the image in base64, or fetches the address the provider answers through the guard, and stores it as it came.
 
 An image costs 5 of the workspace's daily requests. The prompt and the image are never logged.
 
 <Callout type="info" title="Check your provider before you turn images on">
-  Peal was tested against a stand-in for this endpoint, written to one
-  provider's reference. Check your provider's sizes and answer first.
+  Peal was tested against stand-ins for these providers, written to their
+  references. Check your provider's models and shapes first.
 </Callout>
 
 <Accordion>

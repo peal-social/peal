@@ -4,7 +4,16 @@ import typing
 
 MediaContentType = typing.Union[
     typing.Literal[
-        "image/gif", "image/jpeg", "image/png", "image/webp", "video/mp4", "video/quicktime", "application/pdf"
+        "image/gif",
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "video/mp4",
+        "video/quicktime",
+        "application/pdf",
+        "audio/mpeg",
+        "audio/mp4",
+        "audio/wav",
     ],
     typing.Any,
 ]

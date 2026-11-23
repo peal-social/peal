@@ -299,6 +299,72 @@ export const french: EmailCatalog = {
     starterGone:
       "la personne qui l’a lancée ne peut plus y répondre aux commentaires.",
   },
+  videoGenerated: {
+    action: "Ouvrir la médiathèque",
+    body: "La vidéo que vous avez demandée dans {workspaceName} est prête dans sa médiathèque, marquée comme créée par IA.",
+    ignore:
+      "Vous recevez ce message parce que vous avez demandé cette vidéo dans {workspaceName} sur Peal.",
+    subject: "Votre vidéo est prête",
+  },
+  videoFailed: {
+    action: "Ouvrir la médiathèque",
+    body: "La vidéo que vous avez demandée dans {workspaceName} n’a pas été créée : {reason} Rien n’a été conservé.",
+    ignore:
+      "Vous recevez ce message parce que vous avez demandé cette vidéo dans {workspaceName} sur Peal.",
+    subject: "Votre vidéo n’a pas été créée",
+  },
+  videoFailureReasons: {
+    addressRefused: "Peal n’envoie pas de requêtes à l’adresse du fournisseur.",
+    imageUnavailable:
+      "la première image a été supprimée, ou n’a pas pu être lue.",
+    interrupted:
+      "le serveur s’est arrêté pendant sa création. Peal ne la redemande pas, car le fournisseur l’a peut-être facturée.",
+    keyUnreadable: "la clé du fournisseur ne peut plus être lue.",
+    notStored: "le stockage des médias n’a pas pu la conserver.",
+    redirected: "le fournisseur a répondu par une redirection.",
+    refused: "le fournisseur a refusé la demande.",
+    settingsRefused: "le fournisseur a refusé la clé, le compte ou le modèle.",
+    storageFull: "le stockage des médias de l’offre est plein.",
+    timedOut: "elle a pris plus de temps que Peal n’attend.",
+    unavailable: "aucun fournisseur n’est plus choisi pour les vidéos.",
+    unreachable: "le fournisseur était injoignable, ou occupé.",
+    unusableAnswer:
+      "la réponse du fournisseur ne contenait aucune vidéo que Peal puisse conserver.",
+  },
+  slideshowComposed: {
+    action: "Ouvrir la médiathèque",
+    body: "La vidéo de diapositives que vous avez demandée dans {workspaceName} est prête dans sa médiathèque.",
+    ignore:
+      "Vous recevez ce message parce que vous avez demandé cette vidéo de diapositives dans {workspaceName} sur Peal.",
+    subject: "Votre vidéo de diapositives est prête",
+  },
+  slideshowFailed: {
+    action: "Ouvrir la médiathèque",
+    body: "La vidéo de diapositives que vous avez demandée dans {workspaceName} n’a pas été créée : {reason} Rien n’a été conservé.",
+    ignore:
+      "Vous recevez ce message parce que vous avez demandé cette vidéo de diapositives dans {workspaceName} sur Peal.",
+    subject: "Votre vidéo de diapositives n’a pas été créée",
+  },
+  slideshowFailureReasons: {
+    addressRefused: "Peal n’envoie pas de requêtes à l’adresse du service.",
+    interrupted:
+      "le serveur s’est arrêté pendant sa création. Peal ne la redemande pas, car le service l’a peut-être facturée.",
+    keyUnreadable: "la clé du service ne peut plus être lue.",
+    mediaUnavailable:
+      "une image ou la voix off a été supprimée, ou n’a pas pu être transmise au service.",
+    notStored: "le stockage des médias n’a pas pu la conserver.",
+    redirected: "le service a répondu par une redirection.",
+    refused: "le service a refusé la demande, ou n’a pas pu la rendre.",
+    settingsRefused:
+      "le service a refusé la clé ou le compte, qui n’a peut-être plus de crédits.",
+    storageFull: "le stockage des médias de l’offre est plein.",
+    timedOut: "elle a pris plus de temps que Peal n’attend.",
+    unavailable:
+      "aucun service n’est plus choisi pour les vidéos de diapositives.",
+    unreachable: "le service était injoignable, ou occupé.",
+    unusableAnswer:
+      "la réponse du service ne contenait aucune vidéo que Peal puisse conserver.",
+  },
   intervals: { month: "mois", year: "an" },
   withheldNames: { person: "Un membre", workspace: "un espace de travail" },
   invitation: {

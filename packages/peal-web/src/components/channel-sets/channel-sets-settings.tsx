@@ -4,8 +4,19 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { maxChannelSetsPerWorkspace } from "peal-contract";
 import type { SocialChannel, ChannelSet } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowDescription,
+  SettingsSection,
+  SettingsSectionDescription,
+  SettingsSectionHeader,
+  SettingsSectionTitle,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
@@ -293,46 +304,61 @@ const Loaded = ({
 
   return (
     <>
-      <section
-        aria-labelledby="channel-sets-title"
-        className="flex flex-col gap-2"
-      >
-        <h2 id="channel-sets-title" className="text-xl font-semibold">
-          {t("listTitle")}
-        </h2>
-        {sets.value.length === 0 ? (
-          <p className="text-muted-foreground">{t("empty")}</p>
-        ) : (
-          <ul className="divide-y">
-            {sets.value.map((set) => (
-              <SetRow
-                key={set.id}
-                channels={channels.value}
-                mayManage={mayManage}
-                set={set}
-                workspaceId={workspaceId}
-              />
-            ))}
-          </ul>
-        )}
-      </section>
+      <SettingsSection aria-labelledby="channel-sets-title">
+        <SettingsSectionHeader>
+          <div className="min-w-0 flex-1">
+            <SettingsSectionTitle id="channel-sets-title">
+              {t("listTitle")}
+            </SettingsSectionTitle>
+            <SettingsSectionDescription>
+              {t("description")}{" "}
+              {t("rules", { max: maxChannelSetsPerWorkspace })}
+              {mayManage ? null : <> {t("readOnly")}</>}
+            </SettingsSectionDescription>
+          </div>
+        </SettingsSectionHeader>
+        <SettingsCard>
+          {sets.value.length === 0 ? (
+            <SettingsRow>
+              <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+            </SettingsRow>
+          ) : (
+            <ul className="divide-y">
+              {sets.value.map((set) => (
+                <SetRow
+                  key={set.id}
+                  channels={channels.value}
+                  mayManage={mayManage}
+                  set={set}
+                  workspaceId={workspaceId}
+                />
+              ))}
+            </ul>
+          )}
+        </SettingsCard>
+      </SettingsSection>
       {mayManage ? (
-        <section
-          aria-labelledby="create-channel-set-title"
-          className="flex flex-col gap-4"
-        >
-          <h2 id="create-channel-set-title" className="text-xl font-semibold">
-            {t("createTitle")}
-          </h2>
-          <CreateForm channels={channels.value} workspaceId={workspaceId} />
-        </section>
+        <SettingsSection aria-labelledby="create-channel-set-title">
+          <SettingsSectionHeader>
+            <SettingsSectionTitle id="create-channel-set-title">
+              {t("createTitle")}
+            </SettingsSectionTitle>
+          </SettingsSectionHeader>
+          <SettingsCard>
+            <SettingsCardBody>
+              <CreateForm channels={channels.value} workspaceId={workspaceId} />
+            </SettingsCardBody>
+          </SettingsCard>
+        </SettingsSection>
       ) : null}
     </>
   );
 };
 
 /**
- * The workspace's channel sets: the list, and for those who may change
+ * The workspace's channel sets: the list, under what sets are for, their
+ * limits and, to a member who may not change posts, why nothing can be
+ * changed; then for those who may change
  * posts a form to add one, and to change or delete each.
  */
 export const ChannelSetsSettings = ({
@@ -344,13 +370,9 @@ export const ChannelSetsSettings = ({
 }) => {
   const hydrated = useHydrated();
 
-  return (
-    <div className="flex flex-col gap-8">
-      {hydrated ? (
-        <Loaded mayManage={mayManage} workspaceId={workspaceId} />
-      ) : (
-        <SettingsLoading />
-      )}
-    </div>
+  return hydrated ? (
+    <Loaded mayManage={mayManage} workspaceId={workspaceId} />
+  ) : (
+    <SettingsLoading />
   );
 };

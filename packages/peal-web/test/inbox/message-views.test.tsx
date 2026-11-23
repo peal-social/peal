@@ -229,7 +229,7 @@ describe("the direct messages' views", () => {
     expect(html).toContain("disabled");
   });
 
-  it("say whether a channel's messages are read, and that turning them off deletes them", async () => {
+  it("show a channel's messages read or not as a switch named by the channel", async () => {
     const off = await render(
       "en",
       <ChannelMessagesView
@@ -245,10 +245,13 @@ describe("the direct messages' views", () => {
       <ChannelMessagesView channel={channel} disabled on onSwitch={constVoid} />
     );
 
-    expect(off).toContain("Not read");
-    expect(off).toContain("Read its messages");
-    expect(on).toContain("supprimer");
-    expect(on).toContain("disabled");
+    expect(off).toContain('role="switch"');
+    expect(off).toContain('aria-checked="false"');
+    expect(off).toMatch(
+      /<label for="(?<id>[^"]+)"[^>]*>@studio@social\.example on Mastodon<\/label>.*id="\k<id>"[^>]*role="switch"/u
+    );
+    expect(on).toContain('aria-checked="true"');
+    expect(on).toContain("data-disabled");
   });
 
   it("offer to allow Bluesky's direct messages where the account must allow them first", async () => {
@@ -264,7 +267,7 @@ describe("the direct messages' views", () => {
     );
 
     expect(html).toContain("Allow, on Bluesky");
-    expect(html).not.toContain("Read its messages");
+    expect(html).not.toContain('role="switch"');
   });
 
   it("say until when Messenger and Instagram take an answer, and why the box is gone once they do not", async () => {
@@ -408,7 +411,7 @@ describe("the direct messages' views", () => {
     expect(english).toContain(
       "Peal doesn’t read the messages of an account connected through a business portfolio."
     );
-    expect(english).not.toContain("Read its messages");
+    expect(english).not.toContain('role="switch"');
     expect(english).not.toContain("<button");
     expect(english).not.toContain("App Review");
     expect(french).toContain("via un portefeuille business");
@@ -426,7 +429,8 @@ describe("the direct messages' views", () => {
       />
     );
 
-    expect(html).toContain("Stop, and delete what was kept");
+    expect(html).toContain('role="switch"');
+    expect(html).toContain('aria-checked="true"');
   });
 });
 

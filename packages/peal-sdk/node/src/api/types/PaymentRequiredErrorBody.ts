@@ -3,12 +3,12 @@
 import * as Peal from "../index.js";
 
 export type PaymentRequiredErrorBody = 
-    | Peal.PaymentRequiredErrorBody.UsageAllowanceReached
+    | Peal.PaymentRequiredErrorBody.CompositionNeedsPayment
     | Peal.PaymentRequiredErrorBody.PlanLimitReached;
 
 export namespace PaymentRequiredErrorBody {
-    export interface UsageAllowanceReached extends Peal.UsageAllowanceReachedEncoded {
-        _tag: "UsageAllowanceReached";
+    export interface CompositionNeedsPayment extends Peal.CompositionNeedsPaymentEncoded {
+        _tag: "CompositionNeedsPayment";
     }
 
     export interface PlanLimitReached extends Peal.PlanLimitReachedEncoded {

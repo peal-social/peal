@@ -18,6 +18,11 @@ import {
   AlertDialogTrigger,
 } from "peal-ui/components/alert-dialog";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsRow,
+  SettingsRowDescription,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
 
@@ -74,9 +79,9 @@ const AppRow = ({ app }: { readonly app: ConnectedApp }) => {
   };
 
   return (
-    <li className="flex flex-wrap items-start gap-4 py-4">
+    <li className="flex flex-wrap items-start gap-4 px-4 py-3">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="font-medium">{name}</span>
+        <span className="text-sm font-medium">{name}</span>
         <span className="text-muted-foreground text-sm">
           {workspaces.length === 0
             ? t("anyWorkspace")
@@ -137,13 +142,19 @@ const LoadedApps = () => {
     onInitial: () => <SettingsLoading />,
     onSuccess: ({ value }) =>
       value.length === 0 ? (
-        <p className="text-muted-foreground">{t("empty")}</p>
+        <SettingsCard>
+          <SettingsRow>
+            <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+          </SettingsRow>
+        </SettingsCard>
       ) : (
-        <ul className="divide-y">
-          {value.map((app) => (
-            <AppRow key={app.clientId} app={app} />
-          ))}
-        </ul>
+        <SettingsCard>
+          <ul className="divide-y">
+            {value.map((app) => (
+              <AppRow key={app.clientId} app={app} />
+            ))}
+          </ul>
+        </SettingsCard>
       ),
   });
 };

@@ -3,6 +3,7 @@
 export const MediaKind = {
         Image: "image",
         Video: "video",
-        Document: "document"
+        Document: "document",
+        Audio: "audio"
     } as const;
 export type MediaKind = typeof MediaKind[keyof typeof MediaKind];

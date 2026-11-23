@@ -224,17 +224,39 @@ describe(navigationOf, () => {
     expect(navigation.section).toBe("settings");
     expect(navigation.settings.current).toBeTruthy();
     expect(navigation.sectionLinks.map(({ page }) => page)).toStrictEqual([
-      "general",
-      "members",
-      "security",
+      "account",
+      "preferences",
+      "notifications",
+      "notificationSettings",
+      "accountSecurity",
       "tags",
       "signatures",
       "recycling",
       "followUps",
       "feeds",
-      "account",
-      "notifications",
-      "notificationSettings",
+      "general",
+      "members",
+      "security",
+    ]);
+    expect(
+      navigation.sectionGroups.map(({ group, links }) => [
+        group,
+        links.map(({ page }) => page),
+      ])
+    ).toStrictEqual([
+      [
+        "personal",
+        [
+          "account",
+          "preferences",
+          "notifications",
+          "notificationSettings",
+          "accountSecurity",
+        ],
+      ],
+      ["publishing", ["tags", "signatures"]],
+      ["automations", ["recycling", "followUps", "feeds"]],
+      ["administration", ["general", "members", "security"]],
     ]);
     expect(
       navigationOf({
@@ -248,6 +270,8 @@ describe(navigationOf, () => {
   it("keeps the person's own pages in Settings, for any member", () => {
     for (const [path, page] of [
       ["/settings/account", "account"],
+      ["/settings/account/preferences", "preferences"],
+      ["/settings/account/security", "accountSecurity"],
       ["/notifications", "notifications"],
       ["/settings/notifications", "notificationSettings"],
     ] as const) {

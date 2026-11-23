@@ -3,6 +3,7 @@ import type { DateTime } from "effect";
 import type { BillingAccount } from "peal-contract";
 import {
   AssistantQuotaExceeded,
+  CompositionNeedsPayment,
   PaidPlanSchema,
   PlanLimitReached,
   PlanLimitSchema,
@@ -44,14 +45,39 @@ export interface MeterReached {
 }
 
 /**
+ * A feature only a billing account with a payment method uses (slide
+ * videos, which the workspace's own Shotstack account pays for): nothing
+ * is counted, and a payment method opens it.
+ */
+export interface FeatureReached {
+  readonly feature: "slideshows";
+  readonly kind: "feature";
+  readonly plan: "free";
+  readonly planWithRoom: "payAsYouGo";
+}
+
+/** The reason the slide videos give without a payment method. */
+export const slideshowsNeedPayment: FeatureReached = {
+  feature: "slideshows",
+  kind: "feature",
+  plan: "free",
+  planWithRoom: "payAsYouGo",
+};
+
+/**
  * Why something was refused that a larger plan, or a payment method,
  * allows.
  */
-export type UpgradeReason = LimitReached | MeterReached;
+export type UpgradeReason = FeatureReached | LimitReached | MeterReached;
 
 /** Whether the reason is a meter's, rather than a plan's limit. */
 export const isMeterReason = (reason: UpgradeReason): reason is MeterReached =>
-  "kind" in reason;
+  "kind" in reason && reason.kind === "meter";
+
+/** Whether the reason is a feature a payment method opens. */
+export const isFeatureReason = (
+  reason: UpgradeReason
+): reason is FeatureReached => "kind" in reason && reason.kind === "feature";
 
 const isUsage = Schema.is(UsageAllowanceReached);
 
@@ -59,12 +85,18 @@ const isLimit = Schema.is(PlanLimitReached);
 
 const isQuota = Schema.is(AssistantQuotaExceeded);
 
+const isNeedsPayment = Schema.is(CompositionNeedsPayment);
+
 /** A failure of the API, told by its tag. */
 interface Tagged {
   readonly _tag: string;
 }
 
 const reasonOf = (failure: Tagged): Option.Option<UpgradeReason> => {
+  if (isNeedsPayment(failure)) {
+    return Option.some(slideshowsNeedPayment);
+  }
+
   // Only the lack of a payment method is a way out the dialog offers: a
   // ceiling is raised on the billing page.
   if (isUsage(failure)) {

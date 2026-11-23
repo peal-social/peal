@@ -166,4 +166,4 @@ The endpoint has these limits:
 - A connection may send {{api-with-en}} requests a minute ({{api-without-en}} on a billing account without a payment method), counted together with the requests the same key or application sends to the API. Past that, the endpoint answers 429 with a `Retry-After` header ([Rate limits](/developers/conventions/rate-limits#rate-limits)).
 - Every answer carries an `X-Request-Id` header. Quote it when you ask for help ([Requests and answers](/developers/conventions#requests)).
 
-To see and disconnect the clients you allowed, go to **Account settings** in the web app. `peal account apps` lists them from the [command line](/developers/cli/workspace#account). Leaving the workspace stops every client that acts in it.
+To see and disconnect the clients you allowed, go to **Security and access**, under **Settings** in the web app. `peal account apps` lists them from the [command line](/developers/cli/workspace#account). Leaving the workspace stops every client that acts in it.

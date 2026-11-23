@@ -21,6 +21,13 @@ export const SubscriptionStatusSchema = Schema.Literals([
 export type SubscriptionStatus = typeof SubscriptionStatusSchema.Type;
 
 /**
+ * Whether a subscription in this status is paid with a payment method: a
+ * trial needs none.
+ */
+export const paidWith = (status: SubscriptionStatus): boolean =>
+  status === "active" || status === "past_due";
+
+/**
  * A workspace's Stripe subscription to a paid plan, as its last webhook
  * event described it. A workspace may have had several: an old one
  * cancelled, a new one active.

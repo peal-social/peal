@@ -149,10 +149,10 @@ export const ChannelSetItemView = ({
   const missing = missingChannels(set, channels).length;
 
   return (
-    <li className="flex flex-col gap-4 py-4">
+    <li className="flex flex-col gap-4 px-4 py-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-col gap-2">
-          <span id={nameId} className="font-medium">
+        <div className="flex min-w-0 flex-col gap-1">
+          <span id={nameId} className="text-sm font-medium">
             {set.name}
           </span>
           {connected.length === 0 ? (
@@ -160,7 +160,7 @@ export const ChannelSetItemView = ({
           ) : (
             <ul
               aria-label={t("channelsOf", { name: set.name })}
-              className="text-muted-foreground flex flex-col gap-1 text-sm"
+              className="text-muted-foreground flex flex-col gap-0.5 text-sm"
             >
               {connected.map((channel) => (
                 <li key={channel.id}>

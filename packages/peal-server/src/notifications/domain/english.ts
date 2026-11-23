@@ -287,6 +287,68 @@ export const english: EmailCatalog = {
     channelGone: "its channel was disconnected.",
     starterGone: "whoever started it can no longer answer comments there.",
   },
+  videoGenerated: {
+    action: "Open the media",
+    body: "The video you asked for in {workspaceName} is ready in its media, marked as made by AI.",
+    ignore:
+      "You receive this because you asked for this video in {workspaceName} on Peal.",
+    subject: "Your video is ready",
+  },
+  videoFailed: {
+    action: "Open the media",
+    body: "The video you asked for in {workspaceName} was not made: {reason} Nothing was kept.",
+    ignore:
+      "You receive this because you asked for this video in {workspaceName} on Peal.",
+    subject: "Your video was not made",
+  },
+  videoFailureReasons: {
+    addressRefused: "Peal does not send requests to the provider’s address.",
+    imageUnavailable: "the first frame was deleted, or could not be read.",
+    interrupted:
+      "the server stopped while it was being made. Peal does not ask again, as the provider may have billed it.",
+    keyUnreadable: "the provider’s key can no longer be read.",
+    notStored: "the media store could not keep it.",
+    redirected: "the provider answered with a redirect.",
+    refused: "the provider refused the request.",
+    settingsRefused: "the provider refused the key, the account or the model.",
+    storageFull: "the plan’s media storage is full.",
+    timedOut: "it took longer than Peal waits.",
+    unavailable: "no provider is chosen for videos any more.",
+    unreachable: "the provider could not be reached, or was busy.",
+    unusableAnswer: "the provider’s answer held no video Peal can keep.",
+  },
+  slideshowComposed: {
+    action: "Open the media",
+    body: "The slide video you asked for in {workspaceName} is ready in its media.",
+    ignore:
+      "You receive this because you asked for this slide video in {workspaceName} on Peal.",
+    subject: "Your slide video is ready",
+  },
+  slideshowFailed: {
+    action: "Open the media",
+    body: "The slide video you asked for in {workspaceName} was not made: {reason} Nothing was kept.",
+    ignore:
+      "You receive this because you asked for this slide video in {workspaceName} on Peal.",
+    subject: "Your slide video was not made",
+  },
+  slideshowFailureReasons: {
+    addressRefused: "Peal does not send requests to the service’s address.",
+    interrupted:
+      "the server stopped while it was being made. Peal does not ask again, as the service may have billed it.",
+    keyUnreadable: "the service’s key can no longer be read.",
+    mediaUnavailable:
+      "an image or the voice-over was deleted, or could not be handed to the service.",
+    notStored: "the media store could not keep it.",
+    redirected: "the service answered with a redirect.",
+    refused: "the service refused the request, or could not render it.",
+    settingsRefused:
+      "the service refused the key or the account, which may have no credits left.",
+    storageFull: "the plan’s media storage is full.",
+    timedOut: "it took longer than Peal waits.",
+    unavailable: "no service is chosen for slide videos any more.",
+    unreachable: "the service could not be reached, or was busy.",
+    unusableAnswer: "the service’s answer held no video Peal can keep.",
+  },
   intervals: { month: "month", year: "year" },
   withheldNames: { person: "A member", workspace: "a workspace" },
   invitation: {

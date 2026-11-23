@@ -479,6 +479,9 @@ These commands fill and manage the workspace's media library. Each prints the me
 peal media upload ./cover.jpg --alt "A paper catalogue open on a wooden table"
 peal media import https://files.example/spring/cover.jpg --alt "A paper catalogue open on a wooden table"
 peal media generate --prompt "A paper catalogue open on a wooden table, morning light" --aspect landscape
+peal media video generate --prompt "The catalogue's pages turning slowly" --aspect portrait --wait
+peal media voiceover --text "Welcome to the spring catalogue." --voice nova
+peal media transcribe <media-id> --save-description
 peal media list                   # newest first; --search, --kind, --limit and --cursor
 peal media show <media-id>
 peal media describe <media-id> --text "A paper catalogue open on a wooden table"
@@ -496,23 +499,65 @@ peal media delete <media-id>
 | Image    | JPEG, PNG, GIF or WebP | 16 MiB             |
 | Video    | MP4 or QuickTime       | 1 GiB              |
 | Document | PDF                    | 100 MiB, 300 pages |
+| Audio    | MP3, M4A or WAV        | 100 MiB            |
 
 `peal media import` has the server fetch an image, a video or a PDF document from a public `https://` address, without credentials, within 90 seconds ([Images and videos](/guides/media#import)). Upload larger or slower files instead.
 
 ### Generate an image [#media-generate]
 
-`peal media generate` makes an image from `--prompt` into the workspace's media ([Generate an image](/guides/media#generate)). The workspace's own [image provider](/guides/workspace#image-provider) makes it, or else the instance's image model. The prompt is 1 to 1,000 characters, sent as it is to that provider. `--aspect` is `square` (the default), `landscape` or `portrait`.
+`peal media generate` makes an image from `--prompt` into the workspace's media ([Generate an image](/guides/media#generate)). The workspace's own [image provider](/guides/workspace#providers) makes it, or else the instance's image model. The prompt is 1 to 1,000 characters, sent as it is to that provider. `--aspect` is `square` (the default), `landscape` or `portrait`.
 
 With the instance's model, it costs 5 of the workspace's daily assistant requests. With the workspace's own provider, it costs none. A workspace without its own provider, on an instance without an image model, is refused.
 
 The image is marked as made by AI. Set the platform's AI label in the post's options, and describe the image with `--alt` when you attach it.
+
+### Generate a video [#media-video]
+
+`peal media video generate` asks the provider the workspace chose for videos for one video from `--prompt` ([Generate a video](/guides/media#generate-video)). Choose that provider first with `peal assistant models set video`. The command takes these flags:
+
+| Flag                   | Values                                        | Default            | What it does                                                         |
+| ---------------------- | --------------------------------------------- | ------------------ | -------------------------------------------------------------------- |
+| `--prompt <text>`      | 1 to 1,000 characters                         | required           | What the video shows, sent as it is to the provider                  |
+| `--aspect`             | `landscape`, `portrait` or `square`           | `landscape`        | The video's shape. Google Gemini doesn't make `square`               |
+| `--duration <seconds>` | whole seconds, within what the provider takes | the provider picks | xAI takes 1 to 15 seconds. Google Gemini takes none, so leave it out |
+| `--image <media-id>`   | a ready image of the workspace's media        | none               | The video's first frame                                              |
+| `--wait`               |                                               | off                | Waits until the video is ready or failed, for up to 30 minutes       |
+
+A video takes minutes. Without `--wait`, the command prints the video's id at once. `peal media video status <id>` says where it stands: queued, being made, ready with its media id, or failed with the reason. `peal media video list` lists the workspace's videos, newest first. With `--wait`, a video that failed ends the command with exit code 1 and the reason.
+
+The workspace's own key pays the provider, and Peal bills nothing for it. A workspace makes one video at a time and asks for 20 a day at most.
+
+### Make a slide video [#media-slideshow]
+
+`peal media slideshow create` asks the workspace's Shotstack account to compose 2 to 10 images of the library into one video ([Make a slide video](/guides/media#make-a-slide-video)). Connect Shotstack first with `peal assistant providers connect shotstack` (add `--sandbox` for its free, watermarked sandbox, with the sandbox key), then choose it with `peal assistant models set composition --provider shotstack`, which takes no `--model`. The command takes these flags:
+
+| Flag                     | Values                                 | Default                       | What it does                                                           |
+| ------------------------ | -------------------------------------- | ----------------------------- | ---------------------------------------------------------------------- |
+| `--image <media-id>`     | 2 to 10 ready JPEG or PNG images       | required                      | The slides, in the order given                                         |
+| `--caption <text>`       | up to 120 characters                   | none                          | The caption of the image in the same position. An empty one is none    |
+| `--motion`               | `none`, `zoomIn`, `zoomOut` or `slide` | `none`                        | The motion of the image in the same position. One alone moves them all |
+| `--transition`           | `fade` or `none`                       | `fade`                        | How each slide gives way to the next                                   |
+| `--voiceover <media-id>` | a ready audio file of the library      | none                          | Plays from the first slide to the last one's end                       |
+| `--aspect`               | `portrait`, `landscape` or `square`    | `portrait`                    | The video's shape, at 1080 pixels on its short side                    |
+| `--seconds <seconds>`    | 2 to 10, 90 seconds in all             | the voice-over shared, else 4 | How long each slide shows                                              |
+| `--wait`                 |                                        | off                           | Waits until the video is ready or failed, for up to 30 minutes         |
+
+Without `--wait`, the command prints the slide video's id at once. `peal media slideshow status <id>` says where it stands, and `peal media slideshow list` lists the workspace's slide videos, newest first. With `--wait`, one that failed ends the command with exit code 1 and the reason. The workspace's Shotstack account pays each render, and Peal bills nothing for it. On Peal Cloud, the workspace's billing account needs a payment method.
+
+### Voice-overs and transcripts [#media-audio]
+
+`peal media voiceover --text <text> [--voice <voice>]` has the provider the workspace chose for voice-overs speak the text, 1 to 4,000 characters, into the workspace's media ([Create a voice-over](/guides/media#voiceover)). `--voice` is the provider's name for a voice (OpenAI's `nova`, an ElevenLabs voice's ID); left out, the provider's default speaks, and fal takes none. The audio file is marked as made by AI.
+
+`peal media transcribe <media-id> [--save-description]` has the provider the workspace chose for transcripts write what is said in a ready audio or video file of at most 25 MB, and prints it ([Transcribe a file](/guides/media#transcribe)). `--save-description` makes it the file's description when it fits one.
+
+Choose the providers first with `peal assistant models set speech` and `peal assistant models set transcription`. The workspace's own key pays the provider, and Peal bills nothing for it. A workspace makes 50 voice-overs and 50 transcripts a day at most.
 
 ### Find and manage media [#media-manage]
 
 `peal media list` lists the workspace's images, videos and documents, newest first. Each comes with the id posts attach, whether it's ready, its file name and its description. It takes these flags:
 
 - `--search <text>` keeps those whose name or description holds the text, in any case (100 characters at most). `peal media upload` sends the file's name, so the search finds it.
-- `--kind image|video|document` keeps those of one kind.
+- `--kind image|video|document|audio` keeps those of one kind.
 - `--limit` takes 100 at most.
 
 `peal media show` prints one media: its type, its size, when it was stored, whether it's ready to attach, and its description. After an upload or an import, it tells you when a video Peal is still reading becomes `ready`.
@@ -523,42 +568,46 @@ The image is marked as made by AI. Set the platform's AI label in the post's opt
 
 ## The assistant's providers [#assistant]
 
-A workspace can bring its own providers for the assistant. These commands need `assistant:configure`, which owners, admins and the keys given it hold.
+A workspace can connect its own AI providers for the assistant, then choose a provider and a model for each use. These commands need `assistant:configure`, which owners, admins and the keys given it hold.
 
-### Image provider [#assistant-image]
+### Providers [#assistant-providers]
 
-These commands keep the workspace's own [image provider](/guides/workspace#image-provider):
-
-```sh
-peal assistant image-provider show
-peal assistant image-provider set --base-url https://images.example.com/v1 --model <your-provider-model> < key.txt
-peal assistant image-provider set --base-url https://images.example.com/v2 --model <your-provider-model> --keep-key
-peal assistant image-provider clear
-```
-
-`set` never takes the key as an argument, which the shell's history and the list of processes would keep. At a terminal it asks for the key, without showing what you type. Otherwise it reads the key from standard input, to its end, without its last line break.
-
-`--keep-key` keeps the key already saved. The server accepts it only while `--base-url` stays exactly the same, to change the model alone. Any other address asks for the key again.
-
-`show` prints the address, the model and whether the key can still be read, never the key. `clear` removes the provider and deletes its key, after asking (pass `--yes` otherwise).
-
-### Text provider [#assistant-text]
-
-These commands keep the workspace's own [text provider](/guides/workspace#text-provider) for the writing assistant, the same way and with the same permission:
+These commands keep the workspace's [connected providers](/guides/workspace#providers):
 
 ```sh
-peal assistant text-provider show
-peal assistant text-provider set --kind anthropic --model <your-provider-model> < key.txt
-peal assistant text-provider set --kind openai-compatible --base-url https://text.example.com/v1 --model <your-provider-model> < key.txt
-peal assistant text-provider test
-peal assistant text-provider clear
+peal assistant providers list
+peal assistant providers connect anthropic < key.txt
+peal assistant providers connect openai-compatible --base-url https://ai.example.com/v1 < key.txt
+peal assistant providers connect openai --base-url https://proxy.example.com/v1 --keep-key
+peal assistant providers test anthropic
+peal assistant providers disconnect anthropic
 ```
 
-`--kind` is `anthropic` or `openai-compatible`. `--base-url` defaults to `https://api.anthropic.com` for `anthropic`.
+The provider is `anthropic`, `openai`, `google`, `mistral`, `xai`, `groq`, `togetherai`, `deepseek`, `openrouter`, `cerebras` or `fireworks`, or `openai-compatible` for any other endpoint that serves `/chat/completions`, `/images/generations` or both. A named provider is reached at its own address, so you need `--base-url` only for a proxy, or with `openai-compatible`.
 
-`test` sends the provider one short request, and says whether it answered with a suggestion the assistant can use. It counts as one of the 500 requests a day the workspace's provider takes, and none of Peal's.
+`connect` never takes the key as an argument, which the shell's history and the list of processes would keep. At a terminal it asks for the key, without showing what you type. Otherwise it reads the key from standard input, to its end, without its last line break. `--keep-key` keeps the key already saved, which the server accepts only while the address stays exactly the same.
 
-Of the applications connected over OAuth, the server gives `assistant:configure` to this command line only, which you sign in yourself at your terminal. An MCP client can't set either provider.
+`test` sends the provider one short request for text, with `--model` or the model the workspace writes with there, else the first Peal suggests, and says whether it answered with a suggestion the assistant can use. It counts as one of the workspace's own requests that day, and none of Peal's. `disconnect` removes the provider, deletes its key and unsets the uses it served, after asking (pass `--yes` otherwise).
+
+### Models [#assistant-models]
+
+These commands choose the [model for each use](/guides/workspace#models), `text`, `image` or `video`:
+
+```sh
+peal assistant models list
+peal assistant models set text --provider anthropic --model <your-provider-model>
+peal assistant models set image --provider openai --model <your-provider-model>
+peal assistant models set video --provider xai --model <your-provider-model>
+peal assistant models unset image
+```
+
+`set` takes a connected provider that offers the use. `unset` leaves the use to the server's model, if it has one, and keeps the provider connected. `list` prints each use's provider and model, or the server's model, or off.
+
+### Earlier commands [#assistant-earlier]
+
+`peal assistant image-provider` (show, set, clear) and `peal assistant text-provider` (show, set, test, clear) still work, on the same connections: each sets one use and its provider together. They're deprecated, as their endpoints are, and `providers` and `models` replace them.
+
+Of the applications connected over OAuth, the server gives `assistant:configure` to this command line only, which you sign in yourself at your terminal. An MCP client can't set a provider.
 
 ## Reviews and approvals [#review]
 

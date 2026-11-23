@@ -27,6 +27,7 @@ import (
 	invitations "github.com/peal-social/peal/packages/peal-sdk/go/invitations"
 	lookups "github.com/peal-social/peal/packages/peal-sdk/go/lookups"
 	media "github.com/peal-social/peal/packages/peal-sdk/go/media"
+	mediaaudio "github.com/peal-social/peal/packages/peal-sdk/go/mediaaudio"
 	members "github.com/peal-social/peal/packages/peal-sdk/go/members"
 	notices "github.com/peal-social/peal/packages/peal-sdk/go/notices"
 	notificationpreferences "github.com/peal-social/peal/packages/peal-sdk/go/notificationpreferences"
@@ -41,10 +42,12 @@ import (
 	session "github.com/peal-social/peal/packages/peal-sdk/go/session"
 	shortlinks "github.com/peal-social/peal/packages/peal-sdk/go/shortlinks"
 	signatures "github.com/peal-social/peal/packages/peal-sdk/go/signatures"
+	slideshows "github.com/peal-social/peal/packages/peal-sdk/go/slideshows"
 	system "github.com/peal-social/peal/packages/peal-sdk/go/system"
 	tags "github.com/peal-social/peal/packages/peal-sdk/go/tags"
 	tiktok "github.com/peal-social/peal/packages/peal-sdk/go/tiktok"
 	usage "github.com/peal-social/peal/packages/peal-sdk/go/usage"
+	videogenerations "github.com/peal-social/peal/packages/peal-sdk/go/videogenerations"
 	webhooks "github.com/peal-social/peal/packages/peal-sdk/go/webhooks"
 )
 
@@ -57,9 +60,12 @@ type Client struct {
 	Posts                   *posts.Client
 	Articles                *articles.Client
 	Media                   *media.Client
+	MediaAudio              *mediaaudio.Client
 	Notices                 *notices.Client
 	NotificationPreferences *notificationpreferences.Client
 	Assistant               *assistant.Client
+	VideoGenerations        *videogenerations.Client
+	Slideshows              *slideshows.Client
 	Members                 *members.Client
 	Invitations             *invitations.Client
 	Billing                 *billing.Client
@@ -106,9 +112,12 @@ func NewClient(opts ...option.RequestOption) *Client {
 		Posts:                   posts.NewClient(options),
 		Articles:                articles.NewClient(options),
 		Media:                   media.NewClient(options),
+		MediaAudio:              mediaaudio.NewClient(options),
 		Notices:                 notices.NewClient(options),
 		NotificationPreferences: notificationpreferences.NewClient(options),
 		Assistant:               assistant.NewClient(options),
+		VideoGenerations:        videogenerations.NewClient(options),
+		Slideshows:              slideshows.NewClient(options),
 		Members:                 members.NewClient(options),
 		Invitations:             invitations.NewClient(options),
 		Billing:                 billing.NewClient(options),

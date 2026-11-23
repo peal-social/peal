@@ -10,9 +10,12 @@ public partial interface IPealClient
     public IPostsClient Posts { get; }
     public IArticlesClient Articles { get; }
     public IMediaClient Media { get; }
+    public IMediaAudioClient MediaAudio { get; }
     public INoticesClient Notices { get; }
     public INotificationPreferencesClient NotificationPreferences { get; }
     public IAssistantClient Assistant { get; }
+    public IVideoGenerationsClient VideoGenerations { get; }
+    public ISlideshowsClient Slideshows { get; }
     public IMembersClient Members { get; }
     public IInvitationsClient Invitations { get; }
     public IBillingClient Billing { get; }

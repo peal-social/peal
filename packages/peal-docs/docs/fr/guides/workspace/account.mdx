@@ -23,16 +23,32 @@ Si vous oubliez votre mot de passe, cliquez sur **Mot de passe oublié ?** sur l
 
 ## Vos réglages [#account]
 
-Ouvrez le menu du compte et cliquez sur **Paramètres du compte**, ou cliquez sur **Compte** sous **Paramètres** dans n’importe quel espace de travail. La page propose ces réglages :
+Vos réglages sont sous **Paramètres** dans n’importe quel espace de travail, dans le groupe **Personnel**, sur trois pages : **Profil**, **Préférences** et **Sécurité et accès**. **Paramètres du compte**, dans le menu du compte, ouvre **Profil**. La plupart des réglages s’enregistrent dès que vous les changez, sans bouton.
 
-| Réglage                     | Ce qu’il fait                                                                                                                                                                                                                                                                                                      |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Nom**                     | Le nom que voient les autres membres, et qui signe vos invitations.                                                                                                                                                                                                                                                |
-| **Langue**                  | Anglais ou français. Peal y rédige vos e-mails, y passe l’application dès l’enregistrement, et s’y ouvre à chaque connexion.                                                                                                                                                                                       |
-| **Mot de passe**            | Votre mot de passe actuel confirme que c’est bien vous. Le changer ferme vos autres sessions, sauf si vous décochez **Fermer mes autres sessions**.                                                                                                                                                                |
-| **Format de l’heure**       | La façon dont ce navigateur écrit les heures : automatique, comme votre langue les écrit, ou sur 12 heures ou 24 heures. Le choix reste dans ce navigateur, et vos autres appareils gardent le leur.                                                                                                               |
-| **Sessions**                | Les navigateurs et appareils connectés à votre compte, avec leur date de connexion et leur dernière activité. Vous pouvez en fermer une, ou toutes sauf celle que vous utilisez.                                                                                                                                   |
-| **Applications connectées** | La [ligne de commande](/developers/cli) et les [clients MCP](/developers/mcp) que vous laissez agir pour vous, avec ce qu’ils peuvent faire et dans quels espaces de travail. Cliquez sur **Révoquer** pour l’un d’eux : il ne peut plus renouveler son accès. Celui qu’il détient déjà prend fin sous 15 minutes. |
+Sur **Profil**, la page affiche votre **Adresse e-mail** et propose ces réglages :
+
+| Réglage            | Ce qu’il fait                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Nom**            | Le nom que voient les autres membres, et qui signe vos invitations. Saisissez-le sur place. Peal l’enregistre quand vous quittez le champ. |
+| **Vos données**    | Télécharger une copie de tout ce que Peal conserve sur vous ([Télécharger vos données](#export)).                                          |
+| **Zone de danger** | Supprimer votre compte ([Supprimer votre compte](#delete-account)).                                                                        |
+
+Sur **Préférences** :
+
+| Réglage                                 | Ce qu’il fait                                                                                                                                                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Langue**                              | Anglais ou français. Peal y rédige vos e-mails, y passe l’application dès que vous la choisissez, et s’y ouvre à chaque connexion.                                                                   |
+| **Format de l’heure**                   | La façon dont ce navigateur écrit les heures : automatique, comme votre langue les écrit, ou sur 12 heures ou 24 heures. Le choix reste dans ce navigateur, et vos autres appareils gardent le leur. |
+| **Usage et enregistrements de session** | Là où le serveur mesure l’usage de l’application, si Peal peut relier ce que vous faites à votre compte et enregistrer vos sessions ([Usage et enregistrements de session](#measurement)).           |
+
+Sur **Sécurité et accès** :
+
+| Réglage                       | Ce qu’il fait                                                                                                                                                                                                                                                                                                      |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Mot de passe**              | Votre mot de passe actuel confirme que c’est bien vous. Le changer ferme vos autres sessions, sauf si vous décochez **Fermer mes autres sessions**. Un compte sans mot de passe affiche **Définir un mot de passe** à la place.                                                                                    |
+| **Validation en deux étapes** | Un code d’une application d’authentification après votre mot de passe ([Validation en deux étapes](#two-step)).                                                                                                                                                                                                    |
+| **Sessions**                  | Les navigateurs et appareils connectés à votre compte, avec leur date de connexion et leur dernière activité. Vous pouvez en fermer une, ou toutes sauf celle que vous utilisez.                                                                                                                                   |
+| **Applications connectées**   | La [ligne de commande](/developers/cli) et les [clients MCP](/developers/mcp) que vous laissez agir pour vous, avec ce qu’ils peuvent faire et dans quels espaces de travail. Cliquez sur **Révoquer** pour l’un d’eux : il ne peut plus renouveler son accès. Celui qu’il détient déjà prend fin sous 15 minutes. |
 
 ### Se connecter avec Google ou le fournisseur de votre organisation [#providers]
 
@@ -48,7 +64,7 @@ Deux cas sont refusés :
 - Un compte où la validation en deux étapes est activée se connecte avec son mot de passe et son code. La connexion par le fournisseur lui est refusée.
 - Avec Google, seules une adresse Gmail ou une adresse d’un domaine que gère Google Workspace sont acceptées. Pour toute autre adresse, connectez-vous avec votre mot de passe, car Google ne peut pas confirmer qu’elle est toujours la vôtre.
 
-Un compte créé ainsi n’a pas de mot de passe. Sous **Définir un mot de passe**, cliquez sur **M’envoyer un lien** pour en recevoir un à votre adresse. Le lien fonctionne pendant une heure, et vous pouvez ensuite vous connecter de l’une ou l’autre façon. La validation en deux étapes et la suppression du compte demandent d’abord un mot de passe.
+Un compte créé ainsi n’a pas de mot de passe. Sur **Sécurité et accès**, sous **Définir un mot de passe**, cliquez sur **M’envoyer un lien** pour en recevoir un à votre adresse. Le lien fonctionne pendant une heure, et vous pouvez ensuite vous connecter de l’une ou l’autre façon. La validation en deux étapes et la suppression du compte demandent d’abord un mot de passe.
 
 ### Validation en deux étapes [#two-step]
 
@@ -57,7 +73,7 @@ Avec la validation en deux étapes, la connexion demande un code fourni par une 
 <Steps>
 <Step title="L’activer">
 
-Sous **Validation en deux étapes**, cliquez sur **Activer** et saisissez votre mot de passe.
+Sur **Sécurité et accès**, sous **Validation en deux étapes**, cliquez sur **Activer** et saisissez votre mot de passe.
 
 </Step>
 <Step title="Scanner le code QR">
@@ -95,11 +111,11 @@ Peal ne propose pas de codes par e-mail ou par SMS. Un code envoyé par e-mail n
 
 Là où l’exploitant du serveur mesure l’usage de l’application, Peal compte les pages que vous ouvrez sans savoir qui vous êtes, et ne garde rien dans votre navigateur pour cela. La page d’accueil d’un espace de travail vous demande alors si Peal peut aussi relier ce que vous faites à votre compte et enregistrer vos sessions. Un enregistrement masque tous les textes, les champs et les images, et chaque lien qui mène hors de Peal. Il montre la mise en page et vos clics, jamais ce que vous écrivez ou lisez.
 
-Cliquez sur **Autoriser** ou **Refuser** sur cette page, ou plus tard sous **Usage et enregistrements de session** sur cette page, qui affiche votre choix et sa date. Retirer votre accord arrête l’enregistrement aussitôt, dans chaque onglet de Peal ouvert, et supprime ce que l’application gardait dans votre navigateur. Peal vous redemande votre choix au bout de six mois. Un navigateur qui envoie Do Not Track ou Global Privacy Control n’est pas mesuré du tout.
+Cliquez sur **Autoriser** ou **Refuser** sur cette page, ou plus tard sous **Usage et enregistrements de session** sur **Préférences**, qui affiche votre choix et sa date. Retirer votre accord arrête l’enregistrement aussitôt, dans chaque onglet de Peal ouvert, et supprime ce que l’application gardait dans votre navigateur. Peal vous redemande votre choix au bout de six mois. Un navigateur qui envoie Do Not Track ou Global Privacy Control n’est pas mesuré du tout.
 
 ### Télécharger vos données [#export]
 
-Cliquez sur **Télécharger mes données** pour enregistrer un fichier JSON de tout ce que Peal conserve sur vous. Il contient :
+Sur **Profil**, sous **Vos données**, cliquez sur **Télécharger mes données** pour enregistrer un fichier JSON de tout ce que Peal conserve sur vous. Il contient :
 
 - votre compte, vos moyens de connexion et vos sessions, avec leur navigateur et leur adresse (mais pas les sessions que l’équipe a ouvertes pour agir à votre place, qui sont les siennes)
 - vos adhésions, et les invitations que vous avez envoyées ou reçues
@@ -120,7 +136,7 @@ Le reste d’un espace de travail partagé appartient à son équipe. Le fichier
 
 ### Supprimer votre compte [#delete-account]
 
-Cliquez sur **Supprimer mon compte…** et saisissez votre mot de passe. Le compte est alors supprimé définitivement. Comme à la connexion, après trois mots de passe essayés en 10 secondes, patientez quelques secondes avant d’en essayer un autre.
+Sur **Profil**, sous **Zone de danger**, cliquez sur **Supprimer mon compte…** et saisissez votre mot de passe. Le compte est alors supprimé définitivement. Comme à la connexion, après trois mots de passe essayés en 10 secondes, patientez quelques secondes avant d’en essayer un autre.
 
 <Callout type="danger" title="La suppression de votre compte est définitive">
   Les espaces de travail dont vous êtes le seul membre disparaissent avec tout

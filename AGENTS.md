@@ -204,7 +204,9 @@ one's source, at the version this workspace installs, into
 `.local/references/<name>` (ignored by Git, Nx and the linters). Read the code,
 tests and docs there before using an API, and rerun the command after an
 upgrade. Effect also ships agent docs in `.local/references/effect/ai-docs`,
-and Next.js ships its docs in `packages/peal-web/node_modules/next/dist/docs`.
+Next.js ships its docs in `packages/peal-web/node_modules/next/dist/docs`,
+and the AI SDK its own in `packages/peal-server/node_modules/ai/docs` and
+`packages/peal-server/node_modules/@ai-sdk/<provider>/docs`.
 
 ## Design
 

@@ -40,25 +40,22 @@ const SecurityPage = async ({
   const may = new Set(workspace.permissions);
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("securityAbout")}</p>
-      <WorkspaceSecurityForm
-        workspaceId={workspace.id}
-        mayChange={
-          may.has("organization:secure") && me.value.impersonatedBy === null
-        }
-        managesMembers={may.has("member:update")}
-        ownEnabled={me.value.user.twoStepEnabled}
-        accountLink={
-          <Link
-            href={hrefOf(workspace.slug, "account")}
-            className={buttonVariants({ variant: "outline" })}
-          >
-            {t("goToAccount")}
-          </Link>
-        }
-      />
-    </div>
+    <WorkspaceSecurityForm
+      workspaceId={workspace.id}
+      mayChange={
+        may.has("organization:secure") && me.value.impersonatedBy === null
+      }
+      managesMembers={may.has("member:update")}
+      ownEnabled={me.value.user.twoStepEnabled}
+      accountLink={
+        <Link
+          href={hrefOf(workspace.slug, "accountSecurity")}
+          className={buttonVariants({ variant: "outline" })}
+        >
+          {t("goToAccount")}
+        </Link>
+      }
+    />
   );
 };
 

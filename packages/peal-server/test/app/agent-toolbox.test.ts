@@ -1,5 +1,5 @@
-import { describe, expect, it } from "@effect/vitest";
-import { Context, Effect, Option, Schema } from "effect";
+import { assert, describe, expect, it } from "@effect/vitest";
+import { Context, Effect, Option, Redacted, Schema, Stream } from "effect";
 import { LanguageModel, Tool } from "effect/ai";
 import { toCodecAnthropic } from "effect/ai/AnthropicStructuredOutput";
 import { toCodecOpenAI } from "effect/ai/OpenAiStructuredOutput";
@@ -15,10 +15,31 @@ import { siblingConflicts } from "#agent/infrastructure/advertised-schema.ts";
 import { agentToolkit } from "#app/agent/toolbox.ts";
 import { changingTools } from "#app/mcp/server.ts";
 import { PealTools } from "#app/mcp/tools.ts";
+import { languageModelOf } from "#assistant/infrastructure/writing-model-live.ts";
 
 const { tools } = agentToolkit(() => Effect.succeed(false));
 
 const decodeJson = Schema.decodeUnknownSync(Schema.Json);
+
+// A tool as Anthropic's Messages API or chat completions has it.
+const SentToolSchema = Schema.Struct({
+  function: Schema.optional(
+    Schema.Struct({
+      name: Schema.String,
+      parameters: Schema.Unknown,
+      strict: Schema.optional(Schema.Boolean),
+    })
+  ),
+  input_schema: Schema.optional(Schema.Unknown),
+  name: Schema.optional(Schema.String),
+  strict: Schema.optional(Schema.Boolean),
+});
+
+type SentTool = typeof SentToolSchema.Type;
+
+const decodeSentTools = Schema.decodeUnknownSync(
+  Schema.Struct({ tools: Schema.Array(SentToolSchema) })
+);
 
 // What each adapter would send for a tool's parameters: the Anthropic and
 // OpenAI-compatible adapters read the same function, with the strict or
@@ -119,6 +140,80 @@ describe("the agent's toolkit", () => {
       ]);
     }
   });
+
+  it.effect.each([
+    {
+      address: "https://text.example.test/anthropic",
+      provider: "anthropic" as const,
+      schemaOf: (tool: SentTool) => tool.input_schema,
+    },
+    {
+      address: "https://text.example.test/v1",
+      provider: "openai-compatible" as const,
+      schemaOf: (tool: SentTool) => tool.function?.parameters,
+    },
+  ])(
+    "sends $provider every tool, not strict, with no allOf conflict",
+    ({ address, provider, schemaOf }) =>
+      Effect.gen(function* sent() {
+        const bodies: unknown[] = [];
+
+        // Keeps what the provider's package sends, and refuses it.
+        const fetch = Object.assign(
+          async (input: Request | URL | string, init?: RequestInit) => {
+            const request =
+              input instanceof Request
+                ? new Request(input, init)
+                : new Request(input instanceof URL ? input.href : input, init);
+
+            bodies.push(JSON.parse(await request.text()));
+
+            return Response.json(
+              { error: { message: "synthetic" } },
+              {
+                status: 500,
+              }
+            );
+          },
+          { preconnect: globalThis.fetch.preconnect }
+        );
+
+        const model = yield* languageModelOf(
+          {
+            apiKey: Option.some(Redacted.make("sk_test_synthetic_key")),
+            baseUrl: address,
+            model: "synthetic-model",
+            provider,
+          },
+          fetch
+        );
+
+        yield* model
+          .streamText({
+            disableToolCallResolution: true,
+            prompt: "A synthetic question.",
+            toolkit: agentToolkit(() => Effect.succeed(false)),
+          })
+          .pipe(Stream.runDrain, Effect.flip);
+
+        const advertised = decodeSentTools(bodies[0]).tools;
+
+        assert.deepStrictEqual(
+          advertised
+            .map((tool) => tool.name ?? tool.function?.name ?? "")
+            .toSorted(),
+          [...agentToolNames].toSorted()
+        );
+
+        for (const tool of advertised) {
+          assert.isFalse(tool.strict ?? tool.function?.strict ?? false);
+          assert.deepStrictEqual(
+            siblingConflicts(decodeJson(schemaOf(tool))),
+            []
+          );
+        }
+      })
+  );
 
   it("offers no webhook, key, member, connection, ad, feed or message tool", () => {
     const refused = [

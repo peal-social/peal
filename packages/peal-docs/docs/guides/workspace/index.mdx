@@ -9,19 +9,28 @@ A workspace's settings belong to its members, and your role decides which ones y
 
 ## Find the settings [#workspace]
 
-In a workspace, click **Settings** at the foot of the sidebar. The sidebar then lists the settings pages, and you see the ones your role lets you open:
+In a workspace, click **Settings** at the foot of the sidebar. The sidebar then lists the settings pages in four groups:
 
-| Page            | Who sees it                     |
-| --------------- | ------------------------------- |
-| **General**     | Every member                    |
-| **Members**     | Every member                    |
-| **Security**    | Every member                    |
-| **Invitations** | Members who may invite people   |
-| **Assistant**   | Owners and admins               |
-| **API keys**    | Members who may handle keys     |
-| **Webhooks**    | Members who may manage webhooks |
+- **Personal**: your own account and notifications, the same in every workspace ([Your account](/guides/workspace/account), [Notifications](/guides/workspace/notifications)), and the agent's skills.
+- **Publishing**: **Tags**, **Signatures**, **Channel sets**, **Direct messages** and **Assistant**.
+- **Automations**: **Queues**, **Repeating posts**, **Follow-ups**, **Comment replies** and **Feeds**.
+- **Administration**: the workspace itself, its members, its security and its billing.
 
-**API keys** and **Webhooks** aren't under **Settings**. Switch the sidebar from **Studio** to **Console** to find them under **Build**, with **Partner** under **Partners**.
+You see the pages your role lets you open. These are the workspace's own:
+
+| Page          | Who sees it                     |
+| ------------- | ------------------------------- |
+| **Workspace** | Every member                    |
+| **Members**   | Every member                    |
+| **Security**  | Every member                    |
+| **Billing**   | Members who may see billing     |
+| **Assistant** | Owners and admins               |
+| **API keys**  | Members who may handle keys     |
+| **Webhooks**  | Members who may manage webhooks |
+
+**API keys** and **Webhooks** aren't under **Settings**. Switch the sidebar from **PealCreative** to **PealAPI** to find them under **Build**, with **Partner** under **Partners**.
+
+Most settings save as soon as you change them, without a **Save** button. The forms that create something, invite someone or change your password keep their button.
 
 Here's what each role can do in the settings:
 
@@ -33,7 +42,7 @@ Here's what each role can do in the settings:
 | Contributor | Sees the members                                                                                                                                                              |
 | Viewer      | Sees the members                                                                                                                                                              |
 
-Under **General**, owners and admins also set **Approvals**, which decides whether posts wait for an approval before they're scheduled. See [Review and approval](/guides/posts/review#policy).
+On **Workspace**, owners and admins type the workspace's **Name** and **Address** in place. Peal saves each one when you leave the field or press Enter. They also set **Approvals**, which decides whether posts wait for an approval before they're scheduled. The choice is saved as soon as you pick it. See [Review and approval](/guides/posts/review#policy).
 
 ### Manage members [#members]
 
@@ -56,7 +65,7 @@ In a [partner account](/developers/embedding#keys)'s home workspace, the partner
 <Steps>
 <Step title="Send the invitation">
 
-Under **Invitations**, type an email address and select a role, then click **Send the invitation**. Only owners can invite owners.
+On **Members**, under **Invite someone**, type an email address and select a role, then click **Send the invitation**. Only owners can invite owners.
 
 </Step>
 <Step title="The person joins">
@@ -66,7 +75,7 @@ They get a link to join, valid for 7 days. It's in their language if they alread
 </Step>
 </Steps>
 
-Pending invitations are listed with their expiry date. For each one, you can:
+**Pending invitations**, on the same page, lists them with their expiry date. For each one, you can:
 
 - Click **Send again** to email the link again, valid for 7 more days.
 - Click **Revoke** to stop the link working.
@@ -137,79 +146,83 @@ Under **Webhooks**, owners and admins add the addresses Peal calls when somethin
 
 Staff acting as a member can't change webhooks. [Webhooks](/developers/webhooks) lists the events and shows how to verify a delivery.
 
-### Bring your own image provider [#image-provider]
+### Connect your AI providers [#providers]
 
-Under **Assistant**, owners and admins can set the workspace's own image provider. The [images the assistant makes](/guides/media#generate) then come from your account there, instead of from the instance's model. Setting it takes `assistant:configure`, which an [API key](#api-keys) or a [partner key](/developers/embedding#account) can also be given.
+Under **Assistant**, owners and admins connect the workspace's own AI providers, each with your account's key there. The [writing assistant](/guides/posts/assistant#assistant), the [agent](/guides/agent) and the [images the assistant makes](/guides/media#generate) can then use your account instead of the instance's models, outside the instance's allowance, on any plan. Connecting one takes `assistant:configure`, which an [API key](#api-keys) or a [partner key](/developers/embedding#account) can also be given.
 
-Fill in three fields:
+In **AI providers**, click **Connect a provider**, pick it in **Provider** and add your key. Peal knows these by name: Anthropic, OpenAI, Google Gemini, Mistral, xAI, Groq, Together AI, DeepSeek, OpenRouter, Cerebras, Fireworks AI, ElevenLabs and fal, which write no text and make voice-overs, transcripts and, for fal, images, and [Shotstack](#shotstack), which composes slide videos. It fills in each one's address, so you only add the key. ElevenLabs, fal and Shotstack are reached at their own addresses alone, so their dialog has no address. For any other endpoint that speaks the OpenAI chat completions API, the OpenAI images API or both, pick **Another provider** and type its address. Each provider connected is a row, with its address when it isn't the provider's own and **Key saved**. Click **Edit** to change it. The dialog's fields:
 
-| Field       | What to enter                                                                                                                                                                                                                                                                                                                                                                          |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Address** | The base address of an endpoint that speaks the OpenAI images API, the one Peal adds `/images/generations` to, such as `https://images.example.com/v1`. Many providers offer one as an "OpenAI-compatible" address. Peal sends one request shape, `{ model, n, prompt, size }`, and reads back an image in base64 or at an address. It can't promise that a given provider accepts it. |
-| **Model**   | Your provider's model, as its documentation names it. You can change the model on its own.                                                                                                                                                                                                                                                                                             |
-| **Key**     | Your account's key at the provider, sent as a bearer token. Peal keeps it encrypted, for this workspace and this exact address only. A saved key shows as saved and stays until you type another one.                                                                                                                                                                                  |
+| Field        | What to enter                                                                                                                                                                                                                                                                                                                                                          |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Provider** | One of the providers above, or **Another provider**. For Anthropic, Peal adds `/v1/messages` to the address and sends the key as `x-api-key`. For every other, it adds `/chat/completions` for text and `/images/generations` for images, and sends the key as a bearer token.                                                                                         |
+| **Key**      | Your account's key at the provider. Peal keeps it encrypted, for this workspace, this provider and this exact address only. A saved key shows as saved and stays until you type another one.                                                                                                                                                                           |
+| **Address**  | The provider's own address, which the dialog fills in for you and keeps under **Advanced**. Change it only to go through a proxy of your own. For **Another provider**, the address `/chat/completions` and `/images/generations` follow, such as `https://ai.example.com/v1`. HTTPS on the default port, on a public host, with no user, password, query or fragment. |
 
-The address must use HTTPS on the default port, on a public host, with no user, password, query or fragment.
+Peal never shows the key again and never writes it to its logs. Any change to the address, its host or its path asks for the key again, because Peal never sends a key to an address it wasn't given for. Peal doesn't call the provider when you save.
 
-Peal never shows the key again and never writes it to its logs. Any change to the address, its host or its path asks for the key again, because Peal never sends a key to an address it wasn't given for.
+- Click **Test**, for a provider that writes text, to send it one short request, the rewrite of a fixed sentence, with the model the workspace writes with there, or the first Peal suggests. Peal says whether it answered with a suggestion the assistant can use, or why not. The test counts as one of the workspace's own requests that day.
+- When the instance's keys change and the saved key can't be read any more, the row says **Key unreadable** and the dialog asks for it again.
+- Click **Remove** and confirm to delete the key. What the provider was used for goes back to the instance's models, if it has them, within the workspace's allowance.
 
-Once it's saved, the workspace's image descriptions go to that address with that key. Peal's own model is never asked for them, even when your provider refuses. What to expect:
-
-- Its images use none of the workspace's assistant requests, on any plan, the free plan and a trial included, up to 50 a day. They still take room in the plan's storage.
-- Peal doesn't call the provider when you save. The first image tells you whether the settings work.
-- When the provider refuses the key, the account, the model or the address, no image is made and the dialog says so.
-- When the instance's keys change and the saved key can't be read any more, the page asks for it again.
-- Click **Remove** and confirm to delete the key. Images then come from the instance's model again, if it has one.
-
-The [command line](/developers/cli/posts#assistant) has `peal assistant image-provider`. No MCP tool reads or sets it, because a key typed into a chat reaches a model.
+The [command line](/developers/cli/posts#assistant) has `peal assistant providers`. No MCP tool reads or sets them, because a key typed into a chat reaches a model.
 
 <Accordion>
 <AccordionItem title="Addresses Peal refuses">
 
 Peal refuses an address, and says why in words, with one of these codes:
 
-| Code              | The address                     |
-| ----------------- | ------------------------------- |
-| `notHttps`        | isn't HTTPS                     |
-| `credentials`     | carries credentials             |
-| `queryOrFragment` | carries a query or a fragment   |
-| `tooLong`         | is too long                     |
-| `malformed`       | isn't an address                |
-| `notPublic`       | has a host that isn't public    |
-| `unknownHost`     | has a host that doesn't resolve |
+| Code              | The address                                 |
+| ----------------- | ------------------------------------------- |
+| `notHttps`        | isn't HTTPS                                 |
+| `credentials`     | carries credentials                         |
+| `queryOrFragment` | carries a query or a fragment               |
+| `tooLong`         | is too long                                 |
+| `malformed`       | isn't an address                            |
+| `notPublic`       | has a host that isn't public                |
+| `unknownHost`     | has a host that doesn't resolve             |
+| `fixedAddress`    | isn't ElevenLabs', fal's or Shotstack's own |
 
 A server whose operator set no keys to encrypt secrets keeps no key (`AssistantSecretsNotConfigured`).
 
 </AccordionItem>
 </Accordion>
 
-### Bring your own text provider [#text-provider]
+### Choose a model for each use [#models]
 
-Under **Assistant**, owners and admins can also set the workspace's own text provider. The [writing assistant](/guides/posts/assistant#assistant) then writes with your account there, instead of with the instance's model. That's how a workspace uses the assistant outside the instance's allowance: its requests don't count against it, on any plan.
+Under **Models**, each use is a row: **Text**, for the writing assistant and the agent, **Images**, for the images made into the media library, **Video**, for the [videos](/guides/media#generate-video) made there, **Voice**, for the [voice-overs](/guides/media#voiceover), **Transcription**, for the [transcripts](/guides/media#transcribe) of its audio and videos, and **Slide videos**, for the [slide videos](/guides/media#make-a-slide-video) Shotstack composes, which takes no model. At its end, pick one of the connected providers that offers it, then its model. Peal offers the provider's current models; **Another model…** opens a field for one it doesn't list, saved when you leave it or press Enter. **Another provider** has no list, so you type its model. Each change applies at once.
 
-Fill in four fields:
+Pick **This server's model** to leave a use to the instance's model, within the workspace's allowance, or **Off** when the instance has none. The provider stays connected.
 
-| Field       | What to enter                                                                                                                                                                                                                                                                                                                 |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **API**     | **Anthropic** (Anthropic's Messages API: Peal adds `/v1/messages` to the address and sends the key as `x-api-key`) or **OpenAI-compatible** (any endpoint that serves the chat completions API: Peal adds `/chat/completions` and sends the key as a bearer token).                                                           |
-| **Address** | `https://api.anthropic.com` for Anthropic, which the page fills in for you. For an OpenAI-compatible endpoint, the address that `/chat/completions` follows, such as `https://text.example.com/v1`. The image provider's rules apply: HTTPS on the default port, on a public host, with no user, password, query or fragment. |
-| **Model**   | Your provider's model, as its documentation names it. The assistant asks it for structured output (an answer that follows a JSON schema), so a model that can't give one fails every request.                                                                                                                                 |
-| **Key**     | Your account's key at the provider. Peal keeps and shows it as it does the image provider's: encrypted, for this workspace and this exact address only, never shown again, never logged, and asked for again when the address changes.                                                                                        |
+Images come from OpenAI, Google Gemini, xAI, Together AI, fal (its FLUX models) or **Another provider** only. Google Gemini and xAI take the image's shape as a ratio (`1:1`, `3:2`, `2:3`), fal as `1:1`, `4:3` or `3:4`, the others as a size (`1024x1024`, `1536x1024`, `1024x1536`).
 
-Once it's saved, the texts members ask the assistant about, and the subjects of the posts it writes, go to that address with that key, under that provider's terms. The instance's model is never asked for them, even when your provider refuses. What to expect:
+Videos come from Google Gemini (its Veo models) or xAI (its Grok Imagine models) only, with the workspace's key: the instance has no video model, so **Video** offers no **This server's model**. Peal bills nothing for videos; your account at the provider pays for each one. A workspace makes one video at a time and asks for 20 a day at most, each taking minutes. The member who asked gets a notice in the app when it's ready or failed. A video the server was making when it stopped fails as `interrupted` and is never asked for again, since the provider may already have billed it.
 
-- Those requests use none of the workspace's assistant requests, up to 500 a day. Each one counts, whatever it ends with.
-- At most four run at the same time. A fifth one sent meanwhile is refused (`TextProviderBusy`) and doesn't count.
-- Click **Test** to send your provider one short request, the rewrite of a fixed sentence. Peal says whether it answered with a suggestion the assistant can use, or why not. The test counts as one of the 500.
-- When your provider refuses the key, the account, the model or the address, the assistant says so, and none of the instance's allowance is spent.
-- Click **Remove** and confirm to delete the key. The assistant then uses the instance's model again, if it has one, within the workspace's allowance.
+Voice-overs come from OpenAI, Google Gemini, Mistral, xAI, ElevenLabs or fal, and transcripts from OpenAI, Google Gemini, Mistral, xAI, Groq, ElevenLabs or fal, with the workspace's key only: the instance has none, so neither row offers **This server's model**. Each makes 50 a day at most. Peal bills nothing for them; your account at the provider pays.
+
+### Slide videos with Shotstack [#shotstack]
+
+Slide videos are composed by [Shotstack](https://shotstack.io), with your Shotstack account's key: Peal renders nothing itself. Connect **Shotstack** in **AI providers** with its key, then pick it in the **Slide videos** row, which has no model to choose. Your Shotstack account pays for each render at its prices, and Peal bills nothing for it.
+
+- **Production**, the default, renders with your account's credits and no watermark. Shotstack gives a new account 10 free credits, one per minute of video, valid for 30 days.
+- **Sandbox**, under **Advanced**, is free and watermarks every video. It takes your account's sandbox key, not the production one, and Shotstack asks for at least one credit in the account to use it.
+
+On Peal Cloud, slide videos are for workspaces whose billing account has a payment method: on the free tier, **Make a slide video** opens the upgrade dialog instead. An instance that doesn't bill has no such limit. A workspace makes one slide video at a time and 20 a day at most. The [command line](/developers/cli/posts#media-slideshow) connects it with `peal assistant providers connect shotstack [--sandbox]`.
+
+Once a use is on your provider, what members send for it goes there with your key, under that provider's terms. The instance's model is never asked instead, even when your provider refuses. What to expect:
+
+- Text requests use none of the workspace's assistant requests, up to 500 a day, and at most four run at the same time: a fifth one sent meanwhile is refused (`TextProviderBusy`) and doesn't count. Each request counts, whatever it ends with.
+- Images use none of the workspace's assistant requests, the free plan and a trial included, up to 50 a day. They still take room in the plan's storage.
+- The model for text must give structured output (an answer that follows a JSON schema), or every request fails.
+- When your provider refuses the key, the account, the model or the address, nothing is made, the page says so, and none of the instance's allowance is spent.
+
+The [command line](/developers/cli/posts#assistant) has `peal assistant models`.
 
 ### Who can set the providers [#providers-access]
 
-Only these can set the image and text providers:
+Only these can connect providers and choose their models:
 
 - a member, in their own session;
-- Peal's [command line](/developers/cli/posts#assistant) (`peal assistant text-provider`);
+- Peal's [command line](/developers/cli/posts#assistant) (`peal assistant providers` and `peal assistant models`);
 - an [API key](#api-keys) or a [partner key](/developers/embedding#account) given `assistant:configure`.
 
 No other application connected over OAuth holds that permission, an [MCP](/developers/mcp) client included, whatever it was granted. So none of them can send the workspace's drafts to an address of its own. Staff acting as a member can't set the providers or ask them anything, because the workspace's account at the provider would pay.
@@ -266,7 +279,7 @@ An account closes only once it owns no workspace. Staff acting as a member can't
 
 ### Delete a workspace [#delete-workspace]
 
-On **General**, owners click **Delete this workspace…**, then type the workspace's name to confirm.
+On **Workspace**, under **Danger zone**, owners click **Delete this workspace…**, then type the workspace's name to confirm.
 
 <Callout type="danger" title="Deleting a workspace can't be undone">
   Everything in it goes for good: its channels and their authorizations, its
@@ -306,11 +319,11 @@ Once the workspace is deleted, Peal sends a confirmation to your address, in you
 
 ## Your workspaces [#your-workspaces]
 
-When you sign in or go to Peal's address, you land in the workspace you last created or switched to, or else in your first one. When you sign up, a page of its own asks you to name your first workspace and choose its address. It fills in both for you (_Ada’s workspace_, at `/adas-workspace`), and you can change either, as long as no other workspace has that address. If an invitation is waiting for you, you join that workspace instead. You can change the name and the address later in the workspace's general settings.
+When you sign in or go to Peal's address, you land in the workspace you last created or switched to, or else in your first one. When you sign up, a page of its own asks you to name your first workspace and choose its address. It fills in both for you (_Ada’s workspace_, at `/adas-workspace`), and you can change either, as long as no other workspace has that address. If an invitation is waiting for you, you join that workspace instead. You can change the name and the address later, on the **Workspace** page under **Settings**.
 
 To create another workspace, open the workspace menu at the top of the sidebar and click **New workspace**, which opens the same page with the name empty. **Back**, at its top, returns to your workspace. A workspace's pages live at an address made from its name, such as `/adas-workspace/posts`. The address stays the same when you rename the workspace, and links that hold the workspace's id, as Peal's emails do, lead to the same page.
 
-Your account and your notifications are yours in every workspace: they're under **Settings** in each one, after the workspace's own settings ([Account](/guides/workspace/account), [Notifications](/guides/workspace/notifications)).
+Your account and your notifications are yours in every workspace: they're under **Settings** in each one, in the **Personal** group ([Account](/guides/workspace/account), [Notifications](/guides/workspace/notifications)).
 
 Each workspace keeps its own posts, channels, inbox and analytics, and you see them from inside that workspace: no page, endpoint, command or MCP tool gathers them across workspaces. To see another workspace, switch to it in the workspace menu. Your [notifications](/guides/workspace/notifications) and the [weekly digest](/guides/workspace/notifications#digest) are the only places that cover all your workspaces at once.
 

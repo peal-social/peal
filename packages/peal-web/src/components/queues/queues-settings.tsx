@@ -4,8 +4,15 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { maxQueuesPerWorkspace } from "peal-contract";
 import type { SocialChannel, ChannelSet, Queue } from "peal-contract";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowDescription,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useId, useMemo, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
@@ -13,6 +20,7 @@ import type { SubmitEvent } from "react";
 import { workspaceChannelSets } from "#channel-sets/atoms.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
 import { DeleteSavedItem } from "#components/settings/delete-saved-item.tsx";
+import { SettingsGroup } from "#components/settings/settings-group.tsx";
 import {
   SettingsLoadFailed,
   SettingsLoading,
@@ -362,42 +370,52 @@ const Loaded = ({
 
   return (
     <>
-      <section aria-labelledby="queues-title" className="flex flex-col gap-2">
-        <h2 id="queues-title" className="text-xl font-semibold">
-          {t("listTitle")}
-        </h2>
-        {queues.value.length === 0 ? (
-          <p className="text-muted-foreground">{t("empty")}</p>
-        ) : (
-          <ul className="divide-y">
-            {queues.value.map((queue) => (
-              <QueueRow
-                key={queue.id}
+      <SettingsGroup
+        title={t("listTitle")}
+        description={
+          // What a queue is and how its slots are taken, then, to those who
+          // may only read, why they cannot change one.
+          [
+            t("description"),
+            t("rules", { max: maxQueuesPerWorkspace }),
+            ...(mayManage ? [] : [t("readOnly")]),
+          ].join(" ")
+        }
+      >
+        <SettingsCard>
+          {queues.value.length === 0 ? (
+            <SettingsRow>
+              <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+            </SettingsRow>
+          ) : (
+            <ul className="divide-y">
+              {queues.value.map((queue) => (
+                <QueueRow
+                  key={queue.id}
+                  channelSets={channelSets}
+                  channels={channels.value}
+                  mayManage={mayManage}
+                  mayReshuffle={mayReshuffle}
+                  queue={queue}
+                  workspaceId={workspaceId}
+                />
+              ))}
+            </ul>
+          )}
+        </SettingsCard>
+      </SettingsGroup>
+      {mayManage ? (
+        <SettingsGroup title={t("createTitle")}>
+          <SettingsCard>
+            <SettingsCardBody>
+              <CreateForm
                 channelSets={channelSets}
                 channels={channels.value}
-                mayManage={mayManage}
-                mayReshuffle={mayReshuffle}
-                queue={queue}
                 workspaceId={workspaceId}
               />
-            ))}
-          </ul>
-        )}
-      </section>
-      {mayManage ? (
-        <section
-          aria-labelledby="create-queue-title"
-          className="flex flex-col gap-4"
-        >
-          <h2 id="create-queue-title" className="text-xl font-semibold">
-            {t("createTitle")}
-          </h2>
-          <CreateForm
-            channelSets={channelSets}
-            channels={channels.value}
-            workspaceId={workspaceId}
-          />
-        </section>
+            </SettingsCardBody>
+          </SettingsCard>
+        </SettingsGroup>
       ) : null}
     </>
   );

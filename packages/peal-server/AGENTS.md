@@ -580,7 +580,7 @@ and no socket, for tests.
   (`packages/peal-docker/test/alerting.test.ts`): add the rule with the
   metric.
 - Every request through the public HTTP client (`publicHttpClientWith`,
-  `publicLibraryHttpClientWith`, `publicFetch`) counts in
+  `publicLibraryHttpClientWith`, `publicFetch`, `publicFetchWith`) counts in
   `peal.outbound.responses`, by service and status class
   (`#shared/infrastructure/platforms/outbound-responses.ts`), which
   `peal-outbound-failing` watches. A new platform's API hosts join the

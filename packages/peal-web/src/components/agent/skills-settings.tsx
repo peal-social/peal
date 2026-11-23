@@ -29,6 +29,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "peal-ui/components/dropdown-menu";
+import {
+  SettingsCard,
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useState } from "react";
 
@@ -120,7 +126,7 @@ export const AgentSettingsScreen = ({
   );
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4">
+    <>
       <PageActions>
         <AppLink
           href={hrefs.newSkill}
@@ -141,7 +147,7 @@ export const AgentSettingsScreen = ({
           skills={result.value.skills}
         />
       ) : null}
-    </div>
+    </>
   );
 };
 
@@ -396,15 +402,19 @@ export const SkillScreen = ({
 
   if (skill === undefined) {
     return (
-      <div className="flex flex-col items-start gap-3">
-        <p className="text-muted-foreground text-sm">{t("gone")}</p>
-        <AppLink
-          href={hrefs.list}
-          className="text-brand-text text-sm underline-offset-2 hover:underline"
-        >
-          {t("backToList")}
-        </AppLink>
-      </div>
+      <SettingsCard>
+        <SettingsRow>
+          <SettingsRowDescription>{t("gone")}</SettingsRowDescription>
+          <SettingsRowControl>
+            <AppLink
+              href={hrefs.list}
+              className="text-brand-text text-sm underline-offset-2 hover:underline"
+            >
+              {t("backToList")}
+            </AppLink>
+          </SettingsRowControl>
+        </SettingsRow>
+      </SettingsCard>
     );
   }
 

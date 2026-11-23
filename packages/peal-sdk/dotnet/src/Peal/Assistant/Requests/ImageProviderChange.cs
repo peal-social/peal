@@ -13,10 +13,13 @@ public record ImageProviderChange
     public string? ApiKey { get; set; }
 
     [JsonPropertyName("baseUrl")]
-    public required string BaseUrl { get; set; }
+    public string? BaseUrl { get; set; }
 
     [JsonPropertyName("model")]
     public required string Model { get; set; }
+
+    [JsonPropertyName("provider")]
+    public AiImageProvider? Provider { get; set; }
 
     /// <inheritdoc />
     public override string ToString()

@@ -484,6 +484,9 @@ Ces commandes remplissent et gèrent la médiathèque de l’espace de travail. 
 peal media upload ./couverture.jpg --alt "Un catalogue papier ouvert sur une table en bois"
 peal media import https://files.example/printemps/couverture.jpg --alt "Un catalogue papier ouvert sur une table en bois"
 peal media generate --prompt "Un catalogue papier ouvert sur une table en bois, lumière du matin" --aspect landscape
+peal media video generate --prompt "Les pages du catalogue qui tournent lentement" --aspect portrait --wait
+peal media voiceover --text "Bienvenue dans le catalogue de printemps." --voice nova
+peal media transcribe <media-id> --save-description
 peal media list                   # du plus récent au plus ancien ; --search, --kind, --limit et --cursor
 peal media show <media-id>
 peal media describe <media-id> --text "Un catalogue papier ouvert sur une table en bois"
@@ -501,16 +504,58 @@ peal media delete <media-id>
 | Image    | JPEG, PNG, GIF ou WebP | 16 Mio             |
 | Vidéo    | MP4 ou QuickTime       | 1 Gio              |
 | Document | PDF                    | 100 Mio, 300 pages |
+| Audio    | MP3, M4A ou WAV        | 100 Mio            |
 
 `peal media import` fait récupérer au serveur une image, une vidéo ou un document PDF à une adresse `https://` publique, sans identifiants, en 90 secondes au plus ([Images et vidéos](/guides/media#import)). Pour les fichiers plus lourds ou plus lents, utilisez `peal media upload`.
 
 ### Générer une image [#media-generate]
 
-`peal media generate` crée une image d’après `--prompt` dans les médias de l’espace de travail ([Générer une image](/guides/media#generate)). C’est le [fournisseur d’images](/guides/workspace#image-provider) de l’espace de travail qui la crée, ou sinon le modèle d’images de l’instance. Le prompt fait de 1 à 1 000 caractères, envoyés tels quels à ce fournisseur. `--aspect` vaut `square` (par défaut), `landscape` ou `portrait`.
+`peal media generate` crée une image d’après `--prompt` dans les médias de l’espace de travail ([Générer une image](/guides/media#generate)). C’est le [fournisseur d’images](/guides/workspace#providers) de l’espace de travail qui la crée, ou sinon le modèle d’images de l’instance. Le prompt fait de 1 à 1 000 caractères, envoyés tels quels à ce fournisseur. `--aspect` vaut `square` (par défaut), `landscape` ou `portrait`.
 
 Avec le modèle de l’instance, la commande coûte 5 des demandes à l’assistant du jour de l’espace de travail. Avec le fournisseur de l’espace de travail, elle n’en coûte aucune. Un espace de travail sans fournisseur à lui, sur une instance sans modèle d’images, est refusé.
 
 L’image est marquée comme créée par IA. Réglez la mention IA de la plateforme dans les options de la publication, et décrivez l’image avec `--alt` quand vous la joignez.
+
+### Générer une vidéo [#media-video]
+
+`peal media video generate` demande une vidéo d’après `--prompt` au fournisseur que l’espace de travail a choisi pour les vidéos ([Générer une vidéo](/guides/media#generate-video)). Choisissez d’abord ce fournisseur avec `peal assistant models set video`. La commande prend ces options :
+
+| Option                 | Valeurs                                                 | Par défaut                | Rôle                                                                       |
+| ---------------------- | ------------------------------------------------------- | ------------------------- | -------------------------------------------------------------------------- |
+| `--prompt <texte>`     | 1 à 1 000 caractères                                    | obligatoire               | Ce que montre la vidéo, envoyé tel quel au fournisseur                     |
+| `--aspect`             | `landscape`, `portrait` ou `square`                     | `landscape`               | La forme de la vidéo. Google Gemini ne fait pas `square`                   |
+| `--duration <seconds>` | des secondes entières, dans ce que prend le fournisseur | le fournisseur la choisit | xAI prend de 1 à 15 secondes. Google Gemini n’en prend aucune : laissez-la |
+| `--image <media-id>`   | une image prête des médias de l’espace de travail       | aucune                    | La première image de la vidéo                                              |
+| `--wait`               |                                                         | désactivée                | Attend que la vidéo soit prête ou échoue, pendant 30 minutes au plus       |
+
+Une vidéo prend plusieurs minutes. Sans `--wait`, la commande affiche aussitôt l’identifiant de la vidéo. `peal media video status <id>` dit où elle en est : en attente, en cours, prête avec l’identifiant de son média, ou en échec avec la raison. `peal media video list` liste les vidéos de l’espace de travail, de la plus récente à la plus ancienne. Avec `--wait`, une vidéo en échec termine la commande avec le code de sortie 1 et la raison.
+
+C’est la clé de l’espace de travail qui paie le fournisseur, et Peal ne facture rien pour elle. Un espace de travail crée une vidéo à la fois, et en demande 20 par jour au plus.
+
+### Créer une vidéo de diapositives [#media-slideshow]
+
+`peal media slideshow create` demande au compte Shotstack de l’espace de travail de composer 2 à 10 images de la médiathèque en une vidéo ([Créer une vidéo de diapositives](/guides/media#make-a-slide-video)). Connectez d’abord Shotstack avec `peal assistant providers connect shotstack` (ajoutez `--sandbox` pour son bac à sable gratuit et filigrané, avec la clé du bac à sable), puis choisissez-le avec `peal assistant models set composition --provider shotstack`, qui ne prend pas de `--model`. La commande prend ces options :
+
+| Option                   | Valeurs                                 | Par défaut                    | Ce qu’elle fait                                                             |
+| ------------------------ | --------------------------------------- | ----------------------------- | --------------------------------------------------------------------------- |
+| `--image <media-id>`     | 2 à 10 images JPEG ou PNG prêtes        | obligatoire                   | Les diapositives, dans l’ordre donné                                        |
+| `--caption <texte>`      | jusqu’à 120 caractères                  | aucune                        | La légende de l’image à la même position. Une légende vide n’en est pas une |
+| `--motion`               | `none`, `zoomIn`, `zoomOut` ou `slide`  | `none`                        | Le mouvement de l’image à la même position. Un seul les anime toutes        |
+| `--transition`           | `fade` ou `none`                        | `fade`                        | Comment une diapositive laisse place à la suivante                          |
+| `--voiceover <media-id>` | un fichier audio prêt de la médiathèque | aucune                        | Joue de la première diapositive à la fin de la dernière                     |
+| `--aspect`               | `portrait`, `landscape` ou `square`     | `portrait`                    | Le format de la vidéo, à 1080 pixels sur son petit côté                     |
+| `--seconds <secondes>`   | 2 à 10, 90 secondes en tout             | la voix off partagée, sinon 4 | La durée de chaque diapositive                                              |
+| `--wait`                 |                                         | non                           | Attend que la vidéo soit prête ou en échec, jusqu’à 30 minutes              |
+
+Sans `--wait`, la commande affiche tout de suite l’identifiant de la vidéo de diapositives. `peal media slideshow status <id>` dit où elle en est, et `peal media slideshow list` liste les vidéos de diapositives de l’espace de travail, les plus récentes d’abord. Avec `--wait`, une vidéo en échec termine la commande avec le code de sortie 1 et la raison. Le compte Shotstack de l’espace de travail paie chaque rendu, et Peal ne facture rien. Sur Peal Cloud, le compte de facturation de l’espace de travail doit avoir un moyen de paiement.
+
+### Voix off et transcriptions [#media-audio]
+
+`peal media voiceover --text <texte> [--voice <voix>]` fait dire le texte, de 1 à 4 000 caractères, par le fournisseur que l’espace de travail a choisi pour les voix off, dans les médias de l’espace de travail ([Créer une voix off](/guides/media#voiceover)). `--voice` est le nom que le fournisseur donne à une voix (`nova` chez OpenAI, l’identifiant d’une voix ElevenLabs) ; sans elle, c’est la voix par défaut du fournisseur, et fal n’en prend aucune. Le fichier audio est marqué comme créé par IA.
+
+`peal media transcribe <media-id> [--save-description]` fait écrire ce qui est dit dans un fichier audio ou vidéo prêt de 25 Mo au plus par le fournisseur que l’espace de travail a choisi pour les transcriptions, et l’affiche ([Transcrire un fichier](/guides/media#transcribe)). `--save-description` en fait la description du fichier quand elle y tient.
+
+Choisissez d’abord les fournisseurs avec `peal assistant models set speech` et `peal assistant models set transcription`. C’est la clé de l’espace de travail qui paie le fournisseur, et Peal ne facture rien. Un espace de travail crée 50 voix off et 50 transcriptions par jour au plus.
 
 ### Trouver et gérer les médias [#media-manage]
 
@@ -528,42 +573,46 @@ L’image est marquée comme créée par IA. Réglez la mention IA de la platefo
 
 ## Les fournisseurs de l’assistant [#assistant]
 
-Un espace de travail peut apporter ses propres fournisseurs pour l’assistant. Ces commandes demandent `assistant:configure`, que détiennent les propriétaires, les administrateurs et les clés à qui il a été donné.
+Un espace de travail peut connecter ses propres fournisseurs d’IA pour l’assistant, puis choisir un fournisseur et un modèle pour chaque usage. Ces commandes demandent `assistant:configure`, que détiennent les propriétaires, les administrateurs et les clés qui l’ont reçue.
 
-### Fournisseur d’images [#assistant-image]
+### Fournisseurs [#assistant-providers]
 
-Ces commandes gèrent le [fournisseur d’images](/guides/workspace#image-provider) de l’espace de travail :
-
-```sh
-peal assistant image-provider show
-peal assistant image-provider set --base-url https://images.example.com/v1 --model <le-modèle-de-votre-fournisseur> < cle.txt
-peal assistant image-provider set --base-url https://images.example.com/v2 --model <le-modèle-de-votre-fournisseur> --keep-key
-peal assistant image-provider clear
-```
-
-`set` ne prend jamais la clé en argument, que l’historique du shell et la liste des processus garderaient. Dans un terminal, la commande demande la clé sans afficher ce que vous tapez. Sinon, elle la lit sur l’entrée standard, jusqu’à sa fin, sans son dernier saut de ligne.
-
-`--keep-key` garde la clé déjà enregistrée. Le serveur l’accepte seulement tant que `--base-url` reste exactement le même, pour changer le modèle seul. Toute autre adresse redemande la clé.
-
-`show` affiche l’adresse, le modèle et si la clé peut encore être lue, jamais la clé. `clear` retire le fournisseur et supprime sa clé, après confirmation (passez `--yes` sinon).
-
-### Fournisseur de texte [#assistant-text]
-
-Ces commandes gèrent de la même façon, et avec la même permission, le [fournisseur de texte](/guides/workspace#text-provider) de l’espace de travail, pour l’assistant de rédaction :
+Ces commandes gèrent les [fournisseurs connectés](/guides/workspace#providers) de l’espace de travail :
 
 ```sh
-peal assistant text-provider show
-peal assistant text-provider set --kind anthropic --model <le-modèle-de-votre-fournisseur> < cle.txt
-peal assistant text-provider set --kind openai-compatible --base-url https://text.example.com/v1 --model <le-modèle-de-votre-fournisseur> < cle.txt
-peal assistant text-provider test
-peal assistant text-provider clear
+peal assistant providers list
+peal assistant providers connect anthropic < key.txt
+peal assistant providers connect openai-compatible --base-url https://ai.example.com/v1 < key.txt
+peal assistant providers connect openai --base-url https://proxy.example.com/v1 --keep-key
+peal assistant providers test anthropic
+peal assistant providers disconnect anthropic
 ```
 
-`--kind` vaut `anthropic` ou `openai-compatible`. `--base-url` vaut `https://api.anthropic.com` par défaut pour `anthropic`.
+Le fournisseur est `anthropic`, `openai`, `google`, `mistral`, `xai`, `groq`, `togetherai`, `deepseek`, `openrouter`, `cerebras` ou `fireworks`, ou `openai-compatible` pour tout autre point d’accès qui sert `/chat/completions`, `/images/generations` ou les deux. Un fournisseur nommé est joint à sa propre adresse : `--base-url` ne sert que pour un proxy, ou avec `openai-compatible`.
 
-`test` envoie au fournisseur une courte demande, et dit s’il a répondu par une suggestion que l’assistant peut utiliser. Elle compte parmi les 500 demandes par jour que reçoit le fournisseur de l’espace de travail, et pour aucune de celles de Peal.
+`connect` ne prend jamais la clé en argument, que l’historique du shell et la liste des processus garderaient. Dans un terminal, il la demande sans afficher ce que vous tapez. Sinon, il la lit sur l’entrée standard, jusqu’à sa fin, sans son dernier saut de ligne. `--keep-key` garde la clé déjà enregistrée, ce que le serveur accepte seulement tant que l’adresse reste exactement la même.
 
-Parmi les applications connectées par OAuth, le serveur ne donne `assistant:configure` qu’à cette ligne de commande, que vous connectez vous-même dans votre terminal. Un client MCP ne peut régler aucun des deux fournisseurs.
+`test` envoie au fournisseur une courte demande de texte, avec `--model` ou le modèle avec lequel l’espace de travail y rédige, sinon le premier que Peal suggère, et dit s’il a répondu par une suggestion que l’assistant peut utiliser. Elle compte parmi les demandes propres de l’espace de travail ce jour-là, et dans aucune de celles de Peal. `disconnect` retire le fournisseur, supprime sa clé et désactive les usages qu’il servait, après avoir demandé (passez `--yes` sinon).
+
+### Modèles [#assistant-models]
+
+Ces commandes choisissent le [modèle de chaque usage](/guides/workspace#models), `text`, `image` ou `video` :
+
+```sh
+peal assistant models list
+peal assistant models set text --provider anthropic --model <your-provider-model>
+peal assistant models set image --provider openai --model <your-provider-model>
+peal assistant models set video --provider xai --model <your-provider-model>
+peal assistant models unset image
+```
+
+`set` prend un fournisseur connecté qui propose l’usage. `unset` laisse l’usage au modèle du serveur, s’il en a un, et garde le fournisseur connecté. `list` affiche le fournisseur et le modèle de chaque usage, ou le modèle du serveur, ou désactivé.
+
+### Commandes précédentes [#assistant-earlier]
+
+`peal assistant image-provider` (show, set, clear) et `peal assistant text-provider` (show, set, test, clear) fonctionnent toujours, sur les mêmes connexions : chacune règle un usage et son fournisseur ensemble. Elles sont dépréciées, comme leurs points d’accès, et `providers` et `models` les remplacent.
+
+Parmi les applications connectées par OAuth, le serveur ne donne `assistant:configure` qu’à cette ligne de commande, que vous connectez vous-même dans votre terminal. Un client MCP ne peut régler aucun fournisseur.
 
 ## Relectures et approbations [#review]
 

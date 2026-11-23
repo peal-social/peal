@@ -1,16 +1,19 @@
 pub use crate::prelude::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq, Hash)]
 pub struct TextProviderChange {
     #[serde(rename = "apiKey")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub api_key: Option<String>,
     #[serde(rename = "baseUrl")]
-    #[serde(default)]
-    pub base_url: String,
-    pub kind: TextProviderKind,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<TextProviderKind>,
     #[serde(default)]
     pub model: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider: Option<AiProvider>,
 }
 
 impl TextProviderChange {
@@ -26,6 +29,7 @@ pub struct TextProviderChangeBuilder {
     base_url: Option<String>,
     kind: Option<TextProviderKind>,
     model: Option<String>,
+    provider: Option<AiProvider>,
 }
 
 impl TextProviderChangeBuilder {
@@ -49,21 +53,23 @@ impl TextProviderChangeBuilder {
         self
     }
 
+    pub fn provider(mut self, value: AiProvider) -> Self {
+        self.provider = Some(value);
+        self
+    }
+
     /// Consumes the builder and constructs a [`TextProviderChange`].
     /// This method will fail if any of the following fields are not set:
-    /// - [`base_url`](TextProviderChangeBuilder::base_url)
-    /// - [`kind`](TextProviderChangeBuilder::kind)
     /// - [`model`](TextProviderChangeBuilder::model)
     pub fn build(self) -> Result<TextProviderChange, BuildError> {
         Ok(TextProviderChange {
             api_key: self.api_key,
-            base_url: self
-                .base_url
-                .ok_or_else(|| BuildError::missing_field("base_url"))?,
-            kind: self.kind.ok_or_else(|| BuildError::missing_field("kind"))?,
+            base_url: self.base_url,
+            kind: self.kind,
             model: self
                 .model
                 .ok_or_else(|| BuildError::missing_field("model"))?,
+            provider: self.provider,
         })
     }
 }

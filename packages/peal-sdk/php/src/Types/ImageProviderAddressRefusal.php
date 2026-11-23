@@ -11,4 +11,5 @@ enum ImageProviderAddressRefusal: string
     case TooLong = "tooLong";
     case NotPublic = "notPublic";
     case UnknownHost = "unknownHost";
+    case FixedAddress = "fixedAddress";
 }

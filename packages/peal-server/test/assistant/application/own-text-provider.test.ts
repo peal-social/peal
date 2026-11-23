@@ -218,7 +218,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
           yield* bringProvider(workspaceId);
 
           // The address moved without the key being typed again.
-          yield* sql`UPDATE assistant.text_providers SET base_url = 'https://other-images.example.com/v1' WHERE workspace_id = ${workspaceId}`;
+          yield* sql`UPDATE assistant.provider_connections SET base_url = 'https://other-images.example.com/v1' WHERE workspace_id = ${workspaceId}`;
 
           const refused = yield* askOwn(workspaceId, ownAnswer("Hi.")).pipe(
             Effect.flip
@@ -528,7 +528,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           const [provider] = yield* sql<{
             readonly count: number;
-          }>`SELECT count(*)::int AS count FROM assistant.text_providers WHERE workspace_id = ${workspaceId}`;
+          }>`SELECT count(*)::int AS count FROM assistant.provider_connections WHERE workspace_id = ${workspaceId}`;
 
           const [counted] = yield* sql<{
             readonly requests: number;

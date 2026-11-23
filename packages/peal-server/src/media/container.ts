@@ -1,6 +1,7 @@
 import { Layer } from "effect";
 import { FetchHttpClient } from "effect/http";
 
+import { GeneratedMedia } from "#media/application/generated-media.ts";
 import { MediaForPlatforms } from "#media/application/media-for-platforms.ts";
 import { MediaLibrary } from "#media/application/media-library.ts";
 import { MediaStorageUsage } from "#media/application/media-storage-usage.ts";
@@ -37,7 +38,8 @@ export { MediaHandlers as MediaApiLive } from "#media/api/media.ts";
 /**
  * The media context: its use cases on the S3 store, Postgres, sharp and
  * ffprobe, for members (MediaLibrary), for the platforms posts go out on
- * (MediaForPlatforms), and for the workspace context's exports and erasures
+ * (MediaForPlatforms), for the files the assistant's jobs make
+ * (GeneratedMedia), and for the workspace context's exports and erasures
  * (MediaRecords), what each workspace stores, for the billing page
  * (MediaStorageUsage), and the sweeps of the store (MediaSweeps, with the
  * policy its settings give), fetching the files members import from
@@ -53,6 +55,7 @@ export const mediaWith = <E, R>(remote: Layer.Layer<RemoteMedia, E, R>) =>
   Layer.mergeAll(
     MediaLibrary.layer,
     MediaForPlatforms.layer,
+    GeneratedMedia.layer,
     MediaStorageUsage.layer,
     DrizzleMediaRecords,
     MediaSweeps.layer.pipe(Layer.provide(SweepPolicyLive))

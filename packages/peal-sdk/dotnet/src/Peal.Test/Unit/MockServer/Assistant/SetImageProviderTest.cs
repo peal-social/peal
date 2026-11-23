@@ -14,7 +14,6 @@ public class SetImageProviderTest : BaseMockServerTest
     {
         const string requestJson = """
             {
-              "baseUrl": "baseUrl",
               "model": "x"
             }
             """;
@@ -25,6 +24,7 @@ public class SetImageProviderTest : BaseMockServerTest
               "keySet": true,
               "keyUnreadable": true,
               "model": "model",
+              "provider": "openai",
               "updatedAt": "updatedAt"
             }
             """;
@@ -50,8 +50,9 @@ public class SetImageProviderTest : BaseMockServerTest
             {
                 WorkspaceId = "workspaceId",
                 ApiKey = null,
-                BaseUrl = "baseUrl",
+                BaseUrl = null,
                 Model = "x",
+                Provider = null,
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -62,7 +63,6 @@ public class SetImageProviderTest : BaseMockServerTest
     {
         const string requestJson = """
             {
-              "baseUrl": "baseUrl",
               "model": "model"
             }
             """;
@@ -73,6 +73,7 @@ public class SetImageProviderTest : BaseMockServerTest
               "keySet": true,
               "keyUnreadable": true,
               "model": "model",
+              "provider": "openai",
               "updatedAt": "updatedAt"
             }
             """;
@@ -94,12 +95,7 @@ public class SetImageProviderTest : BaseMockServerTest
             );
 
         var response = await Client.Assistant.SetImageProviderAsync(
-            new ImageProviderChange
-            {
-                WorkspaceId = "workspaceId",
-                BaseUrl = "baseUrl",
-                Model = "model",
-            }
+            new ImageProviderChange { WorkspaceId = "workspaceId", Model = "model" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

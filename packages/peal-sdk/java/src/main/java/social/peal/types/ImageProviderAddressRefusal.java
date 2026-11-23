@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class ImageProviderAddressRefusal {
+    public static final ImageProviderAddressRefusal FIXED_ADDRESS =
+            new ImageProviderAddressRefusal(Value.FIXED_ADDRESS, "fixedAddress");
+
     public static final ImageProviderAddressRefusal MALFORMED =
             new ImageProviderAddressRefusal(Value.MALFORMED, "malformed");
 
@@ -61,6 +64,8 @@ public final class ImageProviderAddressRefusal {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case FIXED_ADDRESS:
+                return visitor.visitFixedAddress();
             case MALFORMED:
                 return visitor.visitMalformed();
             case CREDENTIALS:
@@ -84,6 +89,8 @@ public final class ImageProviderAddressRefusal {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static ImageProviderAddressRefusal valueOf(String value) {
         switch (value) {
+            case "fixedAddress":
+                return FIXED_ADDRESS;
             case "malformed":
                 return MALFORMED;
             case "credentials":
@@ -118,6 +125,8 @@ public final class ImageProviderAddressRefusal {
 
         UNKNOWN_HOST,
 
+        FIXED_ADDRESS,
+
         UNKNOWN
     }
 
@@ -135,6 +144,8 @@ public final class ImageProviderAddressRefusal {
         T visitNotPublic();
 
         T visitUnknownHost();
+
+        T visitFixedAddress();
 
         T visitUnknown(String unknownType);
     }

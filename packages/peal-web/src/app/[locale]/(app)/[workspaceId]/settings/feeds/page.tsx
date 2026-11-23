@@ -1,6 +1,5 @@
 import { Option, Schema } from "effect";
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { FeedsSettings } from "#components/feeds/feeds-settings.tsx";
@@ -32,22 +31,13 @@ const FeedsPage = async ({
     notFound();
   }
 
-  const t = await getTranslations("Feeds");
-  const mayChange = may.has("post:create");
-
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("description")}</p>
-      {mayChange ? null : (
-        <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
-      )}
-      <FeedsSettings
-        workspaceId={workspace.id}
-        mayChange={mayChange}
-        mayQueue={may.has("post:schedule")}
-        highlighted={Option.getOrNull(decodeFeed(feed))}
-      />
-    </div>
+    <FeedsSettings
+      workspaceId={workspace.id}
+      mayChange={may.has("post:create")}
+      mayQueue={may.has("post:schedule")}
+      highlighted={Option.getOrNull(decodeFeed(feed))}
+    />
   );
 };
 

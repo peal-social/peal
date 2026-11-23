@@ -1,5 +1,5 @@
-import { Effect, Result } from "effect";
-import type { Duration, Stream } from "effect";
+import { Duration, Effect, Result } from "effect";
+import type { Stream } from "effect";
 import {
   FetchHttpClient,
   HttpClient,
@@ -135,6 +135,18 @@ const fetchBoundedTo = (limit: number, overflow: Overflow = "fail") => {
 };
 
 const boundedFetch = fetchBoundedTo(maxResponseBytes);
+
+/**
+ * Plain fetch, its answers cut off past `maxResponseBytes` (failing as a
+ * body that cannot be read): for a host the operator named, which the
+ * outbound guard does not check, whose answers Peal still bounds. It
+ * follows redirects as fetch does, and sends no trace context.
+ */
+export const boundedFetchWith = ({
+  maxResponseBytes: limit,
+}: {
+  readonly maxResponseBytes: number;
+}): PublicFetch => fetchBoundedTo(limit);
 
 /**
  * Gives a request a body read from `bytes` as it is sent, so a file of any
@@ -279,48 +291,74 @@ export const untraced = <E, R>(
     )
   );
 
+/** What a guarded fetch function is built with. */
+export interface PublicFetchOptions {
+  /** The most an answer may carry, a megabyte unless set. */
+  readonly maxResponseBytes?: number;
+  readonly overflow?: Overflow;
+  /** How long a request waits for its answer, 20 seconds unless set. */
+  readonly timeout?: Duration.Input;
+}
+
 /**
- * The same rules as a fetch function, for client libraries that take one: a
- * refused request rejects with a TypeError, as fetch does when it cannot
- * connect, whose cause is the OutboundRequestRefused. Each request counts in
+ * The same rules as a fetch function, for client libraries that take one
+ * (an AI provider's package, for one): every request checked by the
+ * OutboundGuard before it is sent, no redirect followed, the answer cut
+ * off past `maxResponseBytes`, the request aborted after `timeout`, and no
+ * trace context sent (a fetch adds none). A refused request rejects with a
+ * TypeError, as fetch does when it cannot connect, whose cause is the
+ * OutboundRequestRefused. Each request counts in
  * `peal.outbound.responses`, as the client's do.
  */
-export const publicFetch = Effect.gen(function* publicFetch() {
-  const guard = yield* OutboundGuard;
+export const publicFetchWith = ({
+  maxResponseBytes: limit = maxResponseBytes,
+  overflow,
+  timeout = requestTimeout,
+}: PublicFetchOptions = {}) =>
+  Effect.gen(function* publicFetch() {
+    const guard = yield* OutboundGuard;
+    const bounded = fetchBoundedTo(limit, overflow);
+    const timeoutMillis = Duration.toMillis(Duration.fromInputUnsafe(timeout));
 
-  return withPreconnect(async (input, init) => {
-    const request =
-      input instanceof Request
-        ? new Request(input, init)
-        : new Request(input instanceof URL ? input.href : input, init);
+    return withPreconnect(async (input, init) => {
+      const request =
+        input instanceof Request
+          ? new Request(input, init)
+          : new Request(input instanceof URL ? input.href : input, init);
 
-    const url = new URL(request.url);
+      const url = new URL(request.url);
 
-    const checked = await Effect.runPromise(
-      guard.check(url).pipe(Effect.result)
-    );
+      const checked = await Effect.runPromise(
+        guard.check(url).pipe(Effect.result)
+      );
 
-    if (Result.isFailure(checked)) {
-      Effect.runSync(countOutbound(url.href, "failed"));
+      if (Result.isFailure(checked)) {
+        Effect.runSync(countOutbound(url.href, "failed"));
 
-      throw new TypeError(`fetch refused for ${url.host}`, {
-        cause: checked.failure,
-      });
-    }
+        throw new TypeError(`fetch refused for ${url.host}`, {
+          cause: checked.failure,
+        });
+      }
 
-    try {
-      const response = await boundedFetch(request, {
-        ...noRedirects,
-        signal: AbortSignal.any([request.signal, AbortSignal.timeout(20_000)]),
-      });
+      try {
+        const response = await bounded(request, {
+          ...noRedirects,
+          signal: AbortSignal.any([
+            request.signal,
+            AbortSignal.timeout(timeoutMillis),
+          ]),
+        });
 
-      Effect.runSync(countOutbound(url.href, statusClassOf(response.status)));
+        Effect.runSync(countOutbound(url.href, statusClassOf(response.status)));
 
-      return response;
-    } catch (error) {
-      Effect.runSync(countOutbound(url.href, "failed"));
+        return response;
+      } catch (error) {
+        Effect.runSync(countOutbound(url.href, "failed"));
 
-      throw error;
-    }
+        throw error;
+      }
+    });
   });
-});
+
+/** The guarded fetch function with its defaults: a megabyte, 20 seconds. */
+export const publicFetch = publicFetchWith();

@@ -65,7 +65,7 @@ L'agent ne gère ni les membres, ni les clés d'API, ni les webhooks, ni les flu
 
 ## Qui répond [#model]
 
-L'agent utilise le [fournisseur de texte](/guides/workspace#text-provider) propre à l'espace de travail quand il en a un. Sinon, il utilise le fournisseur d'IA choisi par l'administrateur de l'instance Peal. Quand aucun des deux n'est configuré, la page de l'agent indique qu'il est désactivé, et un propriétaire ou un administrateur peut configurer un fournisseur de texte dans les réglages de l'assistant.
+L'agent utilise le [fournisseur de texte](/guides/workspace#providers) propre à l'espace de travail quand il en a un. Sinon, il utilise le fournisseur d'IA choisi par l'administrateur de l'instance Peal. Quand aucun des deux n'est configuré, la page de l'agent indique qu'il est désactivé, et un propriétaire ou un administrateur peut configurer un fournisseur de texte dans les réglages de l'assistant.
 
 Chaque demande que l'agent envoie au modèle compte comme une des [demandes de l'assistant de rédaction](/guides/posts/assistant#limits). Une réponse peut en prendre plusieurs, jusqu'à 8, quand l'agent cherche des informations avant de répondre. Dans une longue conversation, chaque demande n'envoie au modèle que les derniers messages, environ 120 000 caractères, donc l'agent peut ne plus se souvenir du début : ouvrez une nouvelle conversation pour une nouvelle tâche. Avec le fournisseur propre à l'espace de travail, les demandes de Peal ne sont pas dépensées, et c'est la limite quotidienne de ce fournisseur qui s'applique. Sur Peal Cloud, le modèle de l'instance demande un moyen de paiement sur le compte de facturation.
 

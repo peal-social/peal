@@ -7,9 +7,11 @@ import { ProviderAddressCheck } from "#assistant/application/ports/provider-addr
 import {
   checkProviderKey,
   checkProviderModel,
+  imageProviderAddresses,
   ImageProviderSettings,
 } from "#assistant/domain/image-provider.ts";
 import type {
+  ImageProviderId,
   ProviderAddress,
   ProviderModel,
 } from "#assistant/domain/image-provider.ts";
@@ -23,15 +25,22 @@ export interface ImageProviderView {
   /** The stored key no longer decrypts: type it again. */
   readonly keyUnreadable: boolean;
   readonly model: ProviderModel;
+  readonly provider: ImageProviderId;
   readonly updatedAt: DateTime.Utc;
 }
 
-/** What a member saves: the address and the model, and the key if typed. */
+/**
+ * What a member saves: the provider, the address and the model, and the
+ * key if typed.
+ */
 export interface ImageProviderChange {
   /** Left out, the stored key is kept, when the address stays the same. */
   readonly apiKey?: string;
-  readonly baseUrl: string;
+  /** Left out, the provider's own address; `openai-compatible` has none. */
+  readonly baseUrl?: string;
   readonly model: string;
+  /** Left out, `openai-compatible`. */
+  readonly provider?: ImageProviderId;
 }
 
 const viewOf = ({
@@ -42,6 +51,7 @@ const viewOf = ({
   keySet: true,
   keyUnreadable,
   model: settings.model,
+  provider: settings.provider,
   updatedAt: settings.updatedAt,
 });
 
@@ -68,9 +78,12 @@ export const saveImageProvider = Effect.fn("ImageProviderSettings.save")(
   function* saveImageProvider(actor: Actor, change: ImageProviderChange) {
     const { workspaceId } = actor;
     const providers = yield* ImageProviders;
+    const provider = change.provider ?? "openai-compatible";
 
+    // An address left out is the provider's own; one without any is
+    // refused as malformed.
     const baseUrl = yield* ProviderAddressCheck.use((addresses) =>
-      addresses.check(change.baseUrl)
+      addresses.check(change.baseUrl ?? imageProviderAddresses[provider] ?? "")
     );
 
     const model = yield* Effect.fromResult(checkProviderModel(change.model));
@@ -98,6 +111,7 @@ export const saveImageProvider = Effect.fn("ImageProviderSettings.save")(
     const settings = new ImageProviderSettings({
       baseUrl,
       model,
+      provider,
       updatedAt: yield* DateTime.now,
     });
 

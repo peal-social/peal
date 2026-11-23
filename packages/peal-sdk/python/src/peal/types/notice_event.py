@@ -18,10 +18,14 @@ from .meter import Meter
 from .money import Money
 from .notice_channel import NoticeChannel
 from .notice_event_ad_boost_changed_change import NoticeEventAdBoostChangedChange
+from .notice_event_slideshow_ended_outcome import NoticeEventSlideshowEndedOutcome
+from .notice_event_video_generation_ended_outcome import NoticeEventVideoGenerationEndedOutcome
 from .paid_plan import PaidPlan
 from .post_parts_not_sent import PostPartsNotSent
 from .recycling_notice_reason import RecyclingNoticeReason
 from .review_party import ReviewParty
+from .slideshow_failure_reason import SlideshowFailureReason
+from .video_failure_reason import VideoFailureReason
 from .webhook_turn_off_reason import WebhookTurnOffReason
 
 
@@ -569,6 +573,52 @@ class NoticeEvent_CommentRuleStopped(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
+class NoticeEvent_VideoGenerationEnded(UniversalBaseModel):
+    type: typing_extensions.Annotated[
+        typing.Literal["VideoGenerationEnded"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "VideoGenerationEnded"
+    generation_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="generationId"), pydantic.Field(alias="generationId")
+    ]
+    media_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="mediaId"), pydantic.Field(alias="mediaId")
+    ] = None
+    outcome: NoticeEventVideoGenerationEndedOutcome
+    reason: typing.Optional[VideoFailureReason] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class NoticeEvent_SlideshowEnded(UniversalBaseModel):
+    type: typing_extensions.Annotated[
+        typing.Literal["SlideshowEnded"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "SlideshowEnded"
+    media_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="mediaId"), pydantic.Field(alias="mediaId")
+    ] = None
+    outcome: NoticeEventSlideshowEndedOutcome
+    reason: typing.Optional[SlideshowFailureReason] = None
+    slideshow_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="slideshowId"), pydantic.Field(alias="slideshowId")
+    ]
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 NoticeEvent = typing_extensions.Annotated[
     typing.Union[
         NoticeEvent_PostPublished,
@@ -601,6 +651,8 @@ NoticeEvent = typing_extensions.Annotated[
         NoticeEvent_FollowUpsNotSent,
         NoticeEvent_FollowUpRuleStopped,
         NoticeEvent_CommentRuleStopped,
+        NoticeEvent_VideoGenerationEnded,
+        NoticeEvent_SlideshowEnded,
     ],
     pydantic.Field(discriminator="type"),
 ]

@@ -629,7 +629,63 @@ export interface UserReviewRecord {
 export interface ImageProviderRecord {
   readonly baseUrl: string;
   readonly model: string;
+  /** The provider by name; a row saved before names reads as `openai-compatible`. */
+  readonly provider: string;
   readonly updatedAt: DateTime.Utc;
+}
+
+/**
+ * A provider a workspace connected to the assistant: where it is reached,
+ * never its key, sealed or not.
+ */
+export interface AiProviderRecord {
+  readonly baseUrl: string;
+  readonly provider: string;
+  readonly updatedAt: DateTime.Utc;
+}
+
+/** What a workspace chose for one of its uses: a provider and a model. */
+export interface AiModelRecord {
+  readonly capability: string;
+  readonly model: string;
+  readonly provider: string;
+  readonly updatedAt: DateTime.Utc;
+}
+
+/**
+ * A video a workspace asked its own provider for, without its description,
+ * which is kept only while it is made.
+ */
+export interface VideoGenerationRecord {
+  readonly aspect: string;
+  readonly createdAt: DateTime.Utc;
+  readonly durationSeconds: number | null;
+  readonly finishedAt: DateTime.Utc | null;
+  readonly id: string;
+  readonly imageMediaId: string | null;
+  readonly mediaId: string | null;
+  readonly reason: string | null;
+  readonly startedAt: DateTime.Utc | null;
+  readonly status: string;
+}
+
+/**
+ * A slide video a workspace asked its own composition service for,
+ * without its captions, which are kept only while it is composed.
+ */
+export interface SlideshowRecord {
+  readonly aspect: string;
+  readonly createdAt: DateTime.Utc;
+  readonly durationSeconds: number;
+  readonly finishedAt: DateTime.Utc | null;
+  readonly id: string;
+  readonly imageMediaIds: readonly string[];
+  readonly mediaId: string | null;
+  readonly reason: string | null;
+  readonly sandbox: boolean;
+  readonly startedAt: DateTime.Utc | null;
+  readonly status: string;
+  readonly voiceoverMediaId: string | null;
 }
 
 /** How many images a workspace asked its own provider for one UTC day. */
@@ -648,6 +704,8 @@ export interface TextProviderRecord {
   readonly baseUrl: string;
   readonly kind: string;
   readonly model: string;
+  /** The provider by name; a row saved before names reads as its kind. */
+  readonly provider: string;
   readonly updatedAt: DateTime.Utc;
 }
 
@@ -978,6 +1036,20 @@ export type NoticeEventRecord =
       readonly _tag: "CommentRuleStopped";
       readonly reason: string;
       readonly ruleId: string;
+    }
+  | {
+      readonly _tag: "VideoGenerationEnded";
+      readonly generationId: string;
+      readonly mediaId: string | null;
+      readonly outcome: string;
+      readonly reason: string | null;
+    }
+  | {
+      readonly _tag: "SlideshowEnded";
+      readonly mediaId: string | null;
+      readonly outcome: string;
+      readonly reason: string | null;
+      readonly slideshowId: string;
     }
   | {
       readonly _tag: "RecyclingEnded";

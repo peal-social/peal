@@ -21,7 +21,15 @@ module Peal
 
       field :resets_at, -> { String }, optional: false, nullable: false, api_name: "resetsAt"
 
+      field :slideshows, -> { Peal::Types::AssistantSlideshowsStatus }, optional: false, nullable: false
+
       field :source, -> { Peal::Types::AssistantTextSource }, optional: false, nullable: true
+
+      field :transcriptions, -> { Peal::Types::AssistantTranscriptionsStatus }, optional: false, nullable: false
+
+      field :videos, -> { Peal::Types::AssistantVideosStatus }, optional: false, nullable: false
+
+      field :voiceovers, -> { Peal::Types::AssistantVoiceoversStatus }, optional: false, nullable: false
     end
   end
 end

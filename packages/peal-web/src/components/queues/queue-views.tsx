@@ -454,11 +454,11 @@ export const QueueItemView = ({
   const missing = queue.unavailableChannelIds.length;
 
   return (
-    <li className="flex flex-col gap-4 py-4">
+    <li className="flex flex-col gap-4 px-4 py-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span id={nameId} className="font-medium">
+            <span id={nameId} className="text-sm font-medium">
               {queue.name}
             </span>
             {queue.isDefault ? (

@@ -61,6 +61,11 @@ module Peal
       @media ||= Peal::Media::Client.new(client: @raw_client)
     end
 
+    # @return [Peal::MediaAudio::Client]
+    def media_audio
+      @media_audio ||= Peal::MediaAudio::Client.new(client: @raw_client)
+    end
+
     # @return [Peal::Notices::Client]
     def notices
       @notices ||= Peal::Notices::Client.new(client: @raw_client)
@@ -74,6 +79,16 @@ module Peal
     # @return [Peal::Assistant::Client]
     def assistant
       @assistant ||= Peal::Assistant::Client.new(client: @raw_client)
+    end
+
+    # @return [Peal::VideoGenerations::Client]
+    def video_generations
+      @video_generations ||= Peal::VideoGenerations::Client.new(client: @raw_client)
+    end
+
+    # @return [Peal::Slideshows::Client]
+    def slideshows
+      @slideshows ||= Peal::Slideshows::Client.new(client: @raw_client)
     end
 
     # @return [Peal::Members::Client]

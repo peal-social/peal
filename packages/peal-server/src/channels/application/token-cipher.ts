@@ -84,6 +84,22 @@ export const textProviderContext = (
 ): SecretContext =>
   SecretContextSchema.make(`assistant:text:${workspaceId}:${address}`);
 
+/**
+ * The context of the key a workspace gave for a provider it connected,
+ * named by the workspace, the provider and its whole address: a key
+ * copied to another workspace or provider, or left behind an address
+ * changed in any way, does not decrypt. Apart from the image and text
+ * providers' contexts (a workspace's id is never `text` or `provider`).
+ */
+export const providerConnectionContext = (
+  workspaceId: string,
+  provider: string,
+  address: string
+): SecretContext =>
+  SecretContextSchema.make(
+    `assistant:provider:${workspaceId}:${provider}:${address}`
+  );
+
 export type TokenDecryptionError =
   | MalformedEncryptedToken
   | TokenAuthenticationFailed

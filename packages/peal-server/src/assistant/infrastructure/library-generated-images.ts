@@ -20,9 +20,10 @@ const generatedImageOf = (
   if (
     asset.status._tag !== "ready" ||
     !asset.aiGenerated ||
-    contentType === "application/pdf" ||
-    contentType === "video/mp4" ||
-    contentType === "video/quicktime"
+    (contentType !== "image/gif" &&
+      contentType !== "image/jpeg" &&
+      contentType !== "image/png" &&
+      contentType !== "image/webp")
   ) {
     return Effect.fail(unusable());
   }
