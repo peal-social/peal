@@ -11,6 +11,7 @@
   vars_files:
     - ../roles/cloudflared/defaults/main.yml
     - ../roles/peal_runtime/vars/main.yml
+    - ../roles/peal_backup/defaults/main.yml
   tasks:
     - name: Create the server's folder
       ansible.builtin.file:
@@ -35,6 +36,20 @@
         src: ../roles/peal_runtime/templates/peal-compose.j2
         dest: "{{ render_dir }}/{{ inventory_hostname }}/peal-compose"
         mode: "0600"
+
+    - name: Render the backup's service
+      ansible.builtin.template:
+        src: ../roles/peal_backup/templates/peal-backup@.service.j2
+        dest: "{{ render_dir }}/{{ inventory_hostname }}/peal-backup@.service"
+        mode: "0600"
+
+    - name: Render the backup copy's units
+      ansible.builtin.template:
+        src: ../roles/peal_backup/templates/{{ item }}.j2
+        dest: "{{ render_dir }}/{{ inventory_hostname }}/{{ item }}"
+        mode: "0600"
+      loop: [peal-backup-copy.service, peal-backup-copy.timer]
+      when: peal_backup_copy | bool
 
 - name: Render the templates of the uptime server
   hosts: uptime

@@ -160,6 +160,14 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   `PEAL_MEDIA_PUBLIC_BASE_URL` without `peal_erasure_ledger_bucket`. The server migrates when it
   starts, so write migrations that the previous release can still run
   against, and roll back by releasing the previous commit.
+- The backup copy (`peal_backup_copy`, off by default, a paid resource:
+  README.md, "The backup copy") copies the backups into a bucket whose
+  lock keeps every object 14 days (the Pulumi stack's `backupCopy`). It
+  never writes a key twice: each run under a prefix of its own, an index
+  last, nothing when nothing changed (`tests/test_backup_copy.py`, against
+  SeaweedFS). Keep the lock longer than the interval of full backups, the
+  refresh (`peal_backup_copy_refresh_days`) below the lifecycle's 35 days,
+  and the lock's days the same in both projects.
 - The disks' health goes to the collector as the backups' does:
   `peal_disks` posts gauges of the md arrays and of SMART, and Grafana's
   rules alert on them (`peal-docker`'s `rules.yaml`), with no mail

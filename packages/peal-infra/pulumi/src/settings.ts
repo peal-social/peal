@@ -89,6 +89,10 @@ export const EnvironmentSettingsSchema = Schema.Struct({
   // The environment's host name on the short-link domain, whose zone the
   // account's stack holds: the domain itself or a first-level subdomain.
   shortLinkHost: Schema.NonEmptyString,
+  // The backup copy's locked bucket and its key (README.md, "The backup
+  // copy"), a paid resource: made only with `on`, once the owner approved
+  // it. Unset or `off`, none.
+  backupCopy: Schema.optionalKey(Schema.Literals(["on", "off"])),
 });
 
 export type EnvironmentSettings = typeof EnvironmentSettingsSchema.Type;

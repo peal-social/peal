@@ -417,6 +417,79 @@ groups:
                     type: gt
                     params: [0]
 
+      # The backup copy (peal-infra's peal_backup role, peal_backup_copy)
+      # copies each backup into the locked bucket and reports when it
+      # matched the backups, or failed. A server without the copy reports
+      # neither: no data is OK.
+      - uid: peal-backup-copy-failed
+        title: The last backup copy failed
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: The last copy of the backups into the locked bucket failed. Read `journalctl --unit peal-backup-copy` on the server (packages/peal-infra/ansible/runbooks/restore-database.md, "The backup copy").
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              refId: A
+              instant: true
+              # Seconds from the last copy to the last failure, both
+              # searched for over 8 days: positive while the failure is newer.
+              expr: max(max_over_time(peal_backup_copy_last_failure_timestamp_seconds[8d])) - (max(max_over_time(peal_backup_copy_last_success_timestamp_seconds[8d])) or vector(0))
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [0]
+
+      # The copy runs right after each backup that succeeded: a backup that
+      # finished more than 6 hours after the last copy is not in the locked
+      # bucket, which a lost server would leave without its newest backups.
+      - uid: peal-backup-copy-behind
+        title: The backup copy falls behind the backups
+        condition: B
+        for: 0s
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: A backup finished more than 6 hours after the last copy into the locked bucket. Read `journalctl --unit peal-backup-copy` on the server (packages/peal-infra/ansible/runbooks/restore-database.md, "The backup copy").
+        labels:
+          severity: critical
+        data:
+          - refId: A
+            datasourceUid: prometheus
+            relativeTimeRange:
+              from: 600
+              to: 0
+            model:
+              refId: A
+              instant: true
+              # Seconds from the last copy to the last backup, both searched
+              # for over 8 days; no copy ever reported, no data.
+              expr: max(max_over_time(peal_backup_last_success_timestamp_seconds[8d])) - max(max_over_time(peal_backup_copy_last_success_timestamp_seconds[8d]))
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [21600]
+
       - uid: peal-disk-almost-full
         title: The server's disk is almost full
         condition: B

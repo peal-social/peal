@@ -1088,6 +1088,67 @@ started over rather than restored, pgBackRest refuses its backups until the
 old ones are deleted:
 [Starting a server's database over](runbooks/restore-database.md#starting-a-servers-database-over).
 
+### The backup copy
+
+**A paid resource, off until the owner approves it.** The backups' key is
+on the server, in the Postgres container and in `credentials.env`, and it
+can delete every backup: whoever takes the server can take the backups
+with it. A bucket lock on pgBackRest's own bucket would stop pgBackRest,
+which rewrites `backup.info` and a backup's manifest. The backup copy is a
+second bucket per environment (`peal-<environment>-backup-copy`, R2, the
+EU jurisdiction, private, billed by storage and operations), with:
+
+- a bucket lock: no object in it can be overwritten or deleted for 14 days,
+  whatever key asks, the server's included;
+- a lifecycle rule that deletes objects after 35 days;
+- a key of its own, for that bucket alone, which reads and writes it and
+  can change neither the lock nor the lifecycle.
+
+`peal-backup-copy` (`roles/peal_backup/files/backup_copy.py`, Python's
+standard library alone) runs after each backup that succeeded (the backup
+unit's `OnSuccess`) and from a daily timer at 06:45 UTC, under the backups'
+lock. Each run writes under a prefix of its own, the time it started
+(`2026-11-23T021500Z/`), so no key is ever written twice: the repository's
+files the copy lacks or holds in another content (`backup.info` and the
+manifests as each run finds them; a segment or a backup file once), those
+whose copy is older than 21 days (so what the backups still hold stays in
+the copy), and last an `index.json` that names, for every file of the
+repository, the key of its copy. A run that finds nothing new writes
+nothing. Every PUT carries `If-None-Match: *`. It reads both keys by name
+from `credentials.env`, and posts when it matched the backups, or failed,
+to the collector: Grafana alerts when the last copy failed
+(`peal-backup-copy-failed`) and when a backup finished more than 6 hours
+after the last copy (`peal-backup-copy-behind`); a server without the copy
+posts neither.
+
+The lock is longer than a week, so the newest full backup, and everything
+a restore from it needs, is always locked. The files are those pgBackRest
+encrypted on the server: the copy holds them as they are, and is no use
+without the backup passphrase, kept off the server as
+[Credentials](#credentials) says. What it protects against, and what it
+does not, and how to restore from it:
+[the runbook](runbooks/restore-database.md#the-backup-copy).
+
+Turn it on, for the sandbox first, once the owner approved the bucket:
+
+1. On the environment's Pulumi stack, `pulumi config set peal:backupCopy
+   on`, then `pulumi preview --diff` (a bucket, its lock, its lifecycle, its
+   key) and `pulumi up`.
+2. `scripts/cloudflare_from_pulumi.py --vault-id <environment>@…`, which
+   writes `peal_backup_copy_bucket` into `cloudflare.yml` and the copy's
+   key into the vault (`PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID`,
+   `PEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY`).
+3. Set `peal_backup_copy: true` for the environment
+   (`group_vars/<environment>/main.yml`), run `site.yml --check --diff`,
+   then `site.yml`. `peal_preflight` refuses the flag without the bucket,
+   and `site.yml` the flag without the key.
+4. Run it once by hand, `sudo systemctl start peal-backup-copy`, and read
+   `sudo journalctl --unit peal-backup-copy`.
+
+With the flag off, the role installs nothing of it, removes what an earlier
+run installed, and every rendered file stays as it was. A self-hoster's
+stack has none of it.
+
 ## Disks
 
 A server's disks may be mirrored with Linux software RAID (md), as

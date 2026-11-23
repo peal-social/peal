@@ -7,15 +7,21 @@ import { EnvironmentSettingsSchema, readSettings } from "../src/settings.ts";
 
 importExisting();
 
-const settings = readSettings(EnvironmentSettingsSchema, [
-  "accountId",
-  "accountStack",
-  "domain",
-  "environment",
-  "hostnames",
-  "shortLinkHost",
-  "zoneId",
-]);
+// `backupCopy` is optional: unset, no backup copy is made (README.md, "The
+// backup copy").
+const settings = readSettings(
+  EnvironmentSettingsSchema,
+  [
+    "accountId",
+    "accountStack",
+    "domain",
+    "environment",
+    "hostnames",
+    "shortLinkHost",
+    "zoneId",
+  ],
+  ["backupCopy"]
+);
 
 const shared = new pulumi.StackReference(settings.accountStack);
 
@@ -42,6 +48,11 @@ export const blogBucket = made.buckets.blog.name;
 export const mediaKey = made.keys.media;
 export const backupKey = made.keys.backups;
 export const blogKey = made.keys.blog;
+
+// The backup copy's locked bucket and its key, with peal:backupCopy alone:
+// scripts/cloudflare_from_pulumi.py writes them where the others go.
+export const backupCopyBucket = made.backupCopy?.bucket.name;
+export const backupCopyKey = made.backupCopy?.key;
 
 // The sandbox's alone: the service token the uptime server's checks carry,
 // secret, which scripts/cloudflare_from_pulumi.py in the Ansible project
