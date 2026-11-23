@@ -3088,7 +3088,11 @@
       "removeMember": "Remove {name}",
       "removeTitle": "Remove {name} from the workspace?",
       "removeDescription": "{email} loses access at once. You can invite them again later.",
-      "removed": "{name} is no longer a member."
+      "keysOnRemoval": "{count, plural, one {The API key they made stops working too.} other {The # API keys they made stop working too.}}",
+      "removed": "{name} is no longer a member.",
+      "roleTitle": "Make {name} {role}?",
+      "roleKeys": "{count, plural, one {An API key they made allows what the role {role} does not, and stops working.} other {# API keys they made allow what the role {role} does not, and stop working.}}",
+      "changeRole": "Change the role"
     },
     "invitations": {
       "title": "Invite someone",
@@ -3119,10 +3123,12 @@
       "linkNote": "A copied link is the one the email holds: only the person invited can accept it, signed in with the invited address once it is verified, until the invitation expires, 7 days after it was last sent."
     },
     "apiKeys": {
-      "description": "Keys let scripts and integrations use the workspace through the API. A key may do only what you chose, never more than you may yourself.",
+      "description": "Keys let scripts and integrations use the workspace through the API. A key may do only what you chose, never more than you may yourself. It stops working once you leave the workspace, or once your role no longer allows what it does.",
       "listTitle": "Keys",
       "empty": "The workspace has no API key.",
       "startsWith": "Starts with {start}",
+      "madeBy": "Made by {name}",
+      "makerUnknown": "Made before keys recorded who made them",
       "publishing": "{allowed, select, yes {Can schedule and publish posts} other {Cannot schedule or publish posts}}",
       "dates": "Created {created} · {expires, select, never {never expires} other {expires {expires}}}",
       "revoke": "Revoke",
