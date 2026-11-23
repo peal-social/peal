@@ -2,14 +2,12 @@
 import { Font } from "astro:assets";
 import type { PublicPageContext } from "emdash";
 import { EmDashBodyEnd, EmDashBodyStart, EmDashHead } from "emdash/ui";
-import { AnnouncementBar } from "peal-ui/components/announcement-bar";
 import { SiteFooter } from "peal-ui/components/site-footer";
 import { SiteHeader } from "peal-ui/components/site-header";
 import { indexable } from "peal-ui/lib/site/links";
 import { pageLocale } from "peal-ui/lib/site/locales";
 import { consentAttributes } from "peal-ui/lib/site/measurement/settings";
 import { supportAttributes } from "peal-ui/lib/support/settings";
-import { repository } from "peal-ui/lib/site/navigation";
 
 import { chromeProps } from "../chrome.ts";
 import type { Translations } from "../chrome.ts";
@@ -49,7 +47,6 @@ const { footer, header } = chromeProps({
   translations,
 });
 
-const { announcement } = messages(locale);
 
 // The consent notice and measurement, as the site has them; EmDash's admin
 // never renders this layout, so it is never measured.
@@ -101,10 +98,6 @@ const support =
       class="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-6xl -translate-x-1/2 border-x"
     >
     </div>
-    <AnnouncementBar
-      text={announcement.text}
-      link={{ href: repository, label: announcement.link }}
-    />
     <SiteHeader client:load {...header} />
     <main class="relative flex-1">
       <slot />

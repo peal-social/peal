@@ -1,15 +1,10 @@
 import type { Locale } from "./locales.ts";
 
-// The strings of the header, the footer and the announcement bar that
+// The strings of the header and the footer that
 // peal.social's pages share (the site's and the blog's), per locale.
 // Each app spreads them into its own catalogue.
 
 const en = {
-  // Above every page's header while Peal is not released.
-  announcement: {
-    link: "Follow the build on GitHub",
-    text: "Peal is in development and not released yet. This site shows what it is being built to do.",
-  },
   footer: {
     cancel: "Cancel your contract",
     company: "Company",
@@ -227,10 +222,6 @@ const en = {
 export type ChromeMessages = typeof en;
 
 const fr: ChromeMessages = {
-  announcement: {
-    link: "Suivre le développement sur GitHub",
-    text: "Peal est en cours de développement et pas encore sorti. Ce site montre ce qu’il est conçu pour faire.",
-  },
   footer: {
     cancel: "Résilier votre contrat",
     company: "Entreprise",

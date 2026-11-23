@@ -1607,8 +1607,7 @@ The marketing site is drawn on a blueprint: the same tokens as the app, on
   developers and agents): the two sides of the app's mode switch (see
   [The frame](#the-frame)). A product's name is set as one word, in the
   text's own colour, never as a logo.
-- **Announcement bar.** A line the whole site must say (while Peal is
-  not released, that it is in development), above every page's header:
+- **Announcement bar.** A line the whole site must say, above every page's header:
   a thin ink bar across the page, 13 px text in `background`, centred,
   after a 5 px square in yellow, then a link with an arrow to read more.
   It cannot be dismissed, and the site removes it once it no longer holds;

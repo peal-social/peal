@@ -10,8 +10,7 @@ the docs' environment variables page.
 
 ## Design
 
-- **Same chrome as the site.** The header, the footer, the announcement
-  bar, the tokens and the fonts are the site's: their data and strings come
+- **Same chrome as the site.** The header, the footer, the tokens and the fonts are the site's: their data and strings come
   from `peal-ui/lib/site/*`, as the site's do, and `src/layouts/base.astro`
   follows the site's layout. The blog adds no visual pattern of its own:
   the index opens as the pricing page does and lists posts in bordered

@@ -2,8 +2,8 @@ import { chromeMessages } from "peal-ui/lib/site/messages";
 
 import type { Locale } from "./locales.ts";
 
-// Every string the site shows, per locale. The header's, the footer's and
-// the announcement's come from peal-ui, which the blog shares. Long-form
+// Every string the site shows, per locale. The header's and the footer's
+// come from peal-ui, which the blog shares. Long-form
 // legal text lives in the `legal` content collection instead
 // (src/content/legal/<locale>/).
 
@@ -27,11 +27,11 @@ const en = {
       copy: "Copy",
       demoLabel: "Ways to publish",
       eyebrow: "PealAPI",
-      lead: "An HTTP API described in OpenAPI, an MCP server for AI agents, a command line and SDKs in eight languages. They all work on the same workspaces your team opens in PealStudio.",
+      lead: "Use the HTTP API, which comes with an OpenAPI document, the MCP server for AI agents, the command line or an SDK in one of eight languages. Whichever you pick, you're working in the same workspaces your team opens in PealCreative.",
       rows: {
         cli: {
           link: "The command line",
-          text: "The peal command signs in with your Peal account or takes an API key, and answers in JSON, which scripts and agents can read.",
+          text: "Sign in to the peal command with your Peal account, or give it an API key. It answers in JSON, so your scripts and agents can read it.",
           title: "Command line",
         },
         embedding: {
@@ -63,7 +63,7 @@ const en = {
       title: { text: "Or build Peal into your own product." },
     },
     cta: {
-      line: "Free to start, with every line of code public on GitHub.",
+      line: "It's free to start, and every line of code is public on GitHub.",
       primary: "Get started",
       secondary: "Read the docs",
       title: "Start posting with Peal",
@@ -72,33 +72,33 @@ const en = {
       cells: {
         approvals: {
           label: "Approvals",
-          lead: "A client says yes first.",
-          text: "Send a review link to someone without a Peal account. They comment, and the post waits for their approval.",
+          lead: "Your client says yes first.",
+          text: "Send a review link to someone who doesn't have a Peal account. They comment, and the post waits until they approve it.",
         },
         inbox: {
           label: "Inbox",
           lead: "Replies in one place.",
-          text: "Comments under your posts, Google Business Profile reviews, and Mastodon and Bluesky direct messages, answered from one inbox.",
+          text: "Answer the comments under your posts, your Google Business Profile reviews, and your Mastodon and Bluesky direct messages from one inbox.",
         },
         limits: {
           label: "Platform limits",
           lead: "Checked before you schedule.",
-          text: "Peal counts each platform's text limits, checks images and videos against what it accepts, and names what to fix.",
+          text: "Peal counts your text against each platform's limit and checks your images and videos against what it accepts. If something's over, it tells you what to fix.",
         },
         media: {
           label: "Media",
           lead: "Sent the way each platform takes it.",
-          text: "Files go up in parts where a platform asks for that, and Peal waits while the platform processes them before the post goes out.",
+          text: "Where a platform wants a file in parts, Peal uploads it in parts. Then it waits for the platform to finish processing before your post goes out.",
         },
         timeZones: {
           label: "Time zones",
           lead: "Your time, daylight saving included.",
-          text: "A post goes out at the wall-clock time of the time zone you pick.",
+          text: "Pick a time zone, and your post goes out when a clock there shows the time you set.",
         },
         unconfirmed: {
           label: "No blind reposts",
-          lead: "When a platform does not answer, Peal asks you.",
-          text: "A post that may have gone out without a reply is marked unconfirmed, and Peal never sends it again on its own.",
+          lead: "When a platform doesn't answer, Peal asks you.",
+          text: "If a post may have gone out but the platform never replied, Peal marks it unconfirmed. It won't send it again on its own, because you'd risk posting twice.",
         },
       },
       eyebrow: "Under the hood",
@@ -152,20 +152,20 @@ const en = {
           label: "Self-hosting",
           lead: "Postgres and an S3-compatible store.",
           link: "Read the self-hosting guide",
-          text: "That is all a server needs. Email, billing, captcha, AI and telemetry are optional.",
+          text: "That's all a server needs. Email, billing, captcha, AI and telemetry are optional.",
         },
       },
       eyebrow: "Built in the open",
       lead: "The code, the API contract and the SDKs are public on GitHub.",
       title: {
-        muted: "Anyone can read the code and run it.",
+        muted: "You can read the code and run it yourself.",
         text: "Built in the open.",
       },
     },
     platforms: {
       api: "Publish from your code, an AI agent or your own product.",
       eyebrow: "One foundation",
-      lead: "PealStudio and PealAPI are the two sides of the same app, one switch apart in its sidebar.",
+      lead: "PealCreative and PealAPI are two sides of one app. You switch between them in the sidebar.",
       mock: {
         apiKeys: "API keys",
         deliveries: "Webhook deliveries",
@@ -202,26 +202,26 @@ const en = {
       hardParts: "Under the hood",
       open: "In the open",
       platforms: "Products",
-      studio: "PealStudio",
+      studio: "PealCreative",
     },
     studio: {
       action: "Learn more",
       cards: {
         approvals: {
           label: "Approvals",
-          lead: "A client approves without an account.",
+          lead: "Your client approves without an account.",
           link: "Review and approval",
-          text: "Send them a review link. They read the post, comment on it and approve it, and the post waits for their decision before it goes out.",
+          text: "Send them a review link. They read the post, comment and approve it. Until they do, the post doesn't go out.",
         },
         composer: {
           label: "Composer",
           lead: "One post, a preview per platform.",
           link: "Write a post",
-          text: "Any channel can take its own text and options, and Peal counts each platform's limit before you schedule.",
+          text: "Give any channel its own text and options. Peal counts each platform's limit before you schedule.",
         },
       },
-      eyebrow: "PealStudio",
-      lead: "Write a post once and adjust it where a platform needs it. Schedule it on the calendar, get the client's approval through a link, answer comments from the inbox and see how each post did.",
+      eyebrow: "PealCreative",
+      lead: "Write a post once and adjust it where a platform needs something different. Schedule it on the calendar and send your client a link to approve it. Once it's out, answer the comments from the inbox and see how it did.",
       review: {
         approve: "Approve this post",
         badge: "Reviewer",
@@ -232,7 +232,7 @@ const en = {
       tiles: {
         analytics: {
           label: "Analytics",
-          text: "Counts for every post and account, the posts that did best, and an export.",
+          text: "See the numbers for every post and account, find the posts that did best, and export them.",
         },
         assistant: {
           label: "Writing assistant",
@@ -250,31 +250,26 @@ const en = {
       title: { text: "Plan, write and approve posts as a team." },
     },
     description:
-      "PealStudio for marketing teams and PealAPI for developers and agents: write a post once, schedule it across platforms and see how it performs. Self-hostable and fair source.",
+      "PealCreative for marketing teams and PealAPI for developers and agents: write a post once, schedule it across platforms and see how it performs. Self-hostable and fair source.",
     faq: {
       groups: [
         {
           questions: [
             {
               answer:
-                "A social media scheduling platform in two products. Marketing teams write, schedule, approve and measure posts in PealStudio. Developers and AI agents publish through PealAPI, from their own code or product.",
+                "Peal is a social media scheduling platform, and it comes as two products. Marketing teams write, schedule, approve and measure posts in PealCreative. Developers and AI agents publish through PealAPI, from their own code or product.",
               question: "What is Peal?",
             },
             {
               answer:
-                "Not yet. Peal is in development, and this site describes what it is being built to do.",
-              question: "Can I use Peal today?",
-            },
-            {
-              answer:
-                "Marketing teams, who work in PealStudio, and developers, who build on PealAPI or embed Peal in their own product.",
+                "Marketing teams, who work in PealCreative, and developers, who build on PealAPI or embed Peal in their own product.",
               question: "Who is it for?",
             },
             {
               answer:
-                "They are two ways into the same workspace. PealStudio is the web app where a team writes, schedules and approves posts and reads its analytics. PealAPI is the HTTP API with its MCP server, command line, SDKs, webhooks and embedding kit, for code and AI agents. A post made from one shows up in the other.",
+                "They're two ways into the same workspace. PealCreative is the web app where a team writes, schedules and approves posts and reads its analytics. PealAPI is the HTTP API with its MCP server, command line, SDKs, webhooks and embedding kit, for code and AI agents. A post made from one shows up in the other.",
               question:
-                "What is the difference between PealStudio and PealAPI?",
+                "What is the difference between PealCreative and PealAPI?",
             },
             {
               answer:
@@ -298,13 +293,13 @@ const en = {
             },
             {
               answer:
-                "A client without a Peal account can see the post, comment on it, and approve it before it goes out.",
+                "Yes. Your client doesn't need a Peal account to see the post, comment on it and approve it before it goes out.",
               question: "Can a client approve a post first?",
             },
             {
               answer:
                 "Peal marks it unconfirmed and asks you to check, instead of posting it again blindly.",
-              question: "What if a platform does not confirm a post?",
+              question: "What if a platform doesn't confirm a post?",
             },
           ],
           title: "Platforms and publishing",
@@ -313,22 +308,22 @@ const en = {
           questions: [
             {
               answer:
-                "Yes. A server needs Postgres and an S3-compatible store; email, billing, captcha, AI and telemetry are optional, and each has a self-hostable choice.",
+                "Yes. A server needs Postgres and an S3-compatible store. Email, billing, captcha, AI and telemetry are optional, and each one has an option you can host yourself.",
               question: "Can I run Peal on my own server?",
             },
             {
               answer:
-                "The Functional Source License (FSL-1.1-ALv2): use, change and run it for anything but a competing service. Each release becomes Apache 2.0 two years after it ships.",
+                "The Functional Source License (FSL-1.1-ALv2). You can use the code, change it and run it for anything except a competing service. Each release becomes Apache 2.0 two years after it ships.",
               question: "Under which licence is the source?",
             },
             {
               answer:
-                "The SDKs, in eight languages, are under the Apache License 2.0, as is the API contract they are generated from.",
+                "The SDKs, in eight languages, are under the Apache License 2.0, as is the API contract they're generated from.",
               question: "Are the SDKs under the same licence?",
             },
             {
               answer:
-                "No. A server without a payment provider configured bills nothing and limits nothing.",
+                "No. If you don't configure a payment provider, your server bills nothing and limits nothing.",
               question: "Does a self-hosted server charge for accounts?",
             },
           ],
@@ -338,22 +333,22 @@ const en = {
           questions: [
             {
               answer:
-                "By connected account, counted by the day, in US dollars. Your first {free} accounts are free, and each further band costs less.",
+                "You pay per connected account, counted by the day, in US dollars. Your first {free} accounts are free, and each band after that costs less per account.",
               question: "How is Peal Cloud priced?",
             },
             {
               answer:
-                "Members, workspaces and posts are unlimited. Every account has every platform, the calendar and analytics in PealStudio, and the API, the MCP server and the command line in PealAPI.",
+                "Members, workspaces and posts are unlimited. Every account has every platform, the calendar and analytics in PealCreative, and the API, the MCP server and the command line in PealAPI.",
               question: "What comes with every account?",
             },
             {
               answer:
-                "Some uses that cost Peal money, such as the writing assistant or X's API, have a monthly allowance. Past it, they pause until the next month, or are billed if you added a payment method.",
+                "A few things cost us money each time you use them, such as the writing assistant or X's API, so they come with a monthly allowance. Once you're past it, they pause until the next month, or we bill them if you've added a payment method.",
               question: "Is anything billed by use?",
             },
             {
               answer:
-                "Yes, online at any time. You are billed each month for the month past, and billing ends with the month.",
+                "Yes, online, at any time. We bill you each month for the month that just ended, and billing stops at the end of the month you cancel in.",
               question: "Can I cancel?",
             },
           ],
@@ -371,7 +366,7 @@ const en = {
       chips: {
         api: "PealAPI in the docs",
         restApi: "REST API",
-        studio: "PealStudio in the docs",
+        studio: "PealCreative in the docs",
       },
       composer: {
         action: "Schedule",
@@ -381,11 +376,12 @@ const en = {
         text: "Text",
         time: "Tue 09:00 · Europe/Paris",
       },
-      lead: "Your team plans, writes and approves posts in PealStudio. Your code and your AI agents publish through PealAPI.",
+      lead: "Your team plans, writes and approves posts in PealCreative. Your code and your AI agents publish through PealAPI.",
       primary: "Get started",
       secondary: "Read the docs",
       stage: "Peal's products",
-      title: "The AI marketing platform",
+      title:
+        "Full-stack social media scheduling for marketing teams and agents",
     },
     title: "Peal: schedule social media posts across platforms",
   },
@@ -498,7 +494,7 @@ const en = {
       },
     },
     dayRule:
-      "Counted by the day: each UTC day of the month counts the most accounts connected at once that day, across every workspace of the billing account, for days {first} to {days} only (day {after} is never counted). The month's account-days are added up and divided by {days}, and that number of accounts goes through the ladder, so the first {freeDays} account-days are free. An account you disconnect stops counting from the next day, and nothing else is charged for accounts: no fee of any kind.",
+      "We count accounts by the day. Each UTC day counts the most accounts you had connected at once that day, across every workspace of the billing account. Only days {first} to {days} count (day {after} never does). We add up the month's account-days and divide by {days}, and that number of accounts goes through the ladder, so your first {freeDays} account-days are free. An account you disconnect stops counting the next day. We charge nothing else for accounts.",
     description:
       "Peal Cloud's prices: per connected account, by the day, with your first accounts free, in US dollars.",
     examples: {
@@ -513,31 +509,31 @@ const en = {
       last: "Accounts {from} and up",
       accounts: "Accounts",
       caption: "The ladder, per account and month",
-      lead: "One ladder per billing account: the person, or the partner, who pays for its workspaces. The month's accounts, counted by the day as below, are priced band by band: the first ones cost nothing, and each further band costs less.",
+      lead: "There's one ladder per billing account, which is the person or the partner who pays for its workspaces. We count the month's accounts by the day, as explained below, and price them band by band. The first ones cost nothing, and each band after that costs less per account.",
       perAccount: "{price} per account a month",
       price: "A month, per account",
       range: "Accounts {from} to {to}",
       title: "Connected accounts",
     },
-    lead: "Counted by the day, and each account costs less the more you connect. Members, workspaces and posts are unlimited, and nothing is held back behind a plan.",
+    lead: "You pay for the accounts you connect, counted by the day, and each one costs less the more you connect. Members, workspaces and posts are unlimited, and there's no plan that holds features back.",
     legal: {
       billing:
-        "Billed each month, on the first, for the month past: nothing is paid in advance.",
+        "We bill you on the first of each month for the month that just ended. You never pay in advance.",
       cancel:
-        "Cancel online at any time, with “Cancel your contract”, at the foot of every page and on the billing page, signed in or not: billing ends with the month, whose use is invoiced, and nothing more is charged.",
+        "You can cancel online at any time, signed in or not. Click “Cancel your contract” at the foot of any page or on the billing page. We invoice that month's use, billing ends with the month, and we charge nothing after it.",
       legacy:
         "A subscription to one of the earlier plans, priced by channels, keeps its plan and price until it ends.",
       prices:
-        "A price change is announced by email 30 days ahead: you may cancel before it applies.",
+        "We announce a price change by email 30 days ahead, so you can cancel before it applies.",
       terms: "Read the terms of service",
       title: "Clear terms",
       withdrawal:
-        "As a consumer, you may withdraw within 14 days of subscribing, with “Withdraw from contract here”, at the foot of every page and on the billing page: the subscription ends at once, and you pay only for what was used until then.",
+        "If you're a consumer, you can withdraw within 14 days of subscribing. Click “Withdraw from contract here” at the foot of any page or on the billing page. Your subscription ends at once, and you pay only for what you used until then.",
     },
     meters: {
       allowance: "{count} a month included",
       xIncluded: "Nothing included",
-      lead: "Each billing account gets a monthly allowance. Past it, usage pauses without a payment method, or is billed with one.",
+      lead: "Each billing account gets a monthly allowance. Once you're past it, usage pauses if you have no payment method, and is billed if you have one.",
       names: {
         assistantImages: "Writing assistant images",
         assistantRequests: "Writing assistant",
@@ -568,7 +564,7 @@ const en = {
       x: {
         ceiling:
           "Capped at {ceiling} a month by default. Change it on your billing page.",
-        lead: "X bills each call to its API. Peal passes it on at X's published pay-per-use rates, with nothing added: here are those a scheduler uses. A post's counts and an account's followers are read only for the workspaces that turn X's reads on, and each one once a UTC day.",
+        lead: "X bills each call to its API. We pass that on at X's published pay-per-use rates and add nothing. These are the rates a scheduler uses. Peal reads a post's counts and an account's followers only in workspaces that turn X's reads on, and reads each one once per UTC day.",
         names: {
           postCreate: "A post sent",
           postCreateWithUrl: "A post sent with a link",
@@ -580,9 +576,9 @@ const en = {
       },
     },
     partMonth: {
-      body: "{allMonth} accounts connected all month, plus {extras}, come to {accountDays} account-days. Divided by {days}, that is {units} accounts through the ladder: {price} for the month.",
+      body: "{allMonth} accounts connected all month, plus {extras}, come to {accountDays} account-days. Divided by {days}, that's {units} accounts through the ladder, or {price} for the month.",
       extra: "one for {days}",
-      title: "A month not held in full",
+      title: "Part of a month",
     },
     selfHost: "Run Peal on your own server. No fees, no limits.",
     api: {
@@ -595,13 +591,13 @@ const en = {
     },
     taxes: {
       currency:
-        "At checkout you can pay in your own currency, converted by our payment provider at the day's rate; otherwise your card is charged in US dollars.",
+        "At checkout you can pay in your own currency, which our payment provider converts at the day's rate. Otherwise your card is charged in US dollars.",
       excluded: "Prices are in US dollars and exclude tax.",
       reverseCharge:
-        "A business with a valid VAT number pays the price excluding VAT, the VAT being reverse-charged; in France, French VAT applies.",
+        "A business with a valid VAT number pays the price excluding VAT, because the VAT is reverse-charged. In France, French VAT applies.",
       shown:
         "All prices are in US dollars and exclude VAT. French VAT of {rate}% applies.",
-      vat: "The VAT you pay depends on your country: it is added at checkout for customers in the EU, at their country's rate.",
+      vat: "The VAT you pay depends on your country. For customers in the EU, it's added at checkout at their country's rate.",
       withVat: "{excluded} excl. VAT · {included} with France's {rate}% VAT",
     },
     title: "Pricing",
@@ -639,11 +635,11 @@ const fr: Messages = {
       copy: "Copier",
       demoLabel: "Façons de publier",
       eyebrow: "PealAPI",
-      lead: "Une API HTTP décrite en OpenAPI, un serveur MCP pour les agents IA, une ligne de commande et des SDK dans huit langages. Tous travaillent sur les mêmes espaces de travail que votre équipe ouvre dans PealStudio.",
+      lead: "Utilisez l’API HTTP, fournie avec son document OpenAPI, le serveur MCP pour les agents IA, la ligne de commande ou un SDK dans l’un des huit langages. Dans tous les cas, vous travaillez dans les mêmes espaces de travail que votre équipe ouvre dans PealCreative.",
       rows: {
         cli: {
           link: "La ligne de commande",
-          text: "La commande peal se connecte avec votre compte Peal ou prend une clé d’API, et répond en JSON, que les scripts et les agents savent lire.",
+          text: "Connectez la commande peal avec votre compte Peal, ou donnez-lui une clé d’API. Elle répond en JSON, que vos scripts et vos agents savent lire.",
           title: "Ligne de commande",
         },
         embedding: {
@@ -675,7 +671,7 @@ const fr: Messages = {
       title: { text: "Ou intégrez Peal à votre propre produit." },
     },
     cta: {
-      line: "Gratuit pour commencer, et tout le code est public sur GitHub.",
+      line: "Vous commencez gratuitement, et tout le code est public sur GitHub.",
       primary: "Commencer",
       secondary: "Lire la documentation",
       title: "Commencez à publier avec Peal",
@@ -684,33 +680,33 @@ const fr: Messages = {
       cells: {
         approvals: {
           label: "Approbations",
-          lead: "Un client dit oui d’abord.",
-          text: "Envoyez un lien de relecture à quelqu’un sans compte Peal. Il commente, et la publication attend son accord.",
+          lead: "Votre client dit oui d’abord.",
+          text: "Envoyez un lien de relecture à quelqu’un qui n’a pas de compte Peal. Il commente, et la publication attend qu’il l’approuve.",
         },
         inbox: {
           label: "Boîte de réception",
           lead: "Les réponses au même endroit.",
-          text: "Les commentaires sous vos publications, les avis Google Business Profile et les messages privés Mastodon et Bluesky, traités depuis une seule boîte.",
+          text: "Répondez aux commentaires sous vos publications, à vos avis Google Business Profile et à vos messages privés Mastodon et Bluesky depuis une seule boîte.",
         },
         limits: {
           label: "Limites des plateformes",
           lead: "Vérifiées avant la programmation.",
-          text: "Peal compte les limites de texte de chaque plateforme, vérifie les images et les vidéos selon ce qu’elle accepte, et dit quoi corriger.",
+          text: "Peal compare votre texte à la limite de chaque plateforme et vérifie vos images et vos vidéos selon ce qu’elle accepte. Si quelque chose dépasse, il vous dit quoi corriger.",
         },
         media: {
           label: "Médias",
           lead: "Envoyés comme chaque plateforme les prend.",
-          text: "Les fichiers partent en morceaux quand une plateforme le demande, et Peal attend qu’elle les traite avant que la publication parte.",
+          text: "Quand une plateforme veut un fichier en plusieurs morceaux, Peal l’envoie en morceaux. Il attend ensuite qu’elle ait fini de le traiter avant que votre publication parte.",
         },
         timeZones: {
           label: "Fuseaux horaires",
           lead: "Votre heure, changements d’heure compris.",
-          text: "Une publication part à l’heure locale du fuseau horaire choisi.",
+          text: "Choisissez un fuseau horaire, et votre publication part quand une horloge de ce fuseau affiche l’heure que vous avez réglée.",
         },
         unconfirmed: {
           label: "Pas de republication à l’aveugle",
           lead: "Quand une plateforme ne répond pas, Peal vous demande.",
-          text: "Une publication qui a pu partir sans réponse est marquée non confirmée, et Peal ne la renvoie jamais de lui-même.",
+          text: "Si une publication a pu partir sans que la plateforme réponde, Peal la marque non confirmée. Il ne la renvoie pas de lui-même, car vous risqueriez de publier deux fois.",
         },
       },
       eyebrow: "Sous le capot",
@@ -770,14 +766,14 @@ const fr: Messages = {
       eyebrow: "Construit au grand jour",
       lead: "Le code, le contrat d’API et les SDK sont publics sur GitHub.",
       title: {
-        muted: "Chacun peut lire le code et le faire tourner.",
+        muted: "Vous pouvez lire le code et le faire tourner vous-même.",
         text: "Construit au grand jour.",
       },
     },
     platforms: {
       api: "Publiez depuis votre code, un agent IA ou votre propre produit.",
       eyebrow: "Un même socle",
-      lead: "PealStudio et PealAPI sont les deux côtés de la même application, à un bouton d’écart dans sa barre latérale.",
+      lead: "PealCreative et PealAPI sont les deux côtés d’une même application. Vous passez de l’un à l’autre dans la barre latérale.",
       mock: {
         apiKeys: "Clés d’API",
         deliveries: "Envois des webhooks",
@@ -819,26 +815,26 @@ const fr: Messages = {
       hardParts: "Sous le capot",
       open: "Au grand jour",
       platforms: "Produits",
-      studio: "PealStudio",
+      studio: "PealCreative",
     },
     studio: {
       action: "En savoir plus",
       cards: {
         approvals: {
           label: "Approbations",
-          lead: "Un client approuve sans compte.",
+          lead: "Votre client approuve sans compte.",
           link: "Relecture et approbation",
-          text: "Envoyez-lui un lien de relecture. Il lit la publication, la commente et l’approuve, et la publication attend sa décision avant de partir.",
+          text: "Envoyez-lui un lien de relecture. Il lit la publication, la commente et l’approuve. Tant qu’il ne l’a pas fait, la publication ne part pas.",
         },
         composer: {
           label: "Éditeur",
           lead: "Une publication, un aperçu par plateforme.",
           link: "Écrire une publication",
-          text: "Chaque canal peut avoir son propre texte et ses options, et Peal compte la limite de chaque plateforme avant que vous programmiez.",
+          text: "Donnez à chaque canal son propre texte et ses options. Peal compte la limite de chaque plateforme avant que vous programmiez.",
         },
       },
-      eyebrow: "PealStudio",
-      lead: "Écrivez une publication une fois et adaptez-la là où une plateforme le demande. Programmez-la sur le calendrier, obtenez l’accord du client par un lien, répondez aux commentaires depuis la boîte de réception et voyez comment chaque publication s’est passée.",
+      eyebrow: "PealCreative",
+      lead: "Écrivez une publication une fois et adaptez-la là où une plateforme demande autre chose. Programmez-la sur le calendrier et envoyez à votre client un lien pour l’approuver. Une fois qu’elle est en ligne, répondez aux commentaires depuis la boîte de réception et voyez comment elle a marché.",
       review: {
         approve: "Approuver cette publication",
         badge: "Invité",
@@ -849,7 +845,7 @@ const fr: Messages = {
       tiles: {
         analytics: {
           label: "Statistiques",
-          text: "Les chiffres de chaque publication et de chaque compte, les publications qui ont le mieux marché, et un export.",
+          text: "Consultez les chiffres de chaque publication et de chaque compte, repérez les publications qui ont le mieux marché, et exportez-les.",
         },
         assistant: {
           label: "Assistant de rédaction",
@@ -867,30 +863,25 @@ const fr: Messages = {
       title: { text: "Planifiez, écrivez et faites approuver en équipe." },
     },
     description:
-      "PealStudio pour les équipes marketing et PealAPI pour les développeurs et les agents : écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats. Auto-hébergeable et fair source.",
+      "PealCreative pour les équipes marketing et PealAPI pour les développeurs et les agents : écrivez une publication une fois, planifiez-la sur plusieurs plateformes et suivez ses résultats. Auto-hébergeable et fair source.",
     faq: {
       groups: [
         {
           questions: [
             {
               answer:
-                "Une plateforme de planification pour les réseaux sociaux, en deux produits. Les équipes marketing écrivent, programment, font approuver et mesurent leurs publications dans PealStudio. Les développeurs et les agents IA publient avec PealAPI, depuis leur propre code ou produit.",
+                "Peal est une plateforme de planification pour les réseaux sociaux, qui se présente en deux produits. Les équipes marketing écrivent, programment, font approuver et mesurent leurs publications dans PealCreative. Les développeurs et les agents IA publient avec PealAPI, depuis leur propre code ou produit.",
               question: "Qu’est-ce que Peal ?",
             },
             {
               answer:
-                "Pas encore. Peal est en cours de développement, et ce site décrit ce qu’il est conçu pour faire.",
-              question: "Puis-je utiliser Peal aujourd’hui ?",
-            },
-            {
-              answer:
-                "Les équipes marketing, qui travaillent dans PealStudio, et les développeurs, qui construisent sur PealAPI ou intègrent Peal à leur propre produit.",
+                "Les équipes marketing, qui travaillent dans PealCreative, et les développeurs, qui construisent sur PealAPI ou intègrent Peal à leur propre produit.",
               question: "À qui s’adresse Peal ?",
             },
             {
               answer:
-                "Ce sont deux accès au même espace de travail. PealStudio est l’application web où une équipe écrit, programme et fait approuver ses publications et lit ses statistiques. PealAPI est l’API HTTP avec son serveur MCP, sa ligne de commande, ses SDK, ses webhooks et son kit d’intégration, pour le code et les agents IA. Une publication créée d’un côté apparaît de l’autre.",
-              question: "Quelle différence entre PealStudio et PealAPI ?",
+                "Ce sont deux accès au même espace de travail. PealCreative est l’application web où une équipe écrit, programme et fait approuver ses publications et lit ses statistiques. PealAPI est l’API HTTP avec son serveur MCP, sa ligne de commande, ses SDK, ses webhooks et son kit d’intégration, pour le code et les agents IA. Une publication créée d’un côté apparaît de l’autre.",
+              question: "Quelle différence entre PealCreative et PealAPI ?",
             },
             {
               answer:
@@ -915,7 +906,7 @@ const fr: Messages = {
             },
             {
               answer:
-                "Un client sans compte Peal peut voir la publication, la commenter et l’approuver avant qu’elle parte.",
+                "Oui. Votre client n’a pas besoin de compte Peal pour voir la publication, la commenter et l’approuver avant qu’elle parte.",
               question: "Un client peut-il approuver une publication d’abord ?",
             },
             {
@@ -931,12 +922,12 @@ const fr: Messages = {
           questions: [
             {
               answer:
-                "Oui. Un serveur a besoin de Postgres et d’un stockage compatible S3 ; l’e-mail, la facturation, le captcha, l’IA et la télémétrie sont facultatifs, et chacun a une option auto-hébergeable.",
+                "Oui. Un serveur a besoin de Postgres et d’un stockage compatible S3. L’e-mail, la facturation, le captcha, l’IA et la télémétrie sont facultatifs, et chacun a une option que vous pouvez héberger vous-même.",
               question: "Puis-je faire tourner Peal sur mon propre serveur ?",
             },
             {
               answer:
-                "La Functional Source License (FSL-1.1-ALv2) : utilisez-le, modifiez-le et faites-le tourner pour tout usage sauf un service concurrent. Chaque version passe sous licence Apache 2.0 deux ans après sa sortie.",
+                "La Functional Source License (FSL-1.1-ALv2). Vous pouvez utiliser le code, le modifier et le faire tourner pour tout usage sauf un service concurrent. Chaque version passe sous licence Apache 2.0 deux ans après sa sortie.",
               question: "Sous quelle licence est le code ?",
             },
             {
@@ -946,7 +937,7 @@ const fr: Messages = {
             },
             {
               answer:
-                "Non. Un serveur sans prestataire de paiement configuré ne facture rien et ne limite rien.",
+                "Non. Si vous ne configurez pas de prestataire de paiement, votre serveur ne facture rien et ne limite rien.",
               question: "Un serveur auto-hébergé facture-t-il les comptes ?",
             },
           ],
@@ -956,22 +947,22 @@ const fr: Messages = {
           questions: [
             {
               answer:
-                "Par compte connecté, compté au jour, en dollars américains. Vos {free} premiers comptes sont gratuits, et chaque tranche suivante coûte moins cher.",
+                "Vous payez par compte connecté, compté au jour, en dollars américains. Vos {free} premiers comptes sont gratuits, et chaque tranche suivante coûte moins cher par compte.",
               question: "Comment Peal Cloud est-il facturé ?",
             },
             {
               answer:
-                "Membres, espaces de travail et publications illimités. Chaque compte a toutes les plateformes, le calendrier et les statistiques dans PealStudio, et l’API, le serveur MCP et la ligne de commande dans PealAPI.",
+                "Membres, espaces de travail et publications illimités. Chaque compte a toutes les plateformes, le calendrier et les statistiques dans PealCreative, et l’API, le serveur MCP et la ligne de commande dans PealAPI.",
               question: "Qu’est-ce qui vient avec chaque compte ?",
             },
             {
               answer:
-                "Certains usages qui coûtent à Peal, comme l’assistant de rédaction ou l’API de X, ont un quota mensuel. Au-delà, ils sont suspendus jusqu’au mois suivant, ou facturés si vous avez ajouté un moyen de paiement.",
+                "Quelques usages nous coûtent de l’argent à chaque fois, comme l’assistant de rédaction ou l’API de X, et ont donc un quota mensuel. Une fois le quota dépassé, ils sont suspendus jusqu’au mois suivant, ou nous les facturons si vous avez ajouté un moyen de paiement.",
               question: "Y a-t-il une facturation à l’usage ?",
             },
             {
               answer:
-                "Oui, en ligne, à tout moment. Vous êtes facturé chaque mois pour le mois écoulé, et la facturation s’arrête avec le mois.",
+                "Oui, en ligne, à tout moment. Nous vous facturons chaque mois pour le mois écoulé, et la facturation s’arrête à la fin du mois où vous résiliez.",
               question: "Puis-je résilier ?",
             },
           ],
@@ -989,7 +980,7 @@ const fr: Messages = {
       chips: {
         api: "PealAPI dans la documentation",
         restApi: "API REST",
-        studio: "PealStudio dans la documentation",
+        studio: "PealCreative dans la documentation",
       },
       composer: {
         action: "Programmer",
@@ -999,11 +990,12 @@ const fr: Messages = {
         text: "Texte",
         time: "mar. 09:00 · Europe/Paris",
       },
-      lead: "Votre équipe planifie, écrit et fait approuver ses publications dans PealStudio. Votre code et vos agents IA publient avec PealAPI.",
+      lead: "Votre équipe planifie, écrit et fait approuver ses publications dans PealCreative. Votre code et vos agents IA publient avec PealAPI.",
       primary: "Commencer",
       secondary: "Lire la documentation",
       stage: "Les produits de Peal",
-      title: "La plateforme marketing IA",
+      title:
+        "La planification full-stack des réseaux sociaux, pour les équipes marketing et les agents",
     },
     title: "Peal : planifiez vos publications sur les réseaux sociaux",
   },
@@ -1114,7 +1106,7 @@ const fr: Messages = {
       },
     },
     dayRule:
-      "Compté au jour : chaque jour UTC du mois compte le plus grand nombre de comptes connectés en même temps ce jour-là, dans tous les espaces de travail du compte de facturation, pour les jours {first} à {days} seulement (le jour {after} n’est jamais compté). Les jours-comptes du mois sont additionnés et divisés par {days}, et ce nombre de comptes passe au barème : les {freeDays} premiers jours-comptes sont donc gratuits. Un compte que vous déconnectez cesse de compter dès le lendemain, et rien d’autre n’est facturé pour les comptes : aucuns frais.",
+      "Nous comptons les comptes au jour. Chaque jour UTC compte le plus grand nombre de comptes que vous aviez connectés en même temps ce jour-là, dans tous les espaces de travail du compte de facturation. Seuls les jours {first} à {days} comptent (le jour {after} ne compte jamais). Nous additionnons les jours-comptes du mois et les divisons par {days}, et ce nombre de comptes passe au barème. Vos {freeDays} premiers jours-comptes sont donc gratuits. Un compte que vous déconnectez cesse de compter dès le lendemain. Nous ne facturons rien d’autre pour les comptes.",
     description:
       "Les tarifs de Peal Cloud : au compte connecté, au jour, vos premiers comptes gratuits, en dollars américains.",
     examples: {
@@ -1129,31 +1121,31 @@ const fr: Messages = {
       last: "Comptes {from} et au-delà",
       accounts: "Comptes",
       caption: "Le barème, par compte et par mois",
-      lead: "Un barème par compte de facturation : la personne, ou le partenaire, qui paie ses espaces de travail. Les comptes du mois, comptés au jour comme ci-dessous, sont facturés tranche par tranche : les premiers ne coûtent rien, et chaque tranche suivante coûte moins.",
+      lead: "Il y a un barème par compte de facturation, c’est-à-dire la personne ou le partenaire qui paie ses espaces de travail. Nous comptons les comptes du mois au jour, comme expliqué ci-dessous, et les facturons tranche par tranche. Les premiers ne coûtent rien, et chaque tranche suivante coûte moins cher par compte.",
       perAccount: "{price} par compte et par mois",
       price: "Par mois et par compte",
       range: "Comptes {from} à {to}",
       title: "Comptes connectés",
     },
-    lead: "Compté au jour, et chaque compte coûte moins à mesure que vous en connectez. Membres, espaces de travail et publications sont illimités, et aucune fonction n’est réservée à une offre.",
+    lead: "Vous payez les comptes que vous connectez, comptés au jour, et chacun coûte moins cher à mesure que vous en connectez. Les membres, les espaces de travail et les publications sont illimités, et aucune offre ne réserve de fonctions.",
     legal: {
       billing:
-        "Facturé chaque mois, le premier, pour le mois écoulé : rien n’est payé d’avance.",
+        "Nous vous facturons le premier de chaque mois pour le mois écoulé. Vous ne payez jamais d’avance.",
       cancel:
-        "Résiliez en ligne à tout moment, avec « Résilier votre contrat », au pied de chaque page et sur la page de facturation, connecté ou non : la facturation prend fin avec le mois, dont l’usage est facturé, et plus rien n’est facturé ensuite.",
+        "Vous pouvez résilier en ligne à tout moment, connecté ou non. Cliquez sur « Résilier votre contrat », au pied de chaque page ou sur la page de facturation. Nous facturons l’usage de ce mois, la facturation prend fin avec le mois, et nous ne facturons plus rien ensuite.",
       legacy:
         "Un abonnement à l’une des offres précédentes, au nombre de canaux, garde son offre et son prix jusqu’à sa fin.",
       prices:
-        "Un changement de prix est annoncé par e-mail 30 jours à l’avance : vous pouvez résilier avant qu’il s’applique.",
+        "Nous annonçons un changement de prix par e-mail 30 jours à l’avance, pour que vous puissiez résilier avant qu’il s’applique.",
       terms: "Lire les conditions d’utilisation",
       title: "Des conditions claires",
       withdrawal:
-        "En tant que consommateur, vous pouvez vous rétracter dans les 14 jours suivant la souscription, avec « Renoncer au contrat ici », au pied de chaque page et sur la page de facturation : l’abonnement prend fin immédiatement, et vous ne payez que ce qui a été utilisé jusque-là.",
+        "Si vous êtes consommateur, vous pouvez vous rétracter dans les 14 jours suivant la souscription. Cliquez sur « Renoncer au contrat ici », au pied de chaque page ou sur la page de facturation. Votre abonnement prend fin immédiatement, et vous ne payez que ce que vous avez utilisé jusque-là.",
     },
     meters: {
       allowance: "{count} inclus par mois",
       xIncluded: "Rien d’inclus",
-      lead: "Chaque compte de facturation a une franchise mensuelle. Au-delà, l’usage s’arrête sans moyen de paiement, ou il est facturé avec.",
+      lead: "Chaque compte de facturation a une franchise mensuelle. Une fois la franchise dépassée, l’usage s’arrête si vous n’avez pas de moyen de paiement, et il est facturé si vous en avez un.",
       names: {
         assistantImages: "Images de l’assistant de rédaction",
         assistantRequests: "Assistant de rédaction",
@@ -1184,7 +1176,7 @@ const fr: Messages = {
       x: {
         ceiling:
           "Plafonné à {ceiling} par mois par défaut. Modifiable sur votre page de facturation.",
-        lead: "X facture chaque appel à son API. Peal le refacture aux tarifs à l’usage publiés par X, sans rien ajouter : voici ceux dont se sert un outil de programmation. Les chiffres d’une publication et les abonnés d’un compte ne sont lus que pour les espaces de travail qui activent la lecture de X, et chacun une fois par jour UTC.",
+        lead: "X facture chaque appel à son API. Nous le refacturons aux tarifs à l’usage publiés par X, sans rien ajouter. Voici ceux dont se sert un outil de programmation. Peal ne lit les chiffres d’une publication et les abonnés d’un compte que dans les espaces de travail qui activent la lecture de X, et chacun une fois par jour UTC.",
         names: {
           postCreate: "Une publication envoyée",
           postCreateWithUrl: "Une publication envoyée avec un lien",
@@ -1197,7 +1189,7 @@ const fr: Messages = {
       },
     },
     partMonth: {
-      body: "{allMonth} comptes connectés tout le mois, plus {extras}, font {accountDays} jours-comptes. Divisés par {days}, cela fait {units} comptes passés au barème : {price} pour le mois.",
+      body: "{allMonth} comptes connectés tout le mois, plus {extras}, font {accountDays} jours-comptes. Divisés par {days}, cela fait {units} comptes passés au barème, soit {price} pour le mois.",
       extra: "un pendant {days}",
       title: "Un mois incomplet",
     },
@@ -1212,13 +1204,13 @@ const fr: Messages = {
     },
     taxes: {
       currency:
-        "Au paiement, vous pouvez régler dans votre propre devise, convertie par notre prestataire de paiement au taux du jour ; sinon, votre carte est débitée en dollars américains.",
+        "Au paiement, vous pouvez régler dans votre propre devise, que notre prestataire de paiement convertit au taux du jour. Sinon, votre carte est débitée en dollars américains.",
       excluded: "Les prix sont fixés en dollars américains, hors taxes.",
       reverseCharge:
-        "Une entreprise avec un numéro de TVA valide paie le prix HT, la TVA étant autoliquidée ; en France, la TVA française s’applique.",
+        "Une entreprise avec un numéro de TVA valide paie le prix HT, car la TVA est autoliquidée. En France, la TVA française s’applique.",
       shown:
         "Tous les prix sont en dollars US, hors TVA. La TVA française de {rate} % s’applique.",
-      vat: "La TVA que vous payez dépend de votre pays : elle est ajoutée au paiement pour les clients de l’UE, au taux de leur pays.",
+      vat: "La TVA que vous payez dépend de votre pays. Pour les clients de l’UE, elle est ajoutée au paiement, au taux de leur pays.",
       withVat: "{excluded} HT · {included} avec la TVA française de {rate} %",
     },
     title: "Tarifs",

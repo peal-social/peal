@@ -132,7 +132,7 @@ describe("the site's navigation", () => {
 
       expect(
         menu?.kind === "menu" ? menu.groups.map((group) => group.label) : []
-      ).toStrictEqual(["PealStudio", "PealAPI"]);
+      ).toStrictEqual(["PealCreative", "PealAPI"]);
       expect(
         menu?.kind === "menu"
           ? menu.groups.every((group) => group.description !== undefined)

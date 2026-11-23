@@ -131,7 +131,7 @@ export const heroCode = (
 });
 
 /**
- * The hero's stage: PealStudio's composer and PealAPI's code demo, which
+ * The hero's stage: PealCreative's composer and PealAPI's code demo, which
  * the page renders as the stage's `code` (heroCode), out of its props.
  */
 export const heroTabs = (
@@ -192,7 +192,7 @@ export const heroTabs = (
         },
         kind: "composer",
       },
-      label: "PealStudio",
+      label: "PealCreative",
       tile: "light",
       value: "studio",
     },
@@ -236,7 +236,7 @@ export interface ProductPairContent {
 export const productPair = (t: Messages["home"]): ProductPairContent => {
   const { mock } = t.platforms;
   const { pages } = mock;
-  const modes = { console: "PealAPI", studio: "PealStudio" };
+  const modes = { console: "PealAPI", studio: "PealCreative" };
   const [monday = "", tuesday = ""] = mock.days;
   const [publishingKey = "", analyticsKey = ""] = mock.keys;
 
@@ -364,19 +364,19 @@ export const productPair = (t: Messages["home"]): ProductPairContent => {
       },
     ],
     products: [
-      { line: t.platforms.studio, name: "PealStudio" },
+      { line: t.platforms.studio, name: "PealCreative" },
       { line: t.platforms.api, name: "PealAPI" },
     ],
   };
 };
 
-/** What PealStudio's bento shows: two large cards, then the tiles. */
+/** What PealCreative's bento shows: two large cards, then the tiles. */
 export interface StudioBentoContent {
   readonly cards: readonly [BentoCard, BentoCard];
   readonly tiles: readonly BentoTile[];
 }
 
-/** PealStudio's bento: the composer and approvals, then four tiles. */
+/** PealCreative's bento: the composer and approvals, then four tiles. */
 export const studioBento = (
   locale: Locale,
   t: Messages["home"],

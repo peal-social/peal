@@ -323,7 +323,7 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
         await browser.keyboard.press("Tab");
 
         return (await browser.evaluate(
-          "document.activeElement?.textContent?.includes('Follow the build') ?? false"
+          "document.activeElement?.getAttribute('aria-label') === 'Peal home page'"
         )) === true
           ? true
           : await reached(tabs - 1);
