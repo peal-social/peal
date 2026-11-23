@@ -37,13 +37,19 @@ describe("the image model's settings", () => {
       const plain = yield* imageProviderFrom(compatible);
 
       assert.deepStrictEqual(
-        plain._tag === "OpenAiCompatible"
-          ? { apiKey: plain.apiKey, baseUrl: plain.baseUrl, model: plain.model }
+        plain._tag === "On"
+          ? {
+              apiKey: plain.apiKey,
+              baseUrl: plain.baseUrl,
+              model: plain.model,
+              provider: plain.provider,
+            }
           : null,
         {
           apiKey: Option.none(),
           baseUrl: "http://127.0.0.1:8100/v1",
           model: "synthetic-image-model",
+          provider: "openai-compatible",
         }
       );
 
@@ -53,7 +59,7 @@ describe("the image model's settings", () => {
       });
 
       assert.isTrue(
-        keyed._tag === "OpenAiCompatible" &&
+        keyed._tag === "On" &&
           Option.exists(
             keyed.apiKey,
             (key) => Redacted.value(key) === "sk_test_synthetic_image_key"
@@ -84,6 +90,57 @@ describe("the image model's settings", () => {
 
       assert.include(failure.message, missing);
     })
+  );
+
+  it.effect.each([
+    {
+      address: "https://api.openai.com/v1",
+      provider: "openai",
+    },
+    {
+      address: "https://generativelanguage.googleapis.com/v1beta",
+      provider: "google",
+    },
+    { address: "https://api.x.ai/v1", provider: "xai" },
+    { address: "https://api.together.xyz/v1", provider: "togetherai" },
+  ])(
+    "reach $provider at its own address, with its key",
+    ({ address, provider }) =>
+      Effect.gen(function* named() {
+        const settings = yield* imageProviderFrom({
+          PEAL_AI_IMAGE_API_KEY: "sk_test_synthetic_image_key",
+          PEAL_AI_IMAGE_MODEL: "synthetic-image-model",
+          PEAL_AI_IMAGE_PROVIDER: provider,
+        });
+
+        assert.deepStrictEqual(
+          settings._tag === "On"
+            ? { baseUrl: settings.baseUrl, provider: settings.provider }
+            : null,
+          { baseUrl: address, provider }
+        );
+
+        // Behind a proxy, at the address named.
+        const proxied = yield* imageProviderFrom({
+          PEAL_AI_IMAGE_API_KEY: "sk_test_synthetic_image_key",
+          PEAL_AI_IMAGE_BASE_URL: "https://proxy.example.com/images/",
+          PEAL_AI_IMAGE_MODEL: "synthetic-image-model",
+          PEAL_AI_IMAGE_PROVIDER: provider,
+        });
+
+        assert.strictEqual(
+          proxied._tag === "On" ? proxied.baseUrl : null,
+          "https://proxy.example.com/images"
+        );
+
+        // Its key is required.
+        const keyless = yield* imageProviderFrom({
+          PEAL_AI_IMAGE_MODEL: "synthetic-image-model",
+          PEAL_AI_IMAGE_PROVIDER: provider,
+        }).pipe(Effect.flip);
+
+        assert.include(keyless.message, "PEAL_AI_IMAGE_API_KEY");
+      })
   );
 
   it.effect("refuse a provider they do not know", () =>

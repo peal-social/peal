@@ -10,6 +10,7 @@ module Peal
       IMAGE = "image"
       VIDEO = "video"
       DOCUMENT = "document"
+      AUDIO = "audio"
     end
   end
 end

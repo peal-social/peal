@@ -2,25 +2,30 @@
 
 import { useTranslations } from "next-intl";
 import { isWorkspaceSlug } from "peal-contract/workspace-slug";
-import { Button } from "peal-ui/components/button";
+import {
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowLabel,
+  SettingsRowText,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
-import { useState, useTransition } from "react";
-import type { SubmitEvent } from "react";
 
 import { authClient } from "#auth/client.ts";
-import { FormField } from "#components/auth/form-field.tsx";
 import { useRouter } from "#i18n/navigation.ts";
+import { useMounted } from "#posts/use-mounted.ts";
 import { settingsErrorKey } from "#settings/errors.ts";
-import type { SettingsErrorKey } from "#settings/errors.ts";
 import { workspacePath } from "#shell/workspace-path.ts";
 
-import { SettingsError } from "./settings-error.tsx";
+import { InlineTextSetting } from "./inline-text-setting.tsx";
 
-// Changes the workspace's slug, the address its pages go by, through Better
-// Auth's organization route, which checks organization:update and that no
-// other workspace holds it; the server's hook checks the web app can route
-// it. Once changed, the page opens under the new address.
-export const WorkspaceAddressForm = ({
+// The workspace's slug, the address its pages go by, after the site's
+// address as the setup page writes it: typed in place and saved once the
+// person leaves the field, through Better Auth's organization route, which
+// checks organization:update and that no other workspace holds it; the
+// server's hook checks the web app can route it. Once changed, the page
+// opens under the new address.
+export const WorkspaceAddressRow = ({
   slug,
   workspaceId,
 }: {
@@ -28,55 +33,50 @@ export const WorkspaceAddressForm = ({
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("WorkspaceSettings.address");
-  const settings = useTranslations("Settings");
+  const errors = useTranslations("Settings.errors");
   const router = useRouter();
-  const [value, setValue] = useState(slug);
-  const [error, setError] = useState<SettingsErrorKey | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const chosen = value.trim();
-  const valid = isWorkspaceSlug(chosen);
+  const host = useMounted() ? globalThis.location.host : "";
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    startTransition(async () => {
-      const result = await authClient.organization.update({
-        data: { slug: chosen },
-        organizationId: workspaceId,
-      });
-
-      if (result.error === null) {
-        setError(null);
-        toast.success(t("changed", { slug: chosen }));
-        router.replace(workspacePath(chosen, "/settings"));
-        router.refresh();
-      } else {
-        setError(settingsErrorKey(result.error));
-      }
+  const save = async (chosen: string) => {
+    const result = await authClient.organization.update({
+      data: { slug: chosen },
+      organizationId: workspaceId,
     });
+
+    if (result.error !== null) {
+      toast.error(errors(settingsErrorKey(result.error)));
+
+      return false;
+    }
+
+    toast.success(t("changed", { slug: chosen }));
+    router.replace(workspacePath(chosen, "/settings"));
+    router.refresh();
+
+    return true;
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-sm flex-col gap-4">
-      <SettingsError error={error} />
-      <FormField
-        id="workspace-address"
-        type="text"
-        autoComplete="off"
-        label={t("label")}
-        hint={valid || chosen === "" ? t("hint") : t("invalid")}
-        value={value}
-        onChange={setValue}
-      />
-      <div>
-        <Button
-          type="submit"
-          disabled={isPending || !valid || chosen === slug}
-          focusableWhenDisabled
-        >
-          {isPending ? settings("saving") : t("change")}
-        </Button>
-      </div>
-    </form>
+    <SettingsRow>
+      <SettingsRowText>
+        <SettingsRowLabel htmlFor="workspace-address">
+          {t("label")}
+        </SettingsRowLabel>
+        <SettingsRowDescription id="workspace-address-hint">
+          {t("description")} {t("hint")}
+        </SettingsRowDescription>
+      </SettingsRowText>
+      <SettingsRowControl>
+        <InlineTextSetting
+          id="workspace-address"
+          autoComplete="off"
+          describedBy="workspace-address-hint"
+          prefix={`${host}/`}
+          check={isWorkspaceSlug}
+          value={slug}
+          save={save}
+        />
+      </SettingsRowControl>
+    </SettingsRow>
   );
 };

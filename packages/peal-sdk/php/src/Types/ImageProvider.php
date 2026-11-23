@@ -32,6 +32,12 @@ class ImageProvider extends JsonSerializableType
     public string $model;
 
     /**
+     * @var value-of<AiImageProvider> $provider
+     */
+    #[JsonProperty('provider')]
+    public string $provider;
+
+    /**
      * @var string $updatedAt
      */
     #[JsonProperty('updatedAt')]
@@ -43,6 +49,7 @@ class ImageProvider extends JsonSerializableType
      *   keySet: bool,
      *   keyUnreadable: bool,
      *   model: string,
+     *   provider: value-of<AiImageProvider>,
      *   updatedAt: string,
      * } $values
      */
@@ -53,6 +60,7 @@ class ImageProvider extends JsonSerializableType
         $this->keySet = $values['keySet'];
         $this->keyUnreadable = $values['keyUnreadable'];
         $this->model = $values['model'];
+        $this->provider = $values['provider'];
         $this->updatedAt = $values['updatedAt'];
     }
 

@@ -35,8 +35,20 @@ public record AssistantStatus : IJsonOnDeserialized
     [JsonPropertyName("resetsAt")]
     public required string ResetsAt { get; set; }
 
+    [JsonPropertyName("slideshows")]
+    public required AssistantSlideshowsStatus Slideshows { get; set; }
+
     [JsonPropertyName("source")]
     public AssistantTextSource? Source { get; set; }
+
+    [JsonPropertyName("transcriptions")]
+    public required AssistantTranscriptionsStatus Transcriptions { get; set; }
+
+    [JsonPropertyName("videos")]
+    public required AssistantVideosStatus Videos { get; set; }
+
+    [JsonPropertyName("voiceovers")]
+    public required AssistantVoiceoversStatus Voiceovers { get; set; }
 
     [JsonIgnore]
     public ReadOnlyAdditionalProperties AdditionalProperties { get; private set; } = new();

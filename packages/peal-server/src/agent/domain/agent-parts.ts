@@ -192,7 +192,7 @@ export type AgentApproval = typeof AgentApprovalSchema.Type;
 /** A file of the workspace's media library attached to a person's message. */
 export const AgentMediaSchema = Schema.Struct({
   id: Schema.String,
-  kind: Schema.Literals(["image", "video", "document"]),
+  kind: Schema.Literals(["image", "video", "document", "audio"]),
   name: Schema.NullOr(Schema.String),
 });
 

@@ -160,7 +160,7 @@ export const freshPerson = Effect.gen(function* freshPerson() {
         sql`DELETE FROM assistant.daily_usage WHERE workspace_id = ${workspaceId}`
       ),
       Effect.andThen(
-        sql`DELETE FROM assistant.text_providers WHERE workspace_id = ${workspaceId}`
+        sql`DELETE FROM assistant.provider_connections WHERE workspace_id = ${workspaceId}`
       ),
       Effect.andThen(
         sql`DELETE FROM assistant.own_text_days WHERE workspace_id = ${workspaceId}`

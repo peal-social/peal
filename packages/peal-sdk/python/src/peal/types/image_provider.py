@@ -6,6 +6,7 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .ai_image_provider import AiImageProvider
 
 
 class ImageProvider(UniversalBaseModel):
@@ -15,6 +16,7 @@ class ImageProvider(UniversalBaseModel):
         bool, FieldMetadata(alias="keyUnreadable"), pydantic.Field(alias="keyUnreadable")
     ]
     model: str
+    provider: AiImageProvider
     updated_at: typing_extensions.Annotated[str, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")]
 
     if IS_PYDANTIC_V2:

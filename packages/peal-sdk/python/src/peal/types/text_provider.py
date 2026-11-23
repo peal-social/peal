@@ -6,6 +6,7 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .ai_provider import AiProvider
 from .text_provider_kind import TextProviderKind
 
 
@@ -17,6 +18,7 @@ class TextProvider(UniversalBaseModel):
     ]
     kind: TextProviderKind
     model: str
+    provider: AiProvider
     updated_at: typing_extensions.Annotated[str, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")]
 
     if IS_PYDANTIC_V2:

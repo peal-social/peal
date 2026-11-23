@@ -18,7 +18,11 @@ import { useState, useTransition } from "react";
 
 import { billingOf } from "#billing/api.ts";
 import { managesBilling, membersOf, standingOf } from "#billing/members.ts";
-import { billedElsewhereOf, isMeterReason } from "#billing/upgrade.ts";
+import {
+  billedElsewhereOf,
+  isFeatureReason,
+  isMeterReason,
+} from "#billing/upgrade.ts";
 import type { UpgradeReason } from "#billing/upgrade.ts";
 import { useCheckout } from "#billing/use-checkout.ts";
 import type { BillingError } from "#components/billing/billing-view.tsx";
@@ -197,6 +201,10 @@ const titleOf = (
 ) => {
   if (isMeterReason(reason)) {
     return t("titleMeter", { meter: reason.meter });
+  }
+
+  if (isFeatureReason(reason)) {
+    return t("titleFeature");
   }
 
   return reason.planWithRoom === "payAsYouGo"

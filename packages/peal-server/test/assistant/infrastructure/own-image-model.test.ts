@@ -16,7 +16,6 @@ import {
   Tracer,
 } from "effect";
 import { Base64 } from "effect/encoding";
-import { FetchHttpClient } from "effect/http";
 import { Dns } from "effect/net";
 
 import { OwnImageModel } from "#assistant/application/ports/own-image-model.ts";
@@ -27,7 +26,7 @@ import {
   ProviderAddressSchema,
   ProviderModelSchema,
 } from "#assistant/domain/image-provider.ts";
-import { openAiCompatibleOwnImageModel } from "#assistant/infrastructure/openai-compatible-own-image-model.ts";
+import { ownImageModel } from "#assistant/infrastructure/own-image-model.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import { OpenOutboundGuard } from "#test/channels/support.ts";
 
@@ -120,6 +119,7 @@ const endpointAt = (baseUrl: string): OwnImageEndpoint => ({
   apiKey: Redacted.make(syntheticKey),
   baseUrl: ProviderAddressSchema.make(baseUrl),
   model: ProviderModelSchema.make("synthetic-image-model"),
+  provider: "openai-compatible",
 });
 
 const modelWith = ({
@@ -128,11 +128,7 @@ const modelWith = ({
 }: {
   readonly guard?: Layer.Layer<OutboundGuard>;
   readonly timeout?: Duration.Input;
-} = {}) =>
-  openAiCompatibleOwnImageModel({ timeout }).pipe(
-    Layer.provide(guard),
-    Layer.provide(FetchHttpClient.layer)
-  );
+} = {}) => ownImageModel({ timeout }).pipe(Layer.provide(guard));
 
 const spanText = (span: Tracer.NativeSpan): string =>
   [

@@ -13,7 +13,8 @@ export namespace MediaTooLargeEncoded {
     export const Kind = {
             Image: "image",
             Video: "video",
-            Document: "document"
+            Document: "document",
+            Audio: "audio"
         } as const;
     export type Kind = typeof Kind[keyof typeof Kind];
 }

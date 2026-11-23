@@ -16,6 +16,13 @@ import {
 } from "peal-ui/components/alert-dialog";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
+import {
+  SettingsCard,
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowText,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useTransition } from "react";
 
@@ -74,7 +81,7 @@ const SessionRow = ({
   };
 
   return (
-    <li className="flex flex-wrap items-start gap-4 py-4">
+    <li className="flex flex-wrap items-start gap-4 px-4 py-3">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-medium">{device}</span>
@@ -156,6 +163,7 @@ const RevokeOthers = ({ onChanged }: { readonly onChanged: () => void }) => {
 };
 
 const LoadedSessions = () => {
+  const t = useTranslations("AccountSettings.sessions");
   const sessions = useAtomValue(accountSessions);
   const current = useAtomValue(currentSession);
   const reload = useAtomRefresh(accountSessions);
@@ -170,7 +178,7 @@ const LoadedSessions = () => {
     onFailure: () => <SettingsLoadFailed onRetry={reload} />,
     onInitial: () => <SettingsLoading />,
     onSuccess: ({ value }) => (
-      <div className="flex flex-col gap-4">
+      <SettingsCard>
         <ul className="divide-y">
           {value.map((session) => (
             <SessionRow
@@ -182,11 +190,18 @@ const LoadedSessions = () => {
           ))}
         </ul>
         {value.length > 1 ? (
-          <div>
-            <RevokeOthers onChanged={reload} />
-          </div>
+          <SettingsRow>
+            <SettingsRowText>
+              <SettingsRowDescription>
+                {t("revokeOthersDescription")}
+              </SettingsRowDescription>
+            </SettingsRowText>
+            <SettingsRowControl>
+              <RevokeOthers onChanged={reload} />
+            </SettingsRowControl>
+          </SettingsRow>
         ) : null}
-      </div>
+      </SettingsCard>
     ),
   });
 };

@@ -63,6 +63,20 @@ const events: Readonly<Record<NoticeEvent["_tag"], NoticeEvent>> = {
     network: "meta",
   },
   ChannelReconnectRequired: { _tag: "ChannelReconnectRequired", channel },
+  VideoGenerationEnded: {
+    _tag: "VideoGenerationEnded",
+    generationId: Uuid7Schema.make("00000000-0000-7000-8000-00000000f11d"),
+    mediaId: Option.none(),
+    outcome: "failed",
+    reason: Option.some("interrupted"),
+  },
+  SlideshowEnded: {
+    _tag: "SlideshowEnded",
+    mediaId: Option.none(),
+    outcome: "failed",
+    reason: Option.some("mediaUnavailable"),
+    slideshowId: Uuid7Schema.make("00000000-0000-7000-8000-00000000f12d"),
+  },
   ChannelReconnectSoon: {
     _tag: "ChannelReconnectSoon",
     channel,

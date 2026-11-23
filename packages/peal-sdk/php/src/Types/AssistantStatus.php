@@ -56,10 +56,34 @@ class AssistantStatus extends JsonSerializableType
     public string $resetsAt;
 
     /**
+     * @var AssistantSlideshowsStatus $slideshows
+     */
+    #[JsonProperty('slideshows')]
+    public AssistantSlideshowsStatus $slideshows;
+
+    /**
      * @var ?value-of<AssistantTextSource> $source
      */
     #[JsonProperty('source')]
     public ?string $source;
+
+    /**
+     * @var AssistantTranscriptionsStatus $transcriptions
+     */
+    #[JsonProperty('transcriptions')]
+    public AssistantTranscriptionsStatus $transcriptions;
+
+    /**
+     * @var AssistantVideosStatus $videos
+     */
+    #[JsonProperty('videos')]
+    public AssistantVideosStatus $videos;
+
+    /**
+     * @var AssistantVoiceoversStatus $voiceovers
+     */
+    #[JsonProperty('voiceovers')]
+    public AssistantVoiceoversStatus $voiceovers;
 
     /**
      * @param array{
@@ -69,6 +93,10 @@ class AssistantStatus extends JsonSerializableType
      *   maxTextLength: int,
      *   remaining: int,
      *   resetsAt: string,
+     *   slideshows: AssistantSlideshowsStatus,
+     *   transcriptions: AssistantTranscriptionsStatus,
+     *   videos: AssistantVideosStatus,
+     *   voiceovers: AssistantVoiceoversStatus,
      *   month?: ?AssistantMonth,
      *   reason?: ?value-of<AssistantOffReason>,
      *   source?: ?value-of<AssistantTextSource>,
@@ -85,7 +113,11 @@ class AssistantStatus extends JsonSerializableType
         $this->reason = $values['reason'] ?? null;
         $this->remaining = $values['remaining'];
         $this->resetsAt = $values['resetsAt'];
+        $this->slideshows = $values['slideshows'];
         $this->source = $values['source'] ?? null;
+        $this->transcriptions = $values['transcriptions'];
+        $this->videos = $values['videos'];
+        $this->voiceovers = $values['voiceovers'];
     }
 
     /**

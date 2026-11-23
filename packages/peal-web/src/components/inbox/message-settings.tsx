@@ -6,10 +6,30 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { isSocialChannel } from "peal-contract";
 import type { InboxMessageSettings, SocialChannel } from "peal-contract";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "peal-ui/components/alert-dialog";
 import { Badge } from "peal-ui/components/badge";
 import { Button } from "peal-ui/components/button";
 import { Input } from "peal-ui/components/input";
 import { Label } from "peal-ui/components/label";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowLabel,
+  SettingsRowText,
+} from "peal-ui/components/settings";
+import { Switch } from "peal-ui/components/switch";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 import type { SubmitEvent } from "react";
@@ -18,6 +38,7 @@ import { channelsOf, reconnectChannel } from "#channels/channels-api.ts";
 import { rememberConnection } from "#channels/pending-connection.ts";
 import { messagePlatforms } from "#channels/platform-features.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { SettingsGroup } from "#components/settings/settings-group.tsx";
 import { inboxErrorOf } from "#inbox/errors.ts";
 import {
   messageSettings,
@@ -48,13 +69,15 @@ const refusedAs = <A, E extends { readonly _tag: string }>(
   );
 
 /**
- * One channel's switch: its messages read, or not. `onGrant`, for an
- * account that must allow its messages first (Bluesky's chat, Meta's
- * messaging permissions), starts the sign-in that asks for them. A Meta
- * channel says who may write before Meta's review, and an Instagram one
- * the setting its owner turns on in Instagram. Where Peal reads none of
- * the channel's messages (`unsupported`), it says so in place of the
- * switch, which stays only to turn off messages read before.
+ * One channel's row: its name, and its switch at the end, messages read
+ * or not. `onGrant`, for an account that must allow its messages first
+ * (Bluesky's chat, Meta's messaging permissions), puts the sign-in that
+ * asks for them in place of the switch. A Meta channel says who may write
+ * before Meta's review, and an Instagram one the setting its owner turns
+ * on in Instagram. Where Peal reads none of the channel's messages
+ * (`unsupported`), it says so in place of the switch, which stays only to
+ * turn off messages read before. Turning a channel's messages off deletes
+ * what Peal kept of them, which cannot be undone: the switch asks first.
  */
 export const ChannelMessagesView = ({
   channel,
@@ -72,75 +95,114 @@ export const ChannelMessagesView = ({
   readonly unsupported?: boolean;
 }) => {
   const t = useTranslations("InboxMessages.settings");
+  const settings = useTranslations("Settings");
   const channelName = useChannelName();
+  const [confirming, setConfirming] = useState(false);
+  const switchId = useId();
+  const hintId = useId();
   const meta = isMeta(channel);
 
   if (unsupported && !on) {
     return (
-      <li className="flex flex-col gap-1 px-4 py-3">
-        <span className="flex items-center gap-2">
-          <span className="font-medium">{channelName(channel)}</span>
+      <SettingsRow>
+        <SettingsRowText>
+          <SettingsRowLabel>{channelName(channel)}</SettingsRowLabel>
+          <SettingsRowDescription>
+            {t("unsupported", { connection: channel.connection ?? "none" })}
+          </SettingsRowDescription>
+        </SettingsRowText>
+        <SettingsRowControl>
           <Badge variant="outline">{t("off")}</Badge>
-        </span>
-        <span className="text-muted-foreground text-sm">
-          {t("unsupported", { connection: channel.connection ?? "none" })}
-        </span>
-      </li>
+        </SettingsRowControl>
+      </SettingsRow>
     );
   }
 
+  const hints = [
+    ...(meta ? [t("metaReview")] : []),
+    ...(channel.platform === "instagram" ? [t("instagramConnectedTools")] : []),
+  ];
+
   return (
-    <li className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-      <span className="flex flex-col gap-1">
-        <span className="flex items-center gap-2">
-          <span className="font-medium">{channelName(channel)}</span>
-          <Badge variant={on ? "default" : "outline"}>
-            {on ? t("on") : t("off")}
-          </Badge>
-        </span>
-        {meta ? (
-          <span className="text-muted-foreground text-sm">
-            {t("metaReview")}
-          </span>
-        ) : null}
-        {channel.platform === "instagram" ? (
-          <span className="text-muted-foreground text-sm">
-            {t("instagramConnectedTools")}
-          </span>
-        ) : null}
-      </span>
-      {onGrant === undefined ? (
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={disabled}
-          onClick={() => {
-            onSwitch(!on);
-          }}
-        >
-          {on ? t("turnOff") : t("turnOn")}
-        </Button>
-      ) : (
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="text-muted-foreground text-sm">
-            {meta ? t("metaGrantNeeded") : t("grantNeeded")}
-          </span>
-          <Button size="sm" disabled={disabled} onClick={onGrant}>
-            {meta
-              ? t("metaGrant", {
-                  app:
-                    channel.connection === "instagramLogin"
-                      ? "instagram"
-                      : "facebook",
-                })
-              : t("grant")}
-          </Button>
-        </span>
-      )}
-    </li>
+    <SettingsRow>
+      <SettingsRowText>
+        {onGrant === undefined ? (
+          <SettingsRowLabel htmlFor={switchId}>
+            {channelName(channel)}
+          </SettingsRowLabel>
+        ) : (
+          <SettingsRowLabel>{channelName(channel)}</SettingsRowLabel>
+        )}
+        {hints.length === 0 ? null : (
+          <div id={hintId} className="flex flex-col gap-0.5">
+            {hints.map((hint) => (
+              <SettingsRowDescription key={hint}>{hint}</SettingsRowDescription>
+            ))}
+          </div>
+        )}
+      </SettingsRowText>
+      <SettingsRowControl>
+        {onGrant === undefined ? (
+          <Switch
+            id={switchId}
+            checked={on}
+            disabled={disabled}
+            {...(hints.length === 0 ? {} : { "aria-describedby": hintId })}
+            onCheckedChange={(checked: boolean) => {
+              if (checked) {
+                onSwitch(true);
+              } else {
+                setConfirming(true);
+              }
+            }}
+          />
+        ) : (
+          <>
+            <span className="text-muted-foreground text-sm">
+              {meta ? t("metaGrantNeeded") : t("grantNeeded")}
+            </span>
+            <Button size="sm" disabled={disabled} onClick={onGrant}>
+              {meta
+                ? t("metaGrant", {
+                    app:
+                      channel.connection === "instagramLogin"
+                        ? "instagram"
+                        : "facebook",
+                  })
+                : t("grant")}
+            </Button>
+          </>
+        )}
+      </SettingsRowControl>
+      <AlertDialog open={confirming} onOpenChange={setConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("turnOffTitle", { channel: channelName(channel) })}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("turnOffDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{settings("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                onSwitch(false);
+              }}
+            >
+              {t("turnOff")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SettingsRow>
   );
 };
 
+// The applications let read the messages, each with its way to take that
+// back, then the form that lets another by its client id.
 const Applications = ({
   disabled,
   onAllow,
@@ -161,56 +223,65 @@ const Applications = ({
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="font-medium">{t("applications")}</h3>
-      <p className="text-muted-foreground text-sm">
-        {t("applicationsDescription")}
-      </p>
-      {settings.applications.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{t("noApplications")}</p>
-      ) : (
-        <ul className="bg-card divide-y overflow-hidden rounded-md border">
-          {settings.applications.map((application) => (
-            <li
-              key={application.clientId}
-              className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
-            >
-              <code className="text-sm">{application.clientId}</code>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={disabled}
-                onClick={() => {
-                  onAllow(application.clientId, false);
-                }}
+    <SettingsGroup
+      title={t("applications")}
+      description={t("applicationsDescription")}
+    >
+      <SettingsCard>
+        {settings.applications.length === 0 ? (
+          <SettingsRow>
+            <SettingsRowDescription>
+              {t("noApplications")}
+            </SettingsRowDescription>
+          </SettingsRow>
+        ) : (
+          <ul className="divide-y">
+            {settings.applications.map((application) => (
+              <li
+                key={application.clientId}
+                className="flex flex-wrap items-center justify-between gap-2 px-4 py-3"
               >
-                {t("revoke")}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
-        <span className="flex flex-col gap-1">
-          <Label htmlFor={id}>{t("clientId")}</Label>
-          <Input
-            id={id}
-            value={clientId}
-            onChange={(event) => {
-              setClientId(event.target.value);
-            }}
-          />
-        </span>
-        <Button
-          type="submit"
-          size="sm"
-          disabled={disabled || clientId.trim() === ""}
-          focusableWhenDisabled
-        >
-          {t("allow")}
-        </Button>
-      </form>
-    </div>
+                <code className="text-sm">{application.clientId}</code>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={disabled}
+                  onClick={() => {
+                    onAllow(application.clientId, false);
+                  }}
+                >
+                  {t("revoke")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <SettingsCardBody>
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-wrap items-end gap-2"
+          >
+            <span className="flex min-w-0 flex-1 flex-col gap-2">
+              <Label htmlFor={id}>{t("clientId")}</Label>
+              <Input
+                id={id}
+                value={clientId}
+                onChange={(event) => {
+                  setClientId(event.target.value);
+                }}
+              />
+            </span>
+            <Button
+              type="submit"
+              disabled={disabled || clientId.trim() === ""}
+              focusableWhenDisabled
+            >
+              {t("allow")}
+            </Button>
+          </form>
+        </SettingsCardBody>
+      </SettingsCard>
+    </SettingsGroup>
   );
 };
 
@@ -238,7 +309,6 @@ export const MessageSettingsPanel = ({
   // The channels the server refused as reading none of their messages.
   const [unread, setUnread] = useState<ReadonlySet<string>>(new Set());
   const [pending, start] = useTransition();
-  const titleId = useId();
 
   if (
     !hydrated ||
@@ -281,58 +351,56 @@ export const MessageSettingsPanel = ({
   };
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <h2 id={titleId} className="text-lg font-semibold">
-          {t("title")}
-        </h2>
-        <p className="text-muted-foreground text-sm">{t("description")}</p>
-      </div>
-      {eligible.length === 0 ? (
-        <p className="text-muted-foreground text-sm">{t("none")}</p>
-      ) : (
-        <ul className="bg-card divide-y overflow-hidden rounded-md border">
-          {eligible.map((channel) => (
-            <ChannelMessagesView
-              key={channel.id}
-              channel={channel}
-              disabled={pending}
-              on={on.has(channel.id)}
-              unsupported={readsNoMessages(channel) || unread.has(channel.id)}
-              {...(ungranted.has(channel.id)
-                ? {
-                    onGrant: () => {
-                      grant(channel);
-                    },
-                  }
-                : {})}
-              onSwitch={(enabled) => {
-                start(async () => {
-                  const exit = await switchOne({
-                    params: { channelId: channel.id, workspaceId },
-                    payload: { enabled },
-                    reactivityKeys,
+    <>
+      <SettingsGroup title={t("title")} description={t("description")}>
+        <SettingsCard>
+          {eligible.length === 0 ? (
+            <SettingsRow>
+              <SettingsRowDescription>{t("none")}</SettingsRowDescription>
+            </SettingsRow>
+          ) : (
+            eligible.map((channel) => (
+              <ChannelMessagesView
+                key={channel.id}
+                channel={channel}
+                disabled={pending}
+                on={on.has(channel.id)}
+                unsupported={readsNoMessages(channel) || unread.has(channel.id)}
+                {...(ungranted.has(channel.id)
+                  ? {
+                      onGrant: () => {
+                        grant(channel);
+                      },
+                    }
+                  : {})}
+                onSwitch={(enabled) => {
+                  start(async () => {
+                    const exit = await switchOne({
+                      params: { channelId: channel.id, workspaceId },
+                      payload: { enabled },
+                      reactivityKeys,
+                    });
+
+                    if (refusedAs(exit, "reconnect")) {
+                      setUngranted((now) => new Set([...now, channel.id]));
+
+                      return;
+                    }
+
+                    if (refusedAs(exit, "unsupported")) {
+                      setUnread((now) => new Set([...now, channel.id]));
+
+                      return;
+                    }
+
+                    done(exit);
                   });
-
-                  if (refusedAs(exit, "reconnect")) {
-                    setUngranted((now) => new Set([...now, channel.id]));
-
-                    return;
-                  }
-
-                  if (refusedAs(exit, "unsupported")) {
-                    setUnread((now) => new Set([...now, channel.id]));
-
-                    return;
-                  }
-
-                  done(exit);
-                });
-              }}
-            />
-          ))}
-        </ul>
-      )}
+                }}
+              />
+            ))
+          )}
+        </SettingsCard>
+      </SettingsGroup>
       {mayAllowApplications ? (
         <Applications
           disabled={pending}
@@ -350,6 +418,6 @@ export const MessageSettingsPanel = ({
           }}
         />
       ) : null}
-    </section>
+    </>
   );
 };

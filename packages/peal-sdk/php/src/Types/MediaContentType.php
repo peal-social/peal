@@ -11,4 +11,7 @@ enum MediaContentType: string
     case VideoMp4 = "video/mp4";
     case VideoQuicktime = "video/quicktime";
     case ApplicationPdf = "application/pdf";
+    case AudioMpeg = "audio/mpeg";
+    case AudioMp4 = "audio/mp4";
+    case AudioWav = "audio/wav";
 }

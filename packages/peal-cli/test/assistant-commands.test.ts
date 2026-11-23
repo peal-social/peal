@@ -53,11 +53,66 @@ describe("peal assistant image-provider", () => {
           ...inStudio,
         ]);
 
+        assert.include(shown, "Provider: Another provider (openai-compatible)");
         assert.include(shown, "Address: https://images.example.com/v1");
         assert.include(shown, "Model:   synthetic-image-model");
         assert.include(shown, "saved (never shown)");
         assert.notInclude(shown, syntheticKey);
       }).pipe(Effect.scoped, Effect.provide(filesLayer))
+  );
+
+  it.effect("names a provider, sending no address unless one is given", () =>
+    Effect.gen(function* named() {
+      const session = yield* signedIn();
+
+      const printed = yield* session
+        .piping(syntheticKey)
+        .printed([
+          "assistant",
+          "image-provider",
+          "set",
+          "--provider",
+          "openai",
+          "--model",
+          "gpt-image-2.6-flare",
+          ...inStudio,
+        ]);
+
+      assert.include(
+        printed,
+        "Its image prompts now go to https://api.openai.com/v1"
+      );
+
+      const { imageProvider } = yield* Ref.get(session.studio.state);
+
+      assert.strictEqual(imageProvider?.provider.provider, "openai");
+
+      const shown = yield* session.printed([
+        "assistant",
+        "image-provider",
+        "show",
+        ...inStudio,
+      ]);
+
+      assert.include(shown, "Provider: OpenAI (openai)");
+
+      // A provider the images API does not have is refused before any
+      // request.
+      const refused = yield* session
+        .piping(syntheticKey)
+        .refused([
+          "assistant",
+          "image-provider",
+          "set",
+          "--provider",
+          "anthropic",
+          "--model",
+          "synthetic-image-model",
+          ...inStudio,
+        ]);
+
+      assert.include(refused, "anthropic");
+    }).pipe(Effect.scoped, Effect.provide(filesLayer))
   );
 
   it.effect(

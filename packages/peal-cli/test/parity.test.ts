@@ -94,12 +94,17 @@ const coverage = {
   "apiKeys.revoke": exempt(
     "Keys are managed where they are created and revoked, in the web app's settings."
   ),
+  "assistant.connectProvider": by("assistant providers connect"),
+  "assistant.disconnectProvider": by("assistant providers disconnect"),
   "assistant.generateImage": by("media generate"),
   "assistant.imageProvider": by("assistant image-provider show"),
+  "assistant.models": by("assistant models list"),
+  "assistant.providers": by("assistant providers list"),
   "assistant.removeImageProvider": by("assistant image-provider clear"),
   "assistant.removeTextProvider": by("assistant text-provider clear"),
   "assistant.setImageProvider": by("assistant image-provider set"),
   "assistant.setTextProvider": by("assistant text-provider set"),
+  "assistant.setModel": by("assistant models set"),
   "browserAnalytics.setConsent": exempt(
     "The web app's measurement consent is the person's, in their own session in the browser it measures: the server refuses an OAuth token, the command line's included."
   ),
@@ -109,8 +114,10 @@ const coverage = {
   "assistant.suggest": exempt(
     "The writing assistant serves the web app's composer; an agent writes its own text."
   ),
+  "assistant.testProvider": by("assistant providers test"),
   "assistant.testTextProvider": by("assistant text-provider test"),
   "assistant.textProvider": by("assistant text-provider show"),
+  "assistant.unsetModel": by("assistant models unset"),
   "billing.get": by("billing"),
   "billing.standing": by("billing"),
   "capabilities.channel": by("channels capabilities"),
@@ -314,6 +321,14 @@ const coverage = {
   "tiktok.creator": by("channels tiktok"),
   "usage.get": by("usage"),
   "usage.partner": by("partner usage"),
+  "videoGenerations.create": by("media video generate"),
+  "videoGenerations.get": by("media video status"),
+  "videoGenerations.list": by("media video list"),
+  "slideshows.create": by("media slideshow create"),
+  "slideshows.get": by("media slideshow status"),
+  "slideshows.list": by("media slideshow list"),
+  "mediaAudio.createVoiceover": by("media voiceover"),
+  "mediaAudio.transcribe": by("media transcribe"),
   "webhooks.create": by("webhooks create"),
   "webhooks.delete": by("webhooks delete"),
   "webhooks.get": by("webhooks show"),

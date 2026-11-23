@@ -6,15 +6,14 @@ import * as Peal from "../../../../index.js";
  * @example
  *     {
  *         workspaceId: "workspaceId",
- *         baseUrl: "baseUrl",
- *         kind: "anthropic",
  *         model: "model"
  *     }
  */
 export interface TextProviderChange {
     workspaceId: string;
     apiKey?: string;
-    baseUrl: string;
-    kind: Peal.TextProviderKind;
+    baseUrl?: string;
+    kind?: Peal.TextProviderKind;
     model: string;
+    provider?: Peal.AiProvider;
 }

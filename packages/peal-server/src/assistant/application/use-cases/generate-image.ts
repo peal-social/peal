@@ -126,6 +126,7 @@ const ownImage = Effect.fn("WritingAssistant.generateOwnImage")(
           apiKey: apiKey.value,
           baseUrl: settings.baseUrl,
           model: settings.model,
+          provider: settings.provider,
         },
         { aspect, prompt: checked }
       )

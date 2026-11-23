@@ -17,6 +17,8 @@ import { Forbidden } from "./forbidden.ts";
 import { ChannelPlatformSchema } from "./platform.ts";
 import { FailureReasonSchema } from "./posts.ts";
 import { MeterSchema } from "./rate-card.ts";
+import { SlideshowFailureReasonSchema } from "./slideshows.ts";
+import { VideoFailureReasonSchema } from "./video-generations.ts";
 
 /**
  * Why Peal turned a webhook endpoint off: every attempt failed for days
@@ -346,6 +348,24 @@ export const NoticeEventSchema = Schema.Union([
   Schema.TaggedStruct("CommentRuleStopped", {
     reason: AutomationStopReasonSchema,
     ruleId: Schema.String,
+  }),
+  // A video the reader asked for (`generationId`) ended: `succeeded`,
+  // a file of the media library (`mediaId`), or `failed` for `reason`.
+  // Only the member who asked hears, in the app.
+  Schema.TaggedStruct("VideoGenerationEnded", {
+    generationId: Schema.String,
+    mediaId: Schema.NullOr(Schema.String),
+    outcome: Schema.Literals(["succeeded", "failed"]),
+    reason: Schema.NullOr(VideoFailureReasonSchema),
+  }),
+  // A slide video the reader asked for (`slideshowId`) ended: `succeeded`,
+  // a file of the media library (`mediaId`), or `failed` for `reason`.
+  // Only the member who asked hears, in the app.
+  Schema.TaggedStruct("SlideshowEnded", {
+    mediaId: Schema.NullOr(Schema.String),
+    outcome: Schema.Literals(["succeeded", "failed"]),
+    reason: Schema.NullOr(SlideshowFailureReasonSchema),
+    slideshowId: Schema.String,
   }),
 ]).annotate({ identifier: "NoticeEvent" });
 

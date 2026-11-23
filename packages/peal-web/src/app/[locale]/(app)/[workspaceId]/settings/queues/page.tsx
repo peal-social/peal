@@ -1,7 +1,5 @@
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { maxQueuesPerWorkspace } from "peal-contract";
 
 import { QueuesSettings } from "#components/queues/queues-settings.tsx";
 import { routing } from "#i18n/routing.ts";
@@ -10,7 +8,8 @@ import { workspacePageTitle } from "#shell/page-title.ts";
 
 // A workspace's queues, for members who may read its posts and its
 // channels. Adding, changing or deleting one takes post:update; moving its
-// waiting posts onto its slots, post:schedule.
+// waiting posts onto its slots, post:schedule. The list's heading says what
+// a queue is, and to those who may only read, why they cannot change one.
 const QueuesPage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/settings/queues">) => {
@@ -27,24 +26,12 @@ const QueuesPage = async ({
     notFound();
   }
 
-  const t = await getTranslations("Queues");
-  const mayManage = may.has("post:update");
-
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("description")}</p>
-      <p className="text-muted-foreground text-sm">
-        {t("rules", { max: maxQueuesPerWorkspace })}
-      </p>
-      {mayManage ? null : (
-        <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
-      )}
-      <QueuesSettings
-        workspaceId={workspace.id}
-        mayManage={mayManage}
-        mayReshuffle={may.has("post:schedule")}
-      />
-    </div>
+    <QueuesSettings
+      workspaceId={workspace.id}
+      mayManage={may.has("post:update")}
+      mayReshuffle={may.has("post:schedule")}
+    />
   );
 };
 

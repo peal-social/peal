@@ -4,6 +4,7 @@ namespace Peal\Assistant\Requests;
 
 use Peal\Core\Json\JsonSerializableType;
 use Peal\Core\Json\JsonProperty;
+use Peal\Types\AiImageProvider;
 
 class ImageProviderChange extends JsonSerializableType
 {
@@ -14,10 +15,10 @@ class ImageProviderChange extends JsonSerializableType
     public ?string $apiKey;
 
     /**
-     * @var string $baseUrl
+     * @var ?string $baseUrl
      */
     #[JsonProperty('baseUrl')]
-    public string $baseUrl;
+    public ?string $baseUrl;
 
     /**
      * @var string $model
@@ -26,17 +27,25 @@ class ImageProviderChange extends JsonSerializableType
     public string $model;
 
     /**
+     * @var ?value-of<AiImageProvider> $provider
+     */
+    #[JsonProperty('provider')]
+    public ?string $provider;
+
+    /**
      * @param array{
-     *   baseUrl: string,
      *   model: string,
      *   apiKey?: ?string,
+     *   baseUrl?: ?string,
+     *   provider?: ?value-of<AiImageProvider>,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
         $this->apiKey = $values['apiKey'] ?? null;
-        $this->baseUrl = $values['baseUrl'];
+        $this->baseUrl = $values['baseUrl'] ?? null;
         $this->model = $values['model'];
+        $this->provider = $values['provider'] ?? null;
     }
 }

@@ -10,6 +10,8 @@ import { Schema } from "effect";
  *   could not follow.
  * - `tooLong`: it is longer than `maxProviderAddressLength`.
  * - `malformed`: it is not an absolute address.
+ * - `fixedAddress`: the provider is reached at its own address alone, and
+ *   this is another.
  */
 export class ProviderAddressRejected extends Schema.TaggedError<ProviderAddressRejected>()(
   "ProviderAddressRejected",
@@ -20,6 +22,7 @@ export class ProviderAddressRejected extends Schema.TaggedError<ProviderAddressR
       "queryOrFragment",
       "tooLong",
       "malformed",
+      "fixedAddress",
     ]),
   }
 ) {

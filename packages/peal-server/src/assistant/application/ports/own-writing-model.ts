@@ -7,14 +7,14 @@ import type {
   ProviderAddress,
   ProviderModel,
 } from "#assistant/domain/image-provider.ts";
-import type { TextProviderKind } from "#assistant/domain/text-provider.ts";
+import type { TextProviderId } from "#assistant/domain/text-provider.ts";
 import type { WritingPrompt } from "#assistant/domain/writing-prompt.ts";
 
-/** Where a workspace's own text provider is, what it speaks, which model, and its key. */
+/** Where a workspace's own text provider is, which provider it is, which model, and its key. */
 export interface OwnTextEndpoint {
   readonly apiKey: Redacted.Redacted;
   readonly baseUrl: ProviderAddress;
-  readonly kind: TextProviderKind;
+  readonly provider: TextProviderId;
   readonly model: ProviderModel;
 }
 

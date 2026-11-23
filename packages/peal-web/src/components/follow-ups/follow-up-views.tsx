@@ -126,12 +126,12 @@ export const FollowUpRuleView = ({
     <li
       aria-labelledby={titleId}
       aria-current={highlighted ? "true" : undefined}
-      className="aria-[current=true]:bg-muted/50 flex flex-col gap-3 py-4"
+      className="aria-[current=true]:bg-muted/50 flex flex-col gap-3 px-4 py-3"
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span id={titleId} className="font-medium">
+            <span id={titleId} className="text-sm font-medium">
               {actionText(rule)}
             </span>
             <Badge variant={rule.status === "active" ? "secondary" : "outline"}>

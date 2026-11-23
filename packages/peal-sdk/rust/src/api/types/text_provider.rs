@@ -14,6 +14,7 @@ pub struct TextProvider {
     pub kind: TextProviderKind,
     #[serde(default)]
     pub model: String,
+    pub provider: AiProvider,
     #[serde(rename = "updatedAt")]
     #[serde(default)]
     pub updated_at: String,
@@ -33,6 +34,7 @@ pub struct TextProviderBuilder {
     key_unreadable: Option<bool>,
     kind: Option<TextProviderKind>,
     model: Option<String>,
+    provider: Option<AiProvider>,
     updated_at: Option<String>,
 }
 
@@ -62,6 +64,11 @@ impl TextProviderBuilder {
         self
     }
 
+    pub fn provider(mut self, value: AiProvider) -> Self {
+        self.provider = Some(value);
+        self
+    }
+
     pub fn updated_at(mut self, value: impl Into<String>) -> Self {
         self.updated_at = Some(value.into());
         self
@@ -74,6 +81,7 @@ impl TextProviderBuilder {
     /// - [`key_unreadable`](TextProviderBuilder::key_unreadable)
     /// - [`kind`](TextProviderBuilder::kind)
     /// - [`model`](TextProviderBuilder::model)
+    /// - [`provider`](TextProviderBuilder::provider)
     /// - [`updated_at`](TextProviderBuilder::updated_at)
     pub fn build(self) -> Result<TextProvider, BuildError> {
         Ok(TextProvider {
@@ -90,6 +98,9 @@ impl TextProviderBuilder {
             model: self
                 .model
                 .ok_or_else(|| BuildError::missing_field("model"))?,
+            provider: self
+                .provider
+                .ok_or_else(|| BuildError::missing_field("provider"))?,
             updated_at: self
                 .updated_at
                 .ok_or_else(|| BuildError::missing_field("updated_at"))?,

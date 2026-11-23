@@ -85,7 +85,39 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
           reason: null,
           remaining: 2,
           resetsAt: "1970-01-02T00:00:00.000Z",
+          // No service chosen for slide videos: none are composed.
+          slideshows: {
+            available: false,
+            dailyLimit: 20,
+            paymentMethodRequired: false,
+            provider: null,
+            remaining: 20,
+            sandbox: false,
+          },
           source: "server",
+          // No provider chosen for transcripts, videos or voice-overs:
+          // none are made.
+          transcriptions: {
+            available: false,
+            dailyLimit: 50,
+            maxBytes: 25_000_000,
+            provider: null,
+            remaining: 50,
+          },
+          videos: {
+            available: false,
+            dailyLimit: 20,
+            maxPromptLength: 1000,
+            provider: null,
+            remaining: 20,
+          },
+          voiceovers: {
+            available: false,
+            dailyLimit: 50,
+            maxTextLength: 4000,
+            provider: null,
+            remaining: 50,
+          },
         }
       );
 

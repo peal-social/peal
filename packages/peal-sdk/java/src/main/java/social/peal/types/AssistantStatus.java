@@ -40,7 +40,15 @@ public final class AssistantStatus {
 
     private final String resetsAt;
 
+    private final AssistantSlideshowsStatus slideshows;
+
     private final Optional<AssistantTextSource> source;
+
+    private final AssistantTranscriptionsStatus transcriptions;
+
+    private final AssistantVideosStatus videos;
+
+    private final AssistantVoiceoversStatus voiceovers;
 
     private final Map<String, Object> additionalProperties;
 
@@ -53,7 +61,11 @@ public final class AssistantStatus {
             Optional<AssistantOffReason> reason,
             int remaining,
             String resetsAt,
+            AssistantSlideshowsStatus slideshows,
             Optional<AssistantTextSource> source,
+            AssistantTranscriptionsStatus transcriptions,
+            AssistantVideosStatus videos,
+            AssistantVoiceoversStatus voiceovers,
             Map<String, Object> additionalProperties) {
         this.available = available;
         this.dailyLimit = dailyLimit;
@@ -63,7 +75,11 @@ public final class AssistantStatus {
         this.reason = reason;
         this.remaining = remaining;
         this.resetsAt = resetsAt;
+        this.slideshows = slideshows;
         this.source = source;
+        this.transcriptions = transcriptions;
+        this.videos = videos;
+        this.voiceovers = voiceovers;
         this.additionalProperties = additionalProperties;
     }
 
@@ -113,12 +129,32 @@ public final class AssistantStatus {
         return resetsAt;
     }
 
+    @JsonProperty("slideshows")
+    public AssistantSlideshowsStatus getSlideshows() {
+        return slideshows;
+    }
+
     @JsonIgnore
     public Optional<AssistantTextSource> getSource() {
         if (source == null) {
             return Optional.empty();
         }
         return source;
+    }
+
+    @JsonProperty("transcriptions")
+    public AssistantTranscriptionsStatus getTranscriptions() {
+        return transcriptions;
+    }
+
+    @JsonProperty("videos")
+    public AssistantVideosStatus getVideos() {
+        return videos;
+    }
+
+    @JsonProperty("voiceovers")
+    public AssistantVoiceoversStatus getVoiceovers() {
+        return voiceovers;
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
@@ -159,7 +195,11 @@ public final class AssistantStatus {
                 && reason.equals(other.reason)
                 && remaining == other.remaining
                 && resetsAt.equals(other.resetsAt)
-                && source.equals(other.source);
+                && slideshows.equals(other.slideshows)
+                && source.equals(other.source)
+                && transcriptions.equals(other.transcriptions)
+                && videos.equals(other.videos)
+                && voiceovers.equals(other.voiceovers);
     }
 
     @java.lang.Override
@@ -173,7 +213,11 @@ public final class AssistantStatus {
                 this.reason,
                 this.remaining,
                 this.resetsAt,
-                this.source);
+                this.slideshows,
+                this.source,
+                this.transcriptions,
+                this.videos,
+                this.voiceovers);
     }
 
     @java.lang.Override
@@ -208,7 +252,23 @@ public final class AssistantStatus {
     }
 
     public interface ResetsAtStage {
-        _FinalStage resetsAt(@NotNull String resetsAt);
+        SlideshowsStage resetsAt(@NotNull String resetsAt);
+    }
+
+    public interface SlideshowsStage {
+        TranscriptionsStage slideshows(@NotNull AssistantSlideshowsStatus slideshows);
+    }
+
+    public interface TranscriptionsStage {
+        VideosStage transcriptions(@NotNull AssistantTranscriptionsStatus transcriptions);
+    }
+
+    public interface VideosStage {
+        VoiceoversStage videos(@NotNull AssistantVideosStatus videos);
+    }
+
+    public interface VoiceoversStage {
+        _FinalStage voiceovers(@NotNull AssistantVoiceoversStatus voiceovers);
     }
 
     public interface _FinalStage {
@@ -245,6 +305,10 @@ public final class AssistantStatus {
                     MaxTextLengthStage,
                     RemainingStage,
                     ResetsAtStage,
+                    SlideshowsStage,
+                    TranscriptionsStage,
+                    VideosStage,
+                    VoiceoversStage,
                     _FinalStage {
         private boolean available;
 
@@ -257,6 +321,14 @@ public final class AssistantStatus {
         private int remaining;
 
         private String resetsAt;
+
+        private AssistantSlideshowsStatus slideshows;
+
+        private AssistantTranscriptionsStatus transcriptions;
+
+        private AssistantVideosStatus videos;
+
+        private AssistantVoiceoversStatus voiceovers;
 
         private Optional<AssistantTextSource> source = Optional.empty();
 
@@ -278,7 +350,11 @@ public final class AssistantStatus {
             reason(other.getReason());
             remaining(other.getRemaining());
             resetsAt(other.getResetsAt());
+            slideshows(other.getSlideshows());
             source(other.getSource());
+            transcriptions(other.getTranscriptions());
+            videos(other.getVideos());
+            voiceovers(other.getVoiceovers());
             return this;
         }
 
@@ -319,8 +395,36 @@ public final class AssistantStatus {
 
         @java.lang.Override
         @JsonSetter("resetsAt")
-        public _FinalStage resetsAt(@NotNull String resetsAt) {
+        public SlideshowsStage resetsAt(@NotNull String resetsAt) {
             this.resetsAt = Objects.requireNonNull(resetsAt, "resetsAt must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("slideshows")
+        public TranscriptionsStage slideshows(@NotNull AssistantSlideshowsStatus slideshows) {
+            this.slideshows = Objects.requireNonNull(slideshows, "slideshows must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("transcriptions")
+        public VideosStage transcriptions(@NotNull AssistantTranscriptionsStatus transcriptions) {
+            this.transcriptions = Objects.requireNonNull(transcriptions, "transcriptions must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("videos")
+        public VoiceoversStage videos(@NotNull AssistantVideosStatus videos) {
+            this.videos = Objects.requireNonNull(videos, "videos must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("voiceovers")
+        public _FinalStage voiceovers(@NotNull AssistantVoiceoversStatus voiceovers) {
+            this.voiceovers = Objects.requireNonNull(voiceovers, "voiceovers must not be null");
             return this;
         }
 
@@ -410,7 +514,11 @@ public final class AssistantStatus {
                     reason,
                     remaining,
                     resetsAt,
+                    slideshows,
                     source,
+                    transcriptions,
+                    videos,
+                    voiceovers,
                     additionalProperties);
         }
 
@@ -424,7 +532,11 @@ public final class AssistantStatus {
                     || key.equalsIgnoreCase("reason")
                     || key.equalsIgnoreCase("remaining")
                     || key.equalsIgnoreCase("resetsAt")
-                    || key.equalsIgnoreCase("source")) {
+                    || key.equalsIgnoreCase("slideshows")
+                    || key.equalsIgnoreCase("source")
+                    || key.equalsIgnoreCase("transcriptions")
+                    || key.equalsIgnoreCase("videos")
+                    || key.equalsIgnoreCase("voiceovers")) {
                 return;
             }
             this.additionalProperties.put(key, value);

@@ -18,12 +18,13 @@ Give each file a description for people who can't see it, of up to 2,000 charact
 | Images    | JPEG, PNG, GIF, WebP  | 16 MiB       |
 | Videos    | MP4, QuickTime (.mov) | 1 GiB        |
 | Documents | PDF, up to 300 pages  | 100 MiB      |
+| Audio     | MP3, M4A, WAV         | 100 MiB      |
 
 Contributors and above can upload. Editors and above can delete.
 
 ### What Peal reads from a file [#probe]
 
-Once a file is stored, Peal reads it once: an image's dimensions, a video's dimensions, duration and codec, and a PDF's number of pages.
+Once a file is stored, Peal reads it once: an image's dimensions, a video's dimensions, duration and codec, an audio file's duration and codec, and a PDF's number of pages. An audio file goes out on no platform: it's kept for a [transcript](#transcribe) or to use elsewhere.
 
 A PDF is a document, which only LinkedIn shows, page by page. Peal stores it and hands it over, and never opens it. A PDF of more than 300 pages, the most LinkedIn takes, isn't ready for posts. One whose pages can't be counted, such as an encrypted file, is kept, and LinkedIn judges it.
 
@@ -103,7 +104,7 @@ Each import adds a new file, read the same way as an upload. On an instance that
 
 ## Generate an image [#generate]
 
-When the workspace has its own [image provider](/guides/workspace#image-provider), or the instance has an image model, the assistant can make an image from a description, straight into the library. You need the right to use the assistant and the right to upload, so contributors and above.
+When the workspace has its own [image provider](/guides/workspace#providers), or the instance has an image model, the assistant can make an image from a description, straight into the library. You need the right to use the assistant and the right to upload, so contributors and above.
 
 <Tabs>
 <Tab title="Web app">
@@ -174,6 +175,240 @@ When you attach it in the web app, the composer turns on the AI label of each ch
 Peal doesn't set these labels on posts made through the API, the command line or MCP, so set the [platform options](/guides/posts#options) yourself.
 
 Images are off unless the workspace sets its own provider, or the instance sets an image model: see [Self-hosting](/self-hosting/assistant#ai).
+
+## Generate a video [#generate-video]
+
+When the workspace chose a provider and a model for [videos](/guides/workspace#models), the assistant can make a video from a description, straight into the library. Videos come from Google Gemini's Veo models or xAI's Grok Imagine models, with the workspace's own key: the instance has no video model of its own. You need the right to use the assistant and the right to upload, so contributors and above.
+
+<Tabs>
+<Tab title="Web app">
+
+Click **Generate a video** on the **Media** page. Describe the video, pick its aspect and, when the provider takes them, its length and an image of the library to start from. The video shows in the library as a placeholder with its state until it's ready.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media video generate --prompt "The catalogue's pages turning slowly in the wind" --aspect portrait --wait
+```
+
+See [`peal media video`](/developers/cli/posts#media-video).
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/videos/generations`, with the `prompt`, the `aspect` and, optionally, `durationSeconds` and `imageMediaId`. The answer is `202` with the job. Follow it with `GET /api/workspaces/{workspaceId}/media/videos/generations/{id}` until its `status` is `succeeded`, with the video's `mediaId`, or `failed`, with its `reason`.
+
+</Tab>
+</Tabs>
+
+What each provider takes:
+
+| Provider      | Aspects                                 | Length          | First frame |
+| ------------- | --------------------------------------- | --------------- | ----------- |
+| Google Gemini | `landscape` (16:9), `portrait` (9:16)   | chosen by Veo   | yes         |
+| xAI           | `landscape`, `portrait`, `square` (1:1) | 1 to 15 seconds | yes         |
+
+The description can be 1 to 1,000 characters, and goes as it is to the provider, with the workspace's key. Peal keeps it only while the video is made, then erases it, and never writes it or the video to its logs.
+
+<Callout type="warning" title="Your provider bills each video">
+  Peal bills nothing for videos, but your account at the provider pays for each
+  one it makes, at its prices. Making a video takes minutes.
+</Callout>
+
+### How a video is made [#video-job]
+
+A video is a job that runs on the server, so you can leave the page. It's `queued`, then `running` while the provider makes it, then `succeeded` or `failed`. When it ends, the member who asked gets a notice in the app.
+
+- A workspace makes one video at a time. Asking for another meanwhile is refused (`VideoBusy`, 429).
+- A workspace asks for 20 videos a day at most (UTC), whatever each ends with (`VideoAllowanceReached`, 429).
+- Before anything is asked, the plan's media storage must have room for the largest video Peal keeps, 200 MiB. The video then takes room like any other file.
+- Peal waits up to 15 minutes for the provider. A server makes four videos at once; the others wait their turn, queued.
+- Peal never asks the provider twice for one video. If the server stops while a video is made, the video fails as `interrupted`, because the provider may already have made and billed it. Ask for it again if you want it.
+
+<Accordion>
+<AccordionItem title="Why a video failed">
+
+| Reason             | What happened                                                              |
+| ------------------ | -------------------------------------------------------------------------- |
+| `unavailable`      | No provider is chosen for videos any more                                  |
+| `keyUnreadable`    | The provider's key can't be read any more: connect the provider again      |
+| `settingsRefused`  | The provider refused the key, the account or the model                     |
+| `addressRefused`   | The provider's address isn't one Peal sends to                             |
+| `redirected`       | The provider answered with a redirect, which Peal never follows            |
+| `unreachable`      | The provider couldn't be reached, or was busy                              |
+| `refused`          | The provider refused this request, such as for its content rules           |
+| `timedOut`         | The video took longer than 15 minutes                                      |
+| `unusableAnswer`   | The provider's answer held no video Peal keeps, or one larger than 200 MiB |
+| `imageUnavailable` | The first frame was deleted, or couldn't be read                           |
+| `storageFull`      | The plan's media storage had no room for it                                |
+| `notStored`        | The media store failed to keep it                                          |
+| `interrupted`      | The server stopped while it was made                                       |
+
+</AccordionItem>
+</Accordion>
+
+The video is an MP4 file in the library, marked **Made by AI** (`aiGenerated: true` in the API), with no description. As for an image, set the platform's AI label in the post's options when Peal doesn't. No MCP tool makes videos, because each one is paid by the workspace's account at the provider.
+
+## Create a voice-over [#voiceover]
+
+When the workspace chose a provider and a model for [voice-overs](/guides/workspace#models), the assistant can speak a text into the library, as an audio file. Voice-overs come from OpenAI, Google Gemini, Mistral, xAI, ElevenLabs or fal, with the workspace's own key: the instance has none of its own. You need the right to use the assistant and the right to upload, so contributors and above.
+
+<Tabs>
+<Tab title="Web app">
+
+Click **Create a voice-over** on the **Media** page. Write the text and, when the provider takes one, pick a voice, or type a voice's ID for ElevenLabs. The audio file shows in the library once it's made.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media voiceover --text "Welcome to the spring catalogue." --voice nova
+```
+
+See [`peal media voiceover`](/developers/cli/posts#media-audio).
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/voiceovers`, with the `text` and, optionally, a `voice`. The answer is `201` with the new file of the library.
+
+</Tab>
+</Tabs>
+
+The text can be 1 to 4,000 characters, and goes as it is to the provider. The voices each provider takes:
+
+| Provider      | Voices                                                                      |
+| ------------- | --------------------------------------------------------------------------- |
+| OpenAI        | `alloy`, `ash`, `coral`, `echo`, `fable`, `onyx`, `nova`, `sage`, `shimmer` |
+| Google Gemini | `Kore`, `Puck`, `Zephyr`, `Charon` and its other prebuilt voices            |
+| Mistral       | `gb_jane_neutral` and its other preset voices                               |
+| xAI           | `eve`, `ara`, `rex`, `sal`, `leo`                                           |
+| ElevenLabs    | the ID of any voice of your account's library                               |
+| fal           | none: its MiniMax models speak with their own voice                         |
+
+Left out, the provider's default voice speaks. The voice-over is an MP3 file (a WAV file for Google Gemini), marked **Made by AI**, with no description. A workspace makes 50 a day at most (UTC), whatever each ends with (`AudioAllowanceReached`, 429). Before anything is asked, the plan's storage must have room for the largest voice-over Peal keeps, 48 MiB. Peal waits 90 seconds for the provider. Neither the text nor the audio goes to Peal's logs.
+
+No platform takes an audio file on its own: use the voice-over in a video you make, or elsewhere.
+
+## Transcribe a file [#transcribe]
+
+When the workspace chose a provider and a model for [transcription](/guides/workspace#models), the assistant can write what is said in an audio or video file of the library. Transcripts come from OpenAI, Google Gemini, Mistral, xAI, Groq, ElevenLabs or fal, with the workspace's own key. You need the right to use the assistant and the right to read media; saving the transcript as the file's description also takes the right to upload.
+
+<Tabs>
+<Tab title="Web app">
+
+On an audio or video file of the **Media** page, click the transcript button, then **Transcribe**. The transcript shows in the dialog, with **Copy** and **Use as description**.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media transcribe <media-id> --save-description
+```
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/{mediaId}/transcription`, with `saveAsDescription` when the transcript should become the file's description. The answer holds the `text`, the `language` and the `durationSeconds` when the provider gives them, and `descriptionSaved`.
+
+</Tab>
+</Tabs>
+
+The file must be ready and at most 25 MB (`TranscriptionRejected`, 422, otherwise). Peal reads it from the media store and sends it whole to the provider, which can take a minute for a long recording: Peal waits 90 seconds. A workspace asks for 50 transcripts a day at most (UTC), whatever each ends with. A transcript is saved as the description only when it fits one, 2,000 characters; otherwise it's answered and nothing changes. Peal keeps the transcript nowhere else, and never writes it to its logs.
+
+<Callout
+  type="warning"
+  title="Your provider bills each voice-over and transcript"
+>
+  Peal bills nothing for them, but your account at the provider pays for each
+  one, at its prices. No MCP tool makes them.
+</Callout>
+
+## Make a slide video [#make-a-slide-video]
+
+A slide video puts 2 to 10 images of the library one after the other, each with an optional caption and a slow motion, over an optional voice-over, into one MP4 file. Shotstack composes it with the workspace's own key, once the workspace [connected Shotstack](/guides/workspace#shotstack) and chose it for slide videos. You need the right to use the assistant and the right to upload, so contributors and above.
+
+<Tabs>
+<Tab title="Web app">
+
+Click **Make a slide video** on the **Media** page. Pick the images in the order they show, and move them up or down. Give each a caption and a motion if you want them, then choose a voice-over from the library, the aspect, how long each slide shows and the transition. The video shows in the library as a placeholder with its state until it's ready.
+
+</Tab>
+<Tab title="CLI">
+
+```sh
+peal media slideshow create \
+  --image <media-id> --caption "Spring catalogue" --motion zoomIn \
+  --image <media-id> --caption "Out on Friday" --motion slide \
+  --voiceover <media-id> --aspect portrait --wait
+```
+
+See [`peal media slideshow`](/developers/cli/posts#media-slideshow).
+
+</Tab>
+<Tab title="API">
+
+`POST /api/workspaces/{workspaceId}/media/slideshows`, with the `aspect` and the `slides`, each a `mediaId` with an optional `caption` and `motion`, and optionally `secondsPerSlide`, `transition` and `voiceoverMediaId`. The answer is `202` with the job. Follow it with `GET /api/workspaces/{workspaceId}/media/slideshows/{id}` until its `status` is `succeeded`, with the video's `mediaId`, or `failed`, with its `reason`.
+
+</Tab>
+</Tabs>
+
+What a slide video takes:
+
+| Setting           | Values                                                           | Default                                    |
+| ----------------- | ---------------------------------------------------------------- | ------------------------------------------ |
+| Images            | 2 to 10 ready JPEG or PNG images of the library, in order        | required                                   |
+| Caption           | up to 120 characters a slide, white on a dark band at the bottom | none                                       |
+| Motion            | `none`, `zoomIn`, `zoomOut` or `slide` (a slow pan), a slide     | `none`                                     |
+| Transition        | `fade` or `none`, between every two slides                       | `fade`                                     |
+| Voice-over        | a ready audio file of the library                                | none                                       |
+| Seconds per slide | 2 to 10, 90 seconds in all                                       | the voice-over shared between them, else 4 |
+| Aspect            | `portrait` (9:16), `landscape` (16:9) or `square` (1:1)          | `portrait` in the app and the CLI          |
+
+The video is 1080 pixels on its short side, at 25 frames a second. With a voice-over and no seconds given, each slide lasts the voice-over's length divided by the number of slides, which must give 2 to 10 seconds a slide. With seconds given, the voice-over stops at the last slide's end.
+
+<Callout type="warning" title="Your Shotstack account pays for each render">
+  Peal bills nothing for slide videos, and your Shotstack account pays for each
+  one at its prices. On Peal Cloud, they also need a payment method on the
+  workspace's billing account: on the free tier, **Make a slide video** opens
+  the upgrade dialog, and the API answers `CompositionNeedsPayment` (402).
+</Callout>
+
+### How a slide video is made [#slideshow-job]
+
+A slide video is a job that runs on the server, so you can leave the page. It's `queued`, then `running` while Shotstack renders it, then `succeeded` or `failed`. When it ends, the member who asked gets a notice in the app.
+
+- Peal sends Shotstack the slides with a link to each file, which works for an hour, and the captions. It asks Shotstack not to host the video it renders, then fetches the video and keeps it in the library.
+- Shotstack fetches those links itself, from the internet, so the media storage must be reachable from it. On a self-hosted server whose S3 store is on a private network, Shotstack refuses every slide video (`refused`).
+- A workspace makes one slide video at a time (`CompositionBusy`, 429) and 20 a day at most (UTC), whatever each ends with (`CompositionAllowanceReached`, 429).
+- Before anything is asked, the plan's media storage must have room for 200 MiB. The video then takes room like any other file.
+- Peal reads where the render stands every 5 seconds, for up to 20 minutes.
+- Peal never asks Shotstack twice for one video. If the server stops while a video is made, it fails as `interrupted`, because Shotstack may already have rendered and billed it.
+
+<Accordion>
+<AccordionItem title="Why a slide video failed">
+
+| Reason             | What happened                                                                    |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `unavailable`      | No service is chosen for slide videos any more                                   |
+| `keyUnreadable`    | The Shotstack key can't be read any more: connect Shotstack again                |
+| `settingsRefused`  | Shotstack refused the key or the account, as when it has no credits left         |
+| `addressRefused`   | The service's address isn't one Peal sends to                                    |
+| `redirected`       | Shotstack answered with a redirect, which Peal never follows                     |
+| `unreachable`      | Shotstack couldn't be reached, or was busy                                       |
+| `refused`          | Shotstack refused this request, couldn't fetch its files, or failed to render it |
+| `timedOut`         | The video took longer than 20 minutes                                            |
+| `unusableAnswer`   | Shotstack's answer held no video Peal keeps, or one larger than 200 MiB          |
+| `mediaUnavailable` | An image or the voice-over was deleted, or couldn't be handed to Shotstack       |
+| `storageFull`      | The plan's media storage had no room for it                                      |
+| `notStored`        | The media store failed to keep it                                                |
+| `interrupted`      | The server stopped while it was made                                             |
+
+</AccordionItem>
+</Accordion>
+
+The video is an MP4 file in the library, with no description. It isn't marked as made by AI, since Shotstack only puts your own files together. Peal never writes the captions or the video to its logs, and keeps the captions only while the video is made. No MCP tool makes slide videos, because each one is paid by the workspace's Shotstack account.
 
 ## Attach media to a post [#attach]
 

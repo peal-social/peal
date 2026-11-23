@@ -1,6 +1,6 @@
 ---
 title: Assistant de rédaction
-description: Activer l’assistant de rédaction et ses images avec Anthropic ou tout point d’accès compatible OpenAI.
+description: Activer l’assistant de rédaction et ses images avec un fournisseur que Peal connaît par son nom ou tout point d’accès compatible OpenAI.
 sidebar:
   icon: sparkles
 ---
@@ -9,14 +9,14 @@ L’assistant de rédaction de l’éditeur réécrit une publication sur un ton
 
 ## Nommer un fournisseur de texte [#ai]
 
-Tant que `PEAL_AI_PROVIDER` ne nomme pas de fournisseur, l’application web masque l’assistant et ses points d’accès répondent `AssistantUnavailable`. Il fonctionne avec l’API d’Anthropic ou n’importe quel point d’accès compatible OpenAI, comme un serveur de modèles que vous faites tourner :
+Tant que `PEAL_AI_PROVIDER` ne nomme pas de fournisseur, l’application web masque l’assistant et ses points d’accès répondent `AssistantUnavailable`. Peal connaît ces fournisseurs par leur nom : `anthropic`, `openai`, `google` (Gemini), `mistral`, `xai`, `groq`, `togetherai`, `deepseek`, `openrouter`, `cerebras` et `fireworks`. Tout autre point d’accès qui sert `/chat/completions` fonctionne avec `openai-compatible`, comme un serveur de modèles que vous faites tourner :
 
-| Réglage            | Avec Anthropic                                     | Avec un point d’accès compatible OpenAI                                  |
-| ------------------ | -------------------------------------------------- | ------------------------------------------------------------------------ |
-| `PEAL_AI_PROVIDER` | `anthropic`                                        | `openai-compatible`                                                      |
-| `PEAL_AI_API_KEY`  | Requis                                             | S’il en demande une                                                      |
-| `PEAL_AI_MODEL`    | `claude-opus-5-5`, sauf s’il nomme un autre modèle | L’un de ses modèles                                                      |
-| `PEAL_AI_BASE_URL` | L’API d’Anthropic, sauf s’il nomme un proxy        | L’adresse que suit `/chat/completions`, comme `http://127.0.0.1:8000/v1` |
+| Réglage            | Avec Anthropic                                     | Avec un autre fournisseur nommé ci-dessus | Avec un point d’accès compatible OpenAI                                  |
+| ------------------ | -------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------ |
+| `PEAL_AI_PROVIDER` | `anthropic`                                        | Son nom, comme `deepseek`                 | `openai-compatible`                                                      |
+| `PEAL_AI_API_KEY`  | Requis                                             | Requis                                    | S’il en demande une                                                      |
+| `PEAL_AI_MODEL`    | `claude-opus-5-5`, sauf s’il nomme un autre modèle | L’un de ses modèles                       | L’un de ses modèles                                                      |
+| `PEAL_AI_BASE_URL` | L’API d’Anthropic, sauf s’il nomme un proxy        | Sa propre API, sauf s’il nomme un proxy   | L’adresse que suit `/chat/completions`, comme `http://127.0.0.1:8000/v1` |
 
 Si vous nommez un fournisseur sans les réglages qu’il demande, le serveur s’arrête au démarrage, et l’erreur nomme la variable manquante.
 
@@ -24,9 +24,9 @@ Le serveur appelle le fournisseur directement. Il ne passe pas par la garde qui 
 
 ### Le fournisseur d’un espace de travail [#workspace-provider]
 
-Un espace de travail peut aussi utiliser son propre [fournisseur de texte](/guides/workspace#text-provider), Anthropic ou compatible OpenAI, avec sa propre clé. Cela fonctionne que votre instance en règle un ou non.
+Un espace de travail peut aussi [connecter ses propres fournisseurs](/guides/workspace#providers), les mêmes ou tout point d’accès compatible OpenAI, chacun avec sa propre clé, et [en choisir un et un modèle pour chaque usage](/guides/workspace#models) : texte, images. Cela fonctionne que votre instance en règle un ou non. Un usage que l’espace de travail laisse sans choix revient au modèle de votre instance, dans l’allocation de l’espace de travail.
 
-Ses demandes partent alors chez lui, jamais chez le fournisseur de l’instance, et par la garde, donc seulement en HTTPS public. Elles ne comptent dans aucune des demandes quotidiennes de l’espace de travail, et sont limitées à 500 par jour. Le serveur garde la clé de l’espace de travail chiffrée avec `PEAL_TOKEN_KEYS`, et n’en garde aucune sans elle.
+Ses demandes partent alors chez lui, jamais chez le fournisseur de l’instance, et par la garde, donc seulement en HTTPS public. Elles ne comptent dans aucune des demandes quotidiennes de l’espace de travail, et sont limitées à 500 par jour. Le serveur garde chacune des clés de l’espace de travail chiffrée avec `PEAL_TOKEN_KEYS`, liée à l’espace de travail, au fournisseur et à son adresse, et n’en garde aucune sans elle. Un serveur mis à jour depuis une version qui gardait un fournisseur de texte et un d’images par espace de travail les déplace vers des connexions au démarrage, une seule fois.
 
 ### Régler les demandes quotidiennes [#daily-requests]
 
@@ -51,14 +51,14 @@ Le serveur n’écrit jamais le texte ni la réponse dans ses journaux ou ses tr
 
 Les images que l’assistant crée dans la médiathèque ([Générer une image](/guides/media#generate)) demandent un modèle d’images à part, car un modèle de rédaction peut n’en créer aucune. Tant que vous ne définissez pas ces réglages, les images sont désactivées :
 
-| Réglage                  | Ce que c’est                             |
-| ------------------------ | ---------------------------------------- |
-| `PEAL_AI_IMAGE_PROVIDER` | `openai-compatible`                      |
-| `PEAL_AI_IMAGE_BASE_URL` | L’adresse que suit `/images/generations` |
-| `PEAL_AI_IMAGE_MODEL`    | L’un de ses modèles                      |
-| `PEAL_AI_IMAGE_API_KEY`  | Sa clé, s’il en demande une              |
+| Réglage                  | Ce que c’est                                                                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `PEAL_AI_IMAGE_PROVIDER` | `openai`, `google`, `xai` ou `togetherai`, ou `openai-compatible` pour n’importe quel point d’accès qui sert `/images/generations` |
+| `PEAL_AI_IMAGE_BASE_URL` | L’adresse que suit `/images/generations`, pour `openai-compatible` ; pour les autres, seulement derrière un proxy                  |
+| `PEAL_AI_IMAGE_MODEL`    | L’un de ses modèles                                                                                                                |
+| `PEAL_AI_IMAGE_API_KEY`  | Sa clé : obligatoire, sauf pour un point d’accès `openai-compatible` qui n’en demande pas                                          |
 
-Le serveur demande une image de 1024×1024, 1536×1024 ou 1024×1536. Il la lit en base64, ou récupère l’adresse que donne le fournisseur à travers la garde, et la stocke telle qu’elle est arrivée.
+Le serveur demande une image dans la forme qu’un membre choisit : une taille de 1024×1024, 1536×1024 ou 1024×1536, ou pour Google Gemini et xAI, qui prennent un rapport, 1:1, 3:2 ou 2:3. Il la lit en base64, ou récupère l’adresse que donne le fournisseur à travers la garde, et la stocke telle qu’elle est arrivée.
 
 Une image coûte 5 des demandes du jour de l’espace de travail. La description et l’image ne sont jamais journalisées.
 
@@ -66,9 +66,9 @@ Une image coûte 5 des demandes du jour de l’espace de travail. La description
   type="info"
   title="Votre fournisseur se vérifie avant d’activer les images"
 >
-  Peal a été testé contre une imitation de ce point d’accès, écrite d’après la
-  référence d’un seul fournisseur. Vérifiez d’abord les tailles et la réponse de
-  votre fournisseur.
+  Peal a été testé contre des imitations de ces fournisseurs, écrites d’après
+  leurs références. Vérifiez d’abord les modèles et les formes de votre
+  fournisseur.
 </Callout>
 
 <Accordion>

@@ -473,6 +473,8 @@ type NoticeEvent struct {
 	FollowUpsNotSent              *NoticeEventFollowUpsNotSent
 	FollowUpRuleStopped           *NoticeEventFollowUpRuleStopped
 	CommentRuleStopped            *NoticeEventCommentRuleStopped
+	VideoGenerationEnded          *NoticeEventVideoGenerationEnded
+	SlideshowEnded                *NoticeEventSlideshowEnded
 
 	rawJSON json.RawMessage
 }
@@ -694,6 +696,20 @@ func (n *NoticeEvent) GetCommentRuleStopped() *NoticeEventCommentRuleStopped {
 	return n.CommentRuleStopped
 }
 
+func (n *NoticeEvent) GetVideoGenerationEnded() *NoticeEventVideoGenerationEnded {
+	if n == nil {
+		return nil
+	}
+	return n.VideoGenerationEnded
+}
+
+func (n *NoticeEvent) GetSlideshowEnded() *NoticeEventSlideshowEnded {
+	if n == nil {
+		return nil
+	}
+	return n.SlideshowEnded
+}
+
 func (n *NoticeEvent) UnmarshalJSON(data []byte) error {
 	var unmarshaler struct {
 		Type string `json:"_tag"`
@@ -886,6 +902,18 @@ func (n *NoticeEvent) UnmarshalJSON(data []byte) error {
 			return err
 		}
 		n.CommentRuleStopped = value
+	case "VideoGenerationEnded":
+		value := new(NoticeEventVideoGenerationEnded)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		n.VideoGenerationEnded = value
+	case "SlideshowEnded":
+		value := new(NoticeEventSlideshowEnded)
+		if err := json.Unmarshal(data, &value); err != nil {
+			return err
+		}
+		n.SlideshowEnded = value
 	}
 	n.rawJSON = json.RawMessage(data)
 	return nil
@@ -985,6 +1013,12 @@ func (n NoticeEvent) MarshalJSON() ([]byte, error) {
 	if n.CommentRuleStopped != nil {
 		return internal.MarshalJSONWithExtraProperty(n.CommentRuleStopped, "_tag", "CommentRuleStopped")
 	}
+	if n.VideoGenerationEnded != nil {
+		return internal.MarshalJSONWithExtraProperty(n.VideoGenerationEnded, "_tag", "VideoGenerationEnded")
+	}
+	if n.SlideshowEnded != nil {
+		return internal.MarshalJSONWithExtraProperty(n.SlideshowEnded, "_tag", "SlideshowEnded")
+	}
 	if len(n.rawJSON) > 0 {
 		return n.rawJSON, nil
 	}
@@ -1022,6 +1056,8 @@ type NoticeEventVisitor interface {
 	VisitFollowUpsNotSent(*NoticeEventFollowUpsNotSent) error
 	VisitFollowUpRuleStopped(*NoticeEventFollowUpRuleStopped) error
 	VisitCommentRuleStopped(*NoticeEventCommentRuleStopped) error
+	VisitVideoGenerationEnded(*NoticeEventVideoGenerationEnded) error
+	VisitSlideshowEnded(*NoticeEventSlideshowEnded) error
 }
 
 func (n *NoticeEvent) Accept(visitor NoticeEventVisitor) error {
@@ -1114,6 +1150,12 @@ func (n *NoticeEvent) Accept(visitor NoticeEventVisitor) error {
 	}
 	if n.CommentRuleStopped != nil {
 		return visitor.VisitCommentRuleStopped(n.CommentRuleStopped)
+	}
+	if n.VideoGenerationEnded != nil {
+		return visitor.VisitVideoGenerationEnded(n.VideoGenerationEnded)
+	}
+	if n.SlideshowEnded != nil {
+		return visitor.VisitSlideshowEnded(n.SlideshowEnded)
 	}
 	return fmt.Errorf("type %T does not define a non-empty union type", n)
 }
@@ -1212,6 +1254,12 @@ func (n *NoticeEvent) validate() error {
 	}
 	if n.CommentRuleStopped != nil {
 		fields = append(fields, "CommentRuleStopped")
+	}
+	if n.VideoGenerationEnded != nil {
+		fields = append(fields, "VideoGenerationEnded")
+	}
+	if n.SlideshowEnded != nil {
+		fields = append(fields, "SlideshowEnded")
 	}
 	if len(fields) == 0 {
 		if n.Type != "" {
@@ -3756,6 +3804,175 @@ func (n *NoticeEventRecyclingEnded) String() string {
 }
 
 var (
+	noticeEventSlideshowEndedFieldMediaID     = big.NewInt(1 << 0)
+	noticeEventSlideshowEndedFieldOutcome     = big.NewInt(1 << 1)
+	noticeEventSlideshowEndedFieldReason      = big.NewInt(1 << 2)
+	noticeEventSlideshowEndedFieldSlideshowID = big.NewInt(1 << 3)
+)
+
+// noticeEventSlideshowEndedNullableFields maps the wire names of NoticeEventSlideshowEnded's nullable fields (required or optional) to their field bits.
+var noticeEventSlideshowEndedNullableFields = map[string]*big.Int{
+	"mediaId": noticeEventSlideshowEndedFieldMediaID,
+	"reason":  noticeEventSlideshowEndedFieldReason,
+}
+
+type NoticeEventSlideshowEnded struct {
+	MediaID     *string                          `json:"mediaId,omitempty" url:"mediaId,omitempty"`
+	Outcome     NoticeEventSlideshowEndedOutcome `json:"outcome" url:"outcome"`
+	Reason      *SlideshowFailureReason          `json:"reason,omitempty" url:"reason,omitempty"`
+	SlideshowID string                           `json:"slideshowId" url:"slideshowId"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (n *NoticeEventSlideshowEnded) GetMediaID() *string {
+	if n == nil {
+		return nil
+	}
+	return n.MediaID
+}
+
+func (n *NoticeEventSlideshowEnded) GetOutcome() NoticeEventSlideshowEndedOutcome {
+	if n == nil {
+		return ""
+	}
+	return n.Outcome
+}
+
+func (n *NoticeEventSlideshowEnded) GetReason() *SlideshowFailureReason {
+	if n == nil {
+		return nil
+	}
+	return n.Reason
+}
+
+func (n *NoticeEventSlideshowEnded) GetSlideshowID() string {
+	if n == nil {
+		return ""
+	}
+	return n.SlideshowID
+}
+
+func (n *NoticeEventSlideshowEnded) GetExtraProperties() map[string]interface{} {
+	if n == nil {
+		return nil
+	}
+	return n.extraProperties
+}
+
+func (n *NoticeEventSlideshowEnded) require(field *big.Int) {
+	next := new(big.Int)
+	if n.explicitFields != nil {
+		next.Set(n.explicitFields)
+	}
+	next.Or(next, field)
+	n.explicitFields = next
+}
+
+// SetMediaID sets the MediaID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventSlideshowEnded) SetMediaID(mediaID *string) {
+	n.MediaID = mediaID
+	n.require(noticeEventSlideshowEndedFieldMediaID)
+}
+
+// SetOutcome sets the Outcome field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventSlideshowEnded) SetOutcome(outcome NoticeEventSlideshowEndedOutcome) {
+	n.Outcome = outcome
+	n.require(noticeEventSlideshowEndedFieldOutcome)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventSlideshowEnded) SetReason(reason *SlideshowFailureReason) {
+	n.Reason = reason
+	n.require(noticeEventSlideshowEndedFieldReason)
+}
+
+// SetSlideshowID sets the SlideshowID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventSlideshowEnded) SetSlideshowID(slideshowID string) {
+	n.SlideshowID = slideshowID
+	n.require(noticeEventSlideshowEndedFieldSlideshowID)
+}
+
+func (n *NoticeEventSlideshowEnded) UnmarshalJSON(data []byte) error {
+	type unmarshaler NoticeEventSlideshowEnded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*n = NoticeEventSlideshowEnded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *n)
+	if err != nil {
+		return err
+	}
+	n.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, noticeEventSlideshowEndedNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		n.require(presentFields)
+	}
+	n.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (n *NoticeEventSlideshowEnded) MarshalJSON() ([]byte, error) {
+	type embed NoticeEventSlideshowEnded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*n),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, n.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (n *NoticeEventSlideshowEnded) String() string {
+	if n == nil {
+		return "<nil>"
+	}
+	if len(n.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(n.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(n); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", n)
+}
+
+type NoticeEventSlideshowEndedOutcome string
+
+const (
+	NoticeEventSlideshowEndedOutcomeSucceeded NoticeEventSlideshowEndedOutcome = "succeeded"
+	NoticeEventSlideshowEndedOutcomeFailed    NoticeEventSlideshowEndedOutcome = "failed"
+)
+
+func NewNoticeEventSlideshowEndedOutcomeFromString(s string) (NoticeEventSlideshowEndedOutcome, error) {
+	switch s {
+	case "succeeded":
+		return NoticeEventSlideshowEndedOutcomeSucceeded, nil
+	case "failed":
+		return NoticeEventSlideshowEndedOutcomeFailed, nil
+	}
+	var t NoticeEventSlideshowEndedOutcome
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (n NoticeEventSlideshowEndedOutcome) Ptr() *NoticeEventSlideshowEndedOutcome {
+	return &n
+}
+
+var (
 	noticeEventSubscriptionCancelledFieldEndsAt = big.NewInt(1 << 0)
 	noticeEventSubscriptionCancelledFieldPlan   = big.NewInt(1 << 1)
 )
@@ -4371,6 +4588,175 @@ func (n *NoticeEventTrialEnding) String() string {
 		return value
 	}
 	return fmt.Sprintf("%#v", n)
+}
+
+var (
+	noticeEventVideoGenerationEndedFieldGenerationID = big.NewInt(1 << 0)
+	noticeEventVideoGenerationEndedFieldMediaID      = big.NewInt(1 << 1)
+	noticeEventVideoGenerationEndedFieldOutcome      = big.NewInt(1 << 2)
+	noticeEventVideoGenerationEndedFieldReason       = big.NewInt(1 << 3)
+)
+
+// noticeEventVideoGenerationEndedNullableFields maps the wire names of NoticeEventVideoGenerationEnded's nullable fields (required or optional) to their field bits.
+var noticeEventVideoGenerationEndedNullableFields = map[string]*big.Int{
+	"mediaId": noticeEventVideoGenerationEndedFieldMediaID,
+	"reason":  noticeEventVideoGenerationEndedFieldReason,
+}
+
+type NoticeEventVideoGenerationEnded struct {
+	GenerationID string                                 `json:"generationId" url:"generationId"`
+	MediaID      *string                                `json:"mediaId,omitempty" url:"mediaId,omitempty"`
+	Outcome      NoticeEventVideoGenerationEndedOutcome `json:"outcome" url:"outcome"`
+	Reason       *VideoFailureReason                    `json:"reason,omitempty" url:"reason,omitempty"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (n *NoticeEventVideoGenerationEnded) GetGenerationID() string {
+	if n == nil {
+		return ""
+	}
+	return n.GenerationID
+}
+
+func (n *NoticeEventVideoGenerationEnded) GetMediaID() *string {
+	if n == nil {
+		return nil
+	}
+	return n.MediaID
+}
+
+func (n *NoticeEventVideoGenerationEnded) GetOutcome() NoticeEventVideoGenerationEndedOutcome {
+	if n == nil {
+		return ""
+	}
+	return n.Outcome
+}
+
+func (n *NoticeEventVideoGenerationEnded) GetReason() *VideoFailureReason {
+	if n == nil {
+		return nil
+	}
+	return n.Reason
+}
+
+func (n *NoticeEventVideoGenerationEnded) GetExtraProperties() map[string]interface{} {
+	if n == nil {
+		return nil
+	}
+	return n.extraProperties
+}
+
+func (n *NoticeEventVideoGenerationEnded) require(field *big.Int) {
+	next := new(big.Int)
+	if n.explicitFields != nil {
+		next.Set(n.explicitFields)
+	}
+	next.Or(next, field)
+	n.explicitFields = next
+}
+
+// SetGenerationID sets the GenerationID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventVideoGenerationEnded) SetGenerationID(generationID string) {
+	n.GenerationID = generationID
+	n.require(noticeEventVideoGenerationEndedFieldGenerationID)
+}
+
+// SetMediaID sets the MediaID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventVideoGenerationEnded) SetMediaID(mediaID *string) {
+	n.MediaID = mediaID
+	n.require(noticeEventVideoGenerationEndedFieldMediaID)
+}
+
+// SetOutcome sets the Outcome field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventVideoGenerationEnded) SetOutcome(outcome NoticeEventVideoGenerationEndedOutcome) {
+	n.Outcome = outcome
+	n.require(noticeEventVideoGenerationEndedFieldOutcome)
+}
+
+// SetReason sets the Reason field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (n *NoticeEventVideoGenerationEnded) SetReason(reason *VideoFailureReason) {
+	n.Reason = reason
+	n.require(noticeEventVideoGenerationEndedFieldReason)
+}
+
+func (n *NoticeEventVideoGenerationEnded) UnmarshalJSON(data []byte) error {
+	type unmarshaler NoticeEventVideoGenerationEnded
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*n = NoticeEventVideoGenerationEnded(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *n)
+	if err != nil {
+		return err
+	}
+	n.extraProperties = extraProperties
+	presentFields, err := internal.ExplicitFieldsFromJSON(data, noticeEventVideoGenerationEndedNullableFields)
+	if err != nil {
+		return err
+	}
+	if presentFields != nil {
+		n.require(presentFields)
+	}
+	n.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (n *NoticeEventVideoGenerationEnded) MarshalJSON() ([]byte, error) {
+	type embed NoticeEventVideoGenerationEnded
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*n),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, n.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (n *NoticeEventVideoGenerationEnded) String() string {
+	if n == nil {
+		return "<nil>"
+	}
+	if len(n.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(n.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(n); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", n)
+}
+
+type NoticeEventVideoGenerationEndedOutcome string
+
+const (
+	NoticeEventVideoGenerationEndedOutcomeSucceeded NoticeEventVideoGenerationEndedOutcome = "succeeded"
+	NoticeEventVideoGenerationEndedOutcomeFailed    NoticeEventVideoGenerationEndedOutcome = "failed"
+)
+
+func NewNoticeEventVideoGenerationEndedOutcomeFromString(s string) (NoticeEventVideoGenerationEndedOutcome, error) {
+	switch s {
+	case "succeeded":
+		return NoticeEventVideoGenerationEndedOutcomeSucceeded, nil
+	case "failed":
+		return NoticeEventVideoGenerationEndedOutcomeFailed, nil
+	}
+	var t NoticeEventVideoGenerationEndedOutcome
+	return "", fmt.Errorf("%s is not a valid %T", s, t)
+}
+
+func (n NoticeEventVideoGenerationEndedOutcome) Ptr() *NoticeEventVideoGenerationEndedOutcome {
+	return &n
 }
 
 var (

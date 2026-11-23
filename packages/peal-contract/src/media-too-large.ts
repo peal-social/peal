@@ -9,12 +9,12 @@ export class MediaTooLarge extends Schema.TaggedError<MediaTooLarge>()(
   {
     ...errorEnvelope,
     byteSize: ByteCountSchema,
-    kind: Schema.Literals(["image", "video", "document"]),
+    kind: Schema.Literals(["image", "video", "document", "audio"]),
     maxByteSize: ByteCountSchema,
   },
   {
     description:
-      "The file is larger than Peal stores for its kind: 16 MiB for an image, 1 GiB for a video, 100 MiB for a document.",
+      "The file is larger than Peal stores for its kind: 16 MiB for an image, 1 GiB for a video, 100 MiB for a document or an audio file.",
     httpApiStatus: 422,
   }
 ) {}

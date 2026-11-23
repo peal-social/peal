@@ -16,8 +16,16 @@ import type {
   ProviderModel,
 } from "#assistant/domain/image-provider.ts";
 import { acceptText, TextAnswerSchema } from "#assistant/domain/suggestion.ts";
-import { TextProviderSettings } from "#assistant/domain/text-provider.ts";
-import type { TextProviderKind } from "#assistant/domain/text-provider.ts";
+import {
+  kindOfProvider,
+  providerAddresses,
+  providerOfKind,
+  TextProviderSettings,
+} from "#assistant/domain/text-provider.ts";
+import type {
+  TextProviderId,
+  TextProviderKind,
+} from "#assistant/domain/text-provider.ts";
 import { planFor } from "#assistant/domain/writing-prompt.ts";
 import type { Actor } from "#shared/domain/access.ts";
 
@@ -30,16 +38,24 @@ export interface TextProviderView {
   /** The stored key no longer decrypts: type it again. */
   readonly keyUnreadable: boolean;
   readonly model: ProviderModel;
+  readonly provider: TextProviderId;
   readonly updatedAt: DateTime.Utc;
 }
 
-/** What a member saves: the API, the address and the model, and the key if typed. */
+/**
+ * What a member saves: the provider (or only the API it speaks), the
+ * address and the model, and the key if typed.
+ */
 export interface TextProviderChange {
   /** Left out, the stored key is kept, when the address stays the same. */
   readonly apiKey?: string;
-  readonly baseUrl: string;
-  readonly kind: TextProviderKind;
+  /** Left out, the provider's own address; `openai-compatible` has none. */
+  readonly baseUrl?: string;
+  /** Read only when `provider` is left out. */
+  readonly kind?: TextProviderKind;
   readonly model: string;
+  /** Left out, `kind`'s: `anthropic`, else `openai-compatible`. */
+  readonly provider?: TextProviderId;
 }
 
 const viewOf = ({
@@ -51,12 +67,17 @@ const viewOf = ({
   keyUnreadable,
   kind: settings.kind,
   model: settings.model,
+  provider: settings.provider,
   updatedAt: settings.updatedAt,
 });
 
+// The provider a change names, by name or by the API it speaks.
+const providerOf = (change: TextProviderChange): TextProviderId =>
+  change.provider ?? providerOfKind(change.kind ?? "openai-compatible");
+
 // What the connection test asks the provider: a short rewrite, as any
 // member's request would be, so the test reads the answer the same way.
-const testPlan = planFor(
+export const testPlan = planFor(
   { _tag: "rewrite", tone: "friendly" },
   Result.getOrThrow(
     checkDraft("Peal checks that the writing assistant reaches this provider.")
@@ -87,9 +108,12 @@ export const saveTextProvider = Effect.fn("TextProviderSettings.save")(
   function* saveTextProvider(actor: Actor, change: TextProviderChange) {
     const { workspaceId } = actor;
     const providers = yield* TextProviders;
+    const provider = providerOf(change);
 
+    // An address left out is the provider's own; one without any is
+    // refused as malformed.
     const baseUrl = yield* ProviderAddressCheck.use((addresses) =>
-      addresses.check(change.baseUrl)
+      addresses.check(change.baseUrl ?? providerAddresses[provider] ?? "")
     );
 
     const model = yield* Effect.fromResult(checkProviderModel(change.model));
@@ -116,8 +140,9 @@ export const saveTextProvider = Effect.fn("TextProviderSettings.save")(
 
     const settings = new TextProviderSettings({
       baseUrl,
-      kind: change.kind,
+      kind: kindOfProvider(provider),
       model,
+      provider,
       updatedAt: yield* DateTime.now,
     });
 

@@ -17,23 +17,31 @@ import java.util.Objects;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import social.peal.core.ObjectMappers;
+import social.peal.types.AiImageProvider;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ImageProviderChange.Builder.class)
 public final class ImageProviderChange {
     private final Optional<String> apiKey;
 
-    private final String baseUrl;
+    private final Optional<String> baseUrl;
 
     private final String model;
+
+    private final Optional<AiImageProvider> provider;
 
     private final Map<String, Object> additionalProperties;
 
     private ImageProviderChange(
-            Optional<String> apiKey, String baseUrl, String model, Map<String, Object> additionalProperties) {
+            Optional<String> apiKey,
+            Optional<String> baseUrl,
+            String model,
+            Optional<AiImageProvider> provider,
+            Map<String, Object> additionalProperties) {
         this.apiKey = apiKey;
         this.baseUrl = baseUrl;
         this.model = model;
+        this.provider = provider;
         this.additionalProperties = additionalProperties;
     }
 
@@ -43,13 +51,18 @@ public final class ImageProviderChange {
     }
 
     @JsonProperty("baseUrl")
-    public String getBaseUrl() {
+    public Optional<String> getBaseUrl() {
         return baseUrl;
     }
 
     @JsonProperty("model")
     public String getModel() {
         return model;
+    }
+
+    @JsonProperty("provider")
+    public Optional<AiImageProvider> getProvider() {
+        return provider;
     }
 
     @java.lang.Override
@@ -64,12 +77,15 @@ public final class ImageProviderChange {
     }
 
     private boolean equalTo(ImageProviderChange other) {
-        return apiKey.equals(other.apiKey) && baseUrl.equals(other.baseUrl) && model.equals(other.model);
+        return apiKey.equals(other.apiKey)
+                && baseUrl.equals(other.baseUrl)
+                && model.equals(other.model)
+                && provider.equals(other.provider);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.apiKey, this.baseUrl, this.model);
+        return Objects.hash(this.apiKey, this.baseUrl, this.model, this.provider);
     }
 
     @java.lang.Override
@@ -77,18 +93,14 @@ public final class ImageProviderChange {
         return ObjectMappers.stringify(this);
     }
 
-    public static BaseUrlStage builder() {
+    public static ModelStage builder() {
         return new Builder();
-    }
-
-    public interface BaseUrlStage {
-        ModelStage baseUrl(@NotNull String baseUrl);
-
-        Builder from(ImageProviderChange other);
     }
 
     public interface ModelStage {
         _FinalStage model(@NotNull String model);
+
+        Builder from(ImageProviderChange other);
     }
 
     public interface _FinalStage {
@@ -101,13 +113,23 @@ public final class ImageProviderChange {
         _FinalStage apiKey(Optional<String> apiKey);
 
         _FinalStage apiKey(String apiKey);
+
+        _FinalStage baseUrl(Optional<String> baseUrl);
+
+        _FinalStage baseUrl(String baseUrl);
+
+        _FinalStage provider(Optional<AiImageProvider> provider);
+
+        _FinalStage provider(AiImageProvider provider);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements BaseUrlStage, ModelStage, _FinalStage {
-        private String baseUrl;
-
+    public static final class Builder implements ModelStage, _FinalStage {
         private String model;
+
+        private Optional<AiImageProvider> provider = Optional.empty();
+
+        private Optional<String> baseUrl = Optional.empty();
 
         private Optional<String> apiKey = Optional.empty();
 
@@ -120,13 +142,7 @@ public final class ImageProviderChange {
             apiKey(other.getApiKey());
             baseUrl(other.getBaseUrl());
             model(other.getModel());
-            return this;
-        }
-
-        @java.lang.Override
-        @JsonSetter("baseUrl")
-        public ModelStage baseUrl(@NotNull String baseUrl) {
-            this.baseUrl = Objects.requireNonNull(baseUrl, "baseUrl must not be null");
+            provider(other.getProvider());
             return this;
         }
 
@@ -134,6 +150,32 @@ public final class ImageProviderChange {
         @JsonSetter("model")
         public _FinalStage model(@NotNull String model) {
             this.model = Objects.requireNonNull(model, "model must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage provider(AiImageProvider provider) {
+            this.provider = Optional.ofNullable(provider);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "provider", nulls = Nulls.SKIP)
+        public _FinalStage provider(Optional<AiImageProvider> provider) {
+            this.provider = provider;
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage baseUrl(String baseUrl) {
+            this.baseUrl = Optional.ofNullable(baseUrl);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "baseUrl", nulls = Nulls.SKIP)
+        public _FinalStage baseUrl(Optional<String> baseUrl) {
+            this.baseUrl = baseUrl;
             return this;
         }
 
@@ -152,12 +194,15 @@ public final class ImageProviderChange {
 
         @java.lang.Override
         public ImageProviderChange build() {
-            return new ImageProviderChange(apiKey, baseUrl, model, additionalProperties);
+            return new ImageProviderChange(apiKey, baseUrl, model, provider, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("apiKey") || key.equalsIgnoreCase("baseUrl") || key.equalsIgnoreCase("model")) {
+            if (key.equalsIgnoreCase("apiKey")
+                    || key.equalsIgnoreCase("baseUrl")
+                    || key.equalsIgnoreCase("model")
+                    || key.equalsIgnoreCase("provider")) {
                 return;
             }
             this.additionalProperties.put(key, value);

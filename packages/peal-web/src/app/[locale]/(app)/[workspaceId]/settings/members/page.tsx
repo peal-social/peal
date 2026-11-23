@@ -2,16 +2,25 @@ import { Option } from "effect";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { SettingsCard, SettingsCardBody } from "peal-ui/components/settings";
 
 import { currentUser } from "#auth/session.ts";
+import {
+  InviteForm,
+  PendingInvitations,
+} from "#components/settings/invitations.tsx";
 import { MembersList } from "#components/settings/members-list.tsx";
+import { SettingsGroup } from "#components/settings/settings-group.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
+import { assignableRoles } from "#settings/member-rules.ts";
 import { workspacePageTitle } from "#shell/page-title.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
-// A workspace's members: everyone sees them; owners and admins change roles
-// and remove people, as Better Auth's organization routes allow.
+// A workspace's people: to members who may invite, the way to invite
+// someone first; then the members, whom everyone sees and owners and
+// admins manage, as Better Auth's organization routes allow; then the
+// invitations still waiting for an answer.
 const MembersPage = async ({
   params,
 }: PageProps<"/[locale]/[workspaceId]/settings/members">) => {
@@ -33,12 +42,27 @@ const MembersPage = async ({
     notFound();
   }
 
-  const t = await getTranslations("WorkspaceSettings.members");
+  const invitations = await getTranslations("WorkspaceSettings.invitations");
   const may = new Set(workspace.permissions);
+  const mayInvite = may.has("invitation:create");
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("description")}</p>
+    <>
+      {mayInvite ? (
+        <SettingsGroup
+          title={invitations("title")}
+          description={invitations("description")}
+        >
+          <SettingsCard>
+            <SettingsCardBody>
+              <InviteForm
+                workspaceId={workspace.id}
+                roles={assignableRoles({ role: workspace.role, userId: "" })}
+              />
+            </SettingsCardBody>
+          </SettingsCard>
+        </SettingsGroup>
+      ) : null}
       <MembersList
         workspaceId={workspace.id}
         manager={{
@@ -48,7 +72,14 @@ const MembersPage = async ({
           userId: me.value.user.id,
         }}
       />
-    </div>
+      {mayInvite ? (
+        <PendingInvitations
+          workspaceId={workspace.id}
+          mayCancel={may.has("invitation:cancel")}
+          mayResend={mayInvite}
+        />
+      ) : null}
+    </>
   );
 };
 

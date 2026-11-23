@@ -38,6 +38,12 @@ class TextProvider extends JsonSerializableType
     public string $model;
 
     /**
+     * @var value-of<AiProvider> $provider
+     */
+    #[JsonProperty('provider')]
+    public string $provider;
+
+    /**
      * @var string $updatedAt
      */
     #[JsonProperty('updatedAt')]
@@ -50,6 +56,7 @@ class TextProvider extends JsonSerializableType
      *   keyUnreadable: bool,
      *   kind: value-of<TextProviderKind>,
      *   model: string,
+     *   provider: value-of<AiProvider>,
      *   updatedAt: string,
      * } $values
      */
@@ -61,6 +68,7 @@ class TextProvider extends JsonSerializableType
         $this->keyUnreadable = $values['keyUnreadable'];
         $this->kind = $values['kind'];
         $this->model = $values['model'];
+        $this->provider = $values['provider'];
         $this->updatedAt = $values['updatedAt'];
     }
 

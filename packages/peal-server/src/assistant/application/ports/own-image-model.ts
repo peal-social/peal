@@ -8,20 +8,23 @@ import type {
   MadeImage,
 } from "#assistant/application/ports/image-model.ts";
 import type {
+  ImageProviderId,
   ProviderAddress,
   ProviderModel,
 } from "#assistant/domain/image-provider.ts";
 
-/** Where a workspace's own provider is, which model, and its key. */
+/** Where a workspace's own provider is, which provider it is, which model, and its key. */
 export interface OwnImageEndpoint {
   readonly apiKey: Redacted.Redacted;
   readonly baseUrl: ProviderAddress;
   readonly model: ProviderModel;
+  readonly provider: ImageProviderId;
 }
 
 /**
- * The image provider a workspace brought: an endpoint that speaks the
- * OpenAI images API, at an address a member typed. Every call goes
+ * The image provider a workspace brought: a provider of the catalogue's,
+ * or an endpoint that speaks the OpenAI images API, at an address a
+ * member typed. Every call goes
  * through the outbound guard, follows no redirect and reads a bounded
  * answer. It keeps no state: a refusal is said and the next call tries
  * again. Never logs or traces the prompt, the image, the provider's

@@ -112,6 +112,9 @@ require_relative "peal/media/types/delete_media_request"
 require_relative "peal/media/types/media_description"
 require_relative "peal/media/types/complete_media_request"
 require_relative "peal/media/types/usage_media_request"
+require_relative "peal/media_audio/client"
+require_relative "peal/media_audio/types/voiceover_request"
+require_relative "peal/media_audio/types/transcription_request"
 require_relative "peal/notices/client"
 require_relative "peal/notices/types/list_notices_request"
 require_relative "peal/notices/types/mark_notices_read"
@@ -128,6 +131,21 @@ require_relative "peal/assistant/types/text_provider_assistant_request"
 require_relative "peal/assistant/types/text_provider_change"
 require_relative "peal/assistant/types/remove_text_provider_assistant_request"
 require_relative "peal/assistant/types/test_text_provider_assistant_request"
+require_relative "peal/assistant/types/providers_assistant_request"
+require_relative "peal/assistant/types/ai_provider_connection_change"
+require_relative "peal/assistant/types/disconnect_provider_assistant_request"
+require_relative "peal/assistant/types/ai_provider_test"
+require_relative "peal/assistant/types/models_assistant_request"
+require_relative "peal/assistant/types/ai_capability_model_change"
+require_relative "peal/assistant/types/unset_model_assistant_request"
+require_relative "peal/video_generations/client"
+require_relative "peal/video_generations/types/list_video_generations_request"
+require_relative "peal/video_generations/types/video_generation_request"
+require_relative "peal/video_generations/types/get_video_generations_request"
+require_relative "peal/slideshows/client"
+require_relative "peal/slideshows/types/list_slideshows_request"
+require_relative "peal/slideshows/types/slideshow_request"
+require_relative "peal/slideshows/types/get_slideshows_request"
 require_relative "peal/members/client"
 require_relative "peal/members/types/list_members_request"
 require_relative "peal/invitations/client"
@@ -375,15 +393,12 @@ module Peal
     autoload :WorkspaceNotFoundEncodedTag, ::File.join(__dir__, "peal/types/workspace_not_found_encoded_tag")
     autoload :WorkspaceNotFoundEncoded, ::File.join(__dir__, "peal/types/workspace_not_found_encoded")
     autoload :NotFoundErrorBody, ::File.join(__dir__, "peal/types/not_found_error_body")
-    autoload :AllowanceReason, ::File.join(__dir__, "peal/types/allowance_reason")
-    autoload :Meter, ::File.join(__dir__, "peal/types/meter")
+    autoload :CompositionNeedsPaymentEncoded, ::File.join(__dir__, "peal/types/composition_needs_payment_encoded")
     autoload :PaidPlan, ::File.join(__dir__, "peal/types/paid_plan")
     autoload :Plan, ::File.join(__dir__, "peal/types/plan")
     autoload :PlanLimit, ::File.join(__dir__, "peal/types/plan_limit")
     autoload :PlanLimitReachedEncodedTag, ::File.join(__dir__, "peal/types/plan_limit_reached_encoded_tag")
     autoload :PlanLimitReachedEncoded, ::File.join(__dir__, "peal/types/plan_limit_reached_encoded")
-    autoload :UsageAllowanceReachedEncodedTag, ::File.join(__dir__, "peal/types/usage_allowance_reached_encoded_tag")
-    autoload :UsageAllowanceReachedEncoded, ::File.join(__dir__, "peal/types/usage_allowance_reached_encoded")
     autoload :PaymentRequiredErrorBody, ::File.join(__dir__, "peal/types/payment_required_error_body")
     autoload :FeedAddressRefusedEncodedReason, ::File.join(__dir__, "peal/types/feed_address_refused_encoded_reason")
     autoload :FeedAddressRefusedEncoded, ::File.join(__dir__, "peal/types/feed_address_refused_encoded")
@@ -489,6 +504,20 @@ module Peal
     autoload :AdsMode, ::File.join(__dir__, "peal/types/ads_mode")
     autoload :AdsStatus, ::File.join(__dir__, "peal/types/ads_status")
     autoload :AdsUnavailableEncoded, ::File.join(__dir__, "peal/types/ads_unavailable_encoded")
+    autoload :AiCapability, ::File.join(__dir__, "peal/types/ai_capability")
+    autoload :AiProvider, ::File.join(__dir__, "peal/types/ai_provider")
+    autoload :AiCapabilityModel, ::File.join(__dir__, "peal/types/ai_capability_model")
+    autoload :AiCapabilityModels, ::File.join(__dir__, "peal/types/ai_capability_models")
+    autoload :AiCapabilityNotOfferedEncoded, ::File.join(__dir__, "peal/types/ai_capability_not_offered_encoded")
+    autoload :AiImageProvider, ::File.join(__dir__, "peal/types/ai_image_provider")
+    autoload :AiModelRequiredEncoded, ::File.join(__dir__, "peal/types/ai_model_required_encoded")
+    autoload :ImageProviderAddressRefusal, ::File.join(__dir__, "peal/types/image_provider_address_refusal")
+    autoload :AiProviderAddressRefusedEncoded, ::File.join(__dir__, "peal/types/ai_provider_address_refused_encoded")
+    autoload :AiProviderConnection, ::File.join(__dir__, "peal/types/ai_provider_connection")
+    autoload :AiProviderConnections, ::File.join(__dir__, "peal/types/ai_provider_connections")
+    autoload :AiProviderKeyRequiredEncoded, ::File.join(__dir__, "peal/types/ai_provider_key_required_encoded")
+    autoload :AiProviderNotConnectedEncoded, ::File.join(__dir__, "peal/types/ai_provider_not_connected_encoded")
+    autoload :AllowanceReason, ::File.join(__dir__, "peal/types/allowance_reason")
     autoload :AlreadyMemberEncoded, ::File.join(__dir__, "peal/types/already_member_encoded")
     autoload :AltTextTooLongEncodedTag, ::File.join(__dir__, "peal/types/alt_text_too_long_encoded_tag")
     autoload :AltTextTooLongEncoded, ::File.join(__dir__, "peal/types/alt_text_too_long_encoded")
@@ -586,11 +615,25 @@ module Peal
     autoload :AssistantQuotaExceededEncoded, ::File.join(__dir__, "peal/types/assistant_quota_exceeded_encoded")
     autoload :AssistantSecretsNotConfiguredEncodedTag, ::File.join(__dir__, "peal/types/assistant_secrets_not_configured_encoded_tag")
     autoload :AssistantSecretsNotConfiguredEncoded, ::File.join(__dir__, "peal/types/assistant_secrets_not_configured_encoded")
+    autoload :AssistantSlideshowsStatus, ::File.join(__dir__, "peal/types/assistant_slideshows_status")
     autoload :AssistantTextSource, ::File.join(__dir__, "peal/types/assistant_text_source")
+    autoload :AssistantTranscriptionsStatus, ::File.join(__dir__, "peal/types/assistant_transcriptions_status")
+    autoload :AssistantVideosStatus, ::File.join(__dir__, "peal/types/assistant_videos_status")
+    autoload :AssistantVoiceoversStatus, ::File.join(__dir__, "peal/types/assistant_voiceovers_status")
     autoload :AssistantStatus, ::File.join(__dir__, "peal/types/assistant_status")
     autoload :AssistantUnavailableEncodedTag, ::File.join(__dir__, "peal/types/assistant_unavailable_encoded_tag")
     autoload :AssistantUnavailableEncoded, ::File.join(__dir__, "peal/types/assistant_unavailable_encoded")
     autoload :AttemptResult, ::File.join(__dir__, "peal/types/attempt_result")
+    autoload :AudioAllowanceReachedEncodedCapability, ::File.join(__dir__, "peal/types/audio_allowance_reached_encoded_capability")
+    autoload :AudioAllowanceReachedEncoded, ::File.join(__dir__, "peal/types/audio_allowance_reached_encoded")
+    autoload :AudioFailureReason, ::File.join(__dir__, "peal/types/audio_failure_reason")
+    autoload :AudioProviderFailedEncodedTag, ::File.join(__dir__, "peal/types/audio_provider_failed_encoded_tag")
+    autoload :AudioProviderFailedEncodedCapability, ::File.join(__dir__, "peal/types/audio_provider_failed_encoded_capability")
+    autoload :AudioProviderFailedEncoded, ::File.join(__dir__, "peal/types/audio_provider_failed_encoded")
+    autoload :AudioUnavailableEncodedTag, ::File.join(__dir__, "peal/types/audio_unavailable_encoded_tag")
+    autoload :AudioUnavailableEncodedCapability, ::File.join(__dir__, "peal/types/audio_unavailable_encoded_capability")
+    autoload :AudioUnavailableEncodedReason, ::File.join(__dir__, "peal/types/audio_unavailable_encoded_reason")
+    autoload :AudioUnavailableEncoded, ::File.join(__dir__, "peal/types/audio_unavailable_encoded")
     autoload :Authorization, ::File.join(__dir__, "peal/types/authorization")
     autoload :AutomationStopReason, ::File.join(__dir__, "peal/types/automation_stop_reason")
     autoload :NonFiniteNumber, ::File.join(__dir__, "peal/types/non_finite_number")
@@ -602,6 +645,7 @@ module Peal
     autoload :BillingAccount, ::File.join(__dir__, "peal/types/billing_account")
     autoload :BillingAccountsUsage, ::File.join(__dir__, "peal/types/billing_accounts_usage")
     autoload :BillingInterval, ::File.join(__dir__, "peal/types/billing_interval")
+    autoload :Meter, ::File.join(__dir__, "peal/types/meter")
     autoload :SpendGroup, ::File.join(__dir__, "peal/types/spend_group")
     autoload :BillingMeter, ::File.join(__dir__, "peal/types/billing_meter")
     autoload :SubscriptionStatus, ::File.join(__dir__, "peal/types/subscription_status")
@@ -858,6 +902,11 @@ module Peal
     autoload :CommentRuleRefusal, ::File.join(__dir__, "peal/types/comment_rule_refusal")
     autoload :CommentRuleNotPossibleEncoded, ::File.join(__dir__, "peal/types/comment_rule_not_possible_encoded")
     autoload :CommentRulePage, ::File.join(__dir__, "peal/types/comment_rule_page")
+    autoload :CompositionAllowanceReachedEncoded, ::File.join(__dir__, "peal/types/composition_allowance_reached_encoded")
+    autoload :CompositionBusyEncoded, ::File.join(__dir__, "peal/types/composition_busy_encoded")
+    autoload :CompositionUnavailableEncodedTag, ::File.join(__dir__, "peal/types/composition_unavailable_encoded_tag")
+    autoload :CompositionUnavailableEncodedReason, ::File.join(__dir__, "peal/types/composition_unavailable_encoded_reason")
+    autoload :CompositionUnavailableEncoded, ::File.join(__dir__, "peal/types/composition_unavailable_encoded")
     autoload :ConnectDiscordChat, ::File.join(__dir__, "peal/types/connect_discord_chat")
     autoload :ConnectTelegramChat, ::File.join(__dir__, "peal/types/connect_telegram_chat")
     autoload :ConnectChat, ::File.join(__dir__, "peal/types/connect_chat")
@@ -944,7 +993,6 @@ module Peal
     autoload :FollowUpRuleNotFoundEncoded, ::File.join(__dir__, "peal/types/follow_up_rule_not_found_encoded")
     autoload :FollowUpRulePage, ::File.join(__dir__, "peal/types/follow_up_rule_page")
     autoload :ImageProvider, ::File.join(__dir__, "peal/types/image_provider")
-    autoload :ImageProviderAddressRefusal, ::File.join(__dir__, "peal/types/image_provider_address_refusal")
     autoload :ImageProviderAddressRefusedEncoded, ::File.join(__dir__, "peal/types/image_provider_address_refused_encoded")
     autoload :ImageProviderKeyRequiredEncoded, ::File.join(__dir__, "peal/types/image_provider_key_required_encoded")
     autoload :ImageProviderRefusedEncodedReason, ::File.join(__dir__, "peal/types/image_provider_refused_encoded_reason")
@@ -1116,11 +1164,17 @@ module Peal
     autoload :NoticeEventPostUnconfirmed, ::File.join(__dir__, "peal/types/notice_event_post_unconfirmed")
     autoload :RecyclingNoticeReason, ::File.join(__dir__, "peal/types/recycling_notice_reason")
     autoload :NoticeEventRecyclingEnded, ::File.join(__dir__, "peal/types/notice_event_recycling_ended")
+    autoload :NoticeEventSlideshowEndedOutcome, ::File.join(__dir__, "peal/types/notice_event_slideshow_ended_outcome")
+    autoload :SlideshowFailureReason, ::File.join(__dir__, "peal/types/slideshow_failure_reason")
+    autoload :NoticeEventSlideshowEnded, ::File.join(__dir__, "peal/types/notice_event_slideshow_ended")
     autoload :NoticeEventSubscriptionCancelled, ::File.join(__dir__, "peal/types/notice_event_subscription_cancelled")
     autoload :NoticeEventSubscriptionRenewing, ::File.join(__dir__, "peal/types/notice_event_subscription_renewing")
     autoload :NoticeEventSubscriptionStarted, ::File.join(__dir__, "peal/types/notice_event_subscription_started")
     autoload :NoticeEventSubscriptionWithdrawn, ::File.join(__dir__, "peal/types/notice_event_subscription_withdrawn")
     autoload :NoticeEventTrialEnding, ::File.join(__dir__, "peal/types/notice_event_trial_ending")
+    autoload :NoticeEventVideoGenerationEndedOutcome, ::File.join(__dir__, "peal/types/notice_event_video_generation_ended_outcome")
+    autoload :VideoFailureReason, ::File.join(__dir__, "peal/types/video_failure_reason")
+    autoload :NoticeEventVideoGenerationEnded, ::File.join(__dir__, "peal/types/notice_event_video_generation_ended")
     autoload :NoticeEventWebhookDeliveriesFailing, ::File.join(__dir__, "peal/types/notice_event_webhook_deliveries_failing")
     autoload :WebhookTurnOffReason, ::File.join(__dir__, "peal/types/webhook_turn_off_reason")
     autoload :NoticeEventWebhookEndpointDisabled, ::File.join(__dir__, "peal/types/notice_event_webhook_endpoint_disabled")
@@ -1245,6 +1299,17 @@ module Peal
     autoload :SiteConnectLimitedEncoded, ::File.join(__dir__, "peal/types/site_connect_limited_encoded")
     autoload :SiteNotConnectedReason, ::File.join(__dir__, "peal/types/site_not_connected_reason")
     autoload :SiteNotConnectedEncoded, ::File.join(__dir__, "peal/types/site_not_connected_encoded")
+    autoload :SlideMotion, ::File.join(__dir__, "peal/types/slide_motion")
+    autoload :Slide, ::File.join(__dir__, "peal/types/slide")
+    autoload :SlideTransition, ::File.join(__dir__, "peal/types/slide_transition")
+    autoload :SlideshowDurationSeconds, ::File.join(__dir__, "peal/types/slideshow_duration_seconds")
+    autoload :SlideshowStatus, ::File.join(__dir__, "peal/types/slideshow_status")
+    autoload :Slideshow, ::File.join(__dir__, "peal/types/slideshow")
+    autoload :SlideshowNotFoundEncoded, ::File.join(__dir__, "peal/types/slideshow_not_found_encoded")
+    autoload :SlideshowRejection, ::File.join(__dir__, "peal/types/slideshow_rejection")
+    autoload :SlideshowRequestRejectedEncodedTag, ::File.join(__dir__, "peal/types/slideshow_request_rejected_encoded_tag")
+    autoload :SlideshowRequestRejectedEncoded, ::File.join(__dir__, "peal/types/slideshow_request_rejected_encoded")
+    autoload :Slideshows, ::File.join(__dir__, "peal/types/slideshows")
     autoload :SpendCeilingExceededEncoded, ::File.join(__dir__, "peal/types/spend_ceiling_exceeded_encoded")
     autoload :Standing, ::File.join(__dir__, "peal/types/standing")
     autoload :SubscribableWebhookEventType, ::File.join(__dir__, "peal/types/subscribable_webhook_event_type")
@@ -1283,6 +1348,11 @@ module Peal
     autoload :TooManyWebhookEndpointsEncodedTag, ::File.join(__dir__, "peal/types/too_many_webhook_endpoints_encoded_tag")
     autoload :TooManyWebhookEndpointsEncoded, ::File.join(__dir__, "peal/types/too_many_webhook_endpoints_encoded")
     autoload :TooManyWebhookSendsEncoded, ::File.join(__dir__, "peal/types/too_many_webhook_sends_encoded")
+    autoload :TranscriptDurationSeconds, ::File.join(__dir__, "peal/types/transcript_duration_seconds")
+    autoload :Transcript, ::File.join(__dir__, "peal/types/transcript")
+    autoload :TranscriptionRejectedEncodedTag, ::File.join(__dir__, "peal/types/transcription_rejected_encoded_tag")
+    autoload :TranscriptionRejectedEncodedReason, ::File.join(__dir__, "peal/types/transcription_rejected_encoded_reason")
+    autoload :TranscriptionRejectedEncoded, ::File.join(__dir__, "peal/types/transcription_rejected_encoded")
     autoload :UnauthenticatedEncodedTag, ::File.join(__dir__, "peal/types/unauthenticated_encoded_tag")
     autoload :UnauthenticatedEncoded, ::File.join(__dir__, "peal/types/unauthenticated_encoded")
     autoload :UnreadNotices, ::File.join(__dir__, "peal/types/unread_notices")
@@ -1291,8 +1361,22 @@ module Peal
     autoload :UploadIncompleteEncoded, ::File.join(__dir__, "peal/types/upload_incomplete_encoded")
     autoload :UploadRejectedEncodedTag, ::File.join(__dir__, "peal/types/upload_rejected_encoded_tag")
     autoload :UploadRejectedEncoded, ::File.join(__dir__, "peal/types/upload_rejected_encoded")
+    autoload :UsageAllowanceReachedEncodedTag, ::File.join(__dir__, "peal/types/usage_allowance_reached_encoded_tag")
+    autoload :UsageAllowanceReachedEncoded, ::File.join(__dir__, "peal/types/usage_allowance_reached_encoded")
     autoload :UsageDay, ::File.join(__dir__, "peal/types/usage_day")
     autoload :UsageSharing, ::File.join(__dir__, "peal/types/usage_sharing")
+    autoload :VideoAllowanceReachedEncoded, ::File.join(__dir__, "peal/types/video_allowance_reached_encoded")
+    autoload :VideoBusyEncoded, ::File.join(__dir__, "peal/types/video_busy_encoded")
+    autoload :VideoGenerationStatus, ::File.join(__dir__, "peal/types/video_generation_status")
+    autoload :VideoGeneration, ::File.join(__dir__, "peal/types/video_generation")
+    autoload :VideoGenerationNotFoundEncoded, ::File.join(__dir__, "peal/types/video_generation_not_found_encoded")
+    autoload :VideoGenerations, ::File.join(__dir__, "peal/types/video_generations")
+    autoload :VideoRequestRejectedEncodedReason, ::File.join(__dir__, "peal/types/video_request_rejected_encoded_reason")
+    autoload :VideoRequestRejectedEncoded, ::File.join(__dir__, "peal/types/video_request_rejected_encoded")
+    autoload :VideoUnavailableEncodedTag, ::File.join(__dir__, "peal/types/video_unavailable_encoded_tag")
+    autoload :VideoUnavailableEncodedReason, ::File.join(__dir__, "peal/types/video_unavailable_encoded_reason")
+    autoload :VideoUnavailableEncoded, ::File.join(__dir__, "peal/types/video_unavailable_encoded")
+    autoload :VoiceNotOfferedEncoded, ::File.join(__dir__, "peal/types/voice_not_offered_encoded")
     autoload :WebhookAttemptError, ::File.join(__dir__, "peal/types/webhook_attempt_error")
     autoload :WebhookDeliveryFailure, ::File.join(__dir__, "peal/types/webhook_delivery_failure")
     autoload :WebhookDeliveryStatus, ::File.join(__dir__, "peal/types/webhook_delivery_status")

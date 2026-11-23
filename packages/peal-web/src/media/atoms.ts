@@ -37,6 +37,14 @@ export const mediaPage = (
   search: LibrarySearch = everything
 ) => pages(pageKeyOf(workspaceId, search, cursor));
 
+/**
+ * Lists the workspace's media again, for a file that arrived without a
+ * request of this page's (a video the server made in a job).
+ */
+export const libraryChanged = PealApi.runtime.fn<string>()((workspaceId) =>
+  Reactivity.invalidate([mediaKey(workspaceId)])
+);
+
 /** Deletes media, then lists the workspace's media again. */
 export const deleteMedia = PealApi.mutation("media", "delete");
 

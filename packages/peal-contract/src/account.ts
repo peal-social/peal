@@ -506,6 +506,8 @@ const ExportedUsageSchema = Schema.Struct({
 const ExportedImageProviderSchema = Schema.Struct({
   baseUrl: Schema.String,
   model: Schema.String,
+  // The provider by name, as the image provider's `provider` says it.
+  provider: Schema.String,
   updatedAt: instant,
 });
 
@@ -515,6 +517,25 @@ const ExportedTextProviderSchema = Schema.Struct({
   baseUrl: Schema.String,
   kind: Schema.String,
   model: Schema.String,
+  // The provider by name, as the text provider's `provider` says it.
+  provider: Schema.String,
+  updatedAt: instant,
+});
+
+// A provider the workspace connected to the assistant: where it is
+// reached, never its key.
+const ExportedAiProviderSchema = Schema.Struct({
+  baseUrl: Schema.String,
+  provider: Schema.String,
+  updatedAt: instant,
+});
+
+// What the workspace chose for one of its uses: the provider and the model.
+const ExportedAiModelSchema = Schema.Struct({
+  // `text` or `image`.
+  capability: Schema.String,
+  model: Schema.String,
+  provider: Schema.String,
   updatedAt: instant,
 });
 
@@ -996,6 +1017,9 @@ const ExportedWorkspaceSchema = Schema.Struct({
   assistantImageProvider: Schema.optionalKey(
     Schema.NullOr(ExportedImageProviderSchema)
   ),
+  // The model it chose for each use, from the providers below; absent
+  // from exports made before workspaces connected providers.
+  assistantModels: Schema.optionalKey(Schema.Array(ExportedAiModelSchema)),
   // How many images it asked that provider for each UTC day; absent from
   // exports made before workspaces could bring one.
   assistantOwnImages: Schema.optionalKey(
@@ -1018,12 +1042,63 @@ const ExportedWorkspaceSchema = Schema.Struct({
       })
     )
   ),
+  // The providers it connected; absent from exports made before
+  // workspaces connected providers.
+  assistantProviders: Schema.optionalKey(
+    Schema.Array(ExportedAiProviderSchema)
+  ),
   // The text provider the workspace brought, or null; absent from exports
   // made before workspaces could bring one.
   assistantTextProvider: Schema.optionalKey(
     Schema.NullOr(ExportedTextProviderSchema)
   ),
+  // The slide videos it asked its composition service for, newest first,
+  // without their captions (kept only while each was composed); absent
+  // from exports made before workspaces could compose them.
+  assistantSlideshows: Schema.optionalKey(
+    Schema.Array(
+      Schema.Struct({
+        // `square`, `landscape` or `portrait`, as `Slideshow` says.
+        aspect: Schema.String,
+        createdAt: instant,
+        durationSeconds: Schema.Number,
+        finishedAt: Schema.NullOr(instant),
+        id: Schema.String,
+        imageMediaIds: Schema.Array(Schema.String),
+        mediaId: Schema.NullOr(Schema.String),
+        // One of `SlideshowFailureReason`, once failed.
+        reason: Schema.NullOr(Schema.String),
+        sandbox: Schema.Boolean,
+        startedAt: Schema.NullOr(instant),
+        // One of `SlideshowStatus`.
+        status: Schema.String,
+        voiceoverMediaId: Schema.NullOr(Schema.String),
+      })
+    )
+  ),
   assistantUsage: Schema.Array(ExportedUsageSchema),
+  // The videos it asked its own provider for, newest first, without their
+  // descriptions (kept only while each was made); absent from exports
+  // made before workspaces could make videos.
+  assistantVideos: Schema.optionalKey(
+    Schema.Array(
+      Schema.Struct({
+        // `square`, `landscape` or `portrait`, as `VideoGeneration` says.
+        aspect: Schema.String,
+        createdAt: instant,
+        durationSeconds: Schema.NullOr(Schema.Int),
+        finishedAt: Schema.NullOr(instant),
+        id: Schema.String,
+        imageMediaId: Schema.NullOr(Schema.String),
+        mediaId: Schema.NullOr(Schema.String),
+        // One of `VideoFailureReason`, once failed.
+        reason: Schema.NullOr(Schema.String),
+        startedAt: Schema.NullOr(instant),
+        // One of `VideoGenerationStatus`.
+        status: Schema.String,
+      })
+    )
+  ),
   billing: ExportedBillingSchema,
   channels: Schema.Array(ExportedChannelSchema),
   createdAt: instant,

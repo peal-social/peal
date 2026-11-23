@@ -13,6 +13,9 @@ import {
 } from "peal-contract";
 import type { Media, MediaKind } from "peal-contract";
 
+import { transcribe, voiceover } from "#commands/media-audio.ts";
+import { slideshow } from "#commands/media-slideshow.ts";
+import { video } from "#commands/media-video.ts";
 import { confirmed, neverAsksInJson, yesFlagName } from "#confirm.ts";
 import { explain } from "#explain.ts";
 import { jsonFlag, printJson, printNothing } from "#json.ts";
@@ -208,7 +211,7 @@ const list = Command.make(
     json: jsonFlag,
     kind: Flag.Literals("kind", MediaKindSchema.literals).pipe(
       Flag.withDescription(
-        "Only the media of this kind: image, video or document."
+        "Only the media of this kind: image, video, document or audio."
       ),
       Flag.optional
     ),
@@ -301,7 +304,7 @@ const list = Command.make(
   })
 ).pipe(
   Command.withDescription(
-    "List the workspace's images, videos and documents, newest first, with the ids posts attach, whether each is ready, its file name and its description. --search and --kind narrow the list, every filter holding."
+    "List the workspace's images, videos, documents and audio, newest first, with the ids posts attach, whether each is ready, its file name and its description. --search and --kind narrow the list, every filter holding."
   )
 );
 
@@ -409,12 +412,16 @@ const remove = Command.make(
 
 export const media = Command.make("media").pipe(
   Command.withDescription(
-    "A workspace's images and videos: uploading files, importing them from an address, having the assistant make an image, listing them, showing, describing and deleting one."
+    "A workspace's images, videos, documents and audio: uploading files, importing them from an address, having the assistant make an image, a video or a voice-over, composing a slide video, transcribing one, listing them, showing, describing and deleting one."
   ),
   Command.withSubcommands([
     upload,
     importMedia,
     generate,
+    video,
+    slideshow,
+    voiceover,
+    transcribe,
     list,
     show,
     describe,

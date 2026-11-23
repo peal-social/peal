@@ -11,11 +11,12 @@ const app = fileURLToPath(
   new URL("../../src/app/[locale]/(app)", import.meta.url)
 );
 
-// Drafts and Approvals open their tabs of Posts, the addresses they had
-// kept working.
+// Drafts and Approvals open their tabs of Posts, and Invitations opens
+// Members, the addresses they had kept working.
 const redirectsOnly = new Set([
   "[workspaceId]/approvals/page.tsx",
   "[workspaceId]/drafts/page.tsx",
+  "[workspaceId]/settings/invitations/page.tsx",
 ]);
 
 const pagesIn = (folder: string, prefix = ""): string[] =>

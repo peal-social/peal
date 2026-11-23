@@ -10,9 +10,12 @@ use Peal\Channels\ChannelsClient;
 use Peal\Posts\PostsClient;
 use Peal\Articles\ArticlesClient;
 use Peal\Media\MediaClient;
+use Peal\MediaAudio\MediaAudioClient;
 use Peal\Notices\NoticesClient;
 use Peal\NotificationPreferences\NotificationPreferencesClient;
 use Peal\Assistant\AssistantClient;
+use Peal\VideoGenerations\VideoGenerationsClient;
+use Peal\Slideshows\SlideshowsClient;
 use Peal\Members\MembersClient;
 use Peal\Invitations\InvitationsClient;
 use Peal\Billing\BillingClient;
@@ -88,6 +91,11 @@ class PealClient
     public MediaClient $media;
 
     /**
+     * @var MediaAudioClient $mediaAudio
+     */
+    public MediaAudioClient $mediaAudio;
+
+    /**
      * @var NoticesClient $notices
      */
     public NoticesClient $notices;
@@ -101,6 +109,16 @@ class PealClient
      * @var AssistantClient $assistant
      */
     public AssistantClient $assistant;
+
+    /**
+     * @var VideoGenerationsClient $videoGenerations
+     */
+    public VideoGenerationsClient $videoGenerations;
+
+    /**
+     * @var SlideshowsClient $slideshows
+     */
+    public SlideshowsClient $slideshows;
 
     /**
      * @var MembersClient $members
@@ -312,9 +330,12 @@ class PealClient
         $this->posts = new PostsClient($this->client, $this->options);
         $this->articles = new ArticlesClient($this->client, $this->options);
         $this->media = new MediaClient($this->client, $this->options);
+        $this->mediaAudio = new MediaAudioClient($this->client, $this->options);
         $this->notices = new NoticesClient($this->client, $this->options);
         $this->notificationPreferences = new NotificationPreferencesClient($this->client, $this->options);
         $this->assistant = new AssistantClient($this->client, $this->options);
+        $this->videoGenerations = new VideoGenerationsClient($this->client, $this->options);
+        $this->slideshows = new SlideshowsClient($this->client, $this->options);
         $this->members = new MembersClient($this->client, $this->options);
         $this->invitations = new InvitationsClient($this->client, $this->options);
         $this->billing = new BillingClient($this->client, $this->options);

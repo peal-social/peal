@@ -20,6 +20,7 @@ public class TextProviderTest : BaseMockServerTest
                 "keyUnreadable": true,
                 "kind": "anthropic",
                 "model": "model",
+                "provider": "anthropic",
                 "updatedAt": "updatedAt"
               }
             }
@@ -56,6 +57,7 @@ public class TextProviderTest : BaseMockServerTest
                 "keyUnreadable": true,
                 "kind": "anthropic",
                 "model": "model",
+                "provider": "anthropic",
                 "updatedAt": "updatedAt"
               }
             }

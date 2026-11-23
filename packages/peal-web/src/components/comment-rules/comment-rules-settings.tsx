@@ -6,6 +6,12 @@ import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { CommentRuleNotPossible } from "peal-contract";
 import type { CommentRule } from "peal-contract";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowDescription,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 
@@ -23,6 +29,7 @@ import {
 } from "#comment-rules/rules.ts";
 import type { CommentRuleDraft } from "#comment-rules/rules.ts";
 import { useHydrated } from "#components/media/use-hydrated.ts";
+import { SettingsGroup } from "#components/settings/settings-group.tsx";
 import {
   SettingsLoadFailed,
   SettingsLoading,
@@ -203,6 +210,8 @@ const NewRule = ({
   );
 };
 
+// The rules once read: each in a row of one card, or a line saying there
+// is none.
 const RuleList = ({
   mayChange,
   mayMessage,
@@ -225,40 +234,81 @@ const RuleList = ({
     return <SettingsLoading />;
   }
 
-  return (
-    <div className="flex flex-col gap-4">
-      {mayChange ? (
-        <NewRule mayMessage={mayMessage} workspaceId={workspaceId} />
-      ) : null}
-      {result.value.items.length === 0 ? (
-        <p className="text-muted-foreground">{t("empty")}</p>
-      ) : (
-        <ul className="divide-y">
-          {result.value.items.map((rule) => (
-            <CommentRuleView
-              key={rule.id}
-              rule={rule}
-              actions={
-                mayChange ? (
-                  <RuleActions
-                    mayMessage={mayMessage}
-                    rule={rule}
-                    workspaceId={workspaceId}
-                  />
-                ) : null
-              }
-            />
-          ))}
-        </ul>
-      )}
-    </div>
+  return result.value.items.length === 0 ? (
+    <SettingsCard>
+      <SettingsRow>
+        <SettingsRowDescription>{t("empty")}</SettingsRowDescription>
+      </SettingsRow>
+    </SettingsCard>
+  ) : (
+    <SettingsCard>
+      <ul className="divide-y">
+        {result.value.items.map((rule) => (
+          <CommentRuleView
+            key={rule.id}
+            rule={rule}
+            actions={
+              mayChange ? (
+                <RuleActions
+                  mayMessage={mayMessage}
+                  rule={rule}
+                  workspaceId={workspaceId}
+                />
+              ) : null
+            }
+          />
+        ))}
+      </ul>
+    </SettingsCard>
   );
 };
 
-/** The workspace's comment rules, read once the page has hydrated. */
-export const CommentRulesSettings = (props: {
+/**
+ * The workspace's comment rules, read once the page has hydrated, under
+ * what a rule does (and, to a member who may only read them, that
+ * changing them takes another role); then, for one who may change them,
+ * the form that starts one.
+ */
+export const CommentRulesSettings = ({
+  mayChange,
+  mayMessage,
+  workspaceId,
+}: {
   readonly mayChange: boolean;
   /** Whether the member may send private messages: a rule's private one. */
   readonly mayMessage: boolean;
   readonly workspaceId: string;
-}) => (useHydrated() ? <RuleList {...props} /> : <SettingsLoading />);
+}) => {
+  const t = useTranslations("CommentRules");
+  const hydrated = useHydrated();
+
+  return (
+    <>
+      <SettingsGroup
+        title={t("title")}
+        description={
+          mayChange ? t("description") : `${t("description")} ${t("readOnly")}`
+        }
+      >
+        {hydrated ? (
+          <RuleList
+            mayChange={mayChange}
+            mayMessage={mayMessage}
+            workspaceId={workspaceId}
+          />
+        ) : (
+          <SettingsLoading />
+        )}
+      </SettingsGroup>
+      {mayChange && hydrated ? (
+        <SettingsGroup title={t("form.title")}>
+          <SettingsCard>
+            <SettingsCardBody>
+              <NewRule mayMessage={mayMessage} workspaceId={workspaceId} />
+            </SettingsCardBody>
+          </SettingsCard>
+        </SettingsGroup>
+      ) : null}
+    </>
+  );
+};

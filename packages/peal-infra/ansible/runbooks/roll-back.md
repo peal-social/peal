@@ -406,6 +406,163 @@ ignores: a person whose account has only such a row cannot sign in there
 until they reset a password through "Forgot password". Nothing else needs
 checking.
 
+## Past named AI providers
+
+The release that names a workspace's text provider (migration
+`text-provider-names`) adds `assistant.text_providers.provider`, which the
+release before ignores: it still writes and reads `kind`, so it reads every
+row, a named provider as `openai-compatible` at its address. It then asks
+DeepSeek for a strict JSON schema, which DeepSeek refuses, and OpenRouter
+without keeping to hosts that take it: such a workspace's suggestions,
+tests and agent answer `AssistantFailed` until the release is rolled
+forward, or a member saves the provider again. The server's own
+`PEAL_AI_PROVIDER` must be one the release before knows (`anthropic` or
+`openai-compatible`), or it stops at startup: set it back before rolling
+back. Nothing to clean.
+
+The release that names a workspace's image provider (migration
+`image-provider-names`) adds `assistant.image_providers.provider`, which
+the release before ignores too: it reads every row as the OpenAI images
+API at its address (`POST {address}/images/generations`). A row named
+`openai` still makes images there. One named `google`, `xai` or
+`togetherai` gets a request shaped for another API at that provider's
+address: its images answer `ImageProviderRefused` or `AssistantFailed`
+until the release is rolled forward, or a member saves the provider as
+another provider again. The server's own `PEAL_AI_IMAGE_PROVIDER` must be
+`openai-compatible` for the release before, with
+`PEAL_AI_IMAGE_BASE_URL` set, or it stops at startup: set them back
+before rolling back. Nothing to clean.
+
+## Past connected AI providers
+
+The release that connects a workspace's providers and chooses a model for
+each use (migration `provider-connections`) keeps them in
+`assistant.provider_connections` and `assistant.capability_models`, which
+the release before ignores: it still reads `assistant.text_providers` and
+`assistant.image_providers`. When it first starts, this release copies
+those rows to connections (their keys sealed again for the connection)
+and leaves them in place, read-only. From then on, any change a workspace
+makes to its providers or models deletes that workspace's two earlier
+rows, so a roll-back never brings back a key a member replaced or
+removed. So after a roll-back:
+
+- a workspace that changed nothing since the upgrade keeps its text and
+  image providers as they were;
+- a workspace that changed anything has no provider of its own: its text
+  and images come from the server's models, if any, within its allowance,
+  until a member sets them again or the release is rolled forward;
+- what a workspace changes on the release before is not seen when rolling
+  forward again, for a use it had chosen before (the choice stays as it
+  was); a use without a choice is moved again at the next start.
+
+See how many workspaces would lose their own providers (read only):
+
+```sh
+sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+  "SELECT count(DISTINCT workspace_id) FROM assistant.capability_models m
+   WHERE NOT EXISTS (SELECT 1 FROM assistant.text_providers t WHERE t.workspace_id = m.workspace_id)
+     AND NOT EXISTS (SELECT 1 FROM assistant.image_providers i WHERE i.workspace_id = m.workspace_id);"
+```
+
+Nothing to clean: the new tables stay, and the next release reads them
+again. A later release drops the earlier tables.
+
+## Past videos
+
+The release that makes videos with a workspace's own provider (migration
+`video-generations`) keeps its jobs in `assistant.video_generations`,
+which the release before ignores, a `video` row in
+`assistant.capability_models`, which it leaves out as a use it does not
+know, and `GenerateVideoV1` jobs in the cluster's tables, which it has no
+workflow for: a job queued or running when rolling back stays so (no
+video is made and nothing is asked of the provider), and after rolling
+forward again it fails `interrupted` once the workspace asks for another
+video (half an hour after it was asked) or when its job runs again.
+It writes one notice the release before cannot read,
+`VideoGenerationEnded`: the release before fails to decode it on every
+read, and that member's notices answer 500 until the release is rolled
+forward.
+
+1. **Notices of videos:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM notifications.notices WHERE event->>'_tag' = 'VideoGenerationEnded'"
+   ```
+
+2. **Jobs on their way** (they will end `interrupted`, and their
+   providers may bill them):
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT count(*) FROM assistant.video_generations WHERE status IN ('queued', 'running')"
+   ```
+
+3. **The first lists a row:** do not roll back past this release; release
+   a fix forward instead. Never change the rows by hand.
+
+## Past audio
+
+The release that makes voice-overs and transcripts with a workspace's own
+provider (migration `own-audio-days`) counts them in
+`assistant.own_audio_days`, which the release before ignores, keeps
+`speech` and `transcription` rows in `assistant.capability_models` and
+connections of `elevenlabs` and `fal` in `assistant.provider_connections`,
+which it leaves out as uses and providers it does not know (a `fal`
+image use with them: that workspace's images go back to the server's
+model, or off). It also stores audio files (`audio/mpeg`, `audio/mp4`,
+`audio/wav`, kind `audio`) in `media.media_assets`, whose content type
+the release before cannot decode: that workspace's media library, and
+any post or agent chat that names such a file, fail to read until the
+release is rolled forward.
+
+1. **Audio files:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT workspace_id, count(*) FROM media.media_assets WHERE content_type LIKE 'audio/%' GROUP BY workspace_id"
+   ```
+
+2. **It lists a row:** do not roll back past this release; release a fix
+   forward instead. Never change the rows by hand. With none, rolling back
+   is safe: the counts and the audio choices wait for the release to come
+   back.
+
+## Past slide videos
+
+The release that composes slide videos with a workspace's own Shotstack
+account (migration `slideshows`) keeps its jobs in `assistant.slideshows`,
+which the release before ignores, a `composition` row in
+`assistant.capability_models` and `shotstack` connections in
+`assistant.provider_connections`, which it leaves out as a use and a
+provider it does not know, and `ComposeSlideshowV1` jobs in the cluster's
+tables, which it has no workflow for: a job queued or running when rolling
+back stays so (nothing is sent to Shotstack), and after rolling forward
+again it fails `interrupted` once the workspace asks for another slide
+video (40 minutes after it was asked) or when its job runs again. A video
+already composed is a plain MP4 of the media library, which the release
+before reads. It writes one notice the release before cannot read,
+`SlideshowEnded`: the release before fails to decode it on every read, and
+that member's notices answer 500 until the release is rolled forward.
+
+1. **Notices of slide videos:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT id, workspace_id FROM notifications.notices WHERE event->>'_tag' = 'SlideshowEnded'"
+   ```
+
+2. **Jobs on their way** (they will end `interrupted`, and Shotstack may
+   bill them):
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT count(*) FROM assistant.slideshows WHERE status IN ('queued', 'running')"
+   ```
+
+3. **The first lists a row:** do not roll back past this release; release
+   a fix forward instead. Never change the rows by hand.
+
 ## Past Slack
 
 The release that posts to Slack (no migration: platforms, options and

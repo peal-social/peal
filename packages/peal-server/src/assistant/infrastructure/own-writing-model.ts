@@ -1,8 +1,6 @@
-import { Duration, Effect, Layer, Match, Option } from "effect";
+import { Duration, Effect, Layer, Option } from "effect";
 import type { Schema } from "effect";
-import { LanguageModel } from "effect/ai";
 import type { AiError } from "effect/ai";
-import { FetchHttpClient, HttpClient } from "effect/http";
 
 import { OwnWritingModel } from "#assistant/application/ports/own-writing-model.ts";
 import type { OwnTextEndpoint } from "#assistant/application/ports/own-writing-model.ts";
@@ -17,7 +15,7 @@ import {
 import { languageModelOf } from "#assistant/infrastructure/writing-model-live.ts";
 import { OutboundGuard } from "#shared/infrastructure/platforms/outbound-guard.ts";
 import type { OutboundRequestRefused } from "#shared/infrastructure/platforms/outbound-request-refused.ts";
-import { publicLibraryHttpClientWith } from "#shared/infrastructure/platforms/public-http.ts";
+import { publicFetchWith } from "#shared/infrastructure/platforms/public-http.ts";
 
 // What every log line and span of a workspace's provider says of it: whose
 // it is, never its host or its model, which are the workspace's business.
@@ -92,41 +90,32 @@ const guardRefused = ({
     ? failWith("Lookup", "unreachable")
     : refusedWith("AddressRefused", "addressRefused", null);
 
-// The provider's settings as the server's own adapters take them.
-const providerOf = (endpoint: OwnTextEndpoint) =>
-  Match.value(endpoint.kind).pipe(
-    Match.when("anthropic", () => ({
-      _tag: "Anthropic" as const,
-      apiKey: endpoint.apiKey,
-      baseUrl: Option.some<string>(endpoint.baseUrl),
-      model: endpoint.model,
-    })),
-    Match.when("openai-compatible", () => ({
-      _tag: "OpenAiCompatible" as const,
-      apiKey: Option.some(endpoint.apiKey),
-      baseUrl: endpoint.baseUrl,
-      model: endpoint.model,
-    })),
-    Match.exhaustive
-  );
+// The provider's settings as the AI SDK's adapters take them.
+const settingsOf = (endpoint: OwnTextEndpoint) => ({
+  apiKey: Option.some(endpoint.apiKey),
+  baseUrl: endpoint.baseUrl,
+  model: endpoint.model,
+  provider: endpoint.provider,
+});
 
 /**
- * OwnWritingModel on the server's own adapters (`@effect/ai-anthropic`,
- * `@effect/ai-openai-compat`), at the address a workspace's member typed:
- * the address is checked by the outbound guard before the call, and the
- * call goes through the public HTTP client, which checks it again on every
- * request (HTTPS on the default port, every address public), follows no
- * redirect, cuts the answer off past a megabyte and sends no trace
+ * OwnWritingModel on the AI SDK's adapters (`ai-sdk/models.ts`), at the
+ * address a workspace's member typed: the address is checked by the
+ * outbound guard before the call, and the call goes through the guarded
+ * fetch (`publicFetchWith`), which checks it again on every request
+ * (HTTPS on the default port, every address public), follows no
+ * redirect, cuts the answer off past `maxAnswerBytes` and sends no trace
  * context.
  *
  * 401, 402, 403 and 404 are the workspace's settings refused
  * (TextProviderRefused, with the status), a 3xx is `redirected`, and a
  * host the guard refuses is `addressRefused` (with none), but for a name
  * that cannot be looked up for now, which is `unreachable`; the rest is
- * WritingFailed, as for the server's model. It keeps no state. The key is
- * `Redacted` until the request's header; the logs and the span say
- * `workspace`, the API it speaks, the status and the kind of failure,
- * never the host, the model, the draft or the answer.
+ * WritingFailed, as for the server's model. It keeps no state: the
+ * provider's package is built for each call. The key is `Redacted` until
+ * the request's header; the logs and the span say `workspace`, the
+ * provider, the status and the kind of failure, never the host, the
+ * model, the draft or the answer.
  */
 export const ownWritingModel = ({
   timeout = answerTimeout,
@@ -136,19 +125,17 @@ export const ownWritingModel = ({
     Effect.gen(function* makeOwnWritingModel() {
       const guard = yield* OutboundGuard;
 
-      // The whole call waits `timeout`: the client's own bound is a little
+      // The whole call waits `timeout`: the fetch's own bound is a little
       // later, so a slow provider ends as `timedOut`. A request the guard
       // refuses there (a name that changed its answer since the check) is
       // one that could not be sent: `unreachable`.
-      const client = yield* publicLibraryHttpClientWith({
+      const fetch = yield* publicFetchWith({
         maxResponseBytes: maxAnswerBytes,
         timeout: Duration.sum(
           Duration.fromInputUnsafe(timeout),
           Duration.seconds(1)
         ),
       });
-
-      const http = Layer.succeed(HttpClient.HttpClient, client);
 
       const write = <A, I extends Readonly<Record<string, unknown>>>(
         endpoint: OwnTextEndpoint,
@@ -159,15 +146,8 @@ export const ownWritingModel = ({
           // The guard's span names the host it refuses.
           Effect.withTracerEnabled(false),
           Effect.catchTag("OutboundRequestRefused", guardRefused),
-          Effect.andThen(
-            LanguageModel.LanguageModel.use((model) =>
-              generateAnswer(model, prompt, answer)
-            ).pipe(
-              Effect.provide(
-                languageModelOf(providerOf(endpoint)).pipe(Layer.provide(http))
-              )
-            )
-          ),
+          Effect.andThen(languageModelOf(settingsOf(endpoint), fetch)),
+          Effect.flatMap((model) => generateAnswer(model, prompt, answer)),
           Effect.catchTag("AiError", failed),
           // Interrupting the call aborts its HTTP request.
           Effect.timeoutOrElse({
@@ -176,7 +156,7 @@ export const ownWritingModel = ({
           }),
           Effect.withSpan("OwnWritingModel.write", {
             attributes: {
-              "gen_ai.provider.name": endpoint.kind,
+              "gen_ai.provider.name": endpoint.provider,
               ...source,
             },
           })
@@ -191,6 +171,5 @@ export const ownWritingModel = ({
  * runtime's Dns, which the composition root provides.
  */
 export const OwnWritingModelLive = ownWritingModel().pipe(
-  Layer.provide(OutboundGuard.layer),
-  Layer.provide(FetchHttpClient.layer)
+  Layer.provide(OutboundGuard.layer)
 );

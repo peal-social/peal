@@ -42,6 +42,9 @@
   (`engagement:read` for the last), by default,
   not published posts; billing's and a webhook endpoint turned off always,
   as no preference covers them). A preferences change writes only what it names.
+  A video the assistant was asked for (`VideoGenerationEnded`) reaches the
+  member who asked (`author`) alone, while they may upload media, in the
+  app only (`inAppOnly`: never emailed, whatever the preferences).
   A post failed `tokenExpired` (`awaitsReconnect`) is not emailed to a
   reader who may connect channels and keeps the `channelReconnect` email
   (`emailedTo`): the channel's `ChannelReconnectRequired`, once per break,

@@ -1,75 +1,79 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Button } from "peal-ui/components/button";
+import {
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowLabel,
+  SettingsRowText,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
-import { useState, useTransition } from "react";
-import type { SubmitEvent } from "react";
 
 import { authClient } from "#auth/client.ts";
-import { FormField } from "#components/auth/form-field.tsx";
 import { useRouter } from "#i18n/navigation.ts";
 import { settingsErrorKey } from "#settings/errors.ts";
-import type { SettingsErrorKey } from "#settings/errors.ts";
 
-import { SettingsError } from "./settings-error.tsx";
+import { InlineTextSetting } from "./inline-text-setting.tsx";
 
-// Renames the workspace, through Better Auth's organization route, which
-// checks organization:update.
-export const RenameWorkspaceForm = ({
+// The workspace's name, typed in place and saved once the person leaves the
+// field, through Better Auth's organization route, which checks
+// organization:update. Without it, the name is shown and said who may
+// change it.
+export const WorkspaceNameRow = ({
+  mayChange,
   name,
   workspaceId,
 }: {
+  readonly mayChange: boolean;
   readonly name: string;
   readonly workspaceId: string;
 }) => {
   const t = useTranslations("WorkspaceSettings.general");
-  const settings = useTranslations("Settings");
+  const errors = useTranslations("Settings.errors");
   const router = useRouter();
-  const [value, setValue] = useState(name);
-  const [error, setError] = useState<SettingsErrorKey | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const renamed = value.trim();
 
-  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    startTransition(async () => {
-      const result = await authClient.organization.update({
-        data: { name: renamed },
-        organizationId: workspaceId,
-      });
-
-      if (result.error === null) {
-        setError(null);
-        toast.success(t("renamed", { name: renamed }));
-        router.refresh();
-      } else {
-        setError(settingsErrorKey(result.error));
-      }
+  const save = async (chosen: string) => {
+    const result = await authClient.organization.update({
+      data: { name: chosen },
+      organizationId: workspaceId,
     });
+
+    if (result.error !== null) {
+      toast.error(errors(settingsErrorKey(result.error)));
+
+      return false;
+    }
+
+    toast.success(t("renamed", { name: chosen }));
+    router.refresh();
+
+    return true;
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-sm flex-col gap-4">
-      <SettingsError error={error} />
-      <FormField
-        id="workspace-name"
-        type="text"
-        autoComplete="organization"
-        label={t("name")}
-        value={value}
-        onChange={setValue}
-      />
-      <div>
-        <Button
-          type="submit"
-          disabled={isPending || renamed === "" || renamed === name}
-          focusableWhenDisabled
-        >
-          {isPending ? settings("saving") : t("rename")}
-        </Button>
-      </div>
-    </form>
+    <SettingsRow>
+      <SettingsRowText>
+        <SettingsRowLabel htmlFor={mayChange ? "workspace-name" : undefined}>
+          {t("title")}
+        </SettingsRowLabel>
+        <SettingsRowDescription id="workspace-name-hint">
+          {mayChange ? t("description") : t("readOnly")}
+        </SettingsRowDescription>
+      </SettingsRowText>
+      <SettingsRowControl>
+        {mayChange ? (
+          <InlineTextSetting
+            id="workspace-name"
+            autoComplete="organization"
+            describedBy="workspace-name-hint"
+            value={name}
+            save={save}
+          />
+        ) : (
+          <span className="text-sm">{name}</span>
+        )}
+      </SettingsRowControl>
+    </SettingsRow>
   );
 };

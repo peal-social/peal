@@ -72,12 +72,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `…/posts/[postId]`, which opens
   a draft or a scheduled post in the composer, and shows a post that went
   out in `PostDetail` (each channel's status, attempts and reasons, with
-  repost and confirm, and its analytics), `…/settings` (with `members`, `invitations`, `tags`, `signatures`,
+  repost and confirm, and its analytics), `…/settings` (the workspace itself, with `members`, which holds inviting
+  and the invitations waiting, `invitations` only redirecting there, `tags`, `signatures`,
   `channel-sets`, `queues`, `recycling`, `feeds`, `api-keys`, `webhooks` and `agent`, the agent's skills, for assistant:use, with `agent/skills/new` and `agent/skills/[skillId]`) and `…/billing`. The person's own
   pages are every workspace's too, in its Settings: `…/settings/account`
-  (their account), `…/notifications` (their notifications across
-  workspaces) and `…/settings/notifications` (which reach them by email);
-  the account menu opens them in the workspace open. There is no personal
+  (their profile and data), `…/settings/account/preferences` (language,
+  time format, measurement), `…/settings/account/security` (password,
+  two-step verification, sessions, connected applications),
+  `…/notifications` (their notifications across workspaces) and
+  `…/settings/notifications` (which reach them by email); the account
+  menu opens them in the workspace open. There is no personal
   area: no page across workspaces, no sidebar of the person's own. Each
   workspace stands alone, and the API has no overview, agenda or report
   across a person's workspaces to show. The staff console is
@@ -123,11 +127,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   and Sign out, and the contract functions at its foot. Someone signed
   out or not a member gets the app's `PlainFrame`; a member who must
   first turn on two-step verification gets it too, with the notice and
-  the account page's own controls to turn it on (`TwoStepTurnOnHere`, as
-  the staff console does), since the account page is a workspace's. Which workspace pages
+  the security and access page's own controls to turn it on (`TwoStepTurnOnHere`, as
+  the staff console does), since that page is a workspace's. Which workspace pages
   exist, their mode, their section and the permission each asks is one
   table, `#shell/navigation.ts` (`navigationOf`, tested): add a workspace
-  page there, with its name in `WorkspaceShell.pages`. The frame's panel header holds the page's one
+  page there, with its name in `WorkspaceShell.pages`; a page of a
+  section goes in its group (`sectionLayout`: Settings' `personal`,
+  `publishing`, `automations` and `administration`, named in
+  `WorkspaceShell.sectionGroups`), which the sidebar labels. The frame's panel header holds the page's one
   `h1`, its name: a page draws no title or description of its own, puts
   its main actions in `PageActions` (small ghost buttons, icon first) and,
   where it opens one item, names it with `PageTitle`. Each page also
@@ -211,7 +218,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   never `reservedWorkspaceSlugs` nor an id's shape): the server refuses
   another (Better Auth's hooks, `INVALID_WORKSPACE_SLUG`), when a
   workspace is made and when its slug changes. Renaming keeps it; owners
-  and admins change it on the general settings (`WorkspaceAddressForm`,
+  and admins change it on the Workspace settings (`WorkspaceAddressRow`,
   which then opens the page under the new address). A new workspace is
   made with `CreateWorkspaceForm` (`components/create-workspace-form.tsx`),
   its name and its address offered and both the person's to replace: the
@@ -310,7 +317,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `Origin` or `Referer`, so PostHog would turn replay off, and the app
   records its signed-in pages alone anyway. The choice lives on the account
   (`PUT /api/me/browser-analytics/consent`): `ConsentCard` on a
-  workspace's home while undecided, `ConsentSetting` on the account page.
+  workspace's home while undecided, `ConsentSetting` on the Preferences page.
 - Pages fetch through the client derived from `peal-contract`, with
   `@effect/atom-react`: query atoms come from `PealApi` in `src/api/client.ts`.
   Browsers call `/api`; server code calls `PEAL_API_URL`.
@@ -326,6 +333,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   query that needs them, and anything that depends on the browser (its time
   zone, the current time), renders after hydration (`useHydrated`,
   `useMounted`). Tiptap editors set `immediatelyRender: false`.
+- Settings pages follow DESIGN.md's "Settings": the layout puts each in
+  peal-ui's `SettingsPage` column; a page is sections (`SettingsGroup`,
+  `components/settings/settings-group.tsx`) of `SettingsCard`s of
+  `SettingsRow`s from `peal-ui/components/settings`, a list's rows or a
+  multi-field form (`SettingsCardBody`) in a card, what cannot be undone
+  last under **Danger zone**. A setting saves as it changes: a
+  `Switch` or a select at once, text through `InlineTextSetting` (saved
+  on blur or Enter, Escape puts it back), each with a toast; only forms
+  that create something or ask for a password keep a button.
 - Settings pages read Better Auth's members, invitations and sessions in
   atoms (`#settings/atoms.ts`), decoding each answer with `authCall`, and
   offer only the role changes its routes accept (`#settings/member-rules.ts`).
@@ -377,7 +393,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   seconds while the tab is visible and when it is shown again
   (`useUnreadNotices`, `useRefreshWhileVisible`), and announces arrivals
   in a status region. The frame has no bell and no language switcher:
-  the language is chosen on the account page. Polling works through any proxy and needs nothing
+  the language is chosen on the Preferences page. Polling works through any proxy and needs nothing
   shared between servers; keep it. Write notices from their events with
   `src/notices/notice-text.ts`.
 - The composer's parts after the first (`FollowUpParts`) are a thread or
@@ -513,7 +529,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   leaves it out the same default, whoever makes it); its line counts with the contract's
   `linksToShorten` (`#short-links/count.ts`), the server's rule. A post
   that asked shows `PostLinks` (its links and their clicks over 30 days)
-  to members with analytics:read; the general settings hold the default
+  to members with analytics:read; the Workspace settings hold the default
   (`ShortLinkDefaultForm`).
 - Name a channel with `#channels/channel-name.ts`, never `channel.handle`
   alone: `channelName` wherever one line names it (the workspace's name
@@ -635,7 +651,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   opens its day. A tag's colour shows only in its dots (`ChipTags`), as a
   post's state is the one colour a chip carries (DESIGN.md).
 - Times of day follow the browser's own preference (`#i18n/hour-cycle.ts`,
-  in `localStorage`, chosen on the account page): `ViewerHourCycle`, in the
+  in `localStorage`, chosen on the Preferences page): `ViewerHourCycle`, in the
   locale layout, gives every message's `{at, time, short}` the clock
   chosen, and code that formats a time itself adds `useTimeOptions()` to
   its options. The server renders the language's clock; the preference
@@ -857,9 +873,40 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - While the status's `source` is `workspace`, the workspace's own text
   provider writes: the menu says so instead of the requests left, and
   never blocks on them (`assistantBlockedBy`). The assistant settings page
-  holds that provider (`TextProviderSettings`: kind, address, model, key,
-  a test of the saved one) above the image provider; a change passes
-  `textProviderChanged`, which refreshes the status too.
+  (`AiSettings`, `components/assistant/ai-settings.tsx`) is two sections.
+  **AI providers**: a row per connected provider (`ConnectionRowView`: its
+  mark, its name, the host when it is not the provider's own address,
+  **Key saved** or **Key unreadable**) whose **Edit** opens its form in a
+  dialog (`ConnectionFormView`: the key, the address under **Advanced**,
+  typed up front for **Another provider**, `openai-compatible`; **Test**
+  where `testModelOf` knows a model, **Remove** after a confirmation), and
+  **Connect a provider** at the section header's end (`ConnectDialogView`),
+  the same form with the picker of the providers not connected yet
+  (`connectable`). **Models**: a row per use of the contract's
+  `AiCapability` (`ModelRowView`: its icon, what it is for, the provider
+  select of the connected providers that offer it (`providerChoicesFor`)
+  with "This server's model", or "Off" where the server has none, then the
+  model, the catalogue's suggestions and **Another model…**, a field saved
+  on blur or Enter), each applied at once with a toast; a provider without
+  suggestions waits for the model typed (`startingModelOf`). A later use
+  gets its icon and strings there; Video's row offers the providers the
+  catalogue gives a `video` offer, and "Off" alone, as the server has no
+  video model. Slide videos' row (`composition`) is the provider select
+  alone (`takesModel` false): choosing Shotstack saves at once and sends
+  no `model`. Shotstack's form shows no address field: under
+  **Advanced** an environment select, production (its own address, the
+  default) or its sandbox (`sandboxAddressOf`, `sandboxChosen`, free and
+  always watermarked, with its sandbox key), and its row says when it is
+  in the sandbox (`isSandboxAddress`); it writes no text, so no **Test**. The catalogue's order and what each
+  provider offers are `#assistant/provider-catalogue.ts`, from
+  `peal-contract/ai-providers`, so a new provider is added there; the
+  form's request is `changeOf` (`#assistant/connections.ts`: the address
+  only when it is not the provider's own, the key only when typed), its
+  refusals `connectionErrorKey` and `testFailureKey`, a choice's
+  `modelErrorKey` (`#assistant/models.ts`). A provider's mark comes from
+  simple-icons when it has one, its initial otherwise. Every change passes
+  `providersChanged`, which reads the providers, the models and the
+  status again, and closes the dialog.
 - The assistant's first item, "Write a post…" (`AssistantWriteForm`),
   takes a subject, a tone and, among the post's platforms with a short
   limit (`writablePlatforms`), one to fit: offered with or without text,
@@ -870,7 +917,51 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   media:upload) and only while the status answers `images.available`; it
   shows the cost and the requests left (`imageAllowanceHint`) without
   blocking: a refusal of the quota or the storage opens the upgrade dialog,
-  the free plan's and a trial's included. The library and the picker mark
+  the free plan's and a trial's included. `GenerateVideo`
+  (`components/media/generate-video.tsx`, helpers in `#assistant/videos.ts`)
+  sits beside it on the media page, for the same members, only while the
+  status answers `videos.available`: its dialog offers what the chosen
+  provider's `video` offer takes (`videoAspectsOf`, a length only where
+  `videoDurationsOf` lists some, a first frame through `MediaPicker` where
+  `imageInput`), sends `videoRequestOf` and answers at once, as the server
+  makes the video in a job; refusals read `Assistant.videos.errors`
+  (`videoFailureKey`), storage's opens the upgrade dialog. `VideoJobs`
+  shows the jobs still on their way as placeholders (`VideoJobsView`,
+  `video-jobs-view.tsx`), reads `videoGenerations` again every five seconds
+  while one is and the tab is visible (`useRefreshWhileVisible`), and, for
+  each that ended since (`endedSince`), toasts how, a failure with its
+  reason (`Assistant.videos.reasons`), and reads the library again
+  (`libraryChanged`) when one came. `GenerateVoiceover`
+  (`generate-voiceover.tsx`, helpers in `#assistant/audio.ts`) sits beside
+  them while the status answers `voiceovers.available`. `GenerateSlideshow`
+  (`generate-slideshow.tsx`, helpers in `#assistant/slideshows.ts`) sits
+  beside **Generate a video** while the status answers
+  `slideshows.available`; while `slideshows.paymentMethodRequired` its
+  button opens the upgrade dialog instead (`slideshowsNeedPayment`, the
+  `feature` reason of `#billing/upgrade.ts`, which a
+  `CompositionNeedsPayment` answer opens too). Its dialog picks 2 to 10
+  JPEG or PNG images through `MediaPicker` (`isSlideImage`), listed as
+  rows in order (`withPicked`, `moved`, `removed`) each with a caption
+  and a motion, an optional voice-over (`isVoiceover`: audio of a known
+  length), the shape, each image's length or **Fit to the voice-over**,
+  and the transition; it says the total and why it cannot be sent yet
+  (`slideshowProblemOf`), names the sandbox when the connection is it,
+  and sends `slideshowRequestOf`. Refusals read
+  `Assistant.slideshows.errors` (`slideshowFailureKey`), storage's and a
+  payment method's open the upgrade dialog. `SlideshowJobs` shows the
+  jobs on their way (`SlideshowJobsView`, beside `VideoJobsView`) as
+  `VideoJobs` does. `GenerateVoiceover`'s dialog takes the text, and the
+  voice as the provider's `speech` offer takes it (`voiceFieldOf`: a
+  select of its voices, a field for a voice's id, or nothing), sent by
+  `voiceoverRequestOf`; the new file lands in the library. A card of an
+  audio or video file shows `TranscribeMedia` (`transcribe-media.tsx`) to
+  members with assistant:use and media:read, while `canTranscribe` (the
+  status's `transcriptions`: available, the file ready and within
+  `maxBytes`): **Transcribe** shows the transcript with **Copy** and, with
+  media:upload, **Use as description** (`describeUpload`, a transcript
+  longer than a description disabling it). Refusals read
+  `Assistant.audio.errors` (`audioFailureKey`). Audio files show their
+  kind's icon in the grid and play in the preview. The library and the picker mark
   `aiGenerated` files. Attaching one, to the post or a follow-up part,
   presets the AI label of each channel whose platform has one
   (`#posts/ai-labels.ts`, through `useAiLabels`): once a channel, only
@@ -1048,7 +1139,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   failure, only where a provider is offered; anything else is a plain
   failure, and `error_description` is never shown. Google's mark is
   `GoogleMark`, from Google's assets. Where `GET /api/me` says
-  `hasPassword: false`, the account page offers `SetPassword` (the reset
+  `hasPassword: false`, the security and access page offers `SetPassword` (the reset
   link to the account's address) in place of the password form, and says
   two-step verification and closing need it first (`needsPassword`).
 - Creating an account accepts the terms of service: the sign-up page
@@ -1164,7 +1255,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   the second step in place (`TwoStepChallengeView`, its state in
   `sign-in-form.tsx`) when the answer has `twoFactorRedirect`, so an OAuth
   authorization's signed query is kept: never set the client plugin's
-  `twoFactorPage`. The account page's `TwoStepSection` draws the key's QR
+  `twoFactorPage`. The security and access page's `TwoStepSection` draws the key's QR
   code in the browser (`qrcode.react`, SVG) beside the key as text; the
   URI and the recovery codes stay in component state, sent nowhere but to
   Better Auth's routes, never logged. A workspace that requires it shows

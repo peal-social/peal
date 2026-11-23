@@ -27,6 +27,8 @@ public final class ImageProvider {
 
     private final String model;
 
+    private final AiImageProvider provider;
+
     private final String updatedAt;
 
     private final Map<String, Object> additionalProperties;
@@ -36,12 +38,14 @@ public final class ImageProvider {
             boolean keySet,
             boolean keyUnreadable,
             String model,
+            AiImageProvider provider,
             String updatedAt,
             Map<String, Object> additionalProperties) {
         this.baseUrl = baseUrl;
         this.keySet = keySet;
         this.keyUnreadable = keyUnreadable;
         this.model = model;
+        this.provider = provider;
         this.updatedAt = updatedAt;
         this.additionalProperties = additionalProperties;
     }
@@ -66,6 +70,11 @@ public final class ImageProvider {
         return model;
     }
 
+    @JsonProperty("provider")
+    public AiImageProvider getProvider() {
+        return provider;
+    }
+
     @JsonProperty("updatedAt")
     public String getUpdatedAt() {
         return updatedAt;
@@ -87,12 +96,13 @@ public final class ImageProvider {
                 && keySet == other.keySet
                 && keyUnreadable == other.keyUnreadable
                 && model.equals(other.model)
+                && provider.equals(other.provider)
                 && updatedAt.equals(other.updatedAt);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.baseUrl, this.keySet, this.keyUnreadable, this.model, this.updatedAt);
+        return Objects.hash(this.baseUrl, this.keySet, this.keyUnreadable, this.model, this.provider, this.updatedAt);
     }
 
     @java.lang.Override
@@ -119,7 +129,11 @@ public final class ImageProvider {
     }
 
     public interface ModelStage {
-        UpdatedAtStage model(@NotNull String model);
+        ProviderStage model(@NotNull String model);
+    }
+
+    public interface ProviderStage {
+        UpdatedAtStage provider(@NotNull AiImageProvider provider);
     }
 
     public interface UpdatedAtStage {
@@ -136,7 +150,13 @@ public final class ImageProvider {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static final class Builder
-            implements BaseUrlStage, KeySetStage, KeyUnreadableStage, ModelStage, UpdatedAtStage, _FinalStage {
+            implements BaseUrlStage,
+                    KeySetStage,
+                    KeyUnreadableStage,
+                    ModelStage,
+                    ProviderStage,
+                    UpdatedAtStage,
+                    _FinalStage {
         private String baseUrl;
 
         private boolean keySet;
@@ -144,6 +164,8 @@ public final class ImageProvider {
         private boolean keyUnreadable;
 
         private String model;
+
+        private AiImageProvider provider;
 
         private String updatedAt;
 
@@ -157,6 +179,7 @@ public final class ImageProvider {
             keySet(other.getKeySet());
             keyUnreadable(other.getKeyUnreadable());
             model(other.getModel());
+            provider(other.getProvider());
             updatedAt(other.getUpdatedAt());
             return this;
         }
@@ -184,8 +207,15 @@ public final class ImageProvider {
 
         @java.lang.Override
         @JsonSetter("model")
-        public UpdatedAtStage model(@NotNull String model) {
+        public ProviderStage model(@NotNull String model) {
             this.model = Objects.requireNonNull(model, "model must not be null");
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter("provider")
+        public UpdatedAtStage provider(@NotNull AiImageProvider provider) {
+            this.provider = Objects.requireNonNull(provider, "provider must not be null");
             return this;
         }
 
@@ -198,7 +228,7 @@ public final class ImageProvider {
 
         @java.lang.Override
         public ImageProvider build() {
-            return new ImageProvider(baseUrl, keySet, keyUnreadable, model, updatedAt, additionalProperties);
+            return new ImageProvider(baseUrl, keySet, keyUnreadable, model, provider, updatedAt, additionalProperties);
         }
 
         @JsonAnySetter
@@ -207,6 +237,7 @@ public final class ImageProvider {
                     || key.equalsIgnoreCase("keySet")
                     || key.equalsIgnoreCase("keyUnreadable")
                     || key.equalsIgnoreCase("model")
+                    || key.equalsIgnoreCase("provider")
                     || key.equalsIgnoreCase("updatedAt")) {
                 return;
             }

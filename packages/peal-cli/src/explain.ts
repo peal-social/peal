@@ -6,12 +6,16 @@ import {
   duplicateWindowHours,
   imageRequestCost,
   maxImportRows,
+  maxSecondsPerSlide,
+  maxSlideshowSeconds,
+  minSecondsPerSlide,
   humanAgentWindowDays,
   privateReplyWindowDays,
   queueHorizonDays,
 } from "peal-contract";
 import type {
   AdAccountUnusable,
+  AudioProviderFailed,
   BoostViolation,
   CommentInvalid,
   ContentViolation,
@@ -86,6 +90,8 @@ const providerAddressRefusals: Readonly<
 > = {
   credentials:
     "The address carries a user name or a password: leave them out, and give the key with the key instead.",
+  fixedAddress:
+    "This provider is reached at its own address alone (ElevenLabs, fal; Shotstack at its production API or, with --sandbox, its sandbox): leave --base-url out.",
   malformed:
     "The address is not a URL: give the API's base address whole, such as https://images.example.com/v1.",
   notHttps:
@@ -111,6 +117,18 @@ const textAddressRefusals: Readonly<
     "The address's host is not a public address (loopback, private or link-local): Peal sends drafts only to hosts anyone on the internet can reach.",
   queryOrFragment:
     "The address has a query or a fragment: give the API's base address alone, which /v1/messages or /chat/completions follows.",
+};
+
+// Why the provider chosen for voice-overs or transcripts gave none.
+const audioFailures: Readonly<Record<AudioProviderFailed["reason"], string>> = {
+  addressRefused: "its address is not one Peal sends to",
+  redirected: "it answered with a redirect, which Peal never follows",
+  refused:
+    "it refused this request (its content rules, a setting the model does not take, a voice it does not know)",
+  settingsRefused: "it refused the key, the account or the model",
+  timedOut: "it took longer than Peal waits",
+  unreachable: "it could not be reached, or was busy",
+  unusableAnswer: "its answer held nothing Peal can use",
 };
 
 // Why the workspace's own text provider wrote nothing.
@@ -500,6 +518,24 @@ const reasonOf =
         ),
       ArticleStateConflict: ({ state }) =>
         refused(`The article is ${state}, which does not allow this.`),
+      AiCapabilityNotOffered: () =>
+        refused(
+          "That provider does not offer this use: peal assistant providers list shows what is connected, and images come only from the providers Peal makes images with. Nothing was changed."
+        ),
+      AiModelRequired: () =>
+        refused(
+          "No model was given and Peal knows none to use: give one with --model. Nothing was sent or saved."
+        ),
+      AiProviderAddressRefused: ({ reason }) =>
+        refused(textAddressRefusals[reason]),
+      AiProviderKeyRequired: () =>
+        refused(
+          "The workspace has no key stored for this provider that can be read, or --base-url is not the address the key was given for (another host or path): Peal never sends a key to another address. Give the key again, on standard input."
+        ),
+      AiProviderNotConnected: () =>
+        refused(
+          "The workspace has not connected that provider: connect it first with peal assistant providers connect."
+        ),
       AlreadyMember: () => refused("That address belongs to a member already."),
       AltTextTooLong: ({ maxLength }) =>
         refused(
@@ -536,6 +572,20 @@ const reasonOf =
       AssistantSecretsNotConfigured: () =>
         refused(
           "This server cannot keep a workspace's provider key: its operator must set PEAL_TOKEN_KEYS, the keys that encrypt them. Nothing was saved."
+        ),
+      AudioAllowanceReached: ({ capability, dailyLimit }) =>
+        refused(
+          `The workspace asked for ${String(dailyLimit)} ${capability === "speech" ? "voice-overs" : "transcripts"} today, the most a day allows: nothing was asked. Ask again after midnight UTC.`
+        ),
+      AudioProviderFailed: ({ capability, reason }) =>
+        refused(
+          `The provider chosen for ${capability === "speech" ? "voice-overs" : "transcripts"} gave none: ${audioFailures[reason]}. Nothing was kept; the request counts toward today's.`
+        ),
+      AudioUnavailable: ({ capability, reason }) =>
+        refused(
+          reason === "notSet"
+            ? `The workspace makes no ${capability === "speech" ? "voice-over" : "transcript"}: choose a provider and a model with peal assistant models set ${capability} --provider <id> --model <model>, after peal assistant providers connect <id>.`
+            : "The key of the provider chosen for it can no longer be read: connect it again with peal assistant providers connect <id>, which reads the key on standard input."
         ),
       AssistantUnavailable: () =>
         refused(
@@ -847,6 +897,24 @@ const reasonOf =
         refused(
           "The workspace has no such comment rule: peal inbox rules list shows them."
         ),
+      CompositionAllowanceReached: ({ dailyLimit }) =>
+        refused(
+          `The workspace asked for ${String(dailyLimit)} slide videos today, the most a day allows: nothing was asked. Ask again after midnight UTC.`
+        ),
+      CompositionBusy: ({ slideshowId }) =>
+        refused(
+          `The workspace already has a slide video on the way (${slideshowId}), and composes one at a time: nothing was asked. peal media slideshow status ${slideshowId} says where it stands.`
+        ),
+      CompositionNeedsPayment: ({ billingUrl }) =>
+        refused(
+          `Slide videos need a payment method on the workspace's billing account: an owner or an admin adds one at ${billingUrl}. Peal bills nothing for them, as the workspace's Shotstack account pays. Nothing was asked.`
+        ),
+      CompositionUnavailable: ({ reason }) =>
+        refused(
+          reason === "notSet"
+            ? "The workspace composes no slide video: connect Shotstack with peal assistant providers connect shotstack, then choose it with peal assistant models set composition --provider shotstack."
+            : "The key of the service chosen for slide videos can no longer be read: connect it again with peal assistant providers connect shotstack, which reads the key on standard input."
+        ),
       CommentRuleNotPossible: ({ channels, reason }) =>
         refused(
           [
@@ -945,6 +1013,24 @@ const reasonOf =
       ShortLinkNotFound: () =>
         refused(
           "The workspace has no short link with that id: peal short-links list shows them."
+        ),
+      SlideshowNotFound: () =>
+        refused("The workspace asked for no slide video with that id."),
+      SlideshowRequestRejected: ({ reason }) =>
+        refused(
+          `${
+            {
+              imageNotFound:
+                "An --image names no ready image of the workspace's media: peal media list --kind image shows them.",
+              imageNotSupported:
+                "An --image is not a JPEG or a PNG, the formats slide videos take.",
+              tooLong: `The slides would last longer than ${String(maxSlideshowSeconds)} seconds: give fewer images or a shorter --seconds.`,
+              voiceoverNotFound:
+                "--voiceover names no ready audio file of the workspace's media whose length is known.",
+              voiceoverTooLong: `Shared between the slides, the voice-over gives each more than ${String(maxSecondsPerSlide)} seconds, or lasts more than ${String(maxSlideshowSeconds)}: add images, or give --seconds to cut it at the last slide.`,
+              voiceoverTooShort: `Shared between the slides, the voice-over gives each less than ${String(minSecondsPerSlide)} seconds: give fewer images, or --seconds.`,
+            }[reason]
+          } Nothing was asked or counted.`
         ),
       ChatConnectLimited: () =>
         refused(
@@ -1106,6 +1192,16 @@ const reasonOf =
         refused(
           `These media are not the workspace's, or not ready: ${mediaIds.join(", ")}.`
         ),
+      TranscriptionRejected: ({ maxBytes, reason }) =>
+        refused(
+          `${
+            {
+              notAudio: "Only an audio or video file is transcribed.",
+              notReady: "The file is not ready yet: wait until it is.",
+              tooLarge: `The file is larger than a transcript takes (${String(maxBytes / 1_000_000)} MB).`,
+            }[reason]
+          } Nothing was asked or counted.`
+        ),
       UnknownTags: ({ tagIds }) =>
         refused(
           `These tags are not the workspace's: ${tagIds.join(", ")}. peal tags list shows them.`
@@ -1123,6 +1219,41 @@ const reasonOf =
           reason === "sizeMismatch"
             ? "The stored file does not have the size declared: Peal deleted it. Upload it again."
             : "The file is not of the type its name says: Peal deleted it. Give it the extension of what it holds, then upload it again."
+        ),
+      VideoAllowanceReached: ({ dailyLimit }) =>
+        refused(
+          `The workspace asked for ${String(dailyLimit)} videos today, the most a day allows: nothing was asked. Ask again after midnight UTC.`
+        ),
+      VideoBusy: ({ generationId }) =>
+        refused(
+          `The workspace already has a video on the way (${generationId}), and makes one at a time: nothing was asked. peal media video status ${generationId} says where it stands.`
+        ),
+      VideoGenerationNotFound: () =>
+        refused("The workspace asked for no video with that id."),
+      VideoRequestRejected: ({ reason }) =>
+        refused(
+          `${
+            {
+              aspectNotOffered:
+                "The provider chosen for videos does not make this aspect: try another --aspect.",
+              durationNotOffered:
+                "The provider chosen for videos does not take this --duration, or takes none: leave it out to let the provider choose.",
+              imageNotFound:
+                "--image names no ready image of the workspace's media: peal media list --kind image shows them.",
+              imageNotOffered:
+                "The provider chosen for videos takes no first frame: leave --image out.",
+            }[reason]
+          } Nothing was asked or counted.`
+        ),
+      VideoUnavailable: ({ reason }) =>
+        refused(
+          reason === "notSet"
+            ? "The workspace makes no video: choose a provider and a model with peal assistant models set video --provider <id> --model <model>, after peal assistant providers connect <id>."
+            : "The key of the provider chosen for videos can no longer be read: connect it again with peal assistant providers connect <id>, which reads the key on standard input."
+        ),
+      VoiceNotOffered: () =>
+        refused(
+          "The provider chosen for voice-overs takes no voice: its model speaks with its own. Leave --voice out."
         ),
       WebhookDeliveryNotFound: () =>
         refused(

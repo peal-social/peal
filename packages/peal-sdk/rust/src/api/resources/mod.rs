@@ -10,9 +10,12 @@
 //! - **posts**
 //! - **articles**
 //! - **media**
+//! - **mediaAudio**
 //! - **notices**
 //! - **notificationPreferences**
 //! - **assistant**
+//! - **videoGenerations**
+//! - **slideshows**
 //! - **members**
 //! - **invitations**
 //! - **billing**
@@ -67,6 +70,7 @@ pub mod inbox_rules;
 pub mod invitations;
 pub mod lookups;
 pub mod media;
+pub mod media_audio;
 pub mod members;
 pub mod notices;
 pub mod notification_preferences;
@@ -80,10 +84,12 @@ pub mod review;
 pub mod session;
 pub mod short_links;
 pub mod signatures;
+pub mod slideshows;
 pub mod system;
 pub mod tags;
 pub mod tiktok;
 pub mod usage;
+pub mod video_generations;
 pub mod webhooks;
 pub struct PealClient {
     pub config: ClientConfig,
@@ -95,9 +101,12 @@ pub struct PealClient {
     pub posts: PostsClient,
     pub articles: ArticlesClient,
     pub media: MediaClient,
+    pub media_audio: MediaAudioClient,
     pub notices: NoticesClient,
     pub notification_preferences: NotificationPreferencesClient,
     pub assistant: AssistantClient,
+    pub video_generations: VideoGenerationsClient,
+    pub slideshows: SlideshowsClient,
     pub members: MembersClient,
     pub invitations: InvitationsClient,
     pub billing: BillingClient,
@@ -141,9 +150,12 @@ impl PealClient {
             posts: PostsClient::new(config.clone())?,
             articles: ArticlesClient::new(config.clone())?,
             media: MediaClient::new(config.clone())?,
+            media_audio: MediaAudioClient::new(config.clone())?,
             notices: NoticesClient::new(config.clone())?,
             notification_preferences: NotificationPreferencesClient::new(config.clone())?,
             assistant: AssistantClient::new(config.clone())?,
+            video_generations: VideoGenerationsClient::new(config.clone())?,
+            slideshows: SlideshowsClient::new(config.clone())?,
             members: MembersClient::new(config.clone())?,
             invitations: InvitationsClient::new(config.clone())?,
             billing: BillingClient::new(config.clone())?,
@@ -199,6 +211,7 @@ pub use inbox_rules::InboxRulesClient;
 pub use invitations::InvitationsClient;
 pub use lookups::LookupsClient;
 pub use media::MediaClient;
+pub use media_audio::MediaAudioClient;
 pub use members::MembersClient;
 pub use notices::NoticesClient;
 pub use notification_preferences::NotificationPreferencesClient;
@@ -212,8 +225,10 @@ pub use review::ReviewClient;
 pub use session::SessionClient;
 pub use short_links::ShortLinksClient;
 pub use signatures::SignaturesClient;
+pub use slideshows::SlideshowsClient;
 pub use system::SystemClient;
 pub use tags::TagsClient;
 pub use tiktok::TiktokClient;
 pub use usage::UsageClient;
+pub use video_generations::VideoGenerationsClient;
 pub use webhooks::WebhooksClient;

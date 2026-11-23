@@ -104,7 +104,7 @@ export const DeleteWorkspace = ({
 
   return (
     <AlertDialog onOpenChange={handleOpenChange}>
-      <AlertDialogTrigger render={<Button variant="destructive" />}>
+      <AlertDialogTrigger render={<Button variant="outline" />}>
         {t("open")}
       </AlertDialogTrigger>
       <AlertDialogContent>

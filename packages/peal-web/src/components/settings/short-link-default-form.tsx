@@ -4,8 +4,14 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { Checkbox } from "peal-ui/components/checkbox";
-import { Label } from "peal-ui/components/label";
+import {
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowLabel,
+  SettingsRowText,
+} from "peal-ui/components/settings";
+import { Switch } from "peal-ui/components/switch";
 import { toast } from "peal-ui/components/toast";
 import { useId, useTransition } from "react";
 
@@ -30,7 +36,11 @@ const LoadedDefault = ({
   const id = useId();
 
   if (AsyncResult.isFailure(status)) {
-    return <p className="text-sm">{t("loadFailed")}</p>;
+    return (
+      <SettingsRow>
+        <SettingsRowDescription>{t("loadFailed")}</SettingsRowDescription>
+      </SettingsRow>
+    );
   }
 
   if (!AsyncResult.isSuccess(status)) {
@@ -38,7 +48,11 @@ const LoadedDefault = ({
   }
 
   if (!status.value.available) {
-    return <p className="text-muted-foreground text-sm">{t("unavailable")}</p>;
+    return (
+      <SettingsRow>
+        <SettingsRowDescription>{t("unavailable")}</SettingsRowDescription>
+      </SettingsRow>
+    );
   }
 
   const change = (byDefault: boolean) => {
@@ -58,23 +72,23 @@ const LoadedDefault = ({
   };
 
   return (
-    <div className="flex items-start gap-2">
-      <Checkbox
-        id={id}
-        checked={status.value.byDefault}
-        disabled={!mayChange || isPending}
-        aria-describedby={`${id}-hint`}
-        onCheckedChange={(checked) => {
-          change(checked === true);
-        }}
-      />
-      <div className="flex flex-col gap-1">
-        <Label htmlFor={id}>{t("label")}</Label>
-        <p id={`${id}-hint`} className="text-muted-foreground text-xs">
+    <SettingsRow>
+      <SettingsRowText>
+        <SettingsRowLabel htmlFor={id}>{t("label")}</SettingsRowLabel>
+        <SettingsRowDescription id={`${id}-hint`}>
           {mayChange ? t("hint") : t("readOnly")}
-        </p>
-      </div>
-    </div>
+        </SettingsRowDescription>
+      </SettingsRowText>
+      <SettingsRowControl>
+        <Switch
+          id={id}
+          checked={status.value.byDefault}
+          disabled={!mayChange || isPending}
+          aria-describedby={`${id}-hint`}
+          onCheckedChange={change}
+        />
+      </SettingsRowControl>
+    </SettingsRow>
   );
 };
 

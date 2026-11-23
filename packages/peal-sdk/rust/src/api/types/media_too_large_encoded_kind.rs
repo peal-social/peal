@@ -6,6 +6,7 @@ pub enum MediaTooLargeEncodedKind {
     Image,
     Video,
     Document,
+    Audio,
     /// This variant is used for forward compatibility.
     /// If the server sends a value not recognized by the current SDK version,
     /// it will be captured here with the raw string value.
@@ -17,6 +18,7 @@ impl Serialize for MediaTooLargeEncodedKind {
             Self::Image => serializer.serialize_str("image"),
             Self::Video => serializer.serialize_str("video"),
             Self::Document => serializer.serialize_str("document"),
+            Self::Audio => serializer.serialize_str("audio"),
             Self::__Unknown(val) => serializer.serialize_str(val),
         }
     }
@@ -29,6 +31,7 @@ impl<'de> Deserialize<'de> for MediaTooLargeEncodedKind {
             "image" => Ok(Self::Image),
             "video" => Ok(Self::Video),
             "document" => Ok(Self::Document),
+            "audio" => Ok(Self::Audio),
             _ => Ok(Self::__Unknown(value)),
         }
     }
@@ -40,6 +43,7 @@ impl fmt::Display for MediaTooLargeEncodedKind {
             Self::Image => write!(f, "image"),
             Self::Video => write!(f, "video"),
             Self::Document => write!(f, "document"),
+            Self::Audio => write!(f, "audio"),
             Self::__Unknown(val) => write!(f, "{}", val),
         }
     }

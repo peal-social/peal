@@ -1,10 +1,12 @@
 import { Context, Effect, Layer } from "effect";
 import type { Option } from "effect";
 
+import type { GeneratedAudioUnusable } from "#media/application/generated-audio-unusable.ts";
 import type { GeneratedImageUnusable } from "#media/application/generated-image-unusable.ts";
 import type { MediaAssetNotFound } from "#media/application/media-asset-not-found.ts";
 import type { MediaImportBusy } from "#media/application/media-import-busy.ts";
 import type { MediaInUse } from "#media/application/media-in-use.ts";
+import type { MediaNotReadable } from "#media/application/media-not-readable.ts";
 import type { MediaProbeFailed } from "#media/application/media-probe-failed.ts";
 import type { MediaSourceNotPublic } from "#media/application/media-source-not-public.ts";
 import type { MediaSourceUnreachable } from "#media/application/media-source-unreachable.ts";
@@ -37,6 +39,15 @@ import { importMedia } from "#media/application/use-cases/import-media.ts";
 import type { ImportMediaRequest } from "#media/application/use-cases/import-media.ts";
 import { probeMedia } from "#media/application/use-cases/probe-media.ts";
 import type { ProbedMedia } from "#media/application/use-cases/probe-media.ts";
+import { readMediaBytes } from "#media/application/use-cases/read-media-bytes.ts";
+import type {
+  MediaBytes,
+  ReadMediaRequest,
+} from "#media/application/use-cases/read-media-bytes.ts";
+import {
+  roomForAudio,
+  storeGeneratedAudio,
+} from "#media/application/use-cases/store-generated-audio.ts";
 import {
   roomForImage,
   storeGenerated,
@@ -107,10 +118,11 @@ type CompleteFailure =
  *
  * | Use case                                     | Needs        |
  * | -------------------------------------------- | ------------ |
- * | getMedia, listMedia, mediaUsage              | media:read   |
+ * | getMedia, listMedia, mediaUsage, readMedia   | media:read   |
  * | createUpload, completeUpload, finishUpload,  | media:upload |
  * | importMedia, probeMedia, describeMedia,      |              |
- * | roomForImage, storeGenerated                 |              |
+ * | roomForImage, storeGenerated, roomForAudio,  |              |
+ * | storeGeneratedAudio                          |              |
  * | deleteMedia                                  | media:delete |
  */
 export class MediaLibrary extends Context.Service<
@@ -168,6 +180,42 @@ export class MediaLibrary extends Context.Service<
       | MediaStorageFailed
       | MissingPermission
       | PlanLimitReached
+    >;
+    /**
+     * Whether the workspace's storage has room for `largest` bytes, before
+     * a voice-over is made (see `roomForAudio`).
+     */
+    readonly roomForAudio: (
+      actor: Actor,
+      largest: number
+    ) => Effect.Effect<void, MissingPermission | PlanLimitReached>;
+    /**
+     * Stores a voice-over the writing assistant made, marked as such, and
+     * probes it (see `storeGeneratedAudio`).
+     */
+    readonly storeGeneratedAudio: (
+      actor: Actor,
+      bytes: Uint8Array
+    ) => Effect.Effect<
+      MediaItem,
+      | GeneratedAudioUnusable
+      | MediaStorageFailed
+      | MissingPermission
+      | PlanLimitReached
+    >;
+    /**
+     * A ready file's bytes, whole, for a use that sends them on (see
+     * `readMediaBytes`).
+     */
+    readonly readMedia: (
+      actor: Actor,
+      request: Omit<ReadMediaRequest, "workspaceId">
+    ) => Effect.Effect<
+      MediaBytes,
+      | MediaAssetNotFound
+      | MediaNotReadable
+      | MediaStorageFailed
+      | MissingPermission
     >;
     /** Checks the stored file, without probing it (see `finishUpload`). */
     readonly completeUpload: (
@@ -300,8 +348,28 @@ export class MediaLibrary extends Context.Service<
           ),
         probeMedia: (actor, assetId) =>
           uploading(actor, probeMedia(target(actor, assetId))),
+        readMedia: (actor, request) =>
+          reading(
+            actor,
+            readMediaBytes({ ...request, workspaceId: actor.workspaceId })
+          ),
+        roomForAudio: (actor, largest) =>
+          uploading(actor, roomForAudio(actor.workspaceId, largest)),
         roomForImage: (actor) =>
           uploading(actor, roomForImage(actor.workspaceId)),
+        storeGeneratedAudio: (actor, bytes) =>
+          uploading(
+            actor,
+            storeGeneratedAudio(actor.workspaceId, bytes).pipe(
+              // The asset was recorded a moment ago, by this very call.
+              Effect.catchTags({
+                InvalidMediaTransition: Effect.die,
+                MediaAssetNotFound: Effect.die,
+                MediaInUse: Effect.die,
+                UploadIncomplete: Effect.die,
+              })
+            )
+          ),
         storeGenerated: (actor, bytes) =>
           uploading(
             actor,

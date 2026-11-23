@@ -26,16 +26,16 @@ public final class PaymentRequiredErrorBody {
         return value.visit(visitor);
     }
 
-    public static PaymentRequiredErrorBody usageAllowanceReached(UsageAllowanceReachedEncoded value) {
-        return new PaymentRequiredErrorBody(new UsageAllowanceReachedValue(value));
+    public static PaymentRequiredErrorBody compositionNeedsPayment(CompositionNeedsPaymentEncoded value) {
+        return new PaymentRequiredErrorBody(new CompositionNeedsPaymentValue(value));
     }
 
     public static PaymentRequiredErrorBody planLimitReached(PlanLimitReachedEncoded value) {
         return new PaymentRequiredErrorBody(new PlanLimitReachedValue(value));
     }
 
-    public boolean isUsageAllowanceReached() {
-        return value instanceof UsageAllowanceReachedValue;
+    public boolean isCompositionNeedsPayment() {
+        return value instanceof CompositionNeedsPaymentValue;
     }
 
     public boolean isPlanLimitReached() {
@@ -46,9 +46,9 @@ public final class PaymentRequiredErrorBody {
         return value instanceof _UnknownValue;
     }
 
-    public Optional<UsageAllowanceReachedEncoded> getUsageAllowanceReached() {
-        if (isUsageAllowanceReached()) {
-            return Optional.of(((UsageAllowanceReachedValue) value).value);
+    public Optional<CompositionNeedsPaymentEncoded> getCompositionNeedsPayment() {
+        if (isCompositionNeedsPayment()) {
+            return Optional.of(((CompositionNeedsPaymentValue) value).value);
         }
         return Optional.empty();
     }
@@ -89,7 +89,7 @@ public final class PaymentRequiredErrorBody {
     }
 
     public interface Visitor<T> {
-        T visitUsageAllowanceReached(UsageAllowanceReachedEncoded usageAllowanceReached);
+        T visitCompositionNeedsPayment(CompositionNeedsPaymentEncoded compositionNeedsPayment);
 
         T visitPlanLimitReached(PlanLimitReachedEncoded planLimitReached);
 
@@ -97,39 +97,41 @@ public final class PaymentRequiredErrorBody {
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_tag", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({@JsonSubTypes.Type(UsageAllowanceReachedValue.class), @JsonSubTypes.Type(PlanLimitReachedValue.class)
+    @JsonSubTypes({
+        @JsonSubTypes.Type(CompositionNeedsPaymentValue.class),
+        @JsonSubTypes.Type(PlanLimitReachedValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
         <T> T visit(Visitor<T> visitor);
     }
 
-    @JsonTypeName("UsageAllowanceReached")
+    @JsonTypeName("CompositionNeedsPayment")
     @JsonIgnoreProperties("_tag")
-    private static final class UsageAllowanceReachedValue implements Value {
+    private static final class CompositionNeedsPaymentValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private UsageAllowanceReachedEncoded value;
+        private CompositionNeedsPaymentEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private UsageAllowanceReachedValue() {}
+        private CompositionNeedsPaymentValue() {}
 
-        private UsageAllowanceReachedValue(UsageAllowanceReachedEncoded value) {
+        private CompositionNeedsPaymentValue(CompositionNeedsPaymentEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitUsageAllowanceReached(value);
+            return visitor.visitCompositionNeedsPayment(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof UsageAllowanceReachedValue && equalTo((UsageAllowanceReachedValue) other);
+            return other instanceof CompositionNeedsPaymentValue && equalTo((CompositionNeedsPaymentValue) other);
         }
 
-        private boolean equalTo(UsageAllowanceReachedValue other) {
+        private boolean equalTo(CompositionNeedsPaymentValue other) {
             return value.equals(other.value);
         }
 

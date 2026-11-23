@@ -4,6 +4,13 @@ import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
+from ..types.ai_capability import AiCapability
+from ..types.ai_capability_model import AiCapabilityModel
+from ..types.ai_capability_models import AiCapabilityModels
+from ..types.ai_image_provider import AiImageProvider
+from ..types.ai_provider import AiProvider
+from ..types.ai_provider_connection import AiProviderConnection
+from ..types.ai_provider_connections import AiProviderConnections
 from ..types.assistant_action import AssistantAction
 from ..types.assistant_status import AssistantStatus
 from ..types.image_aspect import ImageAspect
@@ -159,7 +166,7 @@ class AssistantClient:
         self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> ImageProviderSetting:
         """
-        Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+        Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
@@ -191,23 +198,26 @@ class AssistantClient:
         self,
         workspace_id: str,
         *,
-        base_url: str,
         model: str,
         api_key: typing.Optional[str] = OMIT,
+        base_url: typing.Optional[str] = OMIT,
+        provider: typing.Optional[AiImageProvider] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageProvider:
         """
-        Sets the image provider the workspace brings, an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to `baseUrl` with `apiKey` as a bearer token; the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+        Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to `baseUrl` (the provider's own address when left out) with `apiKey`, through the API `provider` names (`openai-compatible` when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
         workspace_id : str
 
-        base_url : str
-
         model : str
 
         api_key : typing.Optional[str]
+
+        base_url : typing.Optional[str]
+
+        provider : typing.Optional[AiImageProvider]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -226,12 +236,16 @@ class AssistantClient:
         )
         client.assistant.set_image_provider(
             workspace_id="workspaceId",
-            base_url="baseUrl",
             model="model",
         )
         """
         _response = self._raw_client.set_image_provider(
-            workspace_id, base_url=base_url, model=model, api_key=api_key, request_options=request_options
+            workspace_id,
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
+            provider=provider,
+            request_options=request_options,
         )
         return _response.data
 
@@ -302,26 +316,29 @@ class AssistantClient:
         self,
         workspace_id: str,
         *,
-        base_url: str,
-        kind: TextProviderKind,
         model: str,
         api_key: typing.Optional[str] = OMIT,
+        base_url: typing.Optional[str] = OMIT,
+        kind: typing.Optional[TextProviderKind] = OMIT,
+        provider: typing.Optional[AiProvider] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TextProvider:
         """
-        Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to `baseUrl` with `apiKey`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+        Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to `baseUrl` with `apiKey`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
         workspace_id : str
 
-        base_url : str
-
-        kind : TextProviderKind
-
         model : str
 
         api_key : typing.Optional[str]
+
+        base_url : typing.Optional[str]
+
+        kind : typing.Optional[TextProviderKind]
+
+        provider : typing.Optional[AiProvider]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -340,13 +357,17 @@ class AssistantClient:
         )
         client.assistant.set_text_provider(
             workspace_id="workspaceId",
-            base_url="baseUrl",
-            kind="anthropic",
             model="model",
         )
         """
         _response = self._raw_client.set_text_provider(
-            workspace_id, base_url=base_url, kind=kind, model=model, api_key=api_key, request_options=request_options
+            workspace_id,
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
+            kind=kind,
+            provider=provider,
+            request_options=request_options,
         )
         return _response.data
 
@@ -408,6 +429,274 @@ class AssistantClient:
         )
         """
         _response = self._raw_client.test_text_provider(workspace_id, request_options=request_options)
+        return _response.data
+
+    def providers(
+        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AiProviderConnections:
+        """
+        Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiProviderConnections
+            AiProviderConnections
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.assistant.providers(
+            workspace_id="workspaceId",
+        )
+        """
+        _response = self._raw_client.providers(workspace_id, request_options=request_options)
+        return _response.data
+
+    def connect_provider(
+        self,
+        workspace_id: str,
+        provider: AiProvider,
+        *,
+        api_key: typing.Optional[str] = OMIT,
+        base_url: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AiProviderConnection:
+        """
+        Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `openai-compatible`, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (`PUT .../assistant/models/{capability}`), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (`fixedAddress`: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused `fixedAddress`): Shotstack takes its production API (`https://api.shotstack.io/edit/v1`, the default) or its sandbox (`https://api.shotstack.io/edit/stage`, free and watermarked), each with its own key. The provider is not called: test it with `POST .../providers/{provider}/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        provider : AiProvider
+
+        api_key : typing.Optional[str]
+
+        base_url : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiProviderConnection
+            AiProviderConnection
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.assistant.connect_provider(
+            workspace_id="workspaceId",
+            provider="anthropic",
+        )
+        """
+        _response = self._raw_client.connect_provider(
+            workspace_id, provider, api_key=api_key, base_url=base_url, request_options=request_options
+        )
+        return _response.data
+
+    def disconnect_provider(
+        self, workspace_id: str, provider: AiProvider, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        provider : AiProvider
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.assistant.disconnect_provider(
+            workspace_id="workspaceId",
+            provider="anthropic",
+        )
+        """
+        _response = self._raw_client.disconnect_provider(workspace_id, provider, request_options=request_options)
+        return _response.data
+
+    def test_provider(
+        self,
+        workspace_id: str,
+        provider: AiProvider,
+        *,
+        model: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with `model` (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        provider : AiProvider
+
+        model : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.assistant.test_provider(
+            workspace_id="workspaceId",
+            provider="anthropic",
+        )
+        """
+        _response = self._raw_client.test_provider(workspace_id, provider, model=model, request_options=request_options)
+        return _response.data
+
+    def models(
+        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AiCapabilityModels:
+        """
+        Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiCapabilityModels
+            AiCapabilityModels
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.assistant.models(
+            workspace_id="workspaceId",
+        )
+        """
+        _response = self._raw_client.models(workspace_id, request_options=request_options)
+        return _response.data
+
+    def set_model(
+        self,
+        workspace_id: str,
+        capability: AiCapability,
+        *,
+        provider: AiProvider,
+        model: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AiCapabilityModel:
+        """
+        Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and `model` is required (AiModelRequired) but for `composition`, whose model is always `edit`. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        capability : AiCapability
+
+        provider : AiProvider
+
+        model : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiCapabilityModel
+            AiCapabilityModel
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.assistant.set_model(
+            workspace_id="workspaceId",
+            capability="text",
+            provider="anthropic",
+        )
+        """
+        _response = self._raw_client.set_model(
+            workspace_id, capability, provider=provider, model=model, request_options=request_options
+        )
+        return _response.data
+
+    def unset_model(
+        self, workspace_id: str, capability: AiCapability, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Leaves a use to the server's model, if it has one (`serverModel`), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        capability : AiCapability
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from peal import Peal
+
+        client = Peal(
+            token="YOUR_TOKEN",
+        )
+        client.assistant.unset_model(
+            workspace_id="workspaceId",
+            capability="text",
+        )
+        """
+        _response = self._raw_client.unset_model(workspace_id, capability, request_options=request_options)
         return _response.data
 
 
@@ -578,7 +867,7 @@ class AsyncAssistantClient:
         self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> ImageProviderSetting:
         """
-        Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+        Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
@@ -618,23 +907,26 @@ class AsyncAssistantClient:
         self,
         workspace_id: str,
         *,
-        base_url: str,
         model: str,
         api_key: typing.Optional[str] = OMIT,
+        base_url: typing.Optional[str] = OMIT,
+        provider: typing.Optional[AiImageProvider] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> ImageProvider:
         """
-        Sets the image provider the workspace brings, an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to `baseUrl` with `apiKey` as a bearer token; the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+        Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to `baseUrl` (the provider's own address when left out) with `apiKey`, through the API `provider` names (`openai-compatible` when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
 
         Parameters
         ----------
         workspace_id : str
 
-        base_url : str
-
         model : str
 
         api_key : typing.Optional[str]
+
+        base_url : typing.Optional[str]
+
+        provider : typing.Optional[AiImageProvider]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -658,7 +950,6 @@ class AsyncAssistantClient:
         async def main() -> None:
             await client.assistant.set_image_provider(
                 workspace_id="workspaceId",
-                base_url="baseUrl",
                 model="model",
             )
 
@@ -666,7 +957,12 @@ class AsyncAssistantClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.set_image_provider(
-            workspace_id, base_url=base_url, model=model, api_key=api_key, request_options=request_options
+            workspace_id,
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
+            provider=provider,
+            request_options=request_options,
         )
         return _response.data
 
@@ -753,26 +1049,29 @@ class AsyncAssistantClient:
         self,
         workspace_id: str,
         *,
-        base_url: str,
-        kind: TextProviderKind,
         model: str,
         api_key: typing.Optional[str] = OMIT,
+        base_url: typing.Optional[str] = OMIT,
+        kind: typing.Optional[TextProviderKind] = OMIT,
+        provider: typing.Optional[AiProvider] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> TextProvider:
         """
-        Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to `baseUrl` with `apiKey`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+        Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to `baseUrl` with `apiKey`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
 
         Parameters
         ----------
         workspace_id : str
 
-        base_url : str
-
-        kind : TextProviderKind
-
         model : str
 
         api_key : typing.Optional[str]
+
+        base_url : typing.Optional[str]
+
+        kind : typing.Optional[TextProviderKind]
+
+        provider : typing.Optional[AiProvider]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -796,8 +1095,6 @@ class AsyncAssistantClient:
         async def main() -> None:
             await client.assistant.set_text_provider(
                 workspace_id="workspaceId",
-                base_url="baseUrl",
-                kind="anthropic",
                 model="model",
             )
 
@@ -805,7 +1102,13 @@ class AsyncAssistantClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.set_text_provider(
-            workspace_id, base_url=base_url, kind=kind, model=model, api_key=api_key, request_options=request_options
+            workspace_id,
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
+            kind=kind,
+            provider=provider,
+            request_options=request_options,
         )
         return _response.data
 
@@ -885,4 +1188,330 @@ class AsyncAssistantClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.test_text_provider(workspace_id, request_options=request_options)
+        return _response.data
+
+    async def providers(
+        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AiProviderConnections:
+        """
+        Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiProviderConnections
+            AiProviderConnections
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.assistant.providers(
+                workspace_id="workspaceId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.providers(workspace_id, request_options=request_options)
+        return _response.data
+
+    async def connect_provider(
+        self,
+        workspace_id: str,
+        provider: AiProvider,
+        *,
+        api_key: typing.Optional[str] = OMIT,
+        base_url: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AiProviderConnection:
+        """
+        Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `openai-compatible`, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (`PUT .../assistant/models/{capability}`), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (`fixedAddress`: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused `fixedAddress`): Shotstack takes its production API (`https://api.shotstack.io/edit/v1`, the default) or its sandbox (`https://api.shotstack.io/edit/stage`, free and watermarked), each with its own key. The provider is not called: test it with `POST .../providers/{provider}/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        provider : AiProvider
+
+        api_key : typing.Optional[str]
+
+        base_url : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiProviderConnection
+            AiProviderConnection
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.assistant.connect_provider(
+                workspace_id="workspaceId",
+                provider="anthropic",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.connect_provider(
+            workspace_id, provider, api_key=api_key, base_url=base_url, request_options=request_options
+        )
+        return _response.data
+
+    async def disconnect_provider(
+        self, workspace_id: str, provider: AiProvider, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        provider : AiProvider
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.assistant.disconnect_provider(
+                workspace_id="workspaceId",
+                provider="anthropic",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.disconnect_provider(workspace_id, provider, request_options=request_options)
+        return _response.data
+
+    async def test_provider(
+        self,
+        workspace_id: str,
+        provider: AiProvider,
+        *,
+        model: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with `model` (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        provider : AiProvider
+
+        model : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.assistant.test_provider(
+                workspace_id="workspaceId",
+                provider="anthropic",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.test_provider(
+            workspace_id, provider, model=model, request_options=request_options
+        )
+        return _response.data
+
+    async def models(
+        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AiCapabilityModels:
+        """
+        Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiCapabilityModels
+            AiCapabilityModels
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.assistant.models(
+                workspace_id="workspaceId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.models(workspace_id, request_options=request_options)
+        return _response.data
+
+    async def set_model(
+        self,
+        workspace_id: str,
+        capability: AiCapability,
+        *,
+        provider: AiProvider,
+        model: typing.Optional[str] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AiCapabilityModel:
+        """
+        Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and `model` is required (AiModelRequired) but for `composition`, whose model is always `edit`. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        capability : AiCapability
+
+        provider : AiProvider
+
+        model : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AiCapabilityModel
+            AiCapabilityModel
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.assistant.set_model(
+                workspace_id="workspaceId",
+                capability="text",
+                provider="anthropic",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.set_model(
+            workspace_id, capability, provider=provider, model=model, request_options=request_options
+        )
+        return _response.data
+
+    async def unset_model(
+        self, workspace_id: str, capability: AiCapability, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Leaves a use to the server's model, if it has one (`serverModel`), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+
+        Parameters
+        ----------
+        workspace_id : str
+
+        capability : AiCapability
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from peal import AsyncPeal
+
+        client = AsyncPeal(
+            token="YOUR_TOKEN",
+        )
+
+
+        async def main() -> None:
+            await client.assistant.unset_model(
+                workspace_id="workspaceId",
+                capability="text",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.unset_model(workspace_id, capability, request_options=request_options)
         return _response.data

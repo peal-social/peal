@@ -49,7 +49,7 @@ Once someone says whether a post to check went out, or sends it again, its notif
 | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
 | A channel must be reconnected               | The platform no longer accepts Peal's access. Nothing goes out on the channel until someone reconnects it.                                                                                                                                                                 | Members who may connect channels: owners and admins |
 | A channel must be reconnected soon          | The channel's access can't be renewed, and ends on the date the notification gives.                                                                                                                                                                                        | The same                                            |
-| A channel's direct messages were turned off | The account was connected again without allowing its direct messages, so Peal turned them off and deleted their conversations. To read them again, click **Read its messages** for the channel in **Settings** > **Direct messages**, then **Allow**, on Bluesky.          | The same                                            |
+| A channel's direct messages were turned off | The account was connected again without allowing its direct messages, so Peal turned them off and deleted their conversations. To read them again, turn on the channel's switch in **Settings** > **Direct messages**, then click **Allow**, on Bluesky.                   | The same                                            |
 | A webhook endpoint was turned off           | Every delivery to a [webhook](/developers/webhooks/delivery#delivery) endpoint failed for 5 days, or its receiver answered `410 Gone`. Peal sends it nothing more until someone turns it back on.                                                                          | Members who may manage webhooks: owners and admins  |
 | Webhook deliveries are failing              | A delivery to a [webhook](/developers/webhooks/delivery#delivery) endpoint that's still on failed for good, with every attempt used up. Send it again from the [delivery log](/developers/webhooks/delivery#log) once the receiver works. At most once a day per endpoint. | Members who may manage webhooks: owners and admins  |
 
@@ -96,7 +96,7 @@ Read notifications stay in the list, and times are in your browser's time zone. 
 
 ## By email [#email]
 
-From **Notifications**, click **Email preferences**, or click **Notification preferences** under **Settings** in any workspace. There you choose two things:
+From **Notifications**, click **Email preferences**, or click **Email notifications** under **Settings** in any workspace, in the **Personal** group. There you choose two things:
 
 - which notifications also reach you by email;
 - under **Tell me about**, whether you hear about every post of your workspaces, not only the ones you wrote. This is off until you turn it on.

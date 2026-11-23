@@ -1,5 +1,4 @@
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { CommentRulesSettings } from "#components/comment-rules/comment-rules-settings.tsx";
@@ -26,22 +25,12 @@ const CommentRulesPage = async ({
     notFound();
   }
 
-  const t = await getTranslations("CommentRules");
-  const mayChange = may.has("engagement:reply");
-  const mayMessage = may.has("engagement:message");
-
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("description")}</p>
-      {mayChange ? null : (
-        <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
-      )}
-      <CommentRulesSettings
-        workspaceId={workspace.id}
-        mayChange={mayChange}
-        mayMessage={mayMessage}
-      />
-    </div>
+    <CommentRulesSettings
+      workspaceId={workspace.id}
+      mayChange={may.has("engagement:reply")}
+      mayMessage={may.has("engagement:message")}
+    />
   );
 };
 

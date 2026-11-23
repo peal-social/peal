@@ -97,7 +97,7 @@ Inside each workspace the account owns, the key holds the [permissions](/guides/
 
 - `channel:*`, `media:*`, `post:*`, `analytics:read`, `assistant:use`, `webhook:*` and `billing:read`.
 - `engagement:read` and `engagement:reply`, for the [comments](/guides/engage/inbox) under a customer's posts and for answering them in public as its account. Other people wrote those comments, so only give a key these if your product shows or answers them.
-- `assistant:configure`, to set each customer's own [image provider](/guides/workspace#image-provider) with `PUT /api/workspaces/{workspaceId}/assistant/image-provider`, one workspace at a time, with the customer's key.
+- `assistant:configure`, to set each customer's own [image provider](/guides/workspace#providers) with `PUT /api/workspaces/{workspaceId}/assistant/image-provider`, one workspace at a time, with the customer's key.
 - `activity:read`, which reads the workspace's [activity log](/guides/workspace#activity): what your key asked to change there, and the accounts connected through connect links.
 
 A partner key never gets the [direct messages](/guides/engage/inbox#direct-messages) permissions (`engagement:readMessages`, `engagement:message`). Only a workspace's owner, in person, can let an application into them, and a customer's workspace has no owner.

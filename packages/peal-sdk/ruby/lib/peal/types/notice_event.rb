@@ -68,6 +68,10 @@ module Peal
       member -> { Peal::Types::NoticeEventFollowUpRuleStopped }, key: "FOLLOW_UP_RULE_STOPPED"
 
       member -> { Peal::Types::NoticeEventCommentRuleStopped }, key: "COMMENT_RULE_STOPPED"
+
+      member -> { Peal::Types::NoticeEventVideoGenerationEnded }, key: "VIDEO_GENERATION_ENDED"
+
+      member -> { Peal::Types::NoticeEventSlideshowEnded }, key: "SLIDESHOW_ENDED"
     end
   end
 end

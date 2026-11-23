@@ -95,6 +95,30 @@ const plainEvent = (event: NoticeEvent): NoticeEventRecord =>
       reason,
       ruleId,
     }),
+    VideoGenerationEnded: ({
+      generationId,
+      mediaId,
+      outcome,
+      reason,
+    }): NoticeEventRecord => ({
+      _tag: "VideoGenerationEnded",
+      generationId,
+      mediaId: Option.getOrNull(mediaId),
+      outcome,
+      reason: Option.getOrNull(reason),
+    }),
+    SlideshowEnded: ({
+      mediaId,
+      outcome,
+      reason,
+      slideshowId,
+    }): NoticeEventRecord => ({
+      _tag: "SlideshowEnded",
+      mediaId: Option.getOrNull(mediaId),
+      outcome,
+      reason: Option.getOrNull(reason),
+      slideshowId,
+    }),
     PostApprovalRequested: ({ postId, scheduledAt }): NoticeEventRecord => ({
       _tag: "PostApprovalRequested",
       postId,

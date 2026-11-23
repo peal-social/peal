@@ -59,6 +59,35 @@ import { UserPrincipal } from "#workspace/domain/user-principal.ts";
 
 const at = DateTime.makeUnsafe("2026-11-09T08:00:00.000Z");
 
+// A video the workspace asked for, as the assistant exports it.
+const syntheticVideoJob = {
+  aspect: "landscape",
+  createdAt: at,
+  durationSeconds: 6,
+  finishedAt: at,
+  id: "019a0000-0000-7000-8000-0000000000e1",
+  imageMediaId: null,
+  mediaId: "019a0000-0000-7000-8000-0000000000e2",
+  reason: null,
+  startedAt: at,
+  status: "succeeded",
+};
+
+const syntheticSlideshowJob = {
+  aspect: "portrait",
+  createdAt: at,
+  durationSeconds: 12.5,
+  finishedAt: at,
+  id: "019a0000-0000-7000-8000-0000000000f1",
+  imageMediaIds: ["019a0000-0000-7000-8000-0000000000f2"],
+  mediaId: "019a0000-0000-7000-8000-0000000000f3",
+  reason: null,
+  sandbox: true,
+  startedAt: at,
+  status: "succeeded",
+  voiceoverMediaId: null,
+};
+
 const userId = UserIdSchema.make("0b6e2f4a-3c1d-4e5f-8a9b-1c2d3e4f5a6b");
 
 const otherUserId = UserIdSchema.make("1c7f3a5b-4d2e-4f60-9bac-2d3e4f5a6b7c");
@@ -285,18 +314,50 @@ const PortsLive = Layer.mergeAll(
             assistantImageProvider: {
               baseUrl: "https://images.example.com/v1",
               model: "synthetic-image-model",
+              provider: "openai-compatible",
               updatedAt: at,
             },
+            // What it chose for each use: never a key.
+            assistantModels: [
+              {
+                capability: "image",
+                model: "synthetic-image-model",
+                provider: "openai-compatible",
+                updatedAt: at,
+              },
+              {
+                capability: "text",
+                model: "synthetic-text-model",
+                provider: "anthropic",
+                updatedAt: at,
+              },
+            ],
             assistantOwnImages: [{ day: "2026-11-09", images: 4 }],
             assistantOwnText: [{ day: "2026-11-09", requests: 6 }],
+            // The providers it connected, where each is: never a key.
+            assistantProviders: [
+              {
+                baseUrl: "https://api.anthropic.com",
+                provider: "anthropic",
+                updatedAt: at,
+              },
+              {
+                baseUrl: "https://images.example.com/v1",
+                provider: "openai-compatible",
+                updatedAt: at,
+              },
+            ],
             // Where its drafts went, the API and the model: never the key.
             assistantTextProvider: {
               baseUrl: "https://api.anthropic.com",
               kind: "anthropic",
               model: "synthetic-text-model",
+              provider: "anthropic",
               updatedAt: at,
             },
+            assistantSlideshows: [syntheticSlideshowJob],
             assistantUsage: [{ day: "2026-11-09", requests: 3 }],
+            assistantVideos: [syntheticVideoJob],
             billing: {
               accountDays: [],
               meterMonths: [],
@@ -1059,20 +1120,30 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           body.workspaces.map(
             ({
               assistantImageProvider,
+              assistantModels,
               assistantOwnImages,
               assistantOwnText,
+              assistantProviders,
+              assistantSlideshows,
               assistantTextProvider,
               assistantUsage,
+              assistantVideos,
               billing,
               name,
               saved,
               webhooks,
             }) => ({
               assistantImageProvider,
+              assistantModels,
               assistantOwnImages,
               assistantOwnText,
+              assistantProviders,
+              // The slide videos it asked for, never their captions.
+              assistantSlideshows,
               assistantTextProvider,
               assistantUsage,
+              // The videos it asked for, never their prompts.
+              assistantVideos,
               name,
               plan: billing.plan,
               // The queues it keeps, with their slots as stored.
@@ -1096,17 +1167,47 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
               assistantImageProvider: {
                 baseUrl: "https://images.example.com/v1",
                 model: "synthetic-image-model",
+                provider: "openai-compatible",
                 updatedAt: at,
               },
+              assistantModels: [
+                {
+                  capability: "image",
+                  model: "synthetic-image-model",
+                  provider: "openai-compatible",
+                  updatedAt: at,
+                },
+                {
+                  capability: "text",
+                  model: "synthetic-text-model",
+                  provider: "anthropic",
+                  updatedAt: at,
+                },
+              ],
               assistantOwnImages: [{ day: "2026-11-09", images: 4 }],
               assistantOwnText: [{ day: "2026-11-09", requests: 6 }],
+              assistantProviders: [
+                {
+                  baseUrl: "https://api.anthropic.com",
+                  provider: "anthropic",
+                  updatedAt: at,
+                },
+                {
+                  baseUrl: "https://images.example.com/v1",
+                  provider: "openai-compatible",
+                  updatedAt: at,
+                },
+              ],
               assistantTextProvider: {
                 baseUrl: "https://api.anthropic.com",
                 kind: "anthropic",
                 model: "synthetic-text-model",
+                provider: "anthropic",
                 updatedAt: at,
               },
+              assistantSlideshows: [syntheticSlideshowJob],
               assistantUsage: [{ day: "2026-11-09", requests: 3 }],
+              assistantVideos: [syntheticVideoJob],
               name: "Harbour",
               plan: "pro",
               queues: [

@@ -25,6 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "peal-ui/components/select";
+import {
+  SettingsCard,
+  SettingsSection,
+  SettingsSectionDescription,
+  SettingsSectionHeader,
+  SettingsSectionTitle,
+} from "peal-ui/components/settings";
 import { toast } from "peal-ui/components/toast";
 import { useId, useState, useTransition } from "react";
 
@@ -176,9 +183,9 @@ const MemberRow = ({
   };
 
   return (
-    <li className="flex flex-wrap items-center gap-4 py-4">
+    <li className="flex flex-wrap items-center gap-4 px-4 py-3">
       <div className="flex min-w-0 flex-1 flex-col gap-1">
-        <span className="flex flex-wrap items-center gap-2 font-medium">
+        <span className="flex flex-wrap items-center gap-2 text-sm font-medium">
           {name}
           {member.userId === manager.userId ? (
             <Badge variant="secondary">{t("you")}</Badge>
@@ -317,27 +324,36 @@ export const MembersView = ({
   const owners = ownersAmong(members);
 
   return (
-    <section aria-labelledby="members-title" className="flex flex-col gap-2">
-      <h2 id="members-title" className="text-xl font-semibold">
-        {t("listTitle", { count: members.length })}
-      </h2>
-      <ul className="divide-y">
-        {members.map((member) => (
-          <MemberRow
-            key={member.id}
-            apiKeysAtStake={keysAtStake?.get(member.userId) ?? null}
-            manager={manager}
-            member={member}
-            owners={owners}
-            twoStepEnabled={
-              twoStep === null ? null : (twoStep.get(member.userId) ?? null)
-            }
-            workspaceId={workspaceId}
-            onChanged={onChanged}
-          />
-        ))}
-      </ul>
-    </section>
+    <SettingsSection aria-labelledby="members-title">
+      <SettingsSectionHeader>
+        <div>
+          <SettingsSectionTitle id="members-title">
+            {t("listTitle", { count: members.length })}
+          </SettingsSectionTitle>
+          <SettingsSectionDescription>
+            {t("description")}
+          </SettingsSectionDescription>
+        </div>
+      </SettingsSectionHeader>
+      <SettingsCard>
+        <ul className="divide-y">
+          {members.map((member) => (
+            <MemberRow
+              key={member.id}
+              apiKeysAtStake={keysAtStake?.get(member.userId) ?? null}
+              manager={manager}
+              member={member}
+              owners={owners}
+              twoStepEnabled={
+                twoStep === null ? null : (twoStep.get(member.userId) ?? null)
+              }
+              workspaceId={workspaceId}
+              onChanged={onChanged}
+            />
+          ))}
+        </ul>
+      </SettingsCard>
+    </SettingsSection>
   );
 };
 

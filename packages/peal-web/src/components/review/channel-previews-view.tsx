@@ -13,7 +13,7 @@ import { channelText } from "#review/use-chosen-words.ts";
 /** An image, a video or a document the post shows. */
 export interface PreviewedMedia {
   readonly altText: string;
-  readonly kind: "document" | "image" | "video" | null;
+  readonly kind: "audio" | "document" | "image" | "video" | null;
   readonly mediaId: string;
   /** Where the file is read from; none for a file that cannot be shown. */
   readonly url: string | null;

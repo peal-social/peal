@@ -18,6 +18,59 @@ export const TextProviderKindSchema = Schema.Literals([
 export type TextProviderKind = typeof TextProviderKindSchema.Type;
 
 /**
+ * The providers Peal knows by name (`peal-contract/ai-providers`, kept
+ * equal by `test/assistant/api/contract.test.ts`): each has an adapter of
+ * its own, or is any endpoint serving chat completions with a strict JSON
+ * schema (`openai-compatible`).
+ */
+export const TextProviderIdSchema = Schema.Literals([
+  "anthropic",
+  "openai",
+  "google",
+  "mistral",
+  "xai",
+  "groq",
+  "togetherai",
+  "deepseek",
+  "openrouter",
+  "cerebras",
+  "fireworks",
+  "openai-compatible",
+]);
+
+export type TextProviderId = typeof TextProviderIdSchema.Type;
+
+/** The API a provider speaks: the Messages API for Anthropic, chat completions for the others. */
+export const kindOfProvider = (provider: TextProviderId): TextProviderKind =>
+  provider === "anthropic" ? "anthropic" : "openai-compatible";
+
+/** The provider a row saved before providers had names stands for. */
+export const providerOfKind = (kind: TextProviderKind): TextProviderId => kind;
+
+/**
+ * Where each provider's API is reached when no address is given (for
+ * Anthropic, the one `/v1/messages` follows; for the others, the one
+ * `/chat/completions` follows), as the contract's catalogue offers it;
+ * `openai-compatible` has none.
+ */
+export const providerAddresses: Readonly<
+  Record<TextProviderId, string | null>
+> = {
+  anthropic: "https://api.anthropic.com",
+  cerebras: "https://api.cerebras.ai/v1",
+  deepseek: "https://api.deepseek.com",
+  fireworks: "https://api.fireworks.ai/inference/v1",
+  google: "https://generativelanguage.googleapis.com/v1beta/openai",
+  groq: "https://api.groq.com/openai/v1",
+  mistral: "https://api.mistral.ai/v1",
+  openai: "https://api.openai.com/v1",
+  "openai-compatible": null,
+  openrouter: "https://openrouter.ai/api/v1",
+  togetherai: "https://api.together.xyz/v1",
+  xai: "https://api.x.ai/v1",
+};
+
+/**
  * Where Anthropic's API is reached, which its paths (`/v1/messages`)
  * follow: what clients offer for an `anthropic` provider.
  */
@@ -50,5 +103,6 @@ export class TextProviderSettings extends Schema.Class<TextProviderSettings>(
   baseUrl: ProviderAddressSchema,
   kind: TextProviderKindSchema,
   model: ProviderModelSchema,
+  provider: TextProviderIdSchema,
   updatedAt: Schema.DateTimeUtc,
 }) {}

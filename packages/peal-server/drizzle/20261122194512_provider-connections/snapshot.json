@@ -1,0 +1,336 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "aa27d0f8-9d72-4d6a-a79e-5667aaf77e51",
+  "prevIds": [
+    "d93a0edc-c4d9-40b0-b8c4-f794ef3e9ba5"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "assistant",
+        "capability_models"
+      ],
+      "writes": [
+        "s|tbl|assistant.capability_models",
+        "n|tbl|assistant.capability_models",
+        "e|tbl|assistant.capability_models",
+        "n|rel|assistant.capability_models",
+        "n|type|assistant.capability_models",
+        "n|rel|assistant.capability_models_pkey"
+      ],
+      "reads": [
+        "n|sch|assistant"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "assistant",
+        "provider_connections"
+      ],
+      "writes": [
+        "s|tbl|assistant.provider_connections",
+        "n|tbl|assistant.provider_connections",
+        "e|tbl|assistant.provider_connections",
+        "n|rel|assistant.provider_connections",
+        "n|type|assistant.provider_connections",
+        "n|rel|assistant.provider_connections_pkey"
+      ],
+      "reads": [
+        "n|sch|assistant"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "assistant",
+        "capability_models"
+      ],
+      "writes": [
+        "s|fk|assistant.capability_models.capability_models_connection",
+        "n|fk|assistant.capability_models.capability_models_connection",
+        "e|fk|assistant.capability_models.capability_models_connection",
+        "n|con|assistant.capability_models.capability_models_connection"
+      ],
+      "reads": [
+        "n|tbl|assistant.capability_models",
+        "n|sch|assistant",
+        "n|tbl|assistant.provider_connections",
+        "n|sch|assistant",
+        "n|col|assistant.capability_models.workspace_id",
+        "n|col|assistant.capability_models.provider",
+        "n|col|assistant.provider_connections.workspace_id",
+        "n|col|assistant.provider_connections.provider",
+        "e|uniqueness|assistant.provider_connections.provider.workspace_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "name": "capability_models",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "name": "provider_connections",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "capability_models",
+        "name": "capability",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "capability_models",
+        "name": "model",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "capability_models",
+        "name": "provider",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "capability_models",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "capability_models",
+        "name": "workspace_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "base_url",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "key_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "provider",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "sealed_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "workspace_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "capability_models",
+        "name": "capability_models_connection",
+        "nameExplicit": true,
+        "columns": [
+          "workspace_id",
+          "provider"
+        ],
+        "schemaTo": "assistant",
+        "tableTo": "provider_connections",
+        "columnsTo": [
+          "workspace_id",
+          "provider"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "capability_models",
+        "name": "capability_models_pkey",
+        "columns": [
+          "workspace_id",
+          "capability"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "provider_connections",
+        "name": "provider_connections_pkey",
+        "columns": [
+          "workspace_id",
+          "provider"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

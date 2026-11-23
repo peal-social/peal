@@ -189,6 +189,17 @@ components:
     typography: "{typography.body}"
     rounded: "{rounded.lg}"
     padding: 12px 16px
+  settings-row:
+    backgroundColor: "{colors.surface-1}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body}"
+    padding: 12px 16px
+    height: 60px
+  switch:
+    backgroundColor: "{colors.ink}"
+    rounded: "{rounded.full}"
+    width: 32px
+    height: 18px
   table-row:
     backgroundColor: "{colors.surface-1}"
     textColor: "{colors.ink}"
@@ -654,7 +665,15 @@ trigger, a combobox and a date field share the look.
 **`card`** — White, 1 px `{colors.hairline}`, `{rounded.lg}`, 24 px
 inside. Settings are rows in cards: label and hint on the left, the
 control on the right, grouped under a heading, with what cannot be undone
-last.
+last (see [Settings](#settings)).
+
+**`settings-row`** — One setting in a settings card: its label (14 px, 500) and a muted hint (13 px) at the start, its control at the end, 12 px
+by 16 px inside, 60 px high at least, a hairline between rows. On a phone
+the control takes a line of its own under the text.
+
+**`switch`** — A setting that applies as soon as it changes: a track 32
+by 18 px, `input` when off and ink when on, its white thumb sliding to the
+end. Its label says what the setting is and never changes with it.
 
 **`list`** — A list page's items sit in one bordered list,
 `{rounded.lg}`, a hairline between rows, never a card each. A row is 12 px
@@ -738,8 +757,7 @@ it. There is no bar across the top.
   person's round avatar alone (their picture, or their initial on the
   blue tint), a blue dot at its corner while notifications wait unread.
   It opens their menu: Notifications (with the unread count), Account
-  (where the language is chosen), both pages of the workspace's Settings,
-  then Sign out. Beside it, on a workspace's pages, the **mode switch**:
+  settings (their Profile, in the workspace's Settings), then Sign out. Beside it, on a workspace's pages, the **mode switch**:
   the open mode's name (14 px, 500), no mark, and **Switch**, an outline
   `xs` button shown while the row is hovered, focused or its menu open.
   Switch opens a menu beside it, each mode a row with its name and one
@@ -762,9 +780,9 @@ it. There is no bar across the top.
   page holds is said by its empty state.
 - **Content** under the header: a list's toolbar first (its views and
   tools, 8 px from the panel's edges, see Lists), then the list edge to
-  edge; forms and settings in a column 48 rem wide at most, 24 px from
-  the header; full-bleed tools (the calendar, the inbox, the composer)
-  fill the panel.
+  edge; forms and settings in a column 48 rem wide at most, centred, 24 px
+  from the header (see [Settings](#settings)); full-bleed tools (the
+  calendar, the inbox, the composer) fill the panel.
 - **`setup`**: the page where a workspace is made: someone with no
   workspace makes their first at `/`, and **New workspace** opens it at
   `/create`, the name empty. It has no frame of the app's, no sidebar and
@@ -821,10 +839,10 @@ full-bleed, with the writing assistant, the media library and the
 signatures inside it. PealAPI holds Platforms, then API keys and Webhooks
 under Build, and Partner under Partners; a page the API offers later
 (connect links, activity, usage, OAuth apps) joins it there. Settings
-keeps what runs the workspace itself: its name, members, invitations,
-security, billing, tags, channel sets, signatures and the assistant's
-providers. The person's own pages (Account, Notifications, Notification
-preferences) are in every workspace's Settings, after the workspace's own.
+keeps the person's own pages first, then what runs the workspace, in the
+groups [Settings](#settings) lists. The person's own pages (Profile,
+Preferences, Notifications, Email notifications, Security and access,
+Agent) are in every workspace's Settings.
 
 Each workspace stands alone: no page reads across workspaces, and there is
 no sidebar of the person's (an agency sees its clients' workspaces
@@ -1262,6 +1280,38 @@ them beside the one open, so the list stays where it was.
   an item opens alone under the header, with a way back at its header's
   start.
 
+### Settings
+
+A workspace's Settings is one section of the sidebar, its pages sorted by
+concern under small group labels, in this order:
+
+- **Personal**: the person's own pages, the same in every workspace:
+  Profile, Preferences, Notifications, Email notifications, Security and
+  access, Agent.
+- **Publishing**: Tags, Signatures, Channel sets, Direct messages,
+  Assistant.
+- **Automations**: Queues, Repeating posts, Follow-ups, Comment replies,
+  Feeds.
+- **Administration**: Workspace, Members (inviting and the invitations
+  waiting are part of it), Security, Billing.
+
+Each page is a column 48 rem wide at most, centred in the panel, 24 px
+from its header. The column holds **sections** 32 px apart: a heading
+(`card-title`, the section's `h2`) with one muted line under it where it
+helps and, at its end, what acts on the whole section, then 12 px under
+it one card of `settings-row`s. The page's first section may have no
+heading. A list the section holds (members, sessions, tags) sits in the
+card as rows, with each row's actions at its end; a form that is more than
+one field (a password, an invitation, a new tag) sits in the card on its
+own, 16 px inside. An empty card says so in one muted row.
+
+A setting applies as soon as it changes, with a toast saying so: a switch
+or a select at once, text once the person leaves the field or presses
+Enter (Escape puts the saved text back). Only forms that create
+something, or ask for a password, keep a button. What cannot be undone
+comes last, under **Danger zone**, its button outline in the row; the
+destructive button is in its confirmation only.
+
 ### Pages
 
 - **Empty states** say what will appear and give the one next step (see
@@ -1273,8 +1323,8 @@ them beside the one open, so the list stays where it was.
   a card in the page's content, never a bar across the frame, a dialog or
   anything that floats. Its two answers are two buttons of the same
   variant and size (`outline`), side by side, so refusing is as easy as
-  accepting. The card leaves once answered, and the account page keeps
-  the answer, where it can be changed. The site, the docs and the blog,
+  accepting. The card leaves once answered, and the Preferences page
+  keeps the answer, where it can be changed. The site, the docs and the blog,
   where a visitor has no page of their own to be asked on, ask with the
   consent notice (see [Site](#site)).
 - **Home** holds, under the consent card, the headline (two lines, the

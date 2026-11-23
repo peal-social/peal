@@ -49,7 +49,14 @@ import {
   UntracedPathsLive,
 } from "#app/untraced-paths.ts";
 import { DigestUnsubscribeLive } from "#app/weekly-digest/unsubscribe.ts";
-import { AssistantApiLive, AssistantLive } from "#assistant/container.ts";
+import {
+  AssistantApiLive,
+  AssistantLive,
+  AssistantWorkersLive,
+  VideoGenerationsApiLive,
+  MediaAudioApiLive,
+  SlideshowsApiLive,
+} from "#assistant/container.ts";
 import {
   BillingApiLive,
   StripePricesCheckedLive,
@@ -187,6 +194,9 @@ const WorkspaceGroupsLive = Layer.mergeAll(
   NoticesApiLive,
   NotificationPreferencesApiLive,
   AssistantApiLive,
+  VideoGenerationsApiLive,
+  MediaAudioApiLive,
+  SlideshowsApiLive,
   BillingApiLive,
   BillingActionsApiLive,
   UsageApiLive,
@@ -441,6 +451,8 @@ const EngagementWithoutPlatformsLive = engagementOver(UnreadComments);
 // seals.
 const AssistantContextLive = AssistantLive.pipe(
   Layer.provide(MediaContextLive),
+  // A video's end is told to whoever asked for it.
+  Layer.provide(NoticesContextLive),
   Layer.provide(TokenCipherLive),
   Layer.provide(MetersContextLive),
   Layer.provideMerge(BillingContextsLive)
@@ -700,6 +712,7 @@ const WorkersLive = Layer.mergeAll(
   EngagementWorkersLive,
   WebhooksWorkersLive,
   AdsWorkersLive,
+  AssistantWorkersLive,
   CronsLive
 );
 

@@ -1,6 +1,6 @@
 pub use crate::prelude::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ImageProvider {
     #[serde(rename = "baseUrl")]
     #[serde(default)]
@@ -13,6 +13,7 @@ pub struct ImageProvider {
     pub key_unreadable: bool,
     #[serde(default)]
     pub model: String,
+    pub provider: AiImageProvider,
     #[serde(rename = "updatedAt")]
     #[serde(default)]
     pub updated_at: String,
@@ -31,6 +32,7 @@ pub struct ImageProviderBuilder {
     key_set: Option<bool>,
     key_unreadable: Option<bool>,
     model: Option<String>,
+    provider: Option<AiImageProvider>,
     updated_at: Option<String>,
 }
 
@@ -55,6 +57,11 @@ impl ImageProviderBuilder {
         self
     }
 
+    pub fn provider(mut self, value: AiImageProvider) -> Self {
+        self.provider = Some(value);
+        self
+    }
+
     pub fn updated_at(mut self, value: impl Into<String>) -> Self {
         self.updated_at = Some(value.into());
         self
@@ -66,6 +73,7 @@ impl ImageProviderBuilder {
     /// - [`key_set`](ImageProviderBuilder::key_set)
     /// - [`key_unreadable`](ImageProviderBuilder::key_unreadable)
     /// - [`model`](ImageProviderBuilder::model)
+    /// - [`provider`](ImageProviderBuilder::provider)
     /// - [`updated_at`](ImageProviderBuilder::updated_at)
     pub fn build(self) -> Result<ImageProvider, BuildError> {
         Ok(ImageProvider {
@@ -81,6 +89,9 @@ impl ImageProviderBuilder {
             model: self
                 .model
                 .ok_or_else(|| BuildError::missing_field("model"))?,
+            provider: self
+                .provider
+                .ok_or_else(|| BuildError::missing_field("provider"))?,
             updated_at: self
                 .updated_at
                 .ok_or_else(|| BuildError::missing_field("updated_at"))?,

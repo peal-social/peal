@@ -1,135 +1,86 @@
-import { eq } from "drizzle-orm";
-import { DateTime, Effect, Layer, Option, Schema } from "effect";
+import { Effect, Layer, Option } from "effect";
 
-import { ProviderSecrets } from "#assistant/application/ports/provider-secrets.ts";
+import type { CapabilityModels } from "#assistant/application/ports/capability-models.ts";
+import type { ProviderConnections } from "#assistant/application/ports/provider-connections.ts";
 import { TextProviders } from "#assistant/application/ports/text-providers.ts";
-import type {
-  OpenedTextProvider,
-  StoredTextProvider,
-} from "#assistant/application/ports/text-providers.ts";
+import type { OpenedTextProvider } from "#assistant/application/ports/text-providers.ts";
+import { asTextProvider } from "#assistant/domain/ai-capability.ts";
 import {
-  ProviderAddressSchema,
-  ProviderModelSchema,
-} from "#assistant/domain/image-provider.ts";
-import {
-  TextProviderKindSchema,
+  kindOfProvider,
   TextProviderSettings,
 } from "#assistant/domain/text-provider.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
-import { Drizzle } from "#shared/infrastructure/database.ts";
 
-import { textProviders } from "./schema.ts";
-
-type Row = typeof textProviders.$inferSelect;
-
-// The table's check keeps every row's kind one of these.
-const kindOf = Schema.decodeUnknownSync(TextProviderKindSchema);
-
-const settingsOf = (row: Row) =>
-  new TextProviderSettings({
-    baseUrl: ProviderAddressSchema.make(row.baseUrl),
-    kind: kindOf(row.kind),
-    model: ProviderModelSchema.make(row.model),
-    updatedAt: DateTime.fromDateUnsafe(row.updatedAt),
-  });
+import { openedUse, removedUse, savedUse } from "./capability-uses.ts";
 
 /**
- * TextProviders in Postgres (`assistant.text_providers`), the keys sealed
- * through ProviderSecrets for text: bound to the workspace and to the
- * address in the same row, so a row whose address moved, or that was
- * copied to another workspace or from the image provider's, opens without
- * its key. A database failure is a defect, as the quota's are.
+ * TextProviders, the deprecated endpoints' view of the workspace's text:
+ * the provider and model it chose for `text`, at its connection's address
+ * (with what text adds to it), with the connection's key.
  */
 export const DrizzleTextProvidersLive = Layer.effect(
   TextProviders,
   Effect.gen(function* DrizzleTextProviders() {
-    const db = yield* Drizzle;
-    const secrets = yield* ProviderSecrets;
+    const ports = yield* Effect.context<
+      CapabilityModels | ProviderConnections
+    >();
 
-    const rowOf = (workspaceId: WorkspaceId) =>
-      db
-        .select()
-        .from(textProviders)
-        .where(eq(textProviders.workspaceId, workspaceId))
-        .pipe(
-          Effect.map(([row]) => Option.fromUndefinedOr(row)),
-          Effect.orDie
-        );
-
-    const open = Effect.fn("TextProviders.open")(function* open(
-      workspaceId: WorkspaceId
-    ) {
-      const row = yield* rowOf(workspaceId);
-
-      if (Option.isNone(row)) {
-        return Option.none<OpenedTextProvider>();
-      }
-
-      const provider: OpenedTextProvider = {
-        apiKey: yield* secrets.open(
-          row.value.sealedKey,
-          workspaceId,
-          row.value.baseUrl,
-          "text"
-        ),
-        settings: settingsOf(row.value),
-      };
-
-      return Option.some(provider);
-    });
-
-    // What the settings page reads: whether the key opens, never the key.
-    const find = (workspaceId: WorkspaceId) =>
-      open(workspaceId).pipe(
+    const open = (workspaceId: WorkspaceId) =>
+      openedUse(workspaceId, "text").pipe(
         Effect.map(
-          Option.map(({ apiKey, settings }): StoredTextProvider => ({
-            keyUnreadable: Option.isNone(apiKey),
-            settings,
-          }))
-        )
+          Option.flatMap(({ apiKey, baseUrl, model, updatedAt }) => {
+            // Only a provider that writes text is ever chosen for it.
+            const provider = asTextProvider(model.provider);
+
+            return provider === null
+              ? Option.none()
+              : Option.some<OpenedTextProvider>({
+                  apiKey,
+                  settings: new TextProviderSettings({
+                    baseUrl,
+                    kind: kindOfProvider(provider),
+                    model: model.model,
+                    provider,
+                    updatedAt,
+                  }),
+                });
+          })
+        ),
+        Effect.provideContext(ports),
+        Effect.withSpan("TextProviders.open")
       );
 
     return TextProviders.of({
-      find,
+      find: (workspaceId) =>
+        open(workspaceId).pipe(
+          Effect.map(
+            Option.map(({ apiKey, settings }) => ({
+              keyUnreadable: Option.isNone(apiKey),
+              settings,
+            }))
+          )
+        ),
       open,
       remove: (workspaceId) =>
-        db
-          .delete(textProviders)
-          .where(eq(textProviders.workspaceId, workspaceId))
-          .pipe(
-            Effect.asVoid,
-            Effect.orDie,
-            Effect.withSpan("TextProviders.remove")
-          ),
-      save: Effect.fn("TextProviders.save")(
-        function* save(workspaceId, settings, key) {
-          // Sealed first: without a keyring, nothing is stored.
-          const { keyId, sealed } = yield* secrets.seal(
-            key,
-            workspaceId,
-            settings.baseUrl,
-            "text"
-          );
-
-          const values = {
+        removedUse(workspaceId, "text").pipe(
+          Effect.provideContext(ports),
+          Effect.withSpan("TextProviders.remove")
+        ),
+      save: (workspaceId, settings, key) =>
+        savedUse(
+          workspaceId,
+          {
             baseUrl: settings.baseUrl,
-            keyId,
-            kind: settings.kind,
+            capability: "text",
             model: settings.model,
-            sealedKey: sealed,
-            updatedAt: DateTime.toDateUtc(settings.updatedAt),
-          };
-
-          yield* db
-            .insert(textProviders)
-            .values({ ...values, workspaceId })
-            .onConflictDoUpdate({
-              set: values,
-              target: textProviders.workspaceId,
-            })
-            .pipe(Effect.orDie);
-        }
-      ),
+            provider: settings.provider,
+            updatedAt: settings.updatedAt,
+          },
+          key
+        ).pipe(
+          Effect.provideContext(ports),
+          Effect.withSpan("TextProviders.save")
+        ),
     });
   })
 );

@@ -3,6 +3,8 @@ import type { PaidPlan } from "#shared/domain/plan.ts";
 
 import type { TwoStepChange } from "./auth-email.ts";
 import type {
+  SlideshowNoticeReason,
+  VideoNoticeReason,
   AutomationStopReason,
   FeedStopReason,
   FollowUpNotSentReason,
@@ -317,6 +319,31 @@ export interface EmailCatalog {
   readonly commentRuleStopped: EmailMessages;
   readonly commentRuleStopReasons: Readonly<
     Record<AutomationStopReason, string>
+  >;
+  /**
+   * A video the reader asked for in `{workspaceName}` is in its media.
+   * Told in the app alone; the email's words are what its notice would
+   * say, should one ever be sent.
+   */
+  readonly videoGenerated: EmailMessages;
+  /**
+   * A video the reader asked for in `{workspaceName}` failed, for
+   * `{reason}`, one of `videoFailureReasons`.
+   */
+  readonly videoFailed: EmailMessages;
+  readonly videoFailureReasons: Readonly<Record<VideoNoticeReason, string>>;
+  /**
+   * A slide video the reader asked for in `{workspaceName}` is in its
+   * media. Told in the app alone, as videos are.
+   */
+  readonly slideshowComposed: EmailMessages;
+  /**
+   * A slide video the reader asked for in `{workspaceName}` failed, for
+   * `{reason}`, one of `slideshowFailureReasons`.
+   */
+  readonly slideshowFailed: EmailMessages;
+  readonly slideshowFailureReasons: Readonly<
+    Record<SlideshowNoticeReason, string>
   >;
   /**
    * Peal turned off the webhook endpoint at `{host}` in `{workspaceName}`,

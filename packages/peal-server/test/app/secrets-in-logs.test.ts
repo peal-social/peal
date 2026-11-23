@@ -35,7 +35,16 @@ import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
 import sharp from "sharp";
 
+import { OwnWritingModel } from "#assistant/application/ports/own-writing-model.ts";
+import { WritingModel } from "#assistant/application/ports/writing-model.ts";
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
+import {
+  ProviderAddressSchema,
+  ProviderModelSchema,
+} from "#assistant/domain/image-provider.ts";
+import { TextAnswerSchema } from "#assistant/domain/suggestion.ts";
+import { ownWritingModel } from "#assistant/infrastructure/own-writing-model.ts";
+import { writingModelFor } from "#assistant/infrastructure/writing-model-live.ts";
 import { ChatVerifier } from "#channels/application/chat-verifier.ts";
 import { SiteVerifier } from "#channels/application/site-verifier.ts";
 import { ConnectAttempt } from "#channels/domain/connect-attempt.ts";
@@ -1623,7 +1632,7 @@ layer(OwnImagesTest, { excludeTestServices: true, timeout: "120 seconds" })(
           const admin = actorIn(workspaceId, permissionsFor("admin"));
 
           yield* Effect.addFinalizer(() =>
-            sql`DELETE FROM assistant.image_providers WHERE workspace_id = ${workspaceId}`.pipe(
+            sql`DELETE FROM assistant.provider_connections WHERE workspace_id = ${workspaceId}`.pipe(
               Effect.andThen(
                 sql`DELETE FROM media.media_assets WHERE workspace_id = ${workspaceId}`
               ),
@@ -1884,3 +1893,94 @@ layer(PostHogTest, { excludeTestServices: true, timeout: "180 seconds" })(
     );
   }
 );
+
+// What the AI SDK's adapters may never let out: the key, the draft, the
+// provider's words (which quote it) and, for a workspace's provider, its
+// host and its model.
+const aiKey = "synthetic-ai-sdk-key-5e1";
+const aiDraft = "synthetic-ai-sdk-draft-91c";
+const aiModel = "synthetic-ai-sdk-model-0d4";
+
+const aiPrompt = {
+  instructions: "Rewrite the draft.",
+  message: JSON.stringify({ draft: aiDraft }),
+};
+
+layer(Layer.merge(capture, Layer.succeed(Tracer.Tracer, tracer)), {
+  excludeTestServices: true,
+  timeout: "60 seconds",
+})("what the server writes about the AI SDK's providers", (it) => {
+  it.effect(
+    "holds no key, draft, provider's words, host or model of a workspace's",
+    () =>
+      Effect.gen(function* searched() {
+        // Every failure echoes what it was sent, as some providers do.
+        const server = yield* fakeHttpServer((request) => {
+          const echoed = JSON.stringify([request.body, request.headers]);
+
+          return request.path.endsWith("/messages")
+            ? jsonAnswer({ error: { message: echoed } }, 500)
+            : jsonAnswer({ error: { message: echoed } }, 401);
+        });
+
+        const { host } = new URL(server.url);
+
+        const own = yield* OwnWritingModel.pipe(
+          Effect.provide(
+            ownWritingModel({ timeout: "5 seconds" }).pipe(
+              Layer.provide(OpenOutboundGuard)
+            )
+          )
+        );
+
+        for (const provider of ["anthropic", "openai-compatible"] as const) {
+          yield* own
+            .write(
+              {
+                apiKey: Redacted.make(aiKey),
+                baseUrl: ProviderAddressSchema.make(`${server.url}/v1`),
+                model: ProviderModelSchema.make(aiModel),
+                provider,
+              },
+              aiPrompt,
+              TextAnswerSchema
+            )
+            .pipe(Effect.flip, Effect.withSpan("test.own"));
+        }
+
+        // The server's own provider says its model, never its key or
+        // the draft.
+        yield* WritingModel.use((model) =>
+          model.write(aiPrompt, TextAnswerSchema)
+        ).pipe(
+          Effect.provide(
+            writingModelFor({
+              _tag: "On",
+              apiKey: Option.some(Redacted.make(aiKey)),
+              baseUrl: `${server.url}/v1`,
+              model: aiModel,
+              provider: "openai-compatible",
+            })
+          ),
+          Effect.flip,
+          Effect.withSpan("test.server")
+        );
+
+        assert.lengthOf(server.requests(), 3);
+
+        const text = written();
+
+        assert.include(text, "A workspace's text provider");
+        assert.notInclude(text, aiKey);
+        assert.notInclude(text, aiDraft);
+        assert.notInclude(text, "Rewrite the draft.");
+
+        const ownLines = lines
+          .filter((line) => line.includes("workspace"))
+          .join("\n");
+
+        assert.notInclude(ownLines, host);
+        assert.notInclude(ownLines, aiModel);
+      })
+  );
+});

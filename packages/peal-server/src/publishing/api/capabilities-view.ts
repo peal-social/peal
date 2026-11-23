@@ -17,6 +17,7 @@ import {
   MediaContentTypeSchema,
   mediaKinds,
 } from "#publishing/domain/media-file.ts";
+import type { MediaContentType } from "#publishing/domain/media-file.ts";
 import type {
   OptionLookup,
   PlatformCapabilities,
@@ -99,7 +100,7 @@ export const lookupDescriptionView = (
 });
 
 const formatView = (
-  contentType: MediaFormatView["contentType"],
+  contentType: MediaContentType,
   limits: FormatLimits
 ): MediaFormatView => {
   const view: MediaFormatView = {

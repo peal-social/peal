@@ -220,6 +220,7 @@ describe("the service of a host", () => {
     const hosts = {
       "api-sandbox.pinterest.com": "pinterest",
       "api.anthropic.com": "anthropic",
+      "api.shotstack.io": "shotstack",
       "api.instagram.com": "meta",
       "api.linkedin.com": "linkedin",
       "api.pinterest.com": "pinterest",

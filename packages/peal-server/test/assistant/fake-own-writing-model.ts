@@ -14,6 +14,7 @@ import { OwnWritingModel } from "#assistant/application/ports/own-writing-model.
 import type { OwnTextEndpoint } from "#assistant/application/ports/own-writing-model.ts";
 import { TextProviderRefused } from "#assistant/application/text-provider-refused.ts";
 import { WritingFailed } from "#assistant/application/writing-failed.ts";
+import { kindOfProvider } from "#assistant/domain/text-provider.ts";
 import type { WritingPrompt } from "#assistant/domain/writing-prompt.ts";
 
 /**
@@ -56,13 +57,13 @@ export class FakeOwnWritingModel extends Context.Service<
 >()("peal-server/test/assistant/FakeOwnWritingModel") {}
 
 const callOf = (
-  { apiKey, baseUrl, kind, model }: OwnTextEndpoint,
+  { apiKey, baseUrl, model, provider }: OwnTextEndpoint,
   prompt: WritingPrompt
 ): OwnTextCall => ({
   // The fake reads the key out to show which one it was sent.
   apiKey: Redacted.value(apiKey),
   baseUrl,
-  kind,
+  kind: kindOfProvider(provider),
   model,
   prompt,
 });

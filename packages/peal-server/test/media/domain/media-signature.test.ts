@@ -23,6 +23,10 @@ describe(sniffContentType, () => {
     ["video/mp4", isoMedia("mp42")],
     ["video/quicktime", isoMedia("qt  ")],
     ["application/pdf", text("%PDF-1.7\n%âãÏÓ\n")],
+    ["audio/wav", text("RIFF\u0010\u0000\u0000\u0000WAVEfmt ")],
+    ["audio/mpeg", text("ID3\u0004\u0000\u0000\u0000\u0000\u0000\u0000")],
+    ["audio/mpeg", bytes(0xff, 0xfb, 0x90, 0x64, 0, 0, 0, 0)],
+    ["audio/mp4", isoMedia("M4A ")],
   ] as const)("reads %s from a file's first bytes", (contentType, start) => {
     expect(sniffContentType(start)).toStrictEqual(Option.some(contentType));
   });
@@ -32,7 +36,14 @@ describe(sniffContentType, () => {
     ["a page", text("<!doctype html><html><head>")],
     ["an SVG", text('<svg xmlns="http://www.w3.org/2000/svg">')],
     ["a page that names a PDF", text("<a href=x>%PDF-1.7</a>")],
-    ["a sound in a RIFF file", text("RIFF\u0010\u0000\u0000\u0000WAVEfmt ")],
+    [
+      "a sound in a RIFF file of another kind",
+      text("RIFF\u0010\u0000\u0000\u0000AVI LIST"),
+    ],
+    [
+      "an MPEG frame of another layer",
+      bytes(0xff, 0xfd, 0x90, 0x64, 0, 0, 0, 0),
+    ],
     ["a HEIC image", isoMedia("heic")],
     ["an AVIF image", isoMedia("avif")],
     ["a file cut short", bytes(0xff, 0xd8)],

@@ -6,6 +6,16 @@ import {
   OpenApi,
 } from "effect/http-api";
 
+import { AiCapabilityNotOffered } from "./ai-capability-not-offered.ts";
+import { AiModelRequired } from "./ai-model-required.ts";
+import { AiProviderAddressRefused } from "./ai-provider-address-refused.ts";
+import { AiProviderKeyRequired } from "./ai-provider-key-required.ts";
+import { AiProviderNotConnected } from "./ai-provider-not-connected.ts";
+import {
+  AiCapabilitySchema,
+  AiImageProviderIdSchema,
+  AiProviderIdSchema,
+} from "./ai-providers.ts";
 import { AssistantFailed } from "./assistant-failed.ts";
 import { AssistantInputRejected } from "./assistant-input-rejected.ts";
 import { AssistantQuotaExceeded } from "./assistant-quota-exceeded.ts";
@@ -13,6 +23,7 @@ import { AssistantSecretsNotConfigured } from "./assistant-secrets-not-configure
 import { AssistantUnavailable } from "./assistant-unavailable.ts";
 import { Authentication } from "./authentication.ts";
 import { MoneySchema } from "./billing-plans.ts";
+import { deprecated } from "./deprecation.ts";
 import { Forbidden } from "./forbidden.ts";
 import { ImageProviderAddressRefused } from "./image-provider-address-refused.ts";
 import { ImageProviderKeyRequired } from "./image-provider-key-required.ts";
@@ -235,6 +246,97 @@ export const AssistantImagesStatusSchema = Schema.Struct({
 export type AssistantImagesStatus = typeof AssistantImagesStatusSchema.Type;
 
 /**
+ * Whether the workspace makes videos, with the provider it chose for them
+ * and its own key (the server's operator offers none), and how many it may
+ * still ask for today.
+ */
+export const AssistantVideosStatusSchema = Schema.Struct({
+  // Whether videos can be made: a provider and a model are chosen for
+  // videos and its key can be read. Clients hide videos otherwise.
+  available: Schema.Boolean,
+  // How many videos the workspace may ask for each UTC day, and how many
+  // are left today (`resetsAt`, midnight UTC).
+  dailyLimit: Schema.Int,
+  // The longest description a video is made from, in UTF-16 code units.
+  maxPromptLength: Schema.Int,
+  // The provider chosen for videos, whose `video` offer in
+  // `peal-contract/ai-providers` says the aspects, lengths and first
+  // frames it takes; null when none is.
+  provider: Schema.NullOr(AiProviderIdSchema),
+  remaining: Schema.Int,
+}).annotate({ identifier: "AssistantVideosStatus" });
+
+export type AssistantVideosStatus = typeof AssistantVideosStatusSchema.Type;
+
+/**
+ * Whether the workspace makes voice-overs, with the provider it chose for
+ * them and its own key (the server's operator offers none), and how many
+ * it may still ask for today.
+ */
+export const AssistantVoiceoversStatusSchema = Schema.Struct({
+  // Whether voice-overs can be made: a provider and a model are chosen for
+  // `speech` and its key can be read. Clients hide them otherwise.
+  available: Schema.Boolean,
+  // How many voice-overs the workspace may ask for each UTC day, and how
+  // many are left today (midnight UTC starts the count again).
+  dailyLimit: Schema.Int,
+  // The longest text a voice-over is made from, in UTF-16 code units.
+  maxTextLength: Schema.Int,
+  // The provider chosen for voice-overs, whose `speech` offer in
+  // `peal-contract/ai-providers` says the voices it takes; null when none
+  // is.
+  provider: Schema.NullOr(AiProviderIdSchema),
+  remaining: Schema.Int,
+}).annotate({ identifier: "AssistantVoiceoversStatus" });
+
+export type AssistantVoiceoversStatus =
+  typeof AssistantVoiceoversStatusSchema.Type;
+
+/**
+ * Whether the workspace transcribes its audio and videos, with the
+ * provider it chose and its own key, and how many it may still ask for
+ * today.
+ */
+export const AssistantTranscriptionsStatusSchema = Schema.Struct({
+  // Whether transcripts can be made: a provider and a model are chosen for
+  // `transcription` and its key can be read.
+  available: Schema.Boolean,
+  dailyLimit: Schema.Int,
+  // The largest file a transcript is made of, in bytes.
+  maxBytes: Schema.Int,
+  provider: Schema.NullOr(AiProviderIdSchema),
+  remaining: Schema.Int,
+}).annotate({ identifier: "AssistantTranscriptionsStatus" });
+
+export type AssistantTranscriptionsStatus =
+  typeof AssistantTranscriptionsStatusSchema.Type;
+
+/**
+ * Whether the workspace composes slide videos, with the service it chose
+ * for `composition` and its own key, and how many it may still ask for
+ * today.
+ */
+export const AssistantSlideshowsStatusSchema = Schema.Struct({
+  // Whether slide videos can be composed: a service is chosen for
+  // `composition` and its key can be read. Clients hide them otherwise.
+  // It stays true without a payment method: `paymentMethodRequired` says
+  // the request would be refused, so clients offer the upgrade instead.
+  available: Schema.Boolean,
+  dailyLimit: Schema.Int,
+  // On a server that bills, whether the workspace's billing account needs
+  // a payment method first (CompositionNeedsPayment); false elsewhere.
+  paymentMethodRequired: Schema.Boolean,
+  provider: Schema.NullOr(AiProviderIdSchema),
+  remaining: Schema.Int,
+  // Whether the chosen service's connection is its sandbox, which
+  // watermarks every video.
+  sandbox: Schema.Boolean,
+}).annotate({ identifier: "AssistantSlideshowsStatus" });
+
+export type AssistantSlideshowsStatus =
+  typeof AssistantSlideshowsStatusSchema.Type;
+
+/**
  * Who writes the workspace's text: `workspace`, the text provider the
  * workspace brought (its own key, outside Peal's allowance), or `server`,
  * the language model the server's operator set up.
@@ -269,9 +371,19 @@ export const AssistantStatusSchema = Schema.Struct({
   remaining: Schema.Int,
   // Midnight UTC, when the day's count starts again.
   resetsAt: Schema.DateTimeUtc,
+  // Whether the workspace composes slide videos, and how many are left
+  // today.
+  slideshows: AssistantSlideshowsStatusSchema,
   // Who writes the workspace's text, or null when nobody does
   // (`available` false).
   source: Schema.NullOr(AssistantTextSourceSchema),
+  // Whether the workspace transcribes its audio and videos, and how many
+  // are left today.
+  transcriptions: AssistantTranscriptionsStatusSchema,
+  // Whether the workspace makes videos, and how many are left today.
+  videos: AssistantVideosStatusSchema,
+  // Whether the workspace makes voice-overs, and how many are left today.
+  voiceovers: AssistantVoiceoversStatusSchema,
 }).annotate({ identifier: "AssistantStatus" });
 
 export type AssistantStatus = typeof AssistantStatusSchema.Type;
@@ -294,6 +406,10 @@ export const ImageProviderSchema = Schema.Struct({
   keySet: Schema.Literal(true),
   keyUnreadable: Schema.Boolean,
   model: Schema.String,
+  // The provider by name (`aiImageProviders` in
+  // `peal-contract/ai-providers`); one saved before providers had names
+  // reads as `openai-compatible`.
+  provider: AiImageProviderIdSchema,
   updatedAt: Schema.DateTimeUtc,
 }).annotate({ identifier: "ImageProvider" });
 
@@ -331,10 +447,13 @@ export const ImageProviderChangeSchema = Schema.Struct({
       })
     )
   ),
-  // The API's base address, which `/images/generations` follows, such as
-  // `https://images.example.com/v1`. This bounds what the request can
-  // carry; the address itself is at most 2048 characters.
-  baseUrl: Schema.String.check(Schema.isMaxLength(8192)),
+  // The API's base address: for `openai-compatible`, the one
+  // `/images/generations` follows, such as `https://images.example.com/v1`.
+  // Left out, the provider's own address (`aiImageProviders` in
+  // `peal-contract/ai-providers`); `openai-compatible` has none, and needs
+  // it. This bounds what the request can carry; the address itself is at
+  // most 2048 characters.
+  baseUrl: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(8192))),
   // The model the provider is asked for, one line.
   model: Schema.String.check(
     Schema.isMinLength(1),
@@ -343,6 +462,9 @@ export const ImageProviderChangeSchema = Schema.Struct({
       expected: "a model's name on one line, without control characters",
     })
   ),
+  // The provider by name, which sets the API it speaks and its default
+  // address. Left out, `openai-compatible`.
+  provider: Schema.optionalKey(AiImageProviderIdSchema),
 }).annotate({ identifier: "ImageProviderChange" });
 
 export type ImageProviderChange = typeof ImageProviderChangeSchema.Type;
@@ -382,6 +504,10 @@ export const TextProviderSchema = Schema.Struct({
   keyUnreadable: Schema.Boolean,
   kind: TextProviderKindSchema,
   model: Schema.String,
+  // The provider by name (`peal-contract/ai-providers`); one saved before
+  // providers had names reads as its kind's: `anthropic`, else
+  // `openai-compatible`.
+  provider: AiProviderIdSchema,
   updatedAt: Schema.DateTimeUtc,
 }).annotate({ identifier: "TextProvider" });
 
@@ -410,10 +536,14 @@ export const TextProviderChangeSchema = Schema.Struct({
   // The API's base address: `https://api.anthropic.com` for Anthropic,
   // which `/v1/messages` follows; for an OpenAI-compatible endpoint, the
   // address `/chat/completions` follows, such as
-  // `https://text.example.com/v1`. This bounds what the request can carry;
-  // the address itself is at most 2048 characters.
-  baseUrl: Schema.String.check(Schema.isMaxLength(8192)),
-  kind: TextProviderKindSchema,
+  // `https://text.example.com/v1`. Left out, the provider's own address
+  // (`aiProviders` in `peal-contract/ai-providers`); `openai-compatible`
+  // has none, and needs it. This bounds what the request can carry; the
+  // address itself is at most 2048 characters.
+  baseUrl: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(8192))),
+  // The API it speaks, read only when `provider` is left out: `anthropic`
+  // names Anthropic, `openai-compatible` (or nothing) another endpoint.
+  kind: Schema.optionalKey(TextProviderKindSchema),
   // The model the provider is asked for, one line.
   model: Schema.String.check(
     Schema.isMinLength(1),
@@ -422,17 +552,143 @@ export const TextProviderChangeSchema = Schema.Struct({
       expected: "a model's name on one line, without control characters",
     })
   ),
+  // The provider by name, which sets the API it speaks and its default
+  // address. Left out, `kind` says it.
+  provider: Schema.optionalKey(AiProviderIdSchema),
 }).annotate({ identifier: "TextProviderChange" });
 
 export type TextProviderChange = typeof TextProviderChangeSchema.Type;
 
+/**
+ * A provider the workspace connected: where it is reached and that its
+ * key is kept. The key is never shown again: `keySet` says one is stored,
+ * `keyUnreadable` that it can no longer be read (the server's keys
+ * changed), and must be typed again. What the workspace uses it for is
+ * `GET …/assistant/models`'s to say.
+ */
+export const AiProviderConnectionSchema = Schema.Struct({
+  // Where the provider is reached: its own address (`baseUrl` of
+  // `aiProviders` in `peal-contract/ai-providers`), or the one the
+  // workspace gave, such as a proxy's. Each use's address follows from it
+  // (`aiCapabilityAddress`).
+  baseUrl: Schema.String,
+  keySet: Schema.Literal(true),
+  keyUnreadable: Schema.Boolean,
+  provider: AiProviderIdSchema,
+  updatedAt: Schema.DateTimeUtc,
+}).annotate({ identifier: "AiProviderConnection" });
+
+export type AiProviderConnection = typeof AiProviderConnectionSchema.Type;
+
+/** The providers the workspace connected, in the catalogue's order. */
+export const AiProviderConnectionsSchema = Schema.Struct({
+  providers: Schema.Array(AiProviderConnectionSchema),
+}).annotate({ identifier: "AiProviderConnections" });
+
+export type AiProviderConnections = typeof AiProviderConnectionsSchema.Type;
+
+export const AiProviderConnectionChangeSchema = Schema.Struct({
+  // The provider's key, visible ASCII without spaces: required unless the
+  // workspace has one stored for this provider that opens and `baseUrl`
+  // stays exactly the same, when it is kept.
+  apiKey: Schema.optionalKey(
+    Schema.String.check(
+      Schema.isMinLength(1),
+      Schema.isMaxLength(maxImageProviderKeyLength),
+      Schema.isPattern(imageProviderKeyPattern, {
+        expected: "a key of visible ASCII, without spaces",
+      })
+    )
+  ),
+  // Where the provider is reached. Left out, its own address (`baseUrl` of
+  // `aiProviders` in `peal-contract/ai-providers`); `openai-compatible`
+  // has none, and needs it: the address `/chat/completions` and
+  // `/images/generations` follow, such as `https://ai.example.com/v1`.
+  // This bounds what the request can carry; the address itself is at most
+  // 2048 characters.
+  baseUrl: Schema.optionalKey(Schema.String.check(Schema.isMaxLength(8192))),
+}).annotate({ identifier: "AiProviderConnectionChange" });
+
+export type AiProviderConnectionChange =
+  typeof AiProviderConnectionChangeSchema.Type;
+
+/**
+ * What the workspace uses for one of its uses (`capability`): the
+ * provider it connected and the model asked, or null for both when it
+ * chose none, and its text or images then come from the server's model,
+ * when `serverModel` says it has one, or from nobody.
+ */
+export const AiCapabilityModelSchema = Schema.Struct({
+  capability: AiCapabilitySchema,
+  model: Schema.NullOr(Schema.String),
+  provider: Schema.NullOr(AiProviderIdSchema),
+  // Whether the server's operator set up a model of their own for this
+  // use, which works for the workspace while it chooses none.
+  serverModel: Schema.Boolean,
+  // When the choice was saved; null while there is none.
+  updatedAt: Schema.NullOr(Schema.DateTimeUtc),
+}).annotate({ identifier: "AiCapabilityModel" });
+
+export type AiCapabilityModel = typeof AiCapabilityModelSchema.Type;
+
+/** Every use, chosen or not, in the order `AiCapability` lists them. */
+export const AiCapabilityModelsSchema = Schema.Struct({
+  models: Schema.Array(AiCapabilityModelSchema),
+}).annotate({ identifier: "AiCapabilityModels" });
+
+export type AiCapabilityModels = typeof AiCapabilityModelsSchema.Type;
+
+const providerModelSchema = Schema.String.check(
+  Schema.isMinLength(1),
+  Schema.isMaxLength(maxImageProviderModelLength),
+  Schema.isPattern(imageProviderModelPattern, {
+    expected: "a model's name on one line, without control characters",
+  })
+);
+
+export const AiCapabilityModelChangeSchema = Schema.Struct({
+  // The model the provider is asked for, one line. Every use needs one
+  // (AiModelRequired otherwise) but `composition`, which takes none: its
+  // model is `edit`, Shotstack's Edit API, whatever is sent.
+  model: Schema.optionalKey(providerModelSchema),
+  // A provider the workspace connected that offers this use.
+  provider: AiProviderIdSchema,
+}).annotate({ identifier: "AiCapabilityModelChange" });
+
+export type AiCapabilityModelChange = typeof AiCapabilityModelChangeSchema.Type;
+
+export const AiProviderTestSchema = Schema.Struct({
+  // The model to ask. Left out, the one the workspace's text is written
+  // with when this provider writes it, else the first Peal suggests.
+  model: Schema.optionalKey(providerModelSchema),
+}).annotate({ identifier: "AiProviderTest" });
+
+export type AiProviderTest = typeof AiProviderTestSchema.Type;
+
 const workspace = { workspaceId: Schema.String };
+
+const workspaceProvider = {
+  provider: AiProviderIdSchema,
+  workspaceId: Schema.String,
+};
+
+const workspaceCapability = {
+  capability: AiCapabilitySchema,
+  workspaceId: Schema.String,
+};
+
+// The day the text and image provider endpoints gave way to connected
+// providers and a model for each use.
+const providersSince = deprecated({ since: "2026-11-23T00:00:00Z" });
+
+const configureNote =
+  "Needs assistant:configure, which no OAuth client holds but Peal's command line.";
 
 const textProviderDescription =
   "Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests";
 
 const imageProviderDescription =
-  "an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests";
+  "a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests";
 
 /**
  * The writing assistant: suggestions on a post's text from the text
@@ -506,12 +762,14 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
       error: Forbidden,
       params: workspace,
       success: ImageProviderSettingSchema,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description: `Reads the image provider the workspace brought, ${imageProviderDescription}: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).`,
-        summary: "Get the workspace's image provider",
-      })
-    ),
+    })
+      .annotateMerge(
+        OpenApi.annotations({
+          description: `Reads the image provider the workspace brought, ${imageProviderDescription}: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).`,
+          summary: "Get the workspace's image provider",
+        })
+      )
+      .annotateMerge(providersSince),
     HttpApiEndpoint.put("setImageProvider", "/image-provider", {
       error: [
         Forbidden,
@@ -522,60 +780,71 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
       params: workspace,
       payload: ImageProviderChangeSchema,
       success: ImageProviderSchema,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description: `Sets the image provider the workspace brings, ${imageProviderDescription}. The workspace's image prompts then go to \`baseUrl\` with \`apiKey\` as a bearer token; the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: \`apiKey\` may be left out to keep the stored one only while \`baseUrl\` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).`,
-        summary: "Set the workspace's image provider",
-      })
-    ),
+    })
+      .annotateMerge(
+        OpenApi.annotations({
+          description: `Sets the image provider the workspace brings, ${imageProviderDescription}. The workspace's image prompts then go to \`baseUrl\` (the provider's own address when left out) with \`apiKey\`, through the API \`provider\` names (\`openai-compatible\` when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: \`apiKey\` may be left out to keep the stored one only while \`baseUrl\` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).`,
+          summary: "Set the workspace's image provider",
+        })
+      )
+      .annotateMerge(providersSince),
     HttpApiEndpoint.delete("removeImageProvider", "/image-provider", {
       error: Forbidden,
       params: workspace,
       success: HttpApiSchema.NoContent,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description:
-          "Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).",
-        summary: "Remove the workspace's image provider",
-      })
-    ),
+    })
+      .annotateMerge(
+        OpenApi.annotations({
+          description:
+            "Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).",
+          summary: "Remove the workspace's image provider",
+        })
+      )
+      .annotateMerge(providersSince),
     HttpApiEndpoint.get("textProvider", "/text-provider", {
       error: Forbidden,
       params: workspace,
       success: TextProviderSettingSchema,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description: `Reads the text provider the workspace brought, ${textProviderDescription}: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.`,
-        summary: "Get the workspace's text provider",
-      })
-    ),
+    })
+      .annotateMerge(
+        OpenApi.annotations({
+          description: `Reads the text provider the workspace brought, ${textProviderDescription}: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.`,
+          summary: "Get the workspace's text provider",
+        })
+      )
+      .annotateMerge(providersSince),
     HttpApiEndpoint.put("setTextProvider", "/text-provider", {
       error: [
         Forbidden,
         TextProviderAddressRefused,
         TextProviderKeyRequired,
         AssistantSecretsNotConfigured,
+        AiCapabilityNotOffered,
       ],
       params: workspace,
       payload: TextProviderChangeSchema,
       success: TextProviderSchema,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description: `Sets the text provider the workspace brings, ${textProviderDescription}. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to \`baseUrl\` with \`apiKey\`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: \`apiKey\` may be left out to keep the stored one only while \`baseUrl\` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: test it with \`POST .../text-provider/test\`. Needs assistant:configure, which no OAuth client holds but Peal's command line.`,
-        summary: "Set the workspace's text provider",
-      })
-    ),
+    })
+      .annotateMerge(
+        OpenApi.annotations({
+          description: `Sets the text provider the workspace brings, ${textProviderDescription}. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to \`baseUrl\` with \`apiKey\`, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: \`apiKey\` may be left out to keep the stored one only while \`baseUrl\` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with \`POST .../text-provider/test\`. Needs assistant:configure, which no OAuth client holds but Peal's command line.`,
+          summary: "Set the workspace's text provider",
+        })
+      )
+      .annotateMerge(providersSince),
     HttpApiEndpoint.delete("removeTextProvider", "/text-provider", {
       error: Forbidden,
       params: workspace,
       success: HttpApiSchema.NoContent,
-    }).annotateMerge(
-      OpenApi.annotations({
-        description:
-          "Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.",
-        summary: "Remove the workspace's text provider",
-      })
-    ),
+    })
+      .annotateMerge(
+        OpenApi.annotations({
+          description:
+            "Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.",
+          summary: "Remove the workspace's text provider",
+        })
+      )
+      .annotateMerge(providersSince),
     HttpApiEndpoint.post("testTextProvider", "/text-provider/test", {
       error: [
         Forbidden,
@@ -587,11 +856,105 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
       ],
       params: workspace,
       success: HttpApiSchema.NoContent,
+    })
+      .annotateMerge(
+        OpenApi.annotations({
+          description:
+            "Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.",
+          summary: "Test the workspace's text provider",
+        })
+      )
+      .annotateMerge(providersSince),
+    HttpApiEndpoint.get("providers", "/providers", {
+      error: Forbidden,
+      params: workspace,
+      success: AiProviderConnectionsSchema,
     }).annotateMerge(
       OpenApi.annotations({
-        description:
-          "Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.",
-        summary: "Test the workspace's text provider",
+        description: `Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is \`GET .../assistant/models\`'s to say. ${configureNote}`,
+        summary: "List the workspace's AI providers",
+      })
+    ),
+    HttpApiEndpoint.put("connectProvider", "/providers/:provider", {
+      error: [
+        Forbidden,
+        AiProviderAddressRefused,
+        AiProviderKeyRequired,
+        AssistantSecretsNotConfigured,
+      ],
+      params: workspaceProvider,
+      payload: AiProviderConnectionChangeSchema,
+      success: AiProviderConnectionSchema,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description: `Connects a provider of Peal's catalogue (\`peal-contract/ai-providers\`), or \`openai-compatible\`, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (\`PUT .../assistant/models/{capability}\`), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: \`apiKey\` may be left out to keep the stored one only while \`baseUrl\` stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (\`fixedAddress\`: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused \`fixedAddress\`): Shotstack takes its production API (\`https://api.shotstack.io/edit/v1\`, the default) or its sandbox (\`https://api.shotstack.io/edit/stage\`, free and watermarked), each with its own key. The provider is not called: test it with \`POST .../providers/{provider}/test\`. ${configureNote}`,
+        summary: "Connect an AI provider",
+      })
+    ),
+    HttpApiEndpoint.delete("disconnectProvider", "/providers/:provider", {
+      error: Forbidden,
+      params: workspaceProvider,
+      success: HttpApiSchema.NoContent,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description: `Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. ${configureNote}`,
+        summary: "Disconnect an AI provider",
+      })
+    ),
+    HttpApiEndpoint.post("testProvider", "/providers/:provider/test", {
+      error: [
+        Forbidden,
+        AiProviderNotConnected,
+        AiCapabilityNotOffered,
+        AiModelRequired,
+        TextProviderRefused,
+        OwnTextLimitReached,
+        TextProviderBusy,
+        AssistantFailed,
+      ],
+      params: workspaceProvider,
+      payload: AiProviderTestSchema,
+      success: HttpApiSchema.NoContent,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description: `Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with \`model\` (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. ${configureNote}`,
+        summary: "Test an AI provider",
+      })
+    ),
+    HttpApiEndpoint.get("models", "/models", {
+      error: Forbidden,
+      params: workspace,
+      success: AiCapabilityModelsSchema,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description: `Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. ${configureNote}`,
+        summary: "List the workspace's models",
+      })
+    ),
+    HttpApiEndpoint.put("setModel", "/models/:capability", {
+      error: [
+        Forbidden,
+        AiProviderNotConnected,
+        AiCapabilityNotOffered,
+        AiModelRequired,
+      ],
+      params: workspaceCapability,
+      payload: AiCapabilityModelChangeSchema,
+      success: AiCapabilityModelSchema,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description: `Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and \`model\` is required (AiModelRequired) but for \`composition\`, whose model is always \`edit\`. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. ${configureNote}`,
+        summary: "Choose a model for a use",
+      })
+    ),
+    HttpApiEndpoint.delete("unsetModel", "/models/:capability", {
+      error: Forbidden,
+      params: workspaceCapability,
+      success: HttpApiSchema.NoContent,
+    }).annotateMerge(
+      OpenApi.annotations({
+        description: `Leaves a use to the server's model, if it has one (\`serverModel\`), within the workspace's allowance, or off; the provider stays connected. ${configureNote}`,
+        summary: "Unset a use's model",
       })
     )
   )

@@ -39,17 +39,21 @@ describe("the assistant's settings", () => {
 
         assert.strictEqual(defaultAnthropicModel, "claude-opus-5-5");
         assert.deepStrictEqual(
-          provider._tag === "Anthropic"
+          provider._tag === "On"
             ? {
                 baseUrl: provider.baseUrl,
-                key: Redacted.value(provider.apiKey),
+                key: Option.getOrNull(
+                  provider.apiKey.pipe(Option.map(Redacted.value))
+                ),
                 model: provider.model,
+                provider: provider.provider,
               }
             : null,
           {
-            baseUrl: Option.none(),
+            baseUrl: "https://api.anthropic.com",
             key: "sk-ant-test-key",
             model: "claude-opus-5-5",
+            provider: "anthropic",
           }
         );
 
@@ -60,7 +64,7 @@ describe("the assistant's settings", () => {
         });
 
         assert.strictEqual(
-          other._tag === "Anthropic" ? other.model : null,
+          other._tag === "On" ? other.model : null,
           "claude-haiku-5-0"
         );
       })
@@ -75,7 +79,8 @@ describe("the assistant's settings", () => {
 
       assert.notInclude(JSON.stringify(provider), "sk-ant-test-key");
       assert.isTrue(
-        provider._tag === "Anthropic" && Redacted.isRedacted(provider.apiKey)
+        provider._tag === "On" &&
+          Option.exists(provider.apiKey, Redacted.isRedacted)
       );
     })
   );
@@ -106,7 +111,7 @@ describe("the assistant's settings", () => {
         });
 
         assert.deepStrictEqual(
-          provider._tag === "OpenAiCompatible"
+          provider._tag === "On"
             ? {
                 apiKey: provider.apiKey,
                 baseUrl: provider.baseUrl,
@@ -127,9 +132,7 @@ describe("the assistant's settings", () => {
           PEAL_AI_PROVIDER: "openai-compatible",
         });
 
-        assert.isTrue(
-          keyed._tag === "OpenAiCompatible" && Option.isSome(keyed.apiKey)
-        );
+        assert.isTrue(keyed._tag === "On" && Option.isSome(keyed.apiKey));
       })
   );
 
@@ -151,6 +154,51 @@ describe("the assistant's settings", () => {
 
       assert.include(failure.message, missing);
     })
+  );
+
+  it.effect(
+    "reach a provider they know at its own address, with its key and model",
+    () =>
+      Effect.gen(function* known() {
+        const provider = yield* providerFrom({
+          PEAL_AI_API_KEY: "sk_test_synthetic_deepseek",
+          PEAL_AI_MODEL: "deepseek-v4-pro",
+          PEAL_AI_PROVIDER: "deepseek",
+        });
+
+        assert.deepStrictEqual(
+          provider._tag === "On"
+            ? { baseUrl: provider.baseUrl, provider: provider.provider }
+            : null,
+          { baseUrl: "https://api.deepseek.com", provider: "deepseek" }
+        );
+
+        const proxied = yield* providerFrom({
+          PEAL_AI_API_KEY: "sk_test_synthetic_openrouter",
+          PEAL_AI_BASE_URL: "https://proxy.example.test/openrouter/",
+          PEAL_AI_MODEL: "synthetic/model",
+          PEAL_AI_PROVIDER: "openrouter",
+        });
+
+        assert.strictEqual(
+          proxied._tag === "On" ? proxied.baseUrl : null,
+          "https://proxy.example.test/openrouter"
+        );
+
+        const keyless = yield* providerFrom({
+          PEAL_AI_MODEL: "deepseek-v4-pro",
+          PEAL_AI_PROVIDER: "deepseek",
+        }).pipe(Effect.flip);
+
+        assert.include(keyless.message, "PEAL_AI_API_KEY");
+
+        const modelless = yield* providerFrom({
+          PEAL_AI_API_KEY: "sk_test_synthetic_groq",
+          PEAL_AI_PROVIDER: "groq",
+        }).pipe(Effect.flip);
+
+        assert.include(modelless.message, "PEAL_AI_MODEL");
+      })
   );
 
   it.effect("refuse a provider they do not know", () =>

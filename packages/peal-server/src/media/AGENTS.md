@@ -24,9 +24,21 @@
   command line). The files that arrive (imports, the
   assistant's images) probe within their own slots (`finishArrived`).
 - Accepted media: JPEG, PNG, GIF and WebP images up to 16 MiB; MP4 and
-  QuickTime videos up to 1 GiB; PDF documents up to 100 MiB and 300 pages
-  (`media/domain/media-format.ts`). Publishing
-  checks per-platform limits when a post is scheduled.
+  QuickTime videos up to 1 GiB; PDF documents up to 100 MiB and 300 pages;
+  MP3, M4A and WAV audio up to 100 MiB (`media/domain/media-format.ts`).
+  Publishing checks per-platform limits when a post is scheduled.
+- Audio (the `audio` kind) goes out on no platform: `MediaForPlatforms`
+  hands none out (`MediaNotPublishable` `notPublishable`), publishing's
+  `LibraryAttachableMedia` takes none, and `PlatformMedia.kind` has no
+  `audio`. It is sniffed by its first bytes (`RIFF…WAVE`, an ID3 tag or a
+  layer III frame, the `M4A `/`M4B ` brands) and probed by ffprobe with
+  its own demuxer (`mp3`, `wav`, `mov`), its codec the audio stream's. A
+  voice-over the assistant made arrives as a video does
+  (`use-cases/store-generated-audio.ts`, through `MediaLibrary`, which
+  checks `media:upload`: `roomForAudio`, `storeGeneratedAudio`,
+  `GeneratedAudioUnusable`); a transcript reads a ready file whole
+  (`readMedia`, `media:read`, `read-media-bytes.ts`: of the kinds asked,
+  at most `maxBytes`, both checked on the asset first; `MediaNotReadable`).
 - A PDF is the `document` kind, which only a platform whose rules list
   `application/pdf` takes (LinkedIn, alone in its post); a platform
   without media rules refuses it too. It is probed without a PDF library
@@ -90,6 +102,22 @@
   gets no description, and bytes the probe cannot make `ready` are deleted
   (`GeneratedImageUnusable`). `roomForImage` checks the plan's storage for
   the largest image beforehand, so a full plan spends nothing.
+- A video the assistant made arrives the same way
+  (`use-cases/store-generated-video.ts`), through `GeneratedMedia`, which
+  checks no permission: the assistant's video job acts for the workspace
+  minutes after a member asked, as publishing's jobs do through
+  `MediaForPlatforms`, and the request checked `media:upload`. Only a
+  video is taken (MP4 or QuickTime, probed by ffprobe), marked
+  `aiGenerated`, no description; bytes the probe cannot make `ready` are
+  deleted (`GeneratedVideoUnusable`). `roomForVideo` checks the room for
+  the largest video the assistant keeps beforehand. A slide video, which
+  the workspace's own Shotstack account composes of its own files, is
+  stored the same way with `aiGenerated: false`. For it, `GeneratedMedia`
+  also describes a ready file of the workspace (`describeSource`: its kind,
+  type and length) and hands out a presigned GET of one
+  (`sourceLink`, `MediaStorage.downloadUrl`: it stops working after the
+  time asked, an hour, whether or not the bucket is served publicly), for
+  the files of that one request alone; never log the link.
 - Deleting an asset asks the `MediaUsage` port first, which publishing's
   `MediaInPosts` backs (`PublishingMediaUsage`; the composition root
   provides `MediaInPostsLive`): a post scheduled or publishing that shows it

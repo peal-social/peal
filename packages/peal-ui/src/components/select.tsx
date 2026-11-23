@@ -5,11 +5,13 @@ import {
   SelectGroup as SelectGroupPrimitive,
   SelectGroupLabel as SelectGroupLabelPrimitive,
   SelectItem as SelectItemPrimitive,
+  SelectItemIcon,
   SelectItemIndicator,
   SelectItemText,
   SelectSeparator as SelectSeparatorPrimitive,
   SelectTrigger as SelectTriggerPrimitive,
   SelectValue as SelectValuePrimitive,
+  SelectValueIcon as SelectValueIconPrimitive,
 } from "@ui-sdk/react/select";
 import { ChevronDownIcon, CheckIcon } from "lucide-react";
 import type * as React from "react";
@@ -105,12 +107,18 @@ const SelectLabel = ({
 const SelectItem = ({
   className,
   children,
+  icon = null,
   ...props
 }: Omit<
   WithClassName<React.ComponentProps<typeof SelectItemPrimitive>>,
   "children"
 > & {
   readonly children?: React.ReactNode;
+  /**
+   * A mark before the item's text, kept out of its name, typeahead and
+   * search; `SelectValueIcon` shows the chosen one's in the trigger.
+   */
+  readonly icon?: React.ReactNode;
 }) => (
   <SelectItemPrimitive
     className={cn(
@@ -119,6 +127,11 @@ const SelectItem = ({
     )}
     {...props}
   >
+    {icon === null ? null : (
+      <SelectItemIcon className="flex size-4 shrink-0 items-center justify-center [&_svg]:size-3.5">
+        {icon}
+      </SelectItemIcon>
+    )}
     <SelectItemText className="flex flex-1 shrink-0 gap-2 whitespace-nowrap">
       {children}
     </SelectItemText>
@@ -142,6 +155,20 @@ const SelectSeparator = ({
   />
 );
 
+/** The chosen item's `icon`, in the trigger before its value. */
+const SelectValueIcon = ({
+  className,
+  ...props
+}: WithClassName<React.ComponentProps<typeof SelectValueIconPrimitive>>) => (
+  <SelectValueIconPrimitive
+    className={cn(
+      "flex size-4 shrink-0 items-center justify-center [&_svg]:size-3.5",
+      className
+    )}
+    {...props}
+  />
+);
+
 export { Select } from "@ui-sdk/react/select";
 
 export {
@@ -152,4 +179,5 @@ export {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
+  SelectValueIcon,
 };

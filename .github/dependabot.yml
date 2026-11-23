@@ -77,6 +77,11 @@ updates:
       tiptap:
         patterns:
           - "@tiptap/*"
+      # The AI SDK and its providers are released together.
+      ai-sdk:
+        patterns:
+          - ai
+          - "@ai-sdk/*"
       # The web app's measurement: the SDK and the packages it is built on,
       # released together.
       posthog:

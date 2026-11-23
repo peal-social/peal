@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BellIcon,
   BellRingIcon,
+  BuildingIcon,
   BotIcon,
   NewspaperIcon,
   CableIcon,
@@ -19,9 +20,9 @@ import {
   InboxIcon,
   KeyRoundIcon,
   LayersIcon,
+  LockKeyholeIcon,
   LayoutGridIcon,
   ListOrderedIcon,
-  MailIcon,
   MessageSquareReplyIcon,
   MessagesSquareIcon,
   MegaphoneIcon,
@@ -70,6 +71,7 @@ export type LinkComponent = ComponentType<{
 /** Each page's icon, in the sidebar and the command menu. */
 export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
   account: UserIcon,
+  accountSecurity: LockKeyholeIcon,
   ads: MegaphoneIcon,
   agent: BotIcon,
   agentSettings: BotIcon,
@@ -82,16 +84,16 @@ export const pageIcons: Readonly<Record<Page, LucideIcon>> = {
   channelSets: LayersIcon,
   channels: CableIcon,
   feeds: RssIcon,
-  general: SettingsIcon,
+  general: BuildingIcon,
   home: HouseIcon,
   import: FileUpIcon,
   inbox: InboxIcon,
-  invitations: MailIcon,
   media: ImageIcon,
   members: UsersIcon,
   partner: UsersIcon,
   platforms: LayoutGridIcon,
   posts: SquarePenIcon,
+  preferences: SettingsIcon,
   queues: ListOrderedIcon,
   recycling: RecycleIcon,
   followUps: ReplyIcon,
@@ -380,26 +382,35 @@ export const SidebarView = ({
             </div>
           ))
         ) : (
-          <div className="flex flex-col gap-px">
+          <div className="flex flex-col gap-4">
             <button
               type="button"
               aria-label={t("back", { section: t(`sections.${section}`) })}
               onClick={() => {
                 setClosedOn(navigation.current);
               }}
-              className="text-muted-foreground hover:text-foreground mb-1 flex h-7 items-center gap-1.5 px-2 text-sm [&_svg]:size-3.5"
+              className="text-muted-foreground hover:text-foreground -mb-3 flex h-7 items-center gap-1.5 px-2 text-sm [&_svg]:size-3.5"
             >
               <ChevronLeftIcon aria-hidden />
               {t(`sections.${section}`)}
             </button>
-            {navigation.sectionLinks.map((target) => (
-              <NavLink
-                key={target.page}
-                label={labelOf(target)}
-                link={link}
-                target={target}
-                onNavigate={followed(target)}
-              />
+            {navigation.sectionGroups.map(({ group, links }) => (
+              <div key={group ?? "main"} className="flex flex-col gap-px">
+                {group === null ? null : (
+                  <p className="text-muted-foreground px-2.5 pb-1.5 text-xs">
+                    {t(`sectionGroups.${group}`)}
+                  </p>
+                )}
+                {links.map((target) => (
+                  <NavLink
+                    key={target.page}
+                    label={labelOf(target)}
+                    link={link}
+                    target={target}
+                    onNavigate={followed(target)}
+                  />
+                ))}
+              </div>
             ))}
           </div>
         )}

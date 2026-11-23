@@ -2644,6 +2644,81 @@
       }
     },
     {
+      "id": "cc877838-f688-4b1d-8bc5-7bd57e477033",
+      "name": "Make a voice-over into the media library - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/voiceovers",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 201,
+        "body": "{\n  \"aiGenerated\": true,\n  \"altText\": \"altText\",\n  \"byteSize\": 1000000,\n  \"codec\": \"codec\",\n  \"contentType\": \"image/gif\",\n  \"createdAt\": \"createdAt\",\n  \"dimensions\": {\n    \"height\": 1,\n    \"width\": 1\n  },\n  \"durationMs\": 1,\n  \"fileName\": \"fileName\",\n  \"id\": \"id\",\n  \"kind\": \"image\",\n  \"pageCount\": 1,\n  \"status\": {\n    \"_tag\": \"pending\"\n  },\n  \"updatedAt\": \"updatedAt\",\n  \"url\": \"url\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "cc877838-f688-4b1d-8bc5-7bd57e477033",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "11cb28f0-a11c-4f7f-897a-0e679c9da830",
+      "name": "Transcribe a file of the media library - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/{mediaId}/transcription",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "mediaId": {
+            "equalTo": "mediaId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"descriptionSaved\": true,\n  \"durationSeconds\": \"Infinity\",\n  \"language\": \"language\",\n  \"text\": \"text\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "11cb28f0-a11c-4f7f-897a-0e679c9da830",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
       "id": "11d54c56-a9a0-49e0-b5f0-6332728e2c42",
       "name": "List notices - default",
       "request": {
@@ -2851,7 +2926,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"available\": true,\n  \"dailyLimit\": 1,\n  \"images\": {\n    \"aspects\": [\n      \"square\"\n    ],\n    \"available\": true,\n    \"dailyLimit\": 1,\n    \"maxPromptLength\": 1,\n    \"requestCost\": 1,\n    \"month\": {\n      \"allowance\": 1,\n      \"ceiling\": {\n        \"amount\": 1,\n        \"currency\": \"currency\"\n      },\n      \"most\": 1,\n      \"price\": {\n        \"cents\": 1,\n        \"per\": 1\n      },\n      \"priceConfirmed\": true,\n      \"resetsAt\": \"resetsAt\",\n      \"used\": 1\n    },\n    \"reason\": \"paymentMethod\",\n    \"source\": \"workspace\"\n  },\n  \"maxTextLength\": 1,\n  \"month\": {\n    \"allowance\": 1,\n    \"ceiling\": {\n      \"amount\": 1,\n      \"currency\": \"currency\"\n    },\n    \"most\": 1,\n    \"price\": {\n      \"cents\": 1,\n      \"per\": 1\n    },\n    \"priceConfirmed\": true,\n    \"resetsAt\": \"resetsAt\",\n    \"used\": 1\n  },\n  \"reason\": \"paymentMethod\",\n  \"remaining\": 1,\n  \"resetsAt\": \"resetsAt\",\n  \"source\": \"workspace\"\n}",
+        "body": "{\n  \"available\": true,\n  \"dailyLimit\": 1,\n  \"images\": {\n    \"aspects\": [\n      \"square\"\n    ],\n    \"available\": true,\n    \"dailyLimit\": 1,\n    \"maxPromptLength\": 1,\n    \"requestCost\": 1,\n    \"month\": {\n      \"allowance\": 1,\n      \"ceiling\": {\n        \"amount\": 1,\n        \"currency\": \"currency\"\n      },\n      \"most\": 1,\n      \"price\": {\n        \"cents\": 1,\n        \"per\": 1\n      },\n      \"priceConfirmed\": true,\n      \"resetsAt\": \"resetsAt\",\n      \"used\": 1\n    },\n    \"reason\": \"paymentMethod\",\n    \"source\": \"workspace\"\n  },\n  \"maxTextLength\": 1,\n  \"month\": {\n    \"allowance\": 1,\n    \"ceiling\": {\n      \"amount\": 1,\n      \"currency\": \"currency\"\n    },\n    \"most\": 1,\n    \"price\": {\n      \"cents\": 1,\n      \"per\": 1\n    },\n    \"priceConfirmed\": true,\n    \"resetsAt\": \"resetsAt\",\n    \"used\": 1\n  },\n  \"reason\": \"paymentMethod\",\n  \"remaining\": 1,\n  \"resetsAt\": \"resetsAt\",\n  \"slideshows\": {\n    \"available\": true,\n    \"dailyLimit\": 1,\n    \"paymentMethodRequired\": true,\n    \"provider\": \"anthropic\",\n    \"remaining\": 1,\n    \"sandbox\": true\n  },\n  \"source\": \"workspace\",\n  \"transcriptions\": {\n    \"available\": true,\n    \"dailyLimit\": 1,\n    \"maxBytes\": 1,\n    \"provider\": \"anthropic\",\n    \"remaining\": 1\n  },\n  \"videos\": {\n    \"available\": true,\n    \"dailyLimit\": 1,\n    \"maxPromptLength\": 1,\n    \"provider\": \"anthropic\",\n    \"remaining\": 1\n  },\n  \"voiceovers\": {\n    \"available\": true,\n    \"dailyLimit\": 1,\n    \"maxTextLength\": 1,\n    \"provider\": \"anthropic\",\n    \"remaining\": 1\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -2959,7 +3034,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"provider\": {\n    \"baseUrl\": \"baseUrl\",\n    \"keySet\": true,\n    \"keyUnreadable\": true,\n    \"model\": \"model\",\n    \"updatedAt\": \"updatedAt\"\n  }\n}",
+        "body": "{\n  \"provider\": {\n    \"baseUrl\": \"baseUrl\",\n    \"keySet\": true,\n    \"keyUnreadable\": true,\n    \"model\": \"model\",\n    \"provider\": \"openai\",\n    \"updatedAt\": \"updatedAt\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -2995,7 +3070,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"baseUrl\": \"baseUrl\",\n  \"keySet\": true,\n  \"keyUnreadable\": true,\n  \"model\": \"model\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"baseUrl\": \"baseUrl\",\n  \"keySet\": true,\n  \"keyUnreadable\": true,\n  \"model\": \"model\",\n  \"provider\": \"openai\",\n  \"updatedAt\": \"updatedAt\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3067,7 +3142,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"provider\": {\n    \"baseUrl\": \"baseUrl\",\n    \"keySet\": true,\n    \"keyUnreadable\": true,\n    \"kind\": \"anthropic\",\n    \"model\": \"model\",\n    \"updatedAt\": \"updatedAt\"\n  }\n}",
+        "body": "{\n  \"provider\": {\n    \"baseUrl\": \"baseUrl\",\n    \"keySet\": true,\n    \"keyUnreadable\": true,\n    \"kind\": \"anthropic\",\n    \"model\": \"model\",\n    \"provider\": \"anthropic\",\n    \"updatedAt\": \"updatedAt\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3103,7 +3178,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"baseUrl\": \"baseUrl\",\n  \"keySet\": true,\n  \"keyUnreadable\": true,\n  \"kind\": \"anthropic\",\n  \"model\": \"model\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "body": "{\n  \"baseUrl\": \"baseUrl\",\n  \"keySet\": true,\n  \"keyUnreadable\": true,\n  \"kind\": \"anthropic\",\n  \"model\": \"model\",\n  \"provider\": \"anthropic\",\n  \"updatedAt\": \"updatedAt\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3181,6 +3256,495 @@
         }
       },
       "uuid": "141965dd-bb0c-49ee-9da0-2d2090dc0bba",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "ab010ac8-cf82-40ed-952b-6acfdbfdfe3c",
+      "name": "List the workspace's AI providers - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/assistant/providers",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"providers\": [\n    {\n      \"baseUrl\": \"baseUrl\",\n      \"keySet\": true,\n      \"keyUnreadable\": true,\n      \"provider\": \"anthropic\",\n      \"updatedAt\": \"updatedAt\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "ab010ac8-cf82-40ed-952b-6acfdbfdfe3c",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "125fd4c9-8b16-4f4e-88bd-6a54b8a94fb5",
+      "name": "Connect an AI provider - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/assistant/providers/{provider}",
+        "method": "PUT",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "provider": {
+            "equalTo": "anthropic"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"baseUrl\": \"baseUrl\",\n  \"keySet\": true,\n  \"keyUnreadable\": true,\n  \"provider\": \"anthropic\",\n  \"updatedAt\": \"updatedAt\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "125fd4c9-8b16-4f4e-88bd-6a54b8a94fb5",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "4b222e61-0408-48b0-a9b1-f5f980a21dad",
+      "name": "Disconnect an AI provider - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/assistant/providers/{provider}",
+        "method": "DELETE",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "provider": {
+            "equalTo": "anthropic"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "4b222e61-0408-48b0-a9b1-f5f980a21dad",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "7a77d074-1619-4080-a5c5-c658d8690f92",
+      "name": "Test an AI provider - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/assistant/providers/{provider}/test",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "provider": {
+            "equalTo": "anthropic"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "7a77d074-1619-4080-a5c5-c658d8690f92",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "da5e38ae-2b29-4763-88ca-1ba4beec11fe",
+      "name": "List the workspace's models - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/assistant/models",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"models\": [\n    {\n      \"capability\": \"text\",\n      \"model\": \"model\",\n      \"provider\": \"anthropic\",\n      \"serverModel\": true,\n      \"updatedAt\": \"updatedAt\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "da5e38ae-2b29-4763-88ca-1ba4beec11fe",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "663cb41c-3bcb-43a3-82bf-af0847c01e39",
+      "name": "Choose a model for a use - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/assistant/models/{capability}",
+        "method": "PUT",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "capability": {
+            "equalTo": "text"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"capability\": \"text\",\n  \"model\": \"model\",\n  \"provider\": \"anthropic\",\n  \"serverModel\": true,\n  \"updatedAt\": \"updatedAt\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "663cb41c-3bcb-43a3-82bf-af0847c01e39",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "e02392f1-632b-4962-aa75-8f25c4ac1886",
+      "name": "Unset a use's model - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/assistant/models/{capability}",
+        "method": "DELETE",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "capability": {
+            "equalTo": "text"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "\"\"",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "e02392f1-632b-4962-aa75-8f25c4ac1886",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "ecd1cddb-b04a-445d-995d-ac859de816c5",
+      "name": "List video jobs - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/videos/generations",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"generations\": [\n    {\n      \"aspect\": \"square\",\n      \"createdAt\": \"createdAt\",\n      \"durationSeconds\": 1,\n      \"finishedAt\": \"finishedAt\",\n      \"id\": \"id\",\n      \"imageMediaId\": \"imageMediaId\",\n      \"mediaId\": \"mediaId\",\n      \"reason\": \"unavailable\",\n      \"startedAt\": \"startedAt\",\n      \"status\": \"queued\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "ecd1cddb-b04a-445d-995d-ac859de816c5",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "01d4283b-d765-409c-8afb-421f52a6e214",
+      "name": "Make a video into the media library - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/videos/generations",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 202,
+        "body": "{\n  \"aspect\": \"square\",\n  \"createdAt\": \"createdAt\",\n  \"durationSeconds\": 1,\n  \"finishedAt\": \"finishedAt\",\n  \"id\": \"id\",\n  \"imageMediaId\": \"imageMediaId\",\n  \"mediaId\": \"mediaId\",\n  \"reason\": \"unavailable\",\n  \"startedAt\": \"startedAt\",\n  \"status\": \"queued\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "01d4283b-d765-409c-8afb-421f52a6e214",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "30bbc2db-3916-4d15-83d1-ff1dd63a60a6",
+      "name": "Get a video job - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/videos/generations/{generationId}",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "generationId": {
+            "equalTo": "generationId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"aspect\": \"square\",\n  \"createdAt\": \"createdAt\",\n  \"durationSeconds\": 1,\n  \"finishedAt\": \"finishedAt\",\n  \"id\": \"id\",\n  \"imageMediaId\": \"imageMediaId\",\n  \"mediaId\": \"mediaId\",\n  \"reason\": \"unavailable\",\n  \"startedAt\": \"startedAt\",\n  \"status\": \"queued\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "30bbc2db-3916-4d15-83d1-ff1dd63a60a6",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "88a12a43-7518-4292-b3e1-d24c9c95227a",
+      "name": "List slide video jobs - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/slideshows",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"slideshows\": [\n    {\n      \"aspect\": \"square\",\n      \"createdAt\": \"createdAt\",\n      \"durationSeconds\": \"Infinity\",\n      \"finishedAt\": \"finishedAt\",\n      \"id\": \"id\",\n      \"imageMediaIds\": [\n        \"imageMediaIds\"\n      ],\n      \"mediaId\": \"mediaId\",\n      \"reason\": \"unavailable\",\n      \"sandbox\": true,\n      \"startedAt\": \"startedAt\",\n      \"status\": \"queued\",\n      \"voiceoverMediaId\": \"voiceoverMediaId\"\n    }\n  ]\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "88a12a43-7518-4292-b3e1-d24c9c95227a",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "55b82f1d-0e9e-4356-9287-86f39ed0543a",
+      "name": "Compose a slide video into the media library - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/slideshows",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 202,
+        "body": "{\n  \"aspect\": \"square\",\n  \"createdAt\": \"createdAt\",\n  \"durationSeconds\": \"Infinity\",\n  \"finishedAt\": \"finishedAt\",\n  \"id\": \"id\",\n  \"imageMediaIds\": [\n    \"imageMediaIds\"\n  ],\n  \"mediaId\": \"mediaId\",\n  \"reason\": \"unavailable\",\n  \"sandbox\": true,\n  \"startedAt\": \"startedAt\",\n  \"status\": \"queued\",\n  \"voiceoverMediaId\": \"voiceoverMediaId\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "55b82f1d-0e9e-4356-9287-86f39ed0543a",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
+      "id": "09608387-0dd9-400b-9943-69d1ec6e67f5",
+      "name": "Get a slide video job - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/slideshows/{slideshowId}",
+        "method": "GET",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          },
+          "slideshowId": {
+            "equalTo": "slideshowId"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "body": "{\n  \"aspect\": \"square\",\n  \"createdAt\": \"createdAt\",\n  \"durationSeconds\": \"Infinity\",\n  \"finishedAt\": \"finishedAt\",\n  \"id\": \"id\",\n  \"imageMediaIds\": [\n    \"imageMediaIds\"\n  ],\n  \"mediaId\": \"mediaId\",\n  \"reason\": \"unavailable\",\n  \"sandbox\": true,\n  \"startedAt\": \"startedAt\",\n  \"status\": \"queued\",\n  \"voiceoverMediaId\": \"voiceoverMediaId\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "09608387-0dd9-400b-9943-69d1ec6e67f5",
       "persistent": true,
       "priority": 3,
       "metadata": {
@@ -9285,6 +9849,6 @@
     }
   ],
   "meta": {
-    "total": 247
+    "total": 262
   }
 }

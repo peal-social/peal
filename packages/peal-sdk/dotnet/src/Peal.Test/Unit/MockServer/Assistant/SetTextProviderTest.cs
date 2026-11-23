@@ -14,8 +14,6 @@ public class SetTextProviderTest : BaseMockServerTest
     {
         const string requestJson = """
             {
-              "baseUrl": "baseUrl",
-              "kind": "anthropic",
               "model": "x"
             }
             """;
@@ -27,6 +25,7 @@ public class SetTextProviderTest : BaseMockServerTest
               "keyUnreadable": true,
               "kind": "anthropic",
               "model": "model",
+              "provider": "anthropic",
               "updatedAt": "updatedAt"
             }
             """;
@@ -52,9 +51,10 @@ public class SetTextProviderTest : BaseMockServerTest
             {
                 WorkspaceId = "workspaceId",
                 ApiKey = null,
-                BaseUrl = "baseUrl",
-                Kind = TextProviderKind.Anthropic,
+                BaseUrl = null,
+                Kind = null,
                 Model = "x",
+                Provider = null,
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -65,8 +65,6 @@ public class SetTextProviderTest : BaseMockServerTest
     {
         const string requestJson = """
             {
-              "baseUrl": "baseUrl",
-              "kind": "anthropic",
               "model": "model"
             }
             """;
@@ -78,6 +76,7 @@ public class SetTextProviderTest : BaseMockServerTest
               "keyUnreadable": true,
               "kind": "anthropic",
               "model": "model",
+              "provider": "anthropic",
               "updatedAt": "updatedAt"
             }
             """;
@@ -99,13 +98,7 @@ public class SetTextProviderTest : BaseMockServerTest
             );
 
         var response = await Client.Assistant.SetTextProviderAsync(
-            new TextProviderChange
-            {
-                WorkspaceId = "workspaceId",
-                BaseUrl = "baseUrl",
-                Kind = TextProviderKind.Anthropic,
-                Model = "model",
-            }
+            new TextProviderChange { WorkspaceId = "workspaceId", Model = "model" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -38,32 +38,44 @@ const render = async (locale: "en" | "fr") => {
   );
 };
 
-// Each choice by its label's text, and whether its box is checked. ui-sdk's
-// checkbox is a button with the checkbox role, which carries the id the
-// label names and the checked state; a hidden native input follows it.
-const choices = (html: string) =>
-  new Map(
+// Each choice by its label's text, and whether its switch is on. ui-sdk's
+// switch is a button with the switch role, which carries the id the label
+// names and the checked state.
+const choices = (html: string) => {
+  const switches = new Map(
+    [...html.matchAll(/<button (?<attrs>[^>]*role="switch"[^>]*)>/gu)].map(
+      ({ groups }) => {
+        const attrs = groups?.["attrs"] ?? "";
+
+        return [
+          /\bid="(?<id>[^"]+)"/u.exec(attrs)?.groups?.["id"],
+          attrs.includes('aria-checked="true"'),
+        ];
+      }
+    )
+  );
+
+  return new Map(
     [
       ...html.matchAll(
-        /<button (?<box>[^>]*role="checkbox"[^>]*)>.*?<\/button><input [^>]*type="checkbox"[^>]*\/>\s*<label for="(?<label>[^"]+)"[^>]*>(?<text>[^<]+)<\/label>/gu
+        /<label for="(?<id>[^"]+)"[^>]*>(?<text>[^<]+)<\/label>/gu
       ),
     ].map(({ groups }) => [
       groups?.["text"],
       {
-        checked: (groups?.["box"] ?? "").includes('aria-checked="true"'),
-        labelled: (groups?.["box"] ?? "").includes(
-          `id="${groups?.["label"] ?? ""}"`
-        ),
+        checked: switches.get(groups?.["id"]) === true,
+        labelled: switches.has(groups?.["id"]),
       },
     ])
   );
+};
 
 describe(PreferencesFields, () => {
-  it("labels each choice, under a legend, in the reader's language", async () => {
+  it("labels each choice, under a heading, in the reader's language", async () => {
     const english = await render("en");
     const french = await render("fr");
 
-    expect(english).toContain("<legend");
+    expect(english).toContain("<h2");
     expect(english).toContain("Email me when");
     expect(french).toContain("M’envoyer un e-mail quand");
 

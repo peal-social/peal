@@ -28,6 +28,7 @@ import social.peal.resources.inboxrules.InboxRulesClient;
 import social.peal.resources.invitations.InvitationsClient;
 import social.peal.resources.lookups.LookupsClient;
 import social.peal.resources.media.MediaClient;
+import social.peal.resources.mediaaudio.MediaAudioClient;
 import social.peal.resources.members.MembersClient;
 import social.peal.resources.notices.NoticesClient;
 import social.peal.resources.notificationpreferences.NotificationPreferencesClient;
@@ -41,10 +42,12 @@ import social.peal.resources.review.ReviewClient;
 import social.peal.resources.session.SessionClient;
 import social.peal.resources.shortlinks.ShortLinksClient;
 import social.peal.resources.signatures.SignaturesClient;
+import social.peal.resources.slideshows.SlideshowsClient;
 import social.peal.resources.system.SystemClient;
 import social.peal.resources.tags.TagsClient;
 import social.peal.resources.tiktok.TiktokClient;
 import social.peal.resources.usage.UsageClient;
+import social.peal.resources.videogenerations.VideoGenerationsClient;
 import social.peal.resources.webhooks.WebhooksClient;
 
 public class PealClient implements AutoCloseable {
@@ -66,11 +69,17 @@ public class PealClient implements AutoCloseable {
 
     protected final Supplier<MediaClient> mediaClient;
 
+    protected final Supplier<MediaAudioClient> mediaAudioClient;
+
     protected final Supplier<NoticesClient> noticesClient;
 
     protected final Supplier<NotificationPreferencesClient> notificationPreferencesClient;
 
     protected final Supplier<AssistantClient> assistantClient;
+
+    protected final Supplier<VideoGenerationsClient> videoGenerationsClient;
+
+    protected final Supplier<SlideshowsClient> slideshowsClient;
 
     protected final Supplier<MembersClient> membersClient;
 
@@ -140,9 +149,12 @@ public class PealClient implements AutoCloseable {
         this.postsClient = Suppliers.memoize(() -> new PostsClient(clientOptions));
         this.articlesClient = Suppliers.memoize(() -> new ArticlesClient(clientOptions));
         this.mediaClient = Suppliers.memoize(() -> new MediaClient(clientOptions));
+        this.mediaAudioClient = Suppliers.memoize(() -> new MediaAudioClient(clientOptions));
         this.noticesClient = Suppliers.memoize(() -> new NoticesClient(clientOptions));
         this.notificationPreferencesClient = Suppliers.memoize(() -> new NotificationPreferencesClient(clientOptions));
         this.assistantClient = Suppliers.memoize(() -> new AssistantClient(clientOptions));
+        this.videoGenerationsClient = Suppliers.memoize(() -> new VideoGenerationsClient(clientOptions));
+        this.slideshowsClient = Suppliers.memoize(() -> new SlideshowsClient(clientOptions));
         this.membersClient = Suppliers.memoize(() -> new MembersClient(clientOptions));
         this.invitationsClient = Suppliers.memoize(() -> new InvitationsClient(clientOptions));
         this.billingClient = Suppliers.memoize(() -> new BillingClient(clientOptions));
@@ -206,6 +218,10 @@ public class PealClient implements AutoCloseable {
         return this.mediaClient.get();
     }
 
+    public MediaAudioClient mediaAudio() {
+        return this.mediaAudioClient.get();
+    }
+
     public NoticesClient notices() {
         return this.noticesClient.get();
     }
@@ -216,6 +232,14 @@ public class PealClient implements AutoCloseable {
 
     public AssistantClient assistant() {
         return this.assistantClient.get();
+    }
+
+    public VideoGenerationsClient videoGenerations() {
+        return this.videoGenerationsClient.get();
+    }
+
+    public SlideshowsClient slideshows() {
+        return this.slideshowsClient.get();
     }
 
     public MembersClient members() {

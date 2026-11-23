@@ -40,24 +40,30 @@ describe("the agent's skills", { serial: true }, () => {
     expect(slug).not.toBe("");
   });
 
-  test("brings a text provider, so the agent's composer takes messages", async ({
+  test("connects a text provider, so the agent's composer takes messages", async ({
     app,
     screen,
   }) => {
     await app.open(`/${slug}/settings/assistant`);
 
     const main = screen.getByRole("main");
+    const toasts = screen.getByRole("region", "Notifications");
 
-    await main.getByLabel("Model").first().fill("synthetic-model");
-    await main
-      .getByLabel("Key")
-      .first()
-      .fill("synthetic-anthropic-key-for-e2e");
-    await main.getByRole("button", "Save").first().tap();
+    // Anthropic comes first in the picker, at its own address.
+    await main.getByRole("button", "Connect a provider").tap();
+
+    const dialog = screen.getByRole("dialog", "Connect a provider");
+
+    await dialog.getByLabel("Key").fill("synthetic-anthropic-key-for-e2e");
+    await dialog.getByRole("button", "Save").tap();
+    await expect(toasts.getByText("Anthropic is connected.")).toBeVisible();
+    // Saving closes the dialog; the page takes clicks once it is gone.
+    await expect(dialog).toBeHidden();
+
+    await main.getByRole("combobox", "Provider for Text").tap();
+    await screen.getByRole("option", "Anthropic").tap();
     await expect(
-      screen
-        .getByRole("region", "Notifications")
-        .getByText("The text provider is saved.")
+      toasts.getByText("Text: Anthropic, claude-sonnet-5-5.")
     ).toBeVisible();
   });
 

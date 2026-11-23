@@ -1624,6 +1624,72 @@ func TestGettersNoticeEvent(t *testing.T) {
 		_ = obj.GetCommentRuleStopped() // Should return zero value
 	})
 
+	t.Run("GetVideoGenerationEnded", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEvent{}
+		var expected *NoticeEventVideoGenerationEnded
+		obj.VideoGenerationEnded = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetVideoGenerationEnded(), "getter should return the property value")
+	})
+
+	t.Run("GetVideoGenerationEnded_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEvent{}
+		obj.VideoGenerationEnded = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetVideoGenerationEnded(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetVideoGenerationEnded_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEvent
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetVideoGenerationEnded() // Should return zero value
+	})
+
+	t.Run("GetSlideshowEnded", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEvent{}
+		var expected *NoticeEventSlideshowEnded
+		obj.SlideshowEnded = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSlideshowEnded(), "getter should return the property value")
+	})
+
+	t.Run("GetSlideshowEnded_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEvent{}
+		obj.SlideshowEnded = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetSlideshowEnded(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetSlideshowEnded_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEvent
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSlideshowEnded() // Should return zero value
+	})
+
 }
 
 func TestSettersNoticeEventAdBoostChanged(t *testing.T) {
@@ -5416,6 +5482,283 @@ func TestSettersMarkExplicitNoticeEventRecyclingEnded(t *testing.T) {
 
 }
 
+func TestSettersNoticeEventSlideshowEnded(t *testing.T) {
+	t.Run("SetMediaID", func(t *testing.T) {
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueMediaID *string
+		obj.SetMediaID(fernTestValueMediaID)
+		assert.Equal(t, fernTestValueMediaID, obj.MediaID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetOutcome", func(t *testing.T) {
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueOutcome NoticeEventSlideshowEndedOutcome
+		obj.SetOutcome(fernTestValueOutcome)
+		assert.Equal(t, fernTestValueOutcome, obj.Outcome)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetReason", func(t *testing.T) {
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueReason *SlideshowFailureReason
+		obj.SetReason(fernTestValueReason)
+		assert.Equal(t, fernTestValueReason, obj.Reason)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetSlideshowID", func(t *testing.T) {
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueSlideshowID string
+		obj.SetSlideshowID(fernTestValueSlideshowID)
+		assert.Equal(t, fernTestValueSlideshowID, obj.SlideshowID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersNoticeEventSlideshowEnded(t *testing.T) {
+	t.Run("GetMediaID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var expected *string
+		obj.MediaID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMediaID(), "getter should return the property value")
+	})
+
+	t.Run("GetMediaID_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		obj.MediaID = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMediaID(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMediaID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventSlideshowEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMediaID() // Should return zero value
+	})
+
+	t.Run("GetOutcome", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var expected NoticeEventSlideshowEndedOutcome
+		obj.Outcome = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetOutcome(), "getter should return the property value")
+	})
+
+	t.Run("GetOutcome_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventSlideshowEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetOutcome() // Should return zero value
+	})
+
+	t.Run("GetReason", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var expected *SlideshowFailureReason
+		obj.Reason = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetReason(), "getter should return the property value")
+	})
+
+	t.Run("GetReason_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		obj.Reason = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetReason(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetReason_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventSlideshowEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetReason() // Should return zero value
+	})
+
+	t.Run("GetSlideshowID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var expected string
+		obj.SlideshowID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSlideshowID(), "getter should return the property value")
+	})
+
+	t.Run("GetSlideshowID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventSlideshowEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSlideshowID() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitNoticeEventSlideshowEnded(t *testing.T) {
+	t.Run("SetMediaID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueMediaID *string
+
+		// Act
+		obj.SetMediaID(fernTestValueMediaID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetOutcome_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueOutcome NoticeEventSlideshowEndedOutcome
+
+		// Act
+		obj.SetOutcome(fernTestValueOutcome)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetReason_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueReason *SlideshowFailureReason
+
+		// Act
+		obj.SetReason(fernTestValueReason)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetSlideshowID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+		var fernTestValueSlideshowID string
+
+		// Act
+		obj.SetSlideshowID(fernTestValueSlideshowID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersNoticeEventSubscriptionCancelled(t *testing.T) {
 	t.Run("SetEndsAt", func(t *testing.T) {
 		obj := &NoticeEventSubscriptionCancelled{}
@@ -6478,6 +6821,283 @@ func TestSettersMarkExplicitNoticeEventTrialEnding(t *testing.T) {
 
 		// Act
 		obj.SetPlan(fernTestValuePlan)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersNoticeEventVideoGenerationEnded(t *testing.T) {
+	t.Run("SetGenerationID", func(t *testing.T) {
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueGenerationID string
+		obj.SetGenerationID(fernTestValueGenerationID)
+		assert.Equal(t, fernTestValueGenerationID, obj.GenerationID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetMediaID", func(t *testing.T) {
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueMediaID *string
+		obj.SetMediaID(fernTestValueMediaID)
+		assert.Equal(t, fernTestValueMediaID, obj.MediaID)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetOutcome", func(t *testing.T) {
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueOutcome NoticeEventVideoGenerationEndedOutcome
+		obj.SetOutcome(fernTestValueOutcome)
+		assert.Equal(t, fernTestValueOutcome, obj.Outcome)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetReason", func(t *testing.T) {
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueReason *VideoFailureReason
+		obj.SetReason(fernTestValueReason)
+		assert.Equal(t, fernTestValueReason, obj.Reason)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersNoticeEventVideoGenerationEnded(t *testing.T) {
+	t.Run("GetGenerationID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var expected string
+		obj.GenerationID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetGenerationID(), "getter should return the property value")
+	})
+
+	t.Run("GetGenerationID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventVideoGenerationEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetGenerationID() // Should return zero value
+	})
+
+	t.Run("GetMediaID", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var expected *string
+		obj.MediaID = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetMediaID(), "getter should return the property value")
+	})
+
+	t.Run("GetMediaID_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		obj.MediaID = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetMediaID(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetMediaID_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventVideoGenerationEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetMediaID() // Should return zero value
+	})
+
+	t.Run("GetOutcome", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var expected NoticeEventVideoGenerationEndedOutcome
+		obj.Outcome = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetOutcome(), "getter should return the property value")
+	})
+
+	t.Run("GetOutcome_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventVideoGenerationEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetOutcome() // Should return zero value
+	})
+
+	t.Run("GetReason", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var expected *VideoFailureReason
+		obj.Reason = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetReason(), "getter should return the property value")
+	})
+
+	t.Run("GetReason_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		obj.Reason = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetReason(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetReason_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventVideoGenerationEnded
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetReason() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitNoticeEventVideoGenerationEnded(t *testing.T) {
+	t.Run("SetGenerationID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueGenerationID string
+
+		// Act
+		obj.SetGenerationID(fernTestValueGenerationID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetMediaID_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueMediaID *string
+
+		// Act
+		obj.SetMediaID(fernTestValueMediaID)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetOutcome_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueOutcome NoticeEventVideoGenerationEndedOutcome
+
+		// Act
+		obj.SetOutcome(fernTestValueOutcome)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetReason_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+		var fernTestValueReason *VideoFailureReason
+
+		// Act
+		obj.SetReason(fernTestValueReason)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -8042,6 +8662,39 @@ func TestJSONMarshalingNoticeEventRecyclingEnded(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingNoticeEventSlideshowEnded(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventSlideshowEnded{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled NoticeEventSlideshowEnded
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventSlideshowEnded
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventSlideshowEnded
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingNoticeEventSubscriptionCancelled(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -8202,6 +8855,39 @@ func TestJSONMarshalingNoticeEventTrialEnding(t *testing.T) {
 	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
 		t.Parallel()
 		var obj NoticeEventTrialEnding
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
+func TestJSONMarshalingNoticeEventVideoGenerationEnded(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &NoticeEventVideoGenerationEnded{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled NoticeEventVideoGenerationEnded
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventVideoGenerationEnded
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventVideoGenerationEnded
 		err := json.Unmarshal([]byte(`{}`), &obj)
 		assert.NoError(t, err, "unmarshaling empty object should succeed")
 	})
@@ -8588,6 +9274,50 @@ func TestRequiredNullableRoundTripNoticeEventPostUnconfirmed(t *testing.T) {
 	})
 }
 
+func TestRequiredNullableRoundTripNoticeEventSlideshowEnded(t *testing.T) {
+	requiredNullableKeys := []string{
+		"mediaId",
+		"reason",
+	}
+	marshalToMap := func(t *testing.T, obj *NoticeEventSlideshowEnded) map[string]json.RawMessage {
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		var result map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &result), "marshaled data should be a JSON object")
+		return result
+	}
+
+	t.Run("NullPreserved", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventSlideshowEnded
+		require.NoError(t, json.Unmarshal([]byte(`{"mediaId":null,"reason":null}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			value, ok := result[key]
+			require.True(t, ok, "required nullable field %q received as null should be present in the output", key)
+			assert.Equal(t, "null", string(value), "required nullable field %q received as null should be null in the output", key)
+		}
+	})
+
+	t.Run("AbsentStaysAbsent", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventSlideshowEnded
+		require.NoError(t, json.Unmarshal([]byte(`{}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q absent from the input should be absent from the output", key)
+		}
+	})
+
+	t.Run("FreshValueOmits", func(t *testing.T) {
+		t.Parallel()
+		result := marshalToMap(t, &NoticeEventSlideshowEnded{})
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
+		}
+	})
+}
+
 func TestRequiredNullableRoundTripNoticeEventSubscriptionStarted(t *testing.T) {
 	requiredNullableKeys := []string{
 		"trialEnd",
@@ -8625,6 +9355,50 @@ func TestRequiredNullableRoundTripNoticeEventSubscriptionStarted(t *testing.T) {
 	t.Run("FreshValueOmits", func(t *testing.T) {
 		t.Parallel()
 		result := marshalToMap(t, &NoticeEventSubscriptionStarted{})
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
+		}
+	})
+}
+
+func TestRequiredNullableRoundTripNoticeEventVideoGenerationEnded(t *testing.T) {
+	requiredNullableKeys := []string{
+		"mediaId",
+		"reason",
+	}
+	marshalToMap := func(t *testing.T, obj *NoticeEventVideoGenerationEnded) map[string]json.RawMessage {
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		var result map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &result), "marshaled data should be a JSON object")
+		return result
+	}
+
+	t.Run("NullPreserved", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventVideoGenerationEnded
+		require.NoError(t, json.Unmarshal([]byte(`{"mediaId":null,"reason":null}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			value, ok := result[key]
+			require.True(t, ok, "required nullable field %q received as null should be present in the output", key)
+			assert.Equal(t, "null", string(value), "required nullable field %q received as null should be null in the output", key)
+		}
+	})
+
+	t.Run("AbsentStaysAbsent", func(t *testing.T) {
+		t.Parallel()
+		var obj NoticeEventVideoGenerationEnded
+		require.NoError(t, json.Unmarshal([]byte(`{}`), &obj))
+		result := marshalToMap(t, &obj)
+		for _, key := range requiredNullableKeys {
+			assert.NotContains(t, result, key, "required nullable field %q absent from the input should be absent from the output", key)
+		}
+	})
+
+	t.Run("FreshValueOmits", func(t *testing.T) {
+		t.Parallel()
+		result := marshalToMap(t, &NoticeEventVideoGenerationEnded{})
 		for _, key := range requiredNullableKeys {
 			assert.NotContains(t, result, key, "required nullable field %q should be omitted from a freshly constructed value", key)
 		}
@@ -9058,6 +9832,22 @@ func TestStringNoticeEventRecyclingEnded(t *testing.T) {
 	})
 }
 
+func TestStringNoticeEventSlideshowEnded(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &NoticeEventSlideshowEnded{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventSlideshowEnded
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestStringNoticeEventSubscriptionCancelled(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -9133,6 +9923,22 @@ func TestStringNoticeEventTrialEnding(t *testing.T) {
 	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *NoticeEventTrialEnding
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringNoticeEventVideoGenerationEnded(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &NoticeEventVideoGenerationEnded{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventVideoGenerationEnded
 		result := obj.String()
 		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
 	})
@@ -9390,6 +10196,64 @@ func TestEnumNoticeEventAdBoostChangedChange(t *testing.T) {
 
 	t.Run("Ptr", func(t *testing.T) {
 		val, err := NewNoticeEventAdBoostChangedChangeFromString("started")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumNoticeEventSlideshowEndedOutcome(t *testing.T) {
+	t.Run("NewFromString_succeeded", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewNoticeEventSlideshowEndedOutcomeFromString("succeeded")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, NoticeEventSlideshowEndedOutcome("succeeded"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_failed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewNoticeEventSlideshowEndedOutcomeFromString("failed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, NoticeEventSlideshowEndedOutcome("failed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewNoticeEventSlideshowEndedOutcomeFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewNoticeEventSlideshowEndedOutcomeFromString("succeeded")
+		assert.NoError(t, err)
+		ptr := val.Ptr()
+		assert.NotNil(t, ptr)
+		assert.Equal(t, val, *ptr)
+	})
+}
+
+func TestEnumNoticeEventVideoGenerationEndedOutcome(t *testing.T) {
+	t.Run("NewFromString_succeeded", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewNoticeEventVideoGenerationEndedOutcomeFromString("succeeded")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, NoticeEventVideoGenerationEndedOutcome("succeeded"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_failed", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewNoticeEventVideoGenerationEndedOutcomeFromString("failed")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, NoticeEventVideoGenerationEndedOutcome("failed"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_Invalid", func(t *testing.T) {
+		_, err := NewNoticeEventVideoGenerationEndedOutcomeFromString("invalid_value_that_does_not_exist")
+		assert.Error(t, err)
+	})
+
+	t.Run("Ptr", func(t *testing.T) {
+		val, err := NewNoticeEventVideoGenerationEndedOutcomeFromString("succeeded")
 		assert.NoError(t, err)
 		ptr := val.Ptr()
 		assert.NotNil(t, ptr)
@@ -10114,6 +10978,29 @@ func TestExtraPropertiesNoticeEventRecyclingEnded(t *testing.T) {
 	})
 }
 
+func TestExtraPropertiesNoticeEventSlideshowEnded(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &NoticeEventSlideshowEnded{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventSlideshowEnded
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
 func TestExtraPropertiesNoticeEventSubscriptionCancelled(t *testing.T) {
 	t.Run("GetExtraProperties", func(t *testing.T) {
 		t.Parallel()
@@ -10224,6 +11111,29 @@ func TestExtraPropertiesNoticeEventTrialEnding(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *NoticeEventTrialEnding
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesNoticeEventVideoGenerationEnded(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &NoticeEventVideoGenerationEnded{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *NoticeEventVideoGenerationEnded
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

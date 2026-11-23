@@ -14,6 +14,8 @@ public readonly record struct MediaKind : IStringEnum
 
     public static readonly MediaKind Document = new(Values.Document);
 
+    public static readonly MediaKind Audio = new(Values.Audio);
+
     public MediaKind(string value)
     {
         Value = value;
@@ -113,5 +115,7 @@ public readonly record struct MediaKind : IStringEnum
         public const string Video = "video";
 
         public const string Document = "document";
+
+        public const string Audio = "audio";
     }
 }

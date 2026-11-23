@@ -23,14 +23,30 @@ If you forget your password, click **Forgot your password?** on the sign-in page
 
 ## Your settings [#account]
 
-Open the account menu and click **Account settings**, or click **Account** under **Settings** in any workspace. The page has these settings:
+Your settings are under **Settings** in any workspace, in the **Personal** group, on three pages: **Profile**, **Preferences** and **Security and access**. The account menu's **Account settings** opens **Profile**. Most settings save as soon as you change them, without a button.
+
+On **Profile**, the page shows your **Email** and has these settings:
+
+| Setting         | What it does                                                                                                               |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Name**        | The name other members see, and that your invitations sign with. Type it in place. Peal saves it when you leave the field. |
+| **Your data**   | Download a copy of everything Peal keeps about you ([Download your data](#export)).                                        |
+| **Danger zone** | Delete your account ([Delete your account](#delete-account)).                                                              |
+
+On **Preferences**:
+
+| Setting                          | What it does                                                                                                                                                                           |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Language**                     | English or French. Peal writes your emails in it, switches the app to it as soon as you pick it, and opens in it whenever you sign in.                                                 |
+| **Time format**                  | How this browser writes times of day: automatic, as your language writes them, or a 12-hour or 24-hour clock. The choice stays in this browser, and your other devices keep their own. |
+| **Usage and session recordings** | Where the server measures how the app is used, whether Peal may link what you do to your account and record your sessions ([Usage and session recordings](#measurement)).              |
+
+On **Security and access**:
 
 | Setting                    | What it does                                                                                                                                                                                                                                                        |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Name**                   | The name other members see, and that your invitations sign with.                                                                                                                                                                                                    |
-| **Language**               | English or French. Peal writes your emails in it, switches the app to it as soon as you save, and opens in it whenever you sign in.                                                                                                                                 |
-| **Password**               | Your current password confirms it's you. Changing it signs your other sessions out, unless you untick **Sign out of my other sessions**.                                                                                                                            |
-| **Time format**            | How this browser writes times of day: automatic, as your language writes them, or a 12-hour or 24-hour clock. The choice stays in this browser, and your other devices keep their own.                                                                              |
+| **Password**               | Your current password confirms it's you. Changing it signs your other sessions out, unless you untick **Sign out of my other sessions**. An account without a password shows **Set a password** instead.                                                            |
+| **Two-step verification**  | A code from an authenticator app after your password ([Two-step verification](#two-step)).                                                                                                                                                                          |
 | **Sessions**               | The browsers and devices signed in to your account, with when they signed in and when they were last active. You can sign one out, or every session but the one you're using.                                                                                       |
 | **Connected applications** | The [command line](/developers/cli) and the [MCP clients](/developers/mcp) you let act for you, with what they may do and in which workspaces. Click **Revoke** on one, and it can't renew its access any more. The access it already holds ends within 15 minutes. |
 
@@ -48,7 +64,7 @@ Two cases are refused:
 - An account with two-step verification signs in with its password and its code. The provider's sign-in is refused for it.
 - With Google, only a Gmail address or an address on a domain that Google Workspace manages is accepted. For any other address, sign in with your password, because Google can't confirm the address is still yours.
 
-An account created this way has no password. Under **Set a password**, click **Email me a link** to get one at your address. The link works for an hour, and you can then sign in either way. Two-step verification and deleting your account both need a password first.
+An account created this way has no password. On **Security and access**, under **Set a password**, click **Email me a link** to get one at your address. The link works for an hour, and you can then sign in either way. Two-step verification and deleting your account both need a password first.
 
 ### Two-step verification [#two-step]
 
@@ -57,7 +73,7 @@ With two-step verification on, signing in asks for a code from an authenticator 
 <Steps>
 <Step title="Turn it on">
 
-Under **Two-step verification**, click **Turn on** and type your password.
+On **Security and access**, under **Two-step verification**, click **Turn on** and type your password.
 
 </Step>
 <Step title="Scan the QR code">
@@ -95,11 +111,11 @@ Peal doesn't offer codes by email or text message. An emailed code protects noth
 
 Where the server's operator measures how the app is used, Peal counts the pages you open without knowing who you are, and keeps nothing in your browser for it. A workspace's home page then asks whether Peal may also link what you do to your account and record your sessions. A recording masks every text, field and image, and every link that leads away from Peal. It shows the layout and your clicks, never what you write or read.
 
-Click **Allow** or **Don’t allow** on that page, or later under **Usage and session recordings** on this page, which shows your choice and its date. Withdrawing stops the recording at once, in every tab of Peal you have open, and removes what the app kept in your browser. Peal asks again after six months. A browser that sends Do Not Track or Global Privacy Control isn't measured at all.
+Click **Allow** or **Don’t allow** on that page, or later under **Usage and session recordings** on **Preferences**, which shows your choice and its date. Withdrawing stops the recording at once, in every tab of Peal you have open, and removes what the app kept in your browser. Peal asks again after six months. A browser that sends Do Not Track or Global Privacy Control isn't measured at all.
 
 ### Download your data [#export]
 
-Click **Download my data** to save a JSON file of everything Peal keeps about you. It holds:
+On **Profile**, under **Your data**, click **Download my data** to save a JSON file of everything Peal keeps about you. It holds:
 
 - your account, how you sign in, and your sessions, with their browser and address (but not the sessions staff opened to act as you, which are theirs);
 - your memberships, and the invitations you sent or received;
@@ -120,7 +136,7 @@ Each time a copy is downloaded, from the web app or the [command line](/develope
 
 ### Delete your account [#delete-account]
 
-Click **Delete my account…** and type your password. The account is then deleted for good. As at sign-in, after three passwords tried within 10 seconds, you'll need to wait a few seconds before trying another.
+On **Profile**, under **Danger zone**, click **Delete my account…** and type your password. The account is then deleted for good. As at sign-in, after three passwords tried within 10 seconds, you'll need to wait a few seconds before trying another.
 
 <Callout type="danger" title="Deleting your account can't be undone">
   The workspaces where you're the only member go with everything in them, as

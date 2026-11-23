@@ -11,5 +11,9 @@ export interface AssistantStatus {
     reason: Peal.AssistantOffReason | null;
     remaining: number;
     resetsAt: string;
+    slideshows: Peal.AssistantSlideshowsStatus;
     source: Peal.AssistantTextSource | null;
+    transcriptions: Peal.AssistantTranscriptionsStatus;
+    videos: Peal.AssistantVideosStatus;
+    voiceovers: Peal.AssistantVoiceoversStatus;
 }

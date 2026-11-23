@@ -14,6 +14,9 @@ module Peal
       VIDEO_MP4 = "video/mp4"
       VIDEO_QUICKTIME = "video/quicktime"
       APPLICATION_PDF = "application/pdf"
+      AUDIO_MPEG = "audio/mpeg"
+      AUDIO_MP4 = "audio/mp4"
+      AUDIO_WAV = "audio/wav"
     end
   end
 end

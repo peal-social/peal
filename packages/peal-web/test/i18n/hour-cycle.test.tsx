@@ -6,7 +6,10 @@ import {
 } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { TimeFormatFields } from "#components/account/time-format-form.tsx";
+import {
+  TimeFormatFields,
+  useTimeFormatLabels,
+} from "#components/account/time-format-form.tsx";
 import {
   InHourFormat,
   ViewerHourCycle,
@@ -125,8 +128,11 @@ describe(ViewerHourCycle, () => {
   });
 });
 
+// The formats as the select lists them, one a line.
+const Labels = () => <p>{Object.values(useTimeFormatLabels()).join(" | ")}</p>;
+
 describe(TimeFormatFields, () => {
-  it("offers the three formats, each with the same time as an example", async () => {
+  it("shows the format chosen, with an example time", async () => {
     const html = renderToStaticMarkup(
       <NextIntlClientProvider
         locale="en"
@@ -137,11 +143,24 @@ describe(TimeFormatFields, () => {
       </NextIntlClientProvider>
     );
 
-    expect(html.match(/type="radio"/gu)).toHaveLength(3);
+    expect(html).toContain("Time format");
+    expect(html).toContain("24-hour (14:30)");
+  });
+
+  it("offers the three formats, each with the same time as an example", async () => {
+    const html = renderToStaticMarkup(
+      <NextIntlClientProvider
+        locale="en"
+        messages={await loadMessages("en")}
+        timeZone="UTC"
+      >
+        <Labels />
+      </NextIntlClientProvider>
+    );
+
     expect(html).toContain("Automatic, as your language writes it (2:30 PM)");
     expect(html).toContain("12-hour (2:30 PM)");
     expect(html).toContain("24-hour (14:30)");
-    expect(html).toMatch(/id="[^"]*-h24"[^>]*checked=""/u);
   });
 
   it("writes the examples in French", async () => {
@@ -151,7 +170,7 @@ describe(TimeFormatFields, () => {
         messages={await loadMessages("fr")}
         timeZone="UTC"
       >
-        <TimeFormatFields value="auto" onChange={noop} />
+        <Labels />
       </NextIntlClientProvider>
     );
 

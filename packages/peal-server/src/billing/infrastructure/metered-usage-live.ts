@@ -36,6 +36,7 @@ import {
   rateCard,
   unconfirmedMeters,
 } from "#billing/domain/rate-card.ts";
+import { paidWith } from "#billing/domain/subscription.ts";
 import { usageCounterOf, usageDayOf } from "#billing/domain/usage-meter.ts";
 import { MeteredUsage } from "#shared/application/metered-usage.ts";
 import type {
@@ -498,7 +499,26 @@ const BilledMeteredUsageLive = Layer.effect(
       return Option.some(meterState);
     });
 
-    return MeteredUsage.of({ claim, forgive, giveBack, state });
+    // The holder's subscription, paid with a payment method or not.
+    const paymentMethod = Effect.fn("MeteredUsage.paymentMethod")(
+      function* paymentMethod(workspaceId: WorkspaceId) {
+        const { holder } = yield* holders.heldBy(workspaceId);
+        const held = yield* subscriptions.ofWorkspaces([holder]);
+        const { subscription } = entitlementsOf(held.get(holder) ?? []);
+
+        return Option.some(
+          Option.exists(subscription, ({ status }) => paidWith(status))
+        );
+      }
+    );
+
+    return MeteredUsage.of({
+      claim,
+      forgive,
+      giveBack,
+      paymentMethod,
+      state,
+    });
   })
 );
 

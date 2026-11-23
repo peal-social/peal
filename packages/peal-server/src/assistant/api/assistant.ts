@@ -2,6 +2,11 @@ import { Effect, Option } from "effect";
 import type { DateTime } from "effect";
 import { HttpApiBuilder } from "effect/http-api";
 import {
+  AiCapabilityNotOffered,
+  AiModelRequired,
+  AiProviderAddressRefused,
+  AiProviderKeyRequired,
+  AiProviderNotConnected,
   Api,
   AssistantFailed,
   AssistantInputRejected,
@@ -23,10 +28,20 @@ import {
   TextProviderRefused,
 } from "peal-contract";
 
+import { AssistantAudio } from "#assistant/application/assistant-audio.ts";
+import { AssistantSlideshows } from "#assistant/application/assistant-slideshows.ts";
+import { AssistantVideos } from "#assistant/application/assistant-videos.ts";
 import type { ImageFailed } from "#assistant/application/image-failed.ts";
+import type { CapabilityModelView } from "#assistant/application/use-cases/capability-model-settings.ts";
 import type { ImageProviderView } from "#assistant/application/use-cases/image-provider-settings.ts";
+import type { ConnectionView } from "#assistant/application/use-cases/provider-connection-settings.ts";
 import type { TextProviderView } from "#assistant/application/use-cases/text-provider-settings.ts";
 import { WritingAssistant } from "#assistant/application/writing-assistant.ts";
+import { asTextProvider } from "#assistant/domain/ai-capability.ts";
+import {
+  maxTranscriptionBytes,
+  maxVoiceoverTextLength,
+} from "#assistant/domain/audio-limits.ts";
 import { imageRequestCost } from "#assistant/domain/image-limits.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { allowanceRefusal } from "#shared/api/allowance-reached.ts";
@@ -51,6 +66,7 @@ const providerOf = (view: ImageProviderView) => ({
   keySet: view.keySet,
   keyUnreadable: view.keyUnreadable,
   model: view.model,
+  provider: view.provider,
   updatedAt: view.updatedAt,
 });
 
@@ -61,6 +77,24 @@ const textProviderOf = (view: TextProviderView) => ({
   keyUnreadable: view.keyUnreadable,
   kind: view.kind,
   model: view.model,
+  provider: view.provider,
+  updatedAt: view.updatedAt,
+});
+
+// A connected provider as the contract answers it: never its key.
+const connectionOf = (view: ConnectionView) => ({
+  baseUrl: view.baseUrl,
+  keySet: view.keySet,
+  keyUnreadable: view.keyUnreadable,
+  provider: view.provider,
+  updatedAt: view.updatedAt,
+});
+
+const capabilityModelOf = (view: CapabilityModelView) => ({
+  capability: view.capability,
+  model: view.model,
+  provider: view.provider,
+  serverModel: view.serverModel,
   updatedAt: view.updatedAt,
 });
 
@@ -100,6 +134,9 @@ export const AssistantHandlers = HttpApiBuilder.group(
   "assistant",
   Effect.fn(function* assistantHandlers(handlers) {
     const assistant = yield* WritingAssistant;
+    const videos = yield* AssistantVideos;
+    const slideshows = yield* AssistantSlideshows;
+    const audio = yield* AssistantAudio;
     const paths = yield* UpgradePaths;
     const limitReached = yield* limitRefusal;
     const allowanceReached = yield* allowanceRefusal;
@@ -135,6 +172,36 @@ export const AssistantHandlers = HttpApiBuilder.group(
       );
 
     return handlers.handleAll({
+      connectProvider: ({ params, payload }) =>
+        Effect.gen(function* connectProvider() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const saved = yield* assistant
+            .connectProvider(actor, params.provider, payload)
+            .pipe(
+              Effect.catchTags({
+                MissingPermission: forbidden,
+                ProviderAddressNotPublic: ({ reason }) =>
+                  Effect.fail(new AiProviderAddressRefused({ reason })),
+                ProviderAddressRejected: ({ reason }) =>
+                  Effect.fail(new AiProviderAddressRefused({ reason })),
+                ProviderKeyRequired: () =>
+                  Effect.fail(new AiProviderKeyRequired()),
+                ProviderSecretsNotConfigured: secretsNotConfigured,
+                ProviderSettingRejected: settingRejected,
+              })
+            );
+
+          return connectionOf(saved);
+        }),
+      disconnectProvider: ({ params }) =>
+        Effect.gen(function* disconnectProvider() {
+          const actor = actorOf(yield* CurrentMember);
+
+          yield* assistant
+            .disconnectProvider(actor, params.provider)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+        }),
       generateImage: ({ payload }) =>
         Effect.gen(function* generateImage() {
           const actor = actorOf(yield* CurrentMember);
@@ -181,6 +248,26 @@ export const AssistantHandlers = HttpApiBuilder.group(
             provider: Option.getOrNull(provider.pipe(Option.map(providerOf))),
           };
         }),
+      models: () =>
+        Effect.gen(function* models() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const chosen = yield* assistant
+            .models(actor)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+
+          return { models: chosen.map(capabilityModelOf) };
+        }),
+      providers: () =>
+        Effect.gen(function* providers() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const connected = yield* assistant
+            .providers(actor)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+
+          return { providers: connected.map(connectionOf) };
+        }),
       removeImageProvider: () =>
         Effect.gen(function* removeImageProvider() {
           const actor = actorOf(yield* CurrentMember);
@@ -209,11 +296,44 @@ export const AssistantHandlers = HttpApiBuilder.group(
 
           return providerOf(saved);
         }),
+      setModel: ({ params, payload }) =>
+        Effect.gen(function* setModel() {
+          const actor = actorOf(yield* CurrentMember);
+
+          const saved = yield* assistant
+            .setModel(actor, params.capability, payload)
+            .pipe(
+              Effect.catchTags({
+                CapabilityNotOffered: () =>
+                  Effect.fail(new AiCapabilityNotOffered()),
+                MissingPermission: forbidden,
+                ModelRequired: () => Effect.fail(new AiModelRequired()),
+                ProviderNotConnected: () =>
+                  Effect.fail(new AiProviderNotConnected()),
+                ProviderSettingRejected: settingRejected,
+              })
+            );
+
+          return capabilityModelOf(saved);
+        }),
       setTextProvider: ({ payload }) =>
         Effect.gen(function* setTextProvider() {
           const actor = actorOf(yield* CurrentMember);
 
-          const saved = yield* assistant.saveTextProvider(actor, payload).pipe(
+          const { provider, ...rest } = payload;
+
+          const writer =
+            provider === undefined ? null : asTextProvider(provider);
+
+          // A provider that writes no text (ElevenLabs, fal) has no text to
+          // set.
+          if (provider !== undefined && writer === null) {
+            return yield* new AiCapabilityNotOffered();
+          }
+
+          const change = writer === null ? rest : { ...rest, provider: writer };
+
+          const saved = yield* assistant.saveTextProvider(actor, change).pipe(
             Effect.catchTags({
               MissingPermission: forbidden,
               ProviderAddressNotPublic: ({ reason }) =>
@@ -233,9 +353,39 @@ export const AssistantHandlers = HttpApiBuilder.group(
         Effect.gen(function* status() {
           const actor = actorOf(yield* CurrentMember);
 
-          return yield* assistant
+          const current = yield* assistant
             .status(actor)
             .pipe(Effect.catchTag("MissingPermission", forbidden));
+
+          const videosStatus = yield* videos
+            .status(actor)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+
+          const voiceovers = yield* audio
+            .voiceoversStatus(actor)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+
+          const transcriptions = yield* audio
+            .transcriptionsStatus(actor)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+
+          const slideshowsStatus = yield* slideshows
+            .status(actor)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
+
+          return {
+            ...current,
+            slideshows: slideshowsStatus,
+            transcriptions: {
+              ...transcriptions,
+              maxBytes: maxTranscriptionBytes,
+            },
+            videos: videosStatus,
+            voiceovers: {
+              ...voiceovers,
+              maxTextLength: maxVoiceoverTextLength,
+            },
+          };
         }),
       suggest: ({ payload }) =>
         Effect.gen(function* suggest() {
@@ -259,6 +409,29 @@ export const AssistantHandlers = HttpApiBuilder.group(
               MissingPermission: forbidden,
               OwnTextBusy: () => Effect.fail(new TextProviderBusy()),
               OwnTextExhausted: ownTextExhausted,
+              TextProviderRefused: textProviderRefused,
+              WritingFailed: ({ reason }) =>
+                Effect.fail(new AssistantFailed({ reason })),
+            })
+          );
+        }),
+      testProvider: ({ params, payload }) =>
+        Effect.gen(function* testProvider() {
+          const actor = actorOf(yield* CurrentMember);
+
+          yield* assistant.testProvider(actor, params.provider, payload).pipe(
+            Effect.catchTags({
+              AnswerRejected: () =>
+                Effect.fail(new AssistantFailed({ reason: "invalidAnswer" })),
+              CapabilityNotOffered: () =>
+                Effect.fail(new AiCapabilityNotOffered()),
+              MissingPermission: forbidden,
+              OwnTextBusy: () => Effect.fail(new TextProviderBusy()),
+              OwnTextExhausted: ownTextExhausted,
+              ProviderNotConnected: () =>
+                Effect.fail(new AiProviderNotConnected()),
+              ProviderSettingRejected: settingRejected,
+              TestModelRequired: () => Effect.fail(new AiModelRequired()),
               TextProviderRefused: textProviderRefused,
               WritingFailed: ({ reason }) =>
                 Effect.fail(new AssistantFailed({ reason })),
@@ -296,6 +469,14 @@ export const AssistantHandlers = HttpApiBuilder.group(
               provider.pipe(Option.map(textProviderOf))
             ),
           };
+        }),
+      unsetModel: ({ params }) =>
+        Effect.gen(function* unsetModel() {
+          const actor = actorOf(yield* CurrentMember);
+
+          yield* assistant
+            .unsetModel(actor, params.capability)
+            .pipe(Effect.catchTag("MissingPermission", forbidden));
         }),
       removeTextProvider: () =>
         Effect.gen(function* removeTextProvider() {

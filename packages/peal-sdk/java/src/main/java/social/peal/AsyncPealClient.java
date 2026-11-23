@@ -28,6 +28,7 @@ import social.peal.resources.inboxrules.AsyncInboxRulesClient;
 import social.peal.resources.invitations.AsyncInvitationsClient;
 import social.peal.resources.lookups.AsyncLookupsClient;
 import social.peal.resources.media.AsyncMediaClient;
+import social.peal.resources.mediaaudio.AsyncMediaAudioClient;
 import social.peal.resources.members.AsyncMembersClient;
 import social.peal.resources.notices.AsyncNoticesClient;
 import social.peal.resources.notificationpreferences.AsyncNotificationPreferencesClient;
@@ -41,10 +42,12 @@ import social.peal.resources.review.AsyncReviewClient;
 import social.peal.resources.session.AsyncSessionClient;
 import social.peal.resources.shortlinks.AsyncShortLinksClient;
 import social.peal.resources.signatures.AsyncSignaturesClient;
+import social.peal.resources.slideshows.AsyncSlideshowsClient;
 import social.peal.resources.system.AsyncSystemClient;
 import social.peal.resources.tags.AsyncTagsClient;
 import social.peal.resources.tiktok.AsyncTiktokClient;
 import social.peal.resources.usage.AsyncUsageClient;
+import social.peal.resources.videogenerations.AsyncVideoGenerationsClient;
 import social.peal.resources.webhooks.AsyncWebhooksClient;
 
 public class AsyncPealClient implements AutoCloseable {
@@ -66,11 +69,17 @@ public class AsyncPealClient implements AutoCloseable {
 
     protected final Supplier<AsyncMediaClient> mediaClient;
 
+    protected final Supplier<AsyncMediaAudioClient> mediaAudioClient;
+
     protected final Supplier<AsyncNoticesClient> noticesClient;
 
     protected final Supplier<AsyncNotificationPreferencesClient> notificationPreferencesClient;
 
     protected final Supplier<AsyncAssistantClient> assistantClient;
+
+    protected final Supplier<AsyncVideoGenerationsClient> videoGenerationsClient;
+
+    protected final Supplier<AsyncSlideshowsClient> slideshowsClient;
 
     protected final Supplier<AsyncMembersClient> membersClient;
 
@@ -140,10 +149,13 @@ public class AsyncPealClient implements AutoCloseable {
         this.postsClient = Suppliers.memoize(() -> new AsyncPostsClient(clientOptions));
         this.articlesClient = Suppliers.memoize(() -> new AsyncArticlesClient(clientOptions));
         this.mediaClient = Suppliers.memoize(() -> new AsyncMediaClient(clientOptions));
+        this.mediaAudioClient = Suppliers.memoize(() -> new AsyncMediaAudioClient(clientOptions));
         this.noticesClient = Suppliers.memoize(() -> new AsyncNoticesClient(clientOptions));
         this.notificationPreferencesClient =
                 Suppliers.memoize(() -> new AsyncNotificationPreferencesClient(clientOptions));
         this.assistantClient = Suppliers.memoize(() -> new AsyncAssistantClient(clientOptions));
+        this.videoGenerationsClient = Suppliers.memoize(() -> new AsyncVideoGenerationsClient(clientOptions));
+        this.slideshowsClient = Suppliers.memoize(() -> new AsyncSlideshowsClient(clientOptions));
         this.membersClient = Suppliers.memoize(() -> new AsyncMembersClient(clientOptions));
         this.invitationsClient = Suppliers.memoize(() -> new AsyncInvitationsClient(clientOptions));
         this.billingClient = Suppliers.memoize(() -> new AsyncBillingClient(clientOptions));
@@ -207,6 +219,10 @@ public class AsyncPealClient implements AutoCloseable {
         return this.mediaClient.get();
     }
 
+    public AsyncMediaAudioClient mediaAudio() {
+        return this.mediaAudioClient.get();
+    }
+
     public AsyncNoticesClient notices() {
         return this.noticesClient.get();
     }
@@ -217,6 +233,14 @@ public class AsyncPealClient implements AutoCloseable {
 
     public AsyncAssistantClient assistant() {
         return this.assistantClient.get();
+    }
+
+    public AsyncVideoGenerationsClient videoGenerations() {
+        return this.videoGenerationsClient.get();
+    }
+
+    public AsyncSlideshowsClient slideshows() {
+        return this.slideshowsClient.get();
     }
 
     public AsyncMembersClient members() {

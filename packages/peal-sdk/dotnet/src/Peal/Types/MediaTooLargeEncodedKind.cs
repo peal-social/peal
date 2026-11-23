@@ -14,6 +14,8 @@ public readonly record struct MediaTooLargeEncodedKind : IStringEnum
 
     public static readonly MediaTooLargeEncodedKind Document = new(Values.Document);
 
+    public static readonly MediaTooLargeEncodedKind Audio = new(Values.Audio);
+
     public MediaTooLargeEncodedKind(string value)
     {
         Value = value;
@@ -115,5 +117,7 @@ public readonly record struct MediaTooLargeEncodedKind : IStringEnum
         public const string Video = "video";
 
         public const string Document = "document";
+
+        public const string Audio = "audio";
     }
 }

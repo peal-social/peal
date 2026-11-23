@@ -5,7 +5,7 @@ pub use crate::prelude::*;
 #[non_exhaustive]
 pub enum PaymentRequiredErrorBody {
     #[non_exhaustive]
-    UsageAllowanceReached {
+    CompositionNeedsPayment {
         #[serde(skip_serializing_if = "Option::is_none")]
         code: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -13,18 +13,9 @@ pub enum PaymentRequiredErrorBody {
         #[serde(rename = "requestId")]
         #[serde(skip_serializing_if = "Option::is_none")]
         request_id: Option<String>,
-        #[serde(default)]
-        allowed: i64,
         #[serde(rename = "billingUrl")]
         #[serde(default)]
         billing_url: String,
-        meter: Meter,
-        reason: AllowanceReason,
-        #[serde(rename = "resetsAt")]
-        #[serde(default)]
-        resets_at: String,
-        #[serde(default)]
-        used: i64,
     },
 
     #[non_exhaustive]
@@ -41,24 +32,12 @@ pub enum PaymentRequiredErrorBody {
 }
 
 impl PaymentRequiredErrorBody {
-    pub fn usage_allowance_reached(
-        allowed: i64,
-        billing_url: String,
-        meter: Meter,
-        reason: AllowanceReason,
-        resets_at: String,
-        used: i64,
-    ) -> Self {
-        Self::UsageAllowanceReached {
+    pub fn composition_needs_payment(billing_url: String) -> Self {
+        Self::CompositionNeedsPayment {
             code: None,
             message: None,
             request_id: None,
-            allowed,
             billing_url,
-            meter,
-            reason,
-            resets_at,
-            used,
         }
     }
 
@@ -66,75 +45,45 @@ impl PaymentRequiredErrorBody {
         Self::PlanLimitReached { data }
     }
 
-    pub fn usage_allowance_reached_with_code(
+    pub fn composition_needs_payment_with_code(
         code: String,
         message: Option<String>,
         request_id: Option<String>,
-        allowed: i64,
         billing_url: String,
-        meter: Meter,
-        reason: AllowanceReason,
-        resets_at: String,
-        used: i64,
     ) -> Self {
-        Self::UsageAllowanceReached {
+        Self::CompositionNeedsPayment {
             code: Some(code),
             message,
             request_id,
-            allowed,
             billing_url,
-            meter,
-            reason,
-            resets_at,
-            used,
         }
     }
 
-    pub fn usage_allowance_reached_with_message(
+    pub fn composition_needs_payment_with_message(
         code: Option<String>,
         message: String,
         request_id: Option<String>,
-        allowed: i64,
         billing_url: String,
-        meter: Meter,
-        reason: AllowanceReason,
-        resets_at: String,
-        used: i64,
     ) -> Self {
-        Self::UsageAllowanceReached {
+        Self::CompositionNeedsPayment {
             code,
             message: Some(message),
             request_id,
-            allowed,
             billing_url,
-            meter,
-            reason,
-            resets_at,
-            used,
         }
     }
 
-    pub fn usage_allowance_reached_with_request_id(
+    pub fn composition_needs_payment_with_request_id(
         code: Option<String>,
         message: Option<String>,
         request_id: String,
-        allowed: i64,
         billing_url: String,
-        meter: Meter,
-        reason: AllowanceReason,
-        resets_at: String,
-        used: i64,
     ) -> Self {
-        Self::UsageAllowanceReached {
+        Self::CompositionNeedsPayment {
             code,
             message,
             request_id: Some(request_id),
-            allowed,
             billing_url,
-            meter,
-            reason,
-            resets_at,
-            used,
         }
     }
 

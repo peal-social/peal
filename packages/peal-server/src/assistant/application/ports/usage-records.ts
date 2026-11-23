@@ -3,11 +3,15 @@ import type { Effect } from "effect";
 
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type {
+  AiModelRecord,
+  AiProviderRecord,
   ImageProviderRecord,
   OwnImagesRecord,
   OwnTextRecord,
   TextProviderRecord,
+  SlideshowRecord,
   UsageRecord,
+  VideoGenerationRecord,
 } from "#shared/application/personal-data.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 
@@ -52,7 +56,26 @@ export class UsageRecords extends Context.Service<
     readonly exportOwnText: (
       workspaceId: WorkspaceId
     ) => Effect.Effect<readonly OwnTextRecord[], DatabaseError>;
-    /** Deletes the counts and the providers, their keys with them. */
+    /** The providers the workspace connected, without their keys. */
+    readonly exportProviders: (
+      workspaceId: WorkspaceId
+    ) => Effect.Effect<readonly AiProviderRecord[], DatabaseError>;
+    /** The model the workspace chose for each use. */
+    readonly exportModels: (
+      workspaceId: WorkspaceId
+    ) => Effect.Effect<readonly AiModelRecord[], DatabaseError>;
+    /** The videos the workspace asked for, newest first, without prompts. */
+    readonly exportVideos: (
+      workspaceId: WorkspaceId
+    ) => Effect.Effect<readonly VideoGenerationRecord[], DatabaseError>;
+    /** The slide videos the workspace asked for, newest first, without captions. */
+    readonly exportSlideshows: (
+      workspaceId: WorkspaceId
+    ) => Effect.Effect<readonly SlideshowRecord[], DatabaseError>;
+    /**
+     * Deletes the counts, the providers, their keys with them, and the
+     * video jobs.
+     */
     readonly eraseWorkspace: (
       workspaceId: WorkspaceId
     ) => Effect.Effect<void, DatabaseError>;

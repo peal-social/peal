@@ -39,6 +39,10 @@ const MediaPage = async ({
     <MediaLibrary
       workspaceId={workspace.id}
       canGenerate={canGenerateImages(workspace.permissions)}
+      canTranscribe={
+        workspace.permissions.includes("assistant:use") &&
+        workspace.permissions.includes("media:read")
+      }
       canUpload={workspace.permissions.includes("media:upload")}
       canDelete={workspace.permissions.includes("media:delete")}
       mayConfigure={workspace.permissions.includes("assistant:configure")}

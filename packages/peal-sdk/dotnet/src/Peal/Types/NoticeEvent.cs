@@ -289,6 +289,24 @@ public record NoticeEvent
     }
 
     /// <summary>
+    /// Create an instance of NoticeEvent with <see cref="NoticeEvent.VideoGenerationEnded"/>.
+    /// </summary>
+    public NoticeEvent(NoticeEvent.VideoGenerationEnded value)
+    {
+        Type = "VideoGenerationEnded";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of NoticeEvent with <see cref="NoticeEvent.SlideshowEnded"/>.
+    /// </summary>
+    public NoticeEvent(NoticeEvent.SlideshowEnded value)
+    {
+        Type = "SlideshowEnded";
+        Value = value.Value;
+    }
+
+    /// <summary>
     /// Discriminant value
     /// </summary>
     [JsonPropertyName("_tag")]
@@ -448,6 +466,16 @@ public record NoticeEvent
     /// Returns true if <see cref="Type"/> is "CommentRuleStopped"
     /// </summary>
     public bool IsCommentRuleStopped => Type == "CommentRuleStopped";
+
+    /// <summary>
+    /// Returns true if <see cref="Type"/> is "VideoGenerationEnded"
+    /// </summary>
+    public bool IsVideoGenerationEnded => Type == "VideoGenerationEnded";
+
+    /// <summary>
+    /// Returns true if <see cref="Type"/> is "SlideshowEnded"
+    /// </summary>
+    public bool IsSlideshowEnded => Type == "SlideshowEnded";
 
     /// <summary>
     /// Returns the value as a <see cref="Peal.NoticeEventPostPublished"/> if <see cref="Type"/> is 'PostPublished', otherwise throws an exception.
@@ -727,6 +755,24 @@ public record NoticeEvent
             ? (Peal.NoticeEventCommentRuleStopped)Value!
             : throw new global::System.Exception("NoticeEvent.Type is not 'CommentRuleStopped'");
 
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.NoticeEventVideoGenerationEnded"/> if <see cref="Type"/> is 'VideoGenerationEnded', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'VideoGenerationEnded'.</exception>
+    public Peal.NoticeEventVideoGenerationEnded AsVideoGenerationEnded() =>
+        IsVideoGenerationEnded
+            ? (Peal.NoticeEventVideoGenerationEnded)Value!
+            : throw new global::System.Exception("NoticeEvent.Type is not 'VideoGenerationEnded'");
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.NoticeEventSlideshowEnded"/> if <see cref="Type"/> is 'SlideshowEnded', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'SlideshowEnded'.</exception>
+    public Peal.NoticeEventSlideshowEnded AsSlideshowEnded() =>
+        IsSlideshowEnded
+            ? (Peal.NoticeEventSlideshowEnded)Value!
+            : throw new global::System.Exception("NoticeEvent.Type is not 'SlideshowEnded'");
+
     public T Match<T>(
         Func<Peal.NoticeEventPostPublished, T> onPostPublished,
         Func<Peal.NoticeEventPostFailed, T> onPostFailed,
@@ -758,6 +804,8 @@ public record NoticeEvent
         Func<Peal.NoticeEventFollowUpsNotSent, T> onFollowUpsNotSent,
         Func<Peal.NoticeEventFollowUpRuleStopped, T> onFollowUpRuleStopped,
         Func<Peal.NoticeEventCommentRuleStopped, T> onCommentRuleStopped,
+        Func<Peal.NoticeEventVideoGenerationEnded, T> onVideoGenerationEnded,
+        Func<Peal.NoticeEventSlideshowEnded, T> onSlideshowEnded,
         Func<string, object?, T> onUnknown_
     )
     {
@@ -795,6 +843,8 @@ public record NoticeEvent
             "FollowUpsNotSent" => onFollowUpsNotSent(AsFollowUpsNotSent()),
             "FollowUpRuleStopped" => onFollowUpRuleStopped(AsFollowUpRuleStopped()),
             "CommentRuleStopped" => onCommentRuleStopped(AsCommentRuleStopped()),
+            "VideoGenerationEnded" => onVideoGenerationEnded(AsVideoGenerationEnded()),
+            "SlideshowEnded" => onSlideshowEnded(AsSlideshowEnded()),
             _ => onUnknown_(Type, Value),
         };
     }
@@ -830,6 +880,8 @@ public record NoticeEvent
         Action<Peal.NoticeEventFollowUpsNotSent> onFollowUpsNotSent,
         Action<Peal.NoticeEventFollowUpRuleStopped> onFollowUpRuleStopped,
         Action<Peal.NoticeEventCommentRuleStopped> onCommentRuleStopped,
+        Action<Peal.NoticeEventVideoGenerationEnded> onVideoGenerationEnded,
+        Action<Peal.NoticeEventSlideshowEnded> onSlideshowEnded,
         Action<string, object?> onUnknown_
     )
     {
@@ -924,6 +976,12 @@ public record NoticeEvent
                 break;
             case "CommentRuleStopped":
                 onCommentRuleStopped(AsCommentRuleStopped());
+                break;
+            case "VideoGenerationEnded":
+                onVideoGenerationEnded(AsVideoGenerationEnded());
+                break;
+            case "SlideshowEnded":
+                onSlideshowEnded(AsSlideshowEnded());
                 break;
             default:
                 onUnknown_(Type, Value);
@@ -1353,6 +1411,34 @@ public record NoticeEvent
         return false;
     }
 
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.NoticeEventVideoGenerationEnded"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsVideoGenerationEnded(out Peal.NoticeEventVideoGenerationEnded? value)
+    {
+        if (Type == "VideoGenerationEnded")
+        {
+            value = (Peal.NoticeEventVideoGenerationEnded)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.NoticeEventSlideshowEnded"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsSlideshowEnded(out Peal.NoticeEventSlideshowEnded? value)
+    {
+        if (Type == "SlideshowEnded")
+        {
+            value = (Peal.NoticeEventSlideshowEnded)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator NoticeEvent(NoticeEvent.PostPublished value) => new(value);
@@ -1427,6 +1513,11 @@ public record NoticeEvent
         new(value);
 
     public static implicit operator NoticeEvent(NoticeEvent.CommentRuleStopped value) => new(value);
+
+    public static implicit operator NoticeEvent(NoticeEvent.VideoGenerationEnded value) =>
+        new(value);
+
+    public static implicit operator NoticeEvent(NoticeEvent.SlideshowEnded value) => new(value);
 
     [Serializable]
     internal sealed class JsonConverter : JsonConverter<NoticeEvent>
@@ -1643,6 +1734,18 @@ public record NoticeEvent
                         ?? throw new JsonException(
                             "Failed to deserialize Peal.NoticeEventCommentRuleStopped"
                         ),
+                "VideoGenerationEnded" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.NoticeEventVideoGenerationEnded?>(
+                        options
+                    )
+                        ?? throw new JsonException(
+                            "Failed to deserialize Peal.NoticeEventVideoGenerationEnded"
+                        ),
+                "SlideshowEnded" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.NoticeEventSlideshowEnded?>(options)
+                        ?? throw new JsonException(
+                            "Failed to deserialize Peal.NoticeEventSlideshowEnded"
+                        ),
                 _ => json.Deserialize<object?>(options),
             };
             return new NoticeEvent(discriminator, value);
@@ -1699,6 +1802,8 @@ public record NoticeEvent
                     "FollowUpsNotSent" => JsonSerializer.SerializeToNode(value.Value, options),
                     "FollowUpRuleStopped" => JsonSerializer.SerializeToNode(value.Value, options),
                     "CommentRuleStopped" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "VideoGenerationEnded" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "SlideshowEnded" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["_tag"] = value.Type;
@@ -2323,6 +2428,46 @@ public record NoticeEvent
 
         public static implicit operator NoticeEvent.CommentRuleStopped(
             Peal.NoticeEventCommentRuleStopped value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for VideoGenerationEnded
+    /// </summary>
+    [Serializable]
+    public struct VideoGenerationEnded
+    {
+        public VideoGenerationEnded(Peal.NoticeEventVideoGenerationEnded value)
+        {
+            Value = value;
+        }
+
+        internal Peal.NoticeEventVideoGenerationEnded Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator NoticeEvent.VideoGenerationEnded(
+            Peal.NoticeEventVideoGenerationEnded value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for SlideshowEnded
+    /// </summary>
+    [Serializable]
+    public struct SlideshowEnded
+    {
+        public SlideshowEnded(Peal.NoticeEventSlideshowEnded value)
+        {
+            Value = value;
+        }
+
+        internal Peal.NoticeEventSlideshowEnded Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator NoticeEvent.SlideshowEnded(
+            Peal.NoticeEventSlideshowEnded value
         ) => new(value);
     }
 }

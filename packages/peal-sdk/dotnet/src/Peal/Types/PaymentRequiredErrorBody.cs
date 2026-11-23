@@ -19,11 +19,11 @@ public record PaymentRequiredErrorBody
     }
 
     /// <summary>
-    /// Create an instance of PaymentRequiredErrorBody with <see cref="PaymentRequiredErrorBody.UsageAllowanceReached"/>.
+    /// Create an instance of PaymentRequiredErrorBody with <see cref="PaymentRequiredErrorBody.CompositionNeedsPayment"/>.
     /// </summary>
-    public PaymentRequiredErrorBody(PaymentRequiredErrorBody.UsageAllowanceReached value)
+    public PaymentRequiredErrorBody(PaymentRequiredErrorBody.CompositionNeedsPayment value)
     {
-        Type = "UsageAllowanceReached";
+        Type = "CompositionNeedsPayment";
         Value = value.Value;
     }
 
@@ -48,9 +48,9 @@ public record PaymentRequiredErrorBody
     public object? Value { get; internal set; }
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "UsageAllowanceReached"
+    /// Returns true if <see cref="Type"/> is "CompositionNeedsPayment"
     /// </summary>
-    public bool IsUsageAllowanceReached => Type == "UsageAllowanceReached";
+    public bool IsCompositionNeedsPayment => Type == "CompositionNeedsPayment";
 
     /// <summary>
     /// Returns true if <see cref="Type"/> is "PlanLimitReached"
@@ -58,14 +58,14 @@ public record PaymentRequiredErrorBody
     public bool IsPlanLimitReached => Type == "PlanLimitReached";
 
     /// <summary>
-    /// Returns the value as a <see cref="Peal.UsageAllowanceReachedEncoded"/> if <see cref="Type"/> is 'UsageAllowanceReached', otherwise throws an exception.
+    /// Returns the value as a <see cref="Peal.CompositionNeedsPaymentEncoded"/> if <see cref="Type"/> is 'CompositionNeedsPayment', otherwise throws an exception.
     /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'UsageAllowanceReached'.</exception>
-    public Peal.UsageAllowanceReachedEncoded AsUsageAllowanceReached() =>
-        IsUsageAllowanceReached
-            ? (Peal.UsageAllowanceReachedEncoded)Value!
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'CompositionNeedsPayment'.</exception>
+    public Peal.CompositionNeedsPaymentEncoded AsCompositionNeedsPayment() =>
+        IsCompositionNeedsPayment
+            ? (Peal.CompositionNeedsPaymentEncoded)Value!
             : throw new global::System.Exception(
-                "PaymentRequiredErrorBody.Type is not 'UsageAllowanceReached'"
+                "PaymentRequiredErrorBody.Type is not 'CompositionNeedsPayment'"
             );
 
     /// <summary>
@@ -80,29 +80,29 @@ public record PaymentRequiredErrorBody
             );
 
     public T Match<T>(
-        Func<Peal.UsageAllowanceReachedEncoded, T> onUsageAllowanceReached,
+        Func<Peal.CompositionNeedsPaymentEncoded, T> onCompositionNeedsPayment,
         Func<Peal.PlanLimitReachedEncoded, T> onPlanLimitReached,
         Func<string, object?, T> onUnknown_
     )
     {
         return Type switch
         {
-            "UsageAllowanceReached" => onUsageAllowanceReached(AsUsageAllowanceReached()),
+            "CompositionNeedsPayment" => onCompositionNeedsPayment(AsCompositionNeedsPayment()),
             "PlanLimitReached" => onPlanLimitReached(AsPlanLimitReached()),
             _ => onUnknown_(Type, Value),
         };
     }
 
     public void Visit(
-        Action<Peal.UsageAllowanceReachedEncoded> onUsageAllowanceReached,
+        Action<Peal.CompositionNeedsPaymentEncoded> onCompositionNeedsPayment,
         Action<Peal.PlanLimitReachedEncoded> onPlanLimitReached,
         Action<string, object?> onUnknown_
     )
     {
         switch (Type)
         {
-            case "UsageAllowanceReached":
-                onUsageAllowanceReached(AsUsageAllowanceReached());
+            case "CompositionNeedsPayment":
+                onCompositionNeedsPayment(AsCompositionNeedsPayment());
                 break;
             case "PlanLimitReached":
                 onPlanLimitReached(AsPlanLimitReached());
@@ -114,13 +114,13 @@ public record PaymentRequiredErrorBody
     }
 
     /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.UsageAllowanceReachedEncoded"/> and returns true if successful.
+    /// Attempts to cast the value to a <see cref="Peal.CompositionNeedsPaymentEncoded"/> and returns true if successful.
     /// </summary>
-    public bool TryAsUsageAllowanceReached(out Peal.UsageAllowanceReachedEncoded? value)
+    public bool TryAsCompositionNeedsPayment(out Peal.CompositionNeedsPaymentEncoded? value)
     {
-        if (Type == "UsageAllowanceReached")
+        if (Type == "CompositionNeedsPayment")
         {
-            value = (Peal.UsageAllowanceReachedEncoded)Value!;
+            value = (Peal.CompositionNeedsPaymentEncoded)Value!;
             return true;
         }
         value = null;
@@ -144,7 +144,7 @@ public record PaymentRequiredErrorBody
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator PaymentRequiredErrorBody(
-        PaymentRequiredErrorBody.UsageAllowanceReached value
+        PaymentRequiredErrorBody.CompositionNeedsPayment value
     ) => new(value);
 
     public static implicit operator PaymentRequiredErrorBody(
@@ -184,14 +184,21 @@ public record PaymentRequiredErrorBody
                 discriminatorElement.GetString()
                 ?? throw new JsonException("Discriminator property '_tag' is null");
 
+            // Strip the discriminant property to prevent it from leaking into AdditionalProperties
+            var jsonObject = System.Text.Json.Nodes.JsonObject.Create(json);
+            jsonObject?.Remove("_tag");
+            var jsonWithoutDiscriminator =
+                jsonObject != null ? JsonSerializer.SerializeToElement(jsonObject, options) : json;
+
             var value = discriminator switch
             {
-                "UsageAllowanceReached" => json.Deserialize<Peal.UsageAllowanceReachedEncoded?>(
-                    options
-                )
-                    ?? throw new JsonException(
-                        "Failed to deserialize Peal.UsageAllowanceReachedEncoded"
-                    ),
+                "CompositionNeedsPayment" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.CompositionNeedsPaymentEncoded?>(
+                        options
+                    )
+                        ?? throw new JsonException(
+                            "Failed to deserialize Peal.CompositionNeedsPaymentEncoded"
+                        ),
                 "PlanLimitReached" => json.Deserialize<Peal.PlanLimitReachedEncoded?>(options)
                     ?? throw new JsonException(
                         "Failed to deserialize Peal.PlanLimitReachedEncoded"
@@ -210,7 +217,10 @@ public record PaymentRequiredErrorBody
             JsonNode json =
                 value.Type switch
                 {
-                    "UsageAllowanceReached" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "CompositionNeedsPayment" => JsonSerializer.SerializeToNode(
+                        value.Value,
+                        options
+                    ),
                     "PlanLimitReached" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
@@ -241,22 +251,22 @@ public record PaymentRequiredErrorBody
     }
 
     /// <summary>
-    /// Discriminated union type for UsageAllowanceReached
+    /// Discriminated union type for CompositionNeedsPayment
     /// </summary>
     [Serializable]
-    public struct UsageAllowanceReached
+    public struct CompositionNeedsPayment
     {
-        public UsageAllowanceReached(Peal.UsageAllowanceReachedEncoded value)
+        public CompositionNeedsPayment(Peal.CompositionNeedsPaymentEncoded value)
         {
             Value = value;
         }
 
-        internal Peal.UsageAllowanceReachedEncoded Value { get; set; }
+        internal Peal.CompositionNeedsPaymentEncoded Value { get; set; }
 
         public override string ToString() => Value.ToString() ?? "null";
 
-        public static implicit operator PaymentRequiredErrorBody.UsageAllowanceReached(
-            Peal.UsageAllowanceReachedEncoded value
+        public static implicit operator PaymentRequiredErrorBody.CompositionNeedsPayment(
+            Peal.CompositionNeedsPaymentEncoded value
         ) => new(value);
     }
 

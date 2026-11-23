@@ -18,9 +18,9 @@ export interface MadeImage {
 }
 
 /**
- * The model the assistant makes images with: an OpenAI-compatible
- * endpoint that serves `/images/generations`, or none, which turns images
- * off. It is set apart from the writing model, which may make no images.
+ * The model the assistant makes images with: a provider of the
+ * catalogue's, or an OpenAI-compatible endpoint that serves
+ * `/images/generations`, or none, which turns images off. It is set apart from the writing model, which may make no images.
  *
  * `generate` never logs or traces the prompt, the image or a provider's
  * error; it fails with AssistantUnavailable when the provider refuses the

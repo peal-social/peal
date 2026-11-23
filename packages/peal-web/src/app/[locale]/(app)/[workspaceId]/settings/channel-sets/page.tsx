@@ -1,7 +1,5 @@
 import { hasLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { maxChannelSetsPerWorkspace } from "peal-contract";
 
 import { ChannelSetsSettings } from "#components/channel-sets/channel-sets-settings.tsx";
 import { routing } from "#i18n/routing.ts";
@@ -26,20 +24,11 @@ const ChannelSetsPage = async ({
     notFound();
   }
 
-  const t = await getTranslations("ChannelSets");
-  const mayManage = may.has("post:update");
-
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("description")}</p>
-      <p className="text-muted-foreground text-sm">
-        {t("rules", { max: maxChannelSetsPerWorkspace })}
-      </p>
-      {mayManage ? null : (
-        <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
-      )}
-      <ChannelSetsSettings workspaceId={workspace.id} mayManage={mayManage} />
-    </div>
+    <ChannelSetsSettings
+      workspaceId={workspace.id}
+      mayManage={may.has("post:update")}
+    />
   );
 };
 

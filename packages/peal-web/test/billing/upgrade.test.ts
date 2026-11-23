@@ -2,6 +2,7 @@ import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Exit, Option } from "effect";
 import {
   AssistantQuotaExceeded,
+  CompositionNeedsPayment,
   Forbidden,
   PlanLimitReached,
   UsageAllowanceReached,
@@ -12,6 +13,7 @@ import {
   billedElsewhereOf,
   limitIn,
   limitOfAuthError,
+  slideshowsNeedPayment,
 } from "#billing/upgrade.ts";
 
 const billingUrl = "https://peal.example/app/w/billing";
@@ -175,5 +177,19 @@ describe(billedElsewhereOf, () => {
   it("names none where the workspace bills its account, or the server says nothing", () => {
     expect(billedElsewhereOf(account, "home")).toStrictEqual(Option.none());
     expect(billedElsewhereOf(undefined, "home")).toStrictEqual(Option.none());
+  });
+});
+
+describe("slide videos without a payment method", () => {
+  it("open the upgrade dialog for a payment method", () => {
+    expect(
+      limitIn(
+        Exit.fail(
+          new CompositionNeedsPayment({
+            billingUrl: "https://app.example.com/billing",
+          })
+        )
+      )
+    ).toStrictEqual(Option.some(slideshowsNeedPayment));
   });
 });

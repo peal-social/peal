@@ -12,6 +12,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "peal-ui/components/dialog";
+import {
+  SettingsCard,
+  SettingsCardBody,
+  SettingsRow,
+  SettingsRowControl,
+  SettingsRowDescription,
+  SettingsRowLabel,
+  SettingsRowText,
+  SettingsSection,
+  SettingsSectionDescription,
+  SettingsSectionHeader,
+  SettingsSectionTitle,
+} from "peal-ui/components/settings";
 import type { ReactNode } from "react";
 
 /** What the security page knows of the workspace and of who reads it. */
@@ -62,9 +75,10 @@ export const RequireConfirmation = ({
 };
 
 /**
- * Whether the workspace requires two-step verification of every member:
- * owners require it once their own account has it on, after a
- * confirmation that names who loses access; anyone else reads it.
+ * Whether the workspace requires two-step verification of every member,
+ * as one row with its state at the end: owners require it once their own
+ * account has it on, after a confirmation that names who loses access;
+ * anyone else reads it.
  */
 export const WorkspaceSecurityView = ({
   accountLink,
@@ -84,61 +98,74 @@ export const WorkspaceSecurityView = ({
   const lacking = without ?? [];
 
   return (
-    <section
-      aria-labelledby="two-step-requirement"
-      className="flex flex-col gap-4"
-    >
-      <h2 id="two-step-requirement" className="text-xl font-semibold">
-        {t("requireLabel")}
-      </h2>
-      <p className="flex flex-wrap items-center gap-2">
-        <Badge variant={required ? "default" : "outline"}>
-          {required ? t("on") : t("off")}
-        </Badge>
-        <span className="text-sm">
-          {required ? t("requireOn") : t("requireOff")}
-        </span>
-      </p>
-      {without === null ? null : (
-        <p className="text-muted-foreground text-sm">
-          {t("membersWithout", { count: without.length })}
-        </p>
-      )}
-      {error === null ? null : (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {mayChange ? null : (
-        <p className="text-muted-foreground text-sm">
-          {t("requireOwnersOnly")}
-        </p>
-      )}
-      {mayChange && !required && !ownEnabled ? (
-        <div className="flex flex-col items-start gap-2">
-          <p className="text-sm">{t("requireOwnFirst")}</p>
-          {accountLink}
+    <SettingsSection aria-labelledby="two-step-requirement">
+      <SettingsSectionHeader>
+        <div className="min-w-0 flex-1">
+          <SettingsSectionTitle id="two-step-requirement">
+            {t("title")}
+          </SettingsSectionTitle>
+          <SettingsSectionDescription>
+            {t("securityAbout")}
+          </SettingsSectionDescription>
         </div>
-      ) : null}
-      {mayChange && !required && ownEnabled ? (
-        <div>
-          <Button disabled={pending} focusableWhenDisabled onClick={onRequire}>
-            {t("requireConfirmAction")}
-          </Button>
-        </div>
-      ) : null}
-      {mayChange && required ? (
-        <div>
-          <Button
-            variant="outline"
-            disabled={pending}
-            focusableWhenDisabled
-            onClick={onStop}
-          >
-            {t("stopRequiring")}
-          </Button>
-        </div>
-      ) : null}
+      </SettingsSectionHeader>
+      <SettingsCard>
+        <SettingsRow>
+          <SettingsRowText>
+            <SettingsRowLabel>{t("requireLabel")}</SettingsRowLabel>
+            <SettingsRowDescription>
+              {required ? t("requireOn") : t("requireOff")}
+            </SettingsRowDescription>
+            {without === null ? null : (
+              <SettingsRowDescription>
+                {t("membersWithout", { count: without.length })}
+              </SettingsRowDescription>
+            )}
+            {mayChange ? null : (
+              <SettingsRowDescription>
+                {t("requireOwnersOnly")}
+              </SettingsRowDescription>
+            )}
+            {mayChange && !required && !ownEnabled ? (
+              <SettingsRowDescription>
+                {t("requireOwnFirst")}
+              </SettingsRowDescription>
+            ) : null}
+          </SettingsRowText>
+          <SettingsRowControl>
+            <Badge variant={required ? "default" : "outline"}>
+              {required ? t("on") : t("off")}
+            </Badge>
+            {mayChange && !required && !ownEnabled ? accountLink : null}
+            {mayChange && !required && ownEnabled ? (
+              <Button
+                disabled={pending}
+                focusableWhenDisabled
+                onClick={onRequire}
+              >
+                {t("requireConfirmAction")}
+              </Button>
+            ) : null}
+            {mayChange && required ? (
+              <Button
+                variant="outline"
+                disabled={pending}
+                focusableWhenDisabled
+                onClick={onStop}
+              >
+                {t("stopRequiring")}
+              </Button>
+            ) : null}
+          </SettingsRowControl>
+        </SettingsRow>
+        {error === null ? null : (
+          <SettingsCardBody>
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </SettingsCardBody>
+        )}
+      </SettingsCard>
       <Dialog open={confirming} onOpenChange={onCancel}>
         <DialogContent>
           <DialogHeader>
@@ -161,6 +188,6 @@ export const WorkspaceSecurityView = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </section>
+    </SettingsSection>
   );
 };

@@ -294,6 +294,32 @@ pub enum NoticeEvent {
         rule_id: String,
     },
 
+    #[non_exhaustive]
+    VideoGenerationEnded {
+        #[serde(rename = "generationId")]
+        #[serde(default)]
+        generation_id: String,
+        #[serde(rename = "mediaId")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        media_id: Option<String>,
+        outcome: NoticeEventVideoGenerationEndedOutcome,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        reason: Option<VideoFailureReason>,
+    },
+
+    #[non_exhaustive]
+    SlideshowEnded {
+        #[serde(rename = "mediaId")]
+        #[serde(skip_serializing_if = "Option::is_none")]
+        media_id: Option<String>,
+        outcome: NoticeEventSlideshowEndedOutcome,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        reason: Option<SlideshowFailureReason>,
+        #[serde(rename = "slideshowId")]
+        #[serde(default)]
+        slideshow_id: String,
+    },
+
     /// Catch-all variant for unrecognized discriminant values.
     /// If the server sends a discriminant not recognized by the current SDK
     /// version, the raw payload is captured here so callers can still inspect it.
@@ -522,6 +548,30 @@ impl NoticeEvent {
         Self::CommentRuleStopped { reason, rule_id }
     }
 
+    pub fn video_generation_ended(
+        generation_id: String,
+        outcome: NoticeEventVideoGenerationEndedOutcome,
+    ) -> Self {
+        Self::VideoGenerationEnded {
+            generation_id,
+            media_id: None,
+            outcome,
+            reason: None,
+        }
+    }
+
+    pub fn slideshow_ended(
+        outcome: NoticeEventSlideshowEndedOutcome,
+        slideshow_id: String,
+    ) -> Self {
+        Self::SlideshowEnded {
+            media_id: None,
+            outcome,
+            reason: None,
+            slideshow_id,
+        }
+    }
+
     pub fn post_published_with_channel(
         channel: NoticeChannel,
         permalink: Option<String>,
@@ -614,6 +664,62 @@ impl NoticeEvent {
             ends_at,
             post_id,
             reason: Some(reason),
+        }
+    }
+
+    pub fn video_generation_ended_with_media_id(
+        generation_id: String,
+        media_id: String,
+        outcome: NoticeEventVideoGenerationEndedOutcome,
+        reason: Option<VideoFailureReason>,
+    ) -> Self {
+        Self::VideoGenerationEnded {
+            generation_id,
+            media_id: Some(media_id),
+            outcome,
+            reason,
+        }
+    }
+
+    pub fn video_generation_ended_with_reason(
+        generation_id: String,
+        media_id: Option<String>,
+        outcome: NoticeEventVideoGenerationEndedOutcome,
+        reason: VideoFailureReason,
+    ) -> Self {
+        Self::VideoGenerationEnded {
+            generation_id,
+            media_id,
+            outcome,
+            reason: Some(reason),
+        }
+    }
+
+    pub fn slideshow_ended_with_media_id(
+        media_id: String,
+        outcome: NoticeEventSlideshowEndedOutcome,
+        reason: Option<SlideshowFailureReason>,
+        slideshow_id: String,
+    ) -> Self {
+        Self::SlideshowEnded {
+            media_id: Some(media_id),
+            outcome,
+            reason,
+            slideshow_id,
+        }
+    }
+
+    pub fn slideshow_ended_with_reason(
+        media_id: Option<String>,
+        outcome: NoticeEventSlideshowEndedOutcome,
+        reason: SlideshowFailureReason,
+        slideshow_id: String,
+    ) -> Self {
+        Self::SlideshowEnded {
+            media_id,
+            outcome,
+            reason: Some(reason),
+            slideshow_id,
         }
     }
 

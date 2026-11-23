@@ -21,8 +21,16 @@ pub struct AssistantStatus {
     #[serde(rename = "resetsAt")]
     #[serde(default)]
     pub resets_at: String,
+    #[serde(default)]
+    pub slideshows: AssistantSlideshowsStatus,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<AssistantTextSource>,
+    #[serde(default)]
+    pub transcriptions: AssistantTranscriptionsStatus,
+    #[serde(default)]
+    pub videos: AssistantVideosStatus,
+    #[serde(default)]
+    pub voiceovers: AssistantVoiceoversStatus,
 }
 
 impl AssistantStatus {
@@ -42,7 +50,11 @@ pub struct AssistantStatusBuilder {
     reason: Option<AssistantOffReason>,
     remaining: Option<i64>,
     resets_at: Option<String>,
+    slideshows: Option<AssistantSlideshowsStatus>,
     source: Option<AssistantTextSource>,
+    transcriptions: Option<AssistantTranscriptionsStatus>,
+    videos: Option<AssistantVideosStatus>,
+    voiceovers: Option<AssistantVoiceoversStatus>,
 }
 
 impl AssistantStatusBuilder {
@@ -86,8 +98,28 @@ impl AssistantStatusBuilder {
         self
     }
 
+    pub fn slideshows(mut self, value: AssistantSlideshowsStatus) -> Self {
+        self.slideshows = Some(value);
+        self
+    }
+
     pub fn source(mut self, value: AssistantTextSource) -> Self {
         self.source = Some(value);
+        self
+    }
+
+    pub fn transcriptions(mut self, value: AssistantTranscriptionsStatus) -> Self {
+        self.transcriptions = Some(value);
+        self
+    }
+
+    pub fn videos(mut self, value: AssistantVideosStatus) -> Self {
+        self.videos = Some(value);
+        self
+    }
+
+    pub fn voiceovers(mut self, value: AssistantVoiceoversStatus) -> Self {
+        self.voiceovers = Some(value);
         self
     }
 
@@ -99,6 +131,10 @@ impl AssistantStatusBuilder {
     /// - [`max_text_length`](AssistantStatusBuilder::max_text_length)
     /// - [`remaining`](AssistantStatusBuilder::remaining)
     /// - [`resets_at`](AssistantStatusBuilder::resets_at)
+    /// - [`slideshows`](AssistantStatusBuilder::slideshows)
+    /// - [`transcriptions`](AssistantStatusBuilder::transcriptions)
+    /// - [`videos`](AssistantStatusBuilder::videos)
+    /// - [`voiceovers`](AssistantStatusBuilder::voiceovers)
     pub fn build(self) -> Result<AssistantStatus, BuildError> {
         Ok(AssistantStatus {
             available: self
@@ -121,7 +157,19 @@ impl AssistantStatusBuilder {
             resets_at: self
                 .resets_at
                 .ok_or_else(|| BuildError::missing_field("resets_at"))?,
+            slideshows: self
+                .slideshows
+                .ok_or_else(|| BuildError::missing_field("slideshows"))?,
             source: self.source,
+            transcriptions: self
+                .transcriptions
+                .ok_or_else(|| BuildError::missing_field("transcriptions"))?,
+            videos: self
+                .videos
+                .ok_or_else(|| BuildError::missing_field("videos"))?,
+            voiceovers: self
+                .voiceovers
+                .ok_or_else(|| BuildError::missing_field("voiceovers"))?,
         })
     }
 }

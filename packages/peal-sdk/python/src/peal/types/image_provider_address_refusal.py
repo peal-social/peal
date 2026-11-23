@@ -3,6 +3,8 @@
 import typing
 
 ImageProviderAddressRefusal = typing.Union[
-    typing.Literal["malformed", "notHttps", "credentials", "queryOrFragment", "tooLong", "notPublic", "unknownHost"],
+    typing.Literal[
+        "malformed", "notHttps", "credentials", "queryOrFragment", "tooLong", "notPublic", "unknownHost", "fixedAddress"
+    ],
     typing.Any,
 ]

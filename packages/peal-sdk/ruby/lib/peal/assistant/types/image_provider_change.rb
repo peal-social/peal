@@ -8,9 +8,11 @@ module Peal
 
         field :api_key, -> { String }, optional: true, nullable: false, api_name: "apiKey"
 
-        field :base_url, -> { String }, optional: false, nullable: false, api_name: "baseUrl"
+        field :base_url, -> { String }, optional: true, nullable: false, api_name: "baseUrl"
 
         field :model, -> { String }, optional: false, nullable: false
+
+        field :provider, -> { Peal::Types::AiImageProvider }, optional: true, nullable: false
       end
     end
   end

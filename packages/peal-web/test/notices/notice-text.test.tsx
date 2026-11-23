@@ -266,6 +266,71 @@ describe(useNoticeText, () => {
     );
   });
 
+  it("tells the member who asked how their video ended, and opens the media", async () => {
+    const generationId = "00000000-0000-7000-8000-000000000009";
+
+    await expect(
+      render("en", {
+        _tag: "VideoGenerationEnded",
+        generationId,
+        mediaId: "00000000-0000-7000-8000-00000000a001",
+        outcome: "succeeded",
+        reason: null,
+      })
+    ).resolves.toContain(
+      `The video you asked for in Studio Nord is in the media library. | Open the media | /${workspaceId}/media`
+    );
+    await expect(
+      render("fr", {
+        _tag: "VideoGenerationEnded",
+        generationId,
+        mediaId: null,
+        outcome: "failed",
+        reason: "interrupted",
+      })
+    ).resolves.toContain(
+      "La vidéo que vous avez demandée dans Studio Nord n’a pas pu être créée : le serveur s’est arrêté pendant sa création. Elle n’est pas redemandée, car le fournisseur a pu la créer. | Ouvrir la médiathèque"
+    );
+    await expect(
+      render("en", {
+        _tag: "VideoGenerationEnded",
+        generationId,
+        mediaId: null,
+        outcome: "failed",
+        reason: "timedOut",
+      })
+    ).resolves.toContain(
+      "could not be made: the video took longer than Peal waits."
+    );
+  });
+
+  it("tells the member who asked how their slide video ended", async () => {
+    const slideshowId = "00000000-0000-7000-8000-00000000000a";
+
+    await expect(
+      render("en", {
+        _tag: "SlideshowEnded",
+        mediaId: "00000000-0000-7000-8000-00000000a002",
+        outcome: "succeeded",
+        reason: null,
+        slideshowId,
+      })
+    ).resolves.toContain(
+      `The slide video you asked for in Studio Nord is in the media library. | Open the media | /${workspaceId}/media`
+    );
+    await expect(
+      render("fr", {
+        _tag: "SlideshowEnded",
+        mediaId: null,
+        outcome: "failed",
+        reason: "settingsRefused",
+        slideshowId,
+      })
+    ).resolves.toContain(
+      "La vidéo de diapositives que vous avez demandée dans Studio Nord n’a pas pu être créée : Shotstack a refusé la clé ou le compte"
+    );
+  });
+
   it("says why a webhook endpoint was turned off, and opens the webhooks", async () => {
     const failing: NoticeEvent = {
       _tag: "WebhookEndpointDisabled",

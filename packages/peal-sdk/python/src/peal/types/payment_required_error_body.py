@@ -8,28 +8,21 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .allowance_reason import AllowanceReason
-from .meter import Meter
 from .paid_plan import PaidPlan
 from .plan import Plan
 from .plan_limit import PlanLimit
 
 
-class PaymentRequiredErrorBody_UsageAllowanceReached(UniversalBaseModel):
+class PaymentRequiredErrorBody_CompositionNeedsPayment(UniversalBaseModel):
     type: typing_extensions.Annotated[
-        typing.Literal["UsageAllowanceReached"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
-    ] = "UsageAllowanceReached"
+        typing.Literal["CompositionNeedsPayment"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "CompositionNeedsPayment"
     code: typing.Optional[str] = None
     message: typing.Optional[str] = None
     request_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="requestId"), pydantic.Field(alias="requestId")
     ] = None
-    allowed: int
     billing_url: typing_extensions.Annotated[str, FieldMetadata(alias="billingUrl"), pydantic.Field(alias="billingUrl")]
-    meter: Meter
-    reason: AllowanceReason
-    resets_at: typing_extensions.Annotated[str, FieldMetadata(alias="resetsAt"), pydantic.Field(alias="resetsAt")]
-    used: int
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
@@ -70,6 +63,6 @@ class PaymentRequiredErrorBody_PlanLimitReached(UniversalBaseModel):
 
 
 PaymentRequiredErrorBody = typing_extensions.Annotated[
-    typing.Union[PaymentRequiredErrorBody_UsageAllowanceReached, PaymentRequiredErrorBody_PlanLimitReached],
+    typing.Union[PaymentRequiredErrorBody_CompositionNeedsPayment, PaymentRequiredErrorBody_PlanLimitReached],
     pydantic.Field(discriminator="type"),
 ]

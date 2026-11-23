@@ -9,7 +9,7 @@ class PaymentRequiredErrorBody extends JsonSerializableType
 {
     /**
      * @var (
-     *    'UsageAllowanceReached'
+     *    'CompositionNeedsPayment'
      *   |'PlanLimitReached'
      *   |'_unknown'
      * ) $type
@@ -18,7 +18,7 @@ class PaymentRequiredErrorBody extends JsonSerializableType
 
     /**
      * @var (
-     *    UsageAllowanceReachedEncoded
+     *    CompositionNeedsPaymentEncoded
      *   |PlanLimitReachedEncoded
      *   |mixed
      * ) $value
@@ -28,12 +28,12 @@ class PaymentRequiredErrorBody extends JsonSerializableType
     /**
      * @param array{
      *   type: (
-     *    'UsageAllowanceReached'
+     *    'CompositionNeedsPayment'
      *   |'PlanLimitReached'
      *   |'_unknown'
      * ),
      *   value: (
-     *    UsageAllowanceReachedEncoded
+     *    CompositionNeedsPaymentEncoded
      *   |PlanLimitReachedEncoded
      *   |mixed
      * ),
@@ -47,14 +47,14 @@ class PaymentRequiredErrorBody extends JsonSerializableType
     }
 
     /**
-     * @param UsageAllowanceReachedEncoded $usageAllowanceReached
+     * @param CompositionNeedsPaymentEncoded $compositionNeedsPayment
      * @return PaymentRequiredErrorBody
      */
-    public static function usageAllowanceReached(UsageAllowanceReachedEncoded $usageAllowanceReached): PaymentRequiredErrorBody
+    public static function compositionNeedsPayment(CompositionNeedsPaymentEncoded $compositionNeedsPayment): PaymentRequiredErrorBody
     {
         return new PaymentRequiredErrorBody([
-            'type' => 'UsageAllowanceReached',
-            'value' => $usageAllowanceReached,
+            'type' => 'CompositionNeedsPayment',
+            'value' => $compositionNeedsPayment,
         ]);
     }
 
@@ -73,19 +73,19 @@ class PaymentRequiredErrorBody extends JsonSerializableType
     /**
      * @return bool
      */
-    public function isUsageAllowanceReached(): bool
+    public function isCompositionNeedsPayment(): bool
     {
-        return $this->value instanceof UsageAllowanceReachedEncoded && $this->type === 'UsageAllowanceReached';
+        return $this->value instanceof CompositionNeedsPaymentEncoded && $this->type === 'CompositionNeedsPayment';
     }
 
     /**
-     * @return UsageAllowanceReachedEncoded
+     * @return CompositionNeedsPaymentEncoded
      */
-    public function asUsageAllowanceReached(): UsageAllowanceReachedEncoded
+    public function asCompositionNeedsPayment(): CompositionNeedsPaymentEncoded
     {
-        if (!($this->value instanceof UsageAllowanceReachedEncoded && $this->type === 'UsageAllowanceReached')) {
+        if (!($this->value instanceof CompositionNeedsPaymentEncoded && $this->type === 'CompositionNeedsPayment')) {
             throw new Exception(
-                "Expected UsageAllowanceReached; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected CompositionNeedsPayment; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -134,8 +134,8 @@ class PaymentRequiredErrorBody extends JsonSerializableType
         $result = array_merge($base, $result);
 
         switch ($this->type) {
-            case 'UsageAllowanceReached':
-                $value = $this->asUsageAllowanceReached()->jsonSerialize();
+            case 'CompositionNeedsPayment':
+                $value = $this->asCompositionNeedsPayment()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case 'PlanLimitReached':
@@ -178,8 +178,8 @@ class PaymentRequiredErrorBody extends JsonSerializableType
 
         $args['type'] = $type;
         switch ($type) {
-            case 'UsageAllowanceReached':
-                $args['value'] = UsageAllowanceReachedEncoded::jsonDeserialize($data);
+            case 'CompositionNeedsPayment':
+                $args['value'] = CompositionNeedsPaymentEncoded::jsonDeserialize($data);
                 break;
             case 'PlanLimitReached':
                 $args['value'] = PlanLimitReachedEncoded::jsonDeserialize($data);

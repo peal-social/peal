@@ -2,13 +2,18 @@ import { Context } from "effect";
 import type { Effect, Option, Redacted } from "effect";
 
 import type { ProviderSecretsNotConfigured } from "#assistant/application/provider-secrets-not-configured.ts";
+import type { ConnectedProviderId } from "#assistant/domain/ai-capability.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 
 /**
- * What a workspace's provider is for: its images or its text. A key sealed
- * for one never opens for the other.
+ * What a workspace's key is bound to: the provider it connected
+ * (`connection`), or, for the keys the release before kept, its images or
+ * its text provider. A key sealed for one never opens for another.
  */
-export type ProviderUse = "images" | "text";
+export type ProviderUse =
+  | "images"
+  | "text"
+  | { readonly connection: ConnectedProviderId };
 
 /**
  * A workspace's provider key as it is kept: encrypted

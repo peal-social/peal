@@ -62,7 +62,36 @@ public class StatusTest : BaseMockServerTest
               "reason": "paymentMethod",
               "remaining": 1,
               "resetsAt": "resetsAt",
-              "source": "workspace"
+              "slideshows": {
+                "available": true,
+                "dailyLimit": 1,
+                "paymentMethodRequired": true,
+                "provider": "anthropic",
+                "remaining": 1,
+                "sandbox": true
+              },
+              "source": "workspace",
+              "transcriptions": {
+                "available": true,
+                "dailyLimit": 1,
+                "maxBytes": 1,
+                "provider": "anthropic",
+                "remaining": 1
+              },
+              "videos": {
+                "available": true,
+                "dailyLimit": 1,
+                "maxPromptLength": 1,
+                "provider": "anthropic",
+                "remaining": 1
+              },
+              "voiceovers": {
+                "available": true,
+                "dailyLimit": 1,
+                "maxTextLength": 1,
+                "provider": "anthropic",
+                "remaining": 1
+              }
             }
             """;
 
@@ -138,7 +167,36 @@ public class StatusTest : BaseMockServerTest
               "reason": "paymentMethod",
               "remaining": 1,
               "resetsAt": "resetsAt",
-              "source": "workspace"
+              "slideshows": {
+                "available": true,
+                "dailyLimit": 1,
+                "paymentMethodRequired": true,
+                "provider": "anthropic",
+                "remaining": 1,
+                "sandbox": true
+              },
+              "source": "workspace",
+              "transcriptions": {
+                "available": true,
+                "dailyLimit": 1,
+                "maxBytes": 1,
+                "provider": "anthropic",
+                "remaining": 1
+              },
+              "videos": {
+                "available": true,
+                "dailyLimit": 1,
+                "maxPromptLength": 1,
+                "provider": "anthropic",
+                "remaining": 1
+              },
+              "voiceovers": {
+                "available": true,
+                "dailyLimit": 1,
+                "maxTextLength": 1,
+                "provider": "anthropic",
+                "remaining": 1
+              }
             }
             """;
 

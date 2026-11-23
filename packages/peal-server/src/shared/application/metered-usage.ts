@@ -107,6 +107,14 @@ export class MeteredUsage extends Context.Service<
      */
     readonly forgive: (claim: MeterClaim) => Effect.Effect<void, DatabaseError>;
     /**
+     * Whether the workspace's billing account pays with a payment method
+     * now (a subscription active or past due: a trial needs none); none on
+     * a server that does not bill.
+     */
+    readonly paymentMethod: (
+      workspaceId: WorkspaceId
+    ) => Effect.Effect<Option.Option<boolean>, DatabaseError>;
+    /**
      * The meter of the workspace's billing account now; none on a server
      * that does not bill, where nothing is refused.
      */
@@ -134,6 +142,7 @@ export class MeteredUsage extends Context.Service<
         ),
       forgive: () => Effect.void,
       giveBack: () => Effect.void,
+      paymentMethod: () => Effect.succeedNone,
       state: () => Effect.succeedNone,
     })
   );

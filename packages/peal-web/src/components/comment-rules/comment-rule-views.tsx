@@ -91,11 +91,11 @@ export const CommentRuleView = ({
   ).length;
 
   return (
-    <li aria-labelledby={titleId} className="flex flex-col gap-2 py-4">
+    <li aria-labelledby={titleId} className="flex flex-col gap-2 px-4 py-3">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span id={titleId} className="font-medium">
+            <span id={titleId} className="text-sm font-medium">
               {t("keywords", { keywords: rule.keywords.join(", ") })}
             </span>
             <Badge variant={rule.status === "active" ? "secondary" : "outline"}>
@@ -115,7 +115,7 @@ export const CommentRuleView = ({
             {t("replied", { count: replied })}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">{actions}</div>
+        <div className="flex flex-wrap items-center gap-2">{actions}</div>
       </div>
       <ul className="flex flex-col gap-1">
         {rule.channels.map(({ channelId, platform, privateReply, reply }) => (
@@ -245,7 +245,7 @@ export const CommentRuleFormView = ({
 
   return (
     <form
-      className="flex flex-col gap-3 rounded-md border p-4"
+      className="flex flex-col gap-4"
       onSubmit={(event) => {
         event.preventDefault();
         onSubmit();

@@ -15,7 +15,7 @@ import type { ReactElement } from "react";
 
 import { nextAccountOf } from "#billing/ladder.ts";
 import { useMoney, useSize } from "#billing/size.ts";
-import { isMeterReason } from "#billing/upgrade.ts";
+import { isFeatureReason, isMeterReason } from "#billing/upgrade.ts";
 import type { UpgradeReason } from "#billing/upgrade.ts";
 import {
   Consent,
@@ -68,6 +68,11 @@ const Reached = ({
   const billing = useTranslations("Billing");
   const size = useSize();
   const format = useFormatter();
+
+  // A feature for paying accounts alone: nothing is counted.
+  if (isFeatureReason(reason)) {
+    return <p>{t("reachedFeature", { workspace: workspaceName })}</p>;
+  }
 
   // X is billed at X's rates, with nothing included: no count to tell.
   if (isMeterReason(reason) && reason.meter === "xApi") {
@@ -139,6 +144,10 @@ const Gives = ({ card, reason }: Pick<UpgradeViewProps, "card" | "reason">) => {
   const t = useTranslations("Upgrade");
   const dollars = useMoney("usd");
   const size = useSize();
+
+  if (isFeatureReason(reason)) {
+    return <p>{t("givesFeature")}</p>;
+  }
 
   if (isMeterReason(reason) && reason.meter === "xApi") {
     return <p>{t("givesX", { ceiling: dollars(card.x.defaultCeiling) })}</p>;
@@ -267,6 +276,7 @@ export const UpgradeView = (props: UpgradeViewProps) => {
       // Only the ceiling before a first paid invoice has a "then".
       const ceiling =
         !isMeterReason(reason) &&
+        !isFeatureReason(reason) &&
         reason.plan === "payAsYouGo" &&
         reason.limit === "channels";
 
@@ -316,8 +326,10 @@ export const UpgradeView = (props: UpgradeViewProps) => {
       <div className="flex flex-col gap-1">
         <Reached reason={reason} workspaceName={workspaceName} />
         <p className="text-muted-foreground">
-          {isMeterReason(reason)
-            ? t("orWait")
+          {isMeterReason(reason) ? t("orWait") : null}
+          {isFeatureReason(reason) ? t("orFeature") : null}
+          {isMeterReason(reason) || isFeatureReason(reason)
+            ? null
             : t("orRemove", { limit: reason.limit })}
         </p>
       </div>

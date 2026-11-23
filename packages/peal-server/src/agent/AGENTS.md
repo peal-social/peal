@@ -75,7 +75,11 @@
   provider never ran it, forgiven when it failed once it had it. The
   first round's claim is made before any event, so its refusal is the
   request's error; a later one ends the run `failed` `allowanceReached`.
-  The title's request counts nothing.
+  The title's request counts nothing. Both are effect/ai models on the AI
+  SDK's (the assistant's guide, `infrastructure/ai-sdk/`), built by
+  `src/app/agent/language-models.ts`: the server's on plain fetch, a
+  workspace's for each round on the guarded fetch (`publicFetchWith`,
+  2 MiB a round), after the guard checked its address.
 - A run (`language-model-agent-runs.ts`) streams up to `maxRounds` (8)
   rounds, each bounded by `roundTimeout` (90 s), the whole run by
   `runTimeout` (110 s), below the web app's `/api` proxy (120 s) and the

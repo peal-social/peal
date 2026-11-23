@@ -8,5 +8,6 @@ export interface TextProvider {
     keyUnreadable: boolean;
     kind: Peal.TextProviderKind;
     model: string;
+    provider: Peal.AiProvider;
     updatedAt: string;
 }

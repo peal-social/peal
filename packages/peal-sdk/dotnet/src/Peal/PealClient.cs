@@ -49,9 +49,12 @@ public partial class PealClient : IPealClient
         Posts = new PostsClient(_client);
         Articles = new ArticlesClient(_client);
         Media = new MediaClient(_client);
+        MediaAudio = new MediaAudioClient(_client);
         Notices = new NoticesClient(_client);
         NotificationPreferences = new NotificationPreferencesClient(_client);
         Assistant = new AssistantClient(_client);
+        VideoGenerations = new VideoGenerationsClient(_client);
+        Slideshows = new SlideshowsClient(_client);
         Members = new MembersClient(_client);
         Invitations = new InvitationsClient(_client);
         Billing = new BillingClient(_client);
@@ -99,11 +102,17 @@ public partial class PealClient : IPealClient
 
     public IMediaClient Media { get; }
 
+    public IMediaAudioClient MediaAudio { get; }
+
     public INoticesClient Notices { get; }
 
     public INotificationPreferencesClient NotificationPreferences { get; }
 
     public IAssistantClient Assistant { get; }
+
+    public IVideoGenerationsClient VideoGenerations { get; }
+
+    public ISlideshowsClient Slideshows { get; }
 
     public IMembersClient Members { get; }
 

@@ -9,7 +9,11 @@ from ..core.serialization import FieldMetadata
 from .assistant_images_status import AssistantImagesStatus
 from .assistant_month import AssistantMonth
 from .assistant_off_reason import AssistantOffReason
+from .assistant_slideshows_status import AssistantSlideshowsStatus
 from .assistant_text_source import AssistantTextSource
+from .assistant_transcriptions_status import AssistantTranscriptionsStatus
+from .assistant_videos_status import AssistantVideosStatus
+from .assistant_voiceovers_status import AssistantVoiceoversStatus
 
 
 class AssistantStatus(UniversalBaseModel):
@@ -23,7 +27,11 @@ class AssistantStatus(UniversalBaseModel):
     reason: typing.Optional[AssistantOffReason] = None
     remaining: int
     resets_at: typing_extensions.Annotated[str, FieldMetadata(alias="resetsAt"), pydantic.Field(alias="resetsAt")]
+    slideshows: AssistantSlideshowsStatus
     source: typing.Optional[AssistantTextSource] = None
+    transcriptions: AssistantTranscriptionsStatus
+    videos: AssistantVideosStatus
+    voiceovers: AssistantVoiceoversStatus
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2

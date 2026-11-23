@@ -109,7 +109,63 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         const read = yield* owner.assistant.textProvider({ params });
 
         assert.deepStrictEqual(read.provider, saved);
+        // A provider saved by its kind alone is named by it.
+        assert.strictEqual(saved.provider, "openai-compatible");
       }).pipe(Effect.provide(assistantTest()))
+    );
+
+    it.effect(
+      "names a provider, at its own address unless another is given",
+      () =>
+        Effect.gen(function* named() {
+          const workspaceId = yield* freshWorkspace;
+          const params = { workspaceId };
+          const owner = yield* as(workspaceId, "owner");
+
+          const saved = yield* owner.assistant.setTextProvider({
+            params,
+            payload: {
+              apiKey: syntheticKey,
+              model: "deepseek-v4-pro",
+              provider: "deepseek",
+            },
+          });
+
+          assert.deepInclude(saved, {
+            baseUrl: "https://api.deepseek.com",
+            kind: "openai-compatible",
+            provider: "deepseek",
+          });
+
+          const anthropic = yield* owner.assistant.setTextProvider({
+            params,
+            payload: {
+              apiKey: syntheticKey,
+              model: "claude-sonnet-5-5",
+              provider: "anthropic",
+            },
+          });
+
+          assert.deepInclude(anthropic, {
+            baseUrl: "https://api.anthropic.com",
+            kind: "anthropic",
+            provider: "anthropic",
+          });
+
+          // Another endpoint has no address of its own.
+          const refused = yield* refusalOf(
+            owner.assistant.setTextProvider({
+              params,
+              payload: {
+                apiKey: syntheticKey,
+                model: "synthetic-text-model",
+                provider: "openai-compatible",
+              },
+            })
+          );
+
+          assert.strictEqual(refused._tag, "TextProviderAddressRefused");
+        }).pipe(Effect.provide(assistantTest()))
     );
 
     it.effect("takes an API key given assistant:configure, and no other", () =>

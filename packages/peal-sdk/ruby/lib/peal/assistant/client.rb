@@ -184,10 +184,11 @@ module Peal
         end
       end
 
-      # Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (`POST
-      # {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its
-      # address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's
-      # command line (since 2026-11-13; before, any client with workspace:write did).
+      # Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI,
+      # Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose
+      # images then spend none of the workspace's daily assistant requests: its address and model, never its key, or
+      # null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before,
+      # any client with workspace:write did).
       #
       # @param request_options [Hash]
       # @param params [Hash]
@@ -228,15 +229,16 @@ module Peal
         end
       end
 
-      # Sets the image provider the workspace brings, an endpoint that speaks the OpenAI images API (`POST
-      # {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests. The
-      # workspace's image prompts then go to `baseUrl` with `apiKey` as a bearer token; the images still take room in
-      # the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it
-      # again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while
-      # `baseUrl` stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked
-      # now, and before every call. The provider is not called: the first image tells whether the settings work. Needs
-      # assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client
-      # with workspace:write did).
+      # Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI,
+      # Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose
+      # images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to
+      # `baseUrl` (the provider's own address when left out) with `apiKey`, through the API `provider` names
+      # (`openai-compatible` when left out); the images still take room in the plan's media storage. Peal keeps the key
+      # encrypted for this workspace and this address, never shows it again, and never sends it to another address:
+      # `apiKey` may be left out to keep the stored one only while `baseUrl` stays exactly the same (to change the model
+      # alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called:
+      # the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but
+      # Peal's command line (since 2026-11-13; before, any client with workspace:write did).
       #
       # @param request_options [Hash]
       # @param params [Peal::Assistant::Types::ImageProviderChange]
@@ -250,7 +252,6 @@ module Peal
       # @example
       #   client.assistant.set_image_provider(
       #     workspace_id: "workspaceId",
-      #     base_url: "baseUrl",
       #     model: "model"
       #   )
       #
@@ -376,8 +377,9 @@ module Peal
       # that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again,
       # and never sends it to another address: `apiKey` may be left out to keep the stored one only while `baseUrl`
       # stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and
-      # before every call. The provider is not called: test it with `POST .../text-provider/test`. Needs
-      # assistant:configure, which no OAuth client holds but Peal's command line.
+      # before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is
+      # not called: test it with `POST .../text-provider/test`. Needs assistant:configure, which no OAuth client holds
+      # but Peal's command line.
       #
       # @param request_options [Hash]
       # @param params [Peal::Assistant::Types::TextProviderChange]
@@ -391,8 +393,6 @@ module Peal
       # @example
       #   client.assistant.set_text_provider(
       #     workspace_id: "workspaceId",
-      #     base_url: "baseUrl",
-      #     kind: "anthropic",
       #     model: "model"
       #   )
       #
@@ -496,6 +496,353 @@ module Peal
           path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/text-provider/test",
           request_options: request_options,
           max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        return if code.between?(200, 299)
+
+        error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+        error_types = {
+          401 => Peal::Types::UnauthenticatedEncoded
+        }
+        error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+        raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+      end
+
+      # Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What
+      # it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds
+      # but Peal's command line.
+      #
+      # @param request_options [Hash]
+      # @param params [Hash]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      #
+      # @example
+      #   client.assistant.providers(workspace_id: "workspaceId")
+      #
+      # @return [Peal::Types::AiProviderConnections]
+      def providers(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "GET",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers",
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::AiProviderConnections.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `openai-compatible`, any endpoint of
+      # the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is
+      # then offered for each use it serves (`PUT .../assistant/models/{capability}`), whose requests spend none of
+      # Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows
+      # it again, and never sends it to another address: `apiKey` may be left out to keep the stored one only while
+      # `baseUrl` stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A
+      # provider reached at its own address alone (`fixedAddress`: ElevenLabs, fal, Shotstack) takes no other
+      # (AiProviderAddressRefused `fixedAddress`): Shotstack takes its production API
+      # (`https://api.shotstack.io/edit/v1`, the default) or its sandbox (`https://api.shotstack.io/edit/stage`, free
+      # and watermarked), each with its own key. The provider is not called: test it with `POST
+      # .../providers/{provider}/test`. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::Assistant::Types::AiProviderConnectionChange]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [Peal::Types::AiProvider] :provider
+      #
+      # @example
+      #   client.assistant.connect_provider(
+      #     workspace_id: "workspaceId",
+      #     provider: "anthropic"
+      #   )
+      #
+      # @return [Peal::Types::AiProviderConnection]
+      def connect_provider(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::Assistant::Types::AiProviderConnectionChange.new(params).to_h
+        non_body_param_names = %w[workspaceId provider]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "PUT",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}",
+          body: body,
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::AiProviderConnection.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Removes the provider and its key, and the uses it served: the server's model works for them again, if it has
+      # one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs
+      # assistant:configure, which no OAuth client holds but Peal's command line.
+      #
+      # @param request_options [Hash]
+      # @param params [Hash]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [Peal::Types::AiProvider] :provider
+      #
+      # @example
+      #   client.assistant.disconnect_provider(
+      #     workspace_id: "workspaceId",
+      #     provider: "anthropic"
+      #   )
+      #
+      # @return [untyped]
+      def disconnect_provider(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "DELETE",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}",
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        return if code.between?(200, 299)
+
+        error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+        error_types = {
+          401 => Peal::Types::UnauthenticatedEncoded
+        }
+        error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+        raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+      end
+
+      # Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request
+      # would go, with `model` (left out, the model the workspace's text is written with when this provider writes it,
+      # else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use.
+      # Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its
+      # address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use:
+      # often a model without structured output). It counts as one of the day's requests to the workspace's own
+      # providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command
+      # line.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::Assistant::Types::AiProviderTest]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [Peal::Types::AiProvider] :provider
+      #
+      # @example
+      #   client.assistant.test_provider(
+      #     workspace_id: "workspaceId",
+      #     provider: "anthropic"
+      #   )
+      #
+      # @return [untyped]
+      def test_provider(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::Assistant::Types::AiProviderTest.new(params).to_h
+        non_body_param_names = %w[workspaceId provider]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "POST",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/providers/#{URI.encode_uri_component(params[:provider].to_s)}/test",
+          body: body,
+          request_options: request_options,
+          max_retries: 0
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        return if code.between?(200, 299)
+
+        error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+        error_types = {
+          401 => Peal::Types::UnauthenticatedEncoded
+        }
+        error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+        raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+      end
+
+      # Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and
+      # the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile.
+      # Needs assistant:configure, which no OAuth client holds but Peal's command line.
+      #
+      # @param request_options [Hash]
+      # @param params [Hash]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      #
+      # @example
+      #   client.assistant.models(workspace_id: "workspaceId")
+      #
+      # @return [Peal::Types::AiCapabilityModels]
+      def models(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "GET",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/models",
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::AiCapabilityModels.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected
+      # otherwise) and offer the use (AiCapabilityNotOffered otherwise), and `model` is required (AiModelRequired) but
+      # for `composition`, whose model is always `edit`. The workspace's drafts or prompts for that use then go to it,
+      # with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model
+      # is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client
+      # holds but Peal's command line.
+      #
+      # @param request_options [Hash]
+      # @param params [Peal::Assistant::Types::AiCapabilityModelChange]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [Peal::Types::AiCapability] :capability
+      #
+      # @example
+      #   client.assistant.set_model(
+      #     workspace_id: "workspaceId",
+      #     capability: "text",
+      #     provider: "anthropic"
+      #   )
+      #
+      # @return [Peal::Types::AiCapabilityModel]
+      def set_model(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request_data = Peal::Assistant::Types::AiCapabilityModelChange.new(params).to_h
+        non_body_param_names = %w[workspaceId capability]
+        body = request_data.except(*non_body_param_names)
+
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "PUT",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/models/#{URI.encode_uri_component(params[:capability].to_s)}",
+          body: body,
+          request_options: request_options
+        )
+        begin
+          response = @client.send(request)
+        rescue Net::HTTPRequestTimeout
+          raise Peal::Errors::TimeoutError
+        end
+        code = response.code.to_i
+        if code.between?(200, 299)
+          (response.body.to_s.empty? ? nil : Peal::Types::AiCapabilityModel.load(response.body))
+        else
+          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
+          error_types = {
+            401 => Peal::Types::UnauthenticatedEncoded
+          }
+          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
+          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
+        end
+      end
+
+      # Leaves a use to the server's model, if it has one (`serverModel`), within the workspace's allowance, or off; the
+      # provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+      #
+      # @param request_options [Hash]
+      # @param params [Hash]
+      # @option request_options [String] :base_url
+      # @option request_options [Hash{String => Object}] :additional_headers
+      # @option request_options [Hash{String => Object}] :additional_query_parameters
+      # @option request_options [Hash{String => Object}] :additional_body_parameters
+      # @option request_options [Integer] :timeout_in_seconds
+      # @option params [String] :workspace_id
+      # @option params [Peal::Types::AiCapability] :capability
+      #
+      # @example
+      #   client.assistant.unset_model(
+      #     workspace_id: "workspaceId",
+      #     capability: "text"
+      #   )
+      #
+      # @return [untyped]
+      def unset_model(request_options: {}, **params)
+        params = Peal::Internal::Types::Utils.normalize_keys(params)
+        request = Peal::Internal::JSON::Request.new(
+          base_url: request_options[:base_url],
+          method: "DELETE",
+          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/assistant/models/#{URI.encode_uri_component(params[:capability].to_s)}",
+          request_options: request_options
         )
         begin
           response = @client.send(request)

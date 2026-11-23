@@ -2,6 +2,11 @@ import { Option, Schema } from "effect";
 import { hasLocale } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import {
+  SettingsSection,
+  SettingsSectionDescription,
+  SettingsSectionHeader,
+} from "peal-ui/components/settings";
 
 import { RecyclingSettings } from "#components/recycling/recycling-settings.tsx";
 import { routing } from "#i18n/routing.ts";
@@ -35,17 +40,22 @@ const RecyclingPage = async ({
   const mayChange = may.has("post:schedule");
 
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-muted-foreground">{t("description")}</p>
-      {mayChange ? null : (
-        <p className="text-muted-foreground text-sm">{t("readOnly")}</p>
-      )}
+    // The frame's header names the page: the list's heading only says what
+    // a rule does, and to those who may only read, why they cannot change it.
+    <SettingsSection>
+      <SettingsSectionHeader>
+        <SettingsSectionDescription>
+          {mayChange
+            ? t("description")
+            : `${t("description")} ${t("readOnly")}`}
+        </SettingsSectionDescription>
+      </SettingsSectionHeader>
       <RecyclingSettings
         workspaceId={workspace.id}
         mayChange={mayChange}
         highlighted={Option.getOrNull(decodeRule(rule))}
       />
-    </div>
+    </SettingsSection>
   );
 };
 

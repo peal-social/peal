@@ -433,6 +433,11 @@ describe("the web app's measurement", { serial: true }, () => {
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Tags")
       .tap();
+    // The Workspace page has a Name of its own, saved as it is left: wait
+    // for the tags' page before typing.
+    await expect(
+      screen.getByRole("heading", "Tags", { level: 1 })
+    ).toBeVisible();
     await screen.getByLabel("Name").fill("Measured");
     await screen.getByRole("button", "Add the tag").tap();
     await expect(screen.getByText("The tag is added.")).toBeVisible();
@@ -526,7 +531,7 @@ describe("the web app's measurement", { serial: true }, () => {
   }) => {
     await asPerson(browser);
     await watchTags(browser);
-    await app.open(`/${slug}/settings/account`);
+    await app.open(`/${slug}/settings/account/preferences`);
     await screen.getByRole("button", "Don’t allow").tap();
     await expect(screen.getByText(/^Not allowed since /u)).toBeVisible();
 
@@ -576,6 +581,9 @@ describe("the web app's measurement", { serial: true }, () => {
       .getByRole("navigation", "Workspace")
       .getByRole("link", "Tags")
       .tap();
+    await expect(
+      screen.getByRole("heading", "Tags", { level: 1 })
+    ).toBeVisible();
     await screen.getByLabel("Name").fill("Unmeasured");
     await screen.getByRole("button", "Add the tag").tap();
     await expect(screen.getByText("The tag is added.")).toBeVisible();

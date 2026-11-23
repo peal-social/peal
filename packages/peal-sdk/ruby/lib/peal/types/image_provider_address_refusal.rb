@@ -14,6 +14,7 @@ module Peal
       TOO_LONG = "tooLong"
       NOT_PUBLIC = "notPublic"
       UNKNOWN_HOST = "unknownHost"
+      FIXED_ADDRESS = "fixedAddress"
     end
   end
 end

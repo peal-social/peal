@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "21d16513-997c-4142-b872-84c58ce11c50",
+  "prevIds": [
+    "54e1d4d9-06ff-4e5e-8482-406967452743"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "assistant",
+        "text_providers",
+        "provider"
+      ],
+      "writes": [
+        "s|col|assistant.text_providers.provider",
+        "n|col|assistant.text_providers.provider",
+        "e|col|assistant.text_providers.provider"
+      ],
+      "reads": [
+        "n|tbl|assistant.text_providers",
+        "n|sch|assistant"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "assistant",
+        "table": "text_providers",
+        "name": "provider",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

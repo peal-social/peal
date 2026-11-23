@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 public final class MediaKind {
+    public static final MediaKind AUDIO = new MediaKind(Value.AUDIO, "audio");
+
     public static final MediaKind IMAGE = new MediaKind(Value.IMAGE, "image");
 
     public static final MediaKind DOCUMENT = new MediaKind(Value.DOCUMENT, "document");
@@ -44,6 +46,8 @@ public final class MediaKind {
 
     public <T> T visit(Visitor<T> visitor) {
         switch (value) {
+            case AUDIO:
+                return visitor.visitAudio();
             case IMAGE:
                 return visitor.visitImage();
             case DOCUMENT:
@@ -59,6 +63,8 @@ public final class MediaKind {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public static MediaKind valueOf(String value) {
         switch (value) {
+            case "audio":
+                return AUDIO;
             case "image":
                 return IMAGE;
             case "document":
@@ -77,6 +83,8 @@ public final class MediaKind {
 
         DOCUMENT,
 
+        AUDIO,
+
         UNKNOWN
     }
 
@@ -86,6 +94,8 @@ public final class MediaKind {
         T visitVideo();
 
         T visitDocument();
+
+        T visitAudio();
 
         T visitUnknown(String unknownType);
     }

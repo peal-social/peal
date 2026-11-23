@@ -5,9 +5,15 @@ package social.peal.resources.assistant;
 
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
+import social.peal.resources.assistant.requests.AiCapabilityModelChange;
+import social.peal.resources.assistant.requests.AiProviderConnectionChange;
+import social.peal.resources.assistant.requests.AiProviderTest;
+import social.peal.resources.assistant.requests.DisconnectProviderAssistantRequest;
 import social.peal.resources.assistant.requests.ImageProviderAssistantRequest;
 import social.peal.resources.assistant.requests.ImageProviderChange;
 import social.peal.resources.assistant.requests.ImageRequest;
+import social.peal.resources.assistant.requests.ModelsAssistantRequest;
+import social.peal.resources.assistant.requests.ProvidersAssistantRequest;
 import social.peal.resources.assistant.requests.RemoveImageProviderAssistantRequest;
 import social.peal.resources.assistant.requests.RemoveTextProviderAssistantRequest;
 import social.peal.resources.assistant.requests.StatusAssistantRequest;
@@ -15,6 +21,13 @@ import social.peal.resources.assistant.requests.SuggestionRequest;
 import social.peal.resources.assistant.requests.TestTextProviderAssistantRequest;
 import social.peal.resources.assistant.requests.TextProviderAssistantRequest;
 import social.peal.resources.assistant.requests.TextProviderChange;
+import social.peal.resources.assistant.requests.UnsetModelAssistantRequest;
+import social.peal.types.AiCapability;
+import social.peal.types.AiCapabilityModel;
+import social.peal.types.AiCapabilityModels;
+import social.peal.types.AiProvider;
+import social.peal.types.AiProviderConnection;
+import social.peal.types.AiProviderConnections;
 import social.peal.types.AssistantStatus;
 import social.peal.types.ImageProvider;
 import social.peal.types.ImageProviderSetting;
@@ -99,28 +112,28 @@ public class AssistantClient {
     }
 
     /**
-     * Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public ImageProviderSetting imageProvider(String workspaceId) {
         return this.rawClient.imageProvider(workspaceId).body();
     }
 
     /**
-     * Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public ImageProviderSetting imageProvider(String workspaceId, RequestOptions requestOptions) {
         return this.rawClient.imageProvider(workspaceId, requestOptions).body();
     }
 
     /**
-     * Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public ImageProviderSetting imageProvider(String workspaceId, ImageProviderAssistantRequest request) {
         return this.rawClient.imageProvider(workspaceId, request).body();
     }
 
     /**
-     * Reads the image provider the workspace brought, an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public ImageProviderSetting imageProvider(
             String workspaceId, ImageProviderAssistantRequest request, RequestOptions requestOptions) {
@@ -130,14 +143,14 @@ public class AssistantClient {
     }
 
     /**
-     * Sets the image provider the workspace brings, an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> with <code>apiKey</code> as a bearer token; the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+     * Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> (the provider's own address when left out) with <code>apiKey</code>, through the API <code>provider</code> names (<code>openai-compatible</code> when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public ImageProvider setImageProvider(String workspaceId, ImageProviderChange request) {
         return this.rawClient.setImageProvider(workspaceId, request).body();
     }
 
     /**
-     * Sets the image provider the workspace brings, an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> with <code>apiKey</code> as a bearer token; the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
+     * Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> (the provider's own address when left out) with <code>apiKey</code>, through the API <code>provider</code> names (<code>openai-compatible</code> when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public ImageProvider setImageProvider(
             String workspaceId, ImageProviderChange request, RequestOptions requestOptions) {
@@ -205,14 +218,14 @@ public class AssistantClient {
     }
 
     /**
-     * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public TextProvider setTextProvider(String workspaceId, TextProviderChange request) {
         return this.rawClient.setTextProvider(workspaceId, request).body();
     }
 
     /**
-     * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public TextProvider setTextProvider(String workspaceId, TextProviderChange request, RequestOptions requestOptions) {
         return this.rawClient
@@ -276,5 +289,221 @@ public class AssistantClient {
     public void testTextProvider(
             String workspaceId, TestTextProviderAssistantRequest request, RequestOptions requestOptions) {
         this.rawClient.testTextProvider(workspaceId, request, requestOptions).body();
+    }
+
+    /**
+     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnections providers(String workspaceId) {
+        return this.rawClient.providers(workspaceId).body();
+    }
+
+    /**
+     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnections providers(String workspaceId, RequestOptions requestOptions) {
+        return this.rawClient.providers(workspaceId, requestOptions).body();
+    }
+
+    /**
+     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnections providers(String workspaceId, ProvidersAssistantRequest request) {
+        return this.rawClient.providers(workspaceId, request).body();
+    }
+
+    /**
+     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnections providers(
+            String workspaceId, ProvidersAssistantRequest request, RequestOptions requestOptions) {
+        return this.rawClient.providers(workspaceId, request, requestOptions).body();
+    }
+
+    /**
+     * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnection connectProvider(String workspaceId, AiProvider provider) {
+        return this.rawClient.connectProvider(workspaceId, provider).body();
+    }
+
+    /**
+     * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnection connectProvider(
+            String workspaceId, AiProvider provider, RequestOptions requestOptions) {
+        return this.rawClient
+                .connectProvider(workspaceId, provider, requestOptions)
+                .body();
+    }
+
+    /**
+     * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnection connectProvider(
+            String workspaceId, AiProvider provider, AiProviderConnectionChange request) {
+        return this.rawClient.connectProvider(workspaceId, provider, request).body();
+    }
+
+    /**
+     * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiProviderConnection connectProvider(
+            String workspaceId,
+            AiProvider provider,
+            AiProviderConnectionChange request,
+            RequestOptions requestOptions) {
+        return this.rawClient
+                .connectProvider(workspaceId, provider, request, requestOptions)
+                .body();
+    }
+
+    /**
+     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void disconnectProvider(String workspaceId, AiProvider provider) {
+        this.rawClient.disconnectProvider(workspaceId, provider).body();
+    }
+
+    /**
+     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void disconnectProvider(String workspaceId, AiProvider provider, RequestOptions requestOptions) {
+        this.rawClient.disconnectProvider(workspaceId, provider, requestOptions).body();
+    }
+
+    /**
+     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void disconnectProvider(
+            String workspaceId, AiProvider provider, DisconnectProviderAssistantRequest request) {
+        this.rawClient.disconnectProvider(workspaceId, provider, request).body();
+    }
+
+    /**
+     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void disconnectProvider(
+            String workspaceId,
+            AiProvider provider,
+            DisconnectProviderAssistantRequest request,
+            RequestOptions requestOptions) {
+        this.rawClient
+                .disconnectProvider(workspaceId, provider, request, requestOptions)
+                .body();
+    }
+
+    /**
+     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void testProvider(String workspaceId, AiProvider provider) {
+        this.rawClient.testProvider(workspaceId, provider).body();
+    }
+
+    /**
+     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void testProvider(String workspaceId, AiProvider provider, RequestOptions requestOptions) {
+        this.rawClient.testProvider(workspaceId, provider, requestOptions).body();
+    }
+
+    /**
+     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void testProvider(String workspaceId, AiProvider provider, AiProviderTest request) {
+        this.rawClient.testProvider(workspaceId, provider, request).body();
+    }
+
+    /**
+     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void testProvider(
+            String workspaceId, AiProvider provider, AiProviderTest request, RequestOptions requestOptions) {
+        this.rawClient
+                .testProvider(workspaceId, provider, request, requestOptions)
+                .body();
+    }
+
+    /**
+     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiCapabilityModels models(String workspaceId) {
+        return this.rawClient.models(workspaceId).body();
+    }
+
+    /**
+     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiCapabilityModels models(String workspaceId, RequestOptions requestOptions) {
+        return this.rawClient.models(workspaceId, requestOptions).body();
+    }
+
+    /**
+     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiCapabilityModels models(String workspaceId, ModelsAssistantRequest request) {
+        return this.rawClient.models(workspaceId, request).body();
+    }
+
+    /**
+     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiCapabilityModels models(
+            String workspaceId, ModelsAssistantRequest request, RequestOptions requestOptions) {
+        return this.rawClient.models(workspaceId, request, requestOptions).body();
+    }
+
+    /**
+     * Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and <code>model</code> is required (AiModelRequired) but for <code>composition</code>, whose model is always <code>edit</code>. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiCapabilityModel setModel(String workspaceId, AiCapability capability, AiCapabilityModelChange request) {
+        return this.rawClient.setModel(workspaceId, capability, request).body();
+    }
+
+    /**
+     * Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and <code>model</code> is required (AiModelRequired) but for <code>composition</code>, whose model is always <code>edit</code>. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public AiCapabilityModel setModel(
+            String workspaceId,
+            AiCapability capability,
+            AiCapabilityModelChange request,
+            RequestOptions requestOptions) {
+        return this.rawClient
+                .setModel(workspaceId, capability, request, requestOptions)
+                .body();
+    }
+
+    /**
+     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void unsetModel(String workspaceId, AiCapability capability) {
+        this.rawClient.unsetModel(workspaceId, capability).body();
+    }
+
+    /**
+     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void unsetModel(String workspaceId, AiCapability capability, RequestOptions requestOptions) {
+        this.rawClient.unsetModel(workspaceId, capability, requestOptions).body();
+    }
+
+    /**
+     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void unsetModel(String workspaceId, AiCapability capability, UnsetModelAssistantRequest request) {
+        this.rawClient.unsetModel(workspaceId, capability, request).body();
+    }
+
+    /**
+     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public void unsetModel(
+            String workspaceId,
+            AiCapability capability,
+            UnsetModelAssistantRequest request,
+            RequestOptions requestOptions) {
+        this.rawClient
+                .unsetModel(workspaceId, capability, request, requestOptions)
+                .body();
     }
 }

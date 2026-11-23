@@ -37,6 +37,15 @@ const imageBrands: ReadonlySet<string> = new Set([
   "msf1",
 ]);
 
+// The second byte of an MPEG audio frame of layer III, with or without its
+// checksum, for MPEG-1, MPEG-2 and MPEG-2.5.
+const mpegLayerThree: ReadonlySet<number> = new Set([
+  0xe2, 0xe3, 0xf2, 0xf3, 0xfa, 0xfb,
+]);
+
+// Brands of audio alone in the same container (M4A, M4B).
+const audioBrands: ReadonlySet<string> = new Set(["M4A ", "M4B "]);
+
 /**
  * The accepted format a file's first bytes say it is, whatever its name or
  * the content type its host gives it: none for anything else. The probe
@@ -63,6 +72,19 @@ export const sniffContentType = (
     return Option.some("image/webp");
   }
 
+  if (ascii(bytes, 0, 4) === "RIFF" && ascii(bytes, 8, 12) === "WAVE") {
+    return Option.some("audio/wav");
+  }
+
+  // MP3: its ID3 tag, or the sync word of its first MPEG audio frame
+  // (eleven bits set, then a version and layer III).
+  if (
+    ascii(bytes, 0, 3) === "ID3" ||
+    (bytes[0] === 0xff && mpegLayerThree.has(bytes[1] ?? 0))
+  ) {
+    return Option.some("audio/mpeg");
+  }
+
   // A PDF starts with its header: the one document Peal stores.
   if (ascii(bytes, 0, 5) === "%PDF-") {
     return Option.some("application/pdf");
@@ -76,6 +98,10 @@ export const sniffContentType = (
 
   if (imageBrands.has(brand)) {
     return Option.none();
+  }
+
+  if (audioBrands.has(brand)) {
+    return Option.some("audio/mp4");
   }
 
   return Option.some(

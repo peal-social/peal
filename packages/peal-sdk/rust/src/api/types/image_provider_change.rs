@@ -6,10 +6,12 @@ pub struct ImageProviderChange {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub api_key: Option<String>,
     #[serde(rename = "baseUrl")]
-    #[serde(default)]
-    pub base_url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base_url: Option<String>,
     #[serde(default)]
     pub model: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub provider: Option<AiImageProvider>,
 }
 
 impl ImageProviderChange {
@@ -24,6 +26,7 @@ pub struct ImageProviderChangeBuilder {
     api_key: Option<String>,
     base_url: Option<String>,
     model: Option<String>,
+    provider: Option<AiImageProvider>,
 }
 
 impl ImageProviderChangeBuilder {
@@ -42,19 +45,22 @@ impl ImageProviderChangeBuilder {
         self
     }
 
+    pub fn provider(mut self, value: AiImageProvider) -> Self {
+        self.provider = Some(value);
+        self
+    }
+
     /// Consumes the builder and constructs a [`ImageProviderChange`].
     /// This method will fail if any of the following fields are not set:
-    /// - [`base_url`](ImageProviderChangeBuilder::base_url)
     /// - [`model`](ImageProviderChangeBuilder::model)
     pub fn build(self) -> Result<ImageProviderChange, BuildError> {
         Ok(ImageProviderChange {
             api_key: self.api_key,
-            base_url: self
-                .base_url
-                .ok_or_else(|| BuildError::missing_field("base_url"))?,
+            base_url: self.base_url,
             model: self
                 .model
                 .ok_or_else(|| BuildError::missing_field("model"))?,
+            provider: self.provider,
         })
     }
 }

@@ -52,8 +52,8 @@ describe("a review link", { serial: true }, () => {
 
     await seedChannel(workspaceId, handle);
     await app.open(`/${slug}/settings`);
+    // The policy is saved as soon as it is chosen.
     await screen.getByRole("radio", "Always").check();
-    await screen.getByRole("main").getByRole("button", "Save").tap();
 
     await expect(
       screen.getByText(

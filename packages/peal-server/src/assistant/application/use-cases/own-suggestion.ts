@@ -73,7 +73,7 @@ export const askOwnProvider = <A, I extends Readonly<Record<string, unknown>>>(
         {
           apiKey: apiKey.value,
           baseUrl: settings.baseUrl,
-          kind: settings.kind,
+          provider: settings.provider,
           model: settings.model,
         },
         prompt,
