@@ -897,7 +897,7 @@
     "submitting": "Saving…",
     "mismatch": "The two passwords differ.",
     "done": "Your password is changed. Sign in with the new one.",
-    "keysRemoved": "Your address is confirmed. Someone used this account before you did, so {count, plural, one {the API key} other {the # API keys}} made in its workspaces before now {count, plural, one {was} other {were}} deleted. Check its workspaces and members once signed in.",
+    "takenBack": "Your address is confirmed, but someone used this account before you did. In the workspaces it alone owns, {keys, plural, =0 {no API key was} one {# API key was} other {# API keys were}} deleted and {invitations, plural, =0 {no pending invitation was} one {# pending invitation was} other {# pending invitations were}} cancelled. Once signed in, check each workspace's members, invitations, webhooks, API keys and connected channels, and remove what isn't yours.",
     "signIn": "Sign in",
     "invalidTitle": "This link no longer works",
     "invalidDescription": "A reset link works once, for an hour.",

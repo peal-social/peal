@@ -897,7 +897,7 @@
     "submitting": "Enregistrement…",
     "mismatch": "Les deux mots de passe diffèrent.",
     "done": "Votre mot de passe est modifié. Connectez-vous avec le nouveau.",
-    "keysRemoved": "Votre adresse est confirmée. Quelqu’un a utilisé ce compte avant vous, donc {count, plural, one {la clé d’API créée} other {les # clés d’API créées}} dans ses espaces de travail jusqu’ici {count, plural, one {a été supprimée} other {ont été supprimées}}. Vérifiez ses espaces de travail et leurs membres une fois connecté.",
+    "takenBack": "Votre adresse est confirmée, mais quelqu’un a utilisé ce compte avant vous. Dans les espaces de travail dont il est le seul propriétaire, {keys, plural, =0 {aucune clé d’API n’a été supprimée} one {# clé d’API a été supprimée} other {# clés d’API ont été supprimées}} et {invitations, plural, =0 {aucune invitation en attente n’a été annulée} one {# invitation en attente a été annulée} other {# invitations en attente ont été annulées}}. Une fois connecté, vérifiez dans chaque espace de travail les membres, les invitations, les webhooks, les clés d’API et les canaux connectés, et retirez ce qui n’est pas à vous.",
     "signIn": "Se connecter",
     "invalidTitle": "Ce lien ne fonctionne plus",
     "invalidDescription": "Un lien de réinitialisation fonctionne une fois, pendant une heure.",

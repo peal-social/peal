@@ -139,12 +139,23 @@ export const refuseRenewalAcrossReset = async (
     return;
   }
 
-  const subject = Option.flatMap(decodeIssued(ctx.context), ({ returned }) =>
-    subjectOf(returned.access_token)
-  );
+  const issued = decodeIssued(ctx.context);
 
-  if (Option.isNone(subject)) {
+  if (Option.isNone(issued)) {
     return;
+  }
+
+  const subject = subjectOf(issued.value.returned.access_token);
+
+  // A grant that named no resource gets an opaque access token, which no
+  // route of Peal's takes and whose subject this hook cannot read: the
+  // command line and MCP clients always name one. It is refused, its tokens
+  // never handed out.
+  if (Option.isNone(subject)) {
+    throw new APIError("BAD_REQUEST", {
+      error: "invalid_target",
+      error_description: "name the resource the token is for",
+    });
   }
 
   const notBefore = await tokensNotBefore(

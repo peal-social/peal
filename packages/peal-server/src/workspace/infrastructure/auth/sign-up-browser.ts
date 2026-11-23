@@ -195,9 +195,12 @@ export const releaseAccount = async (
 /**
  * Whether the account was used before its address was confirmed: a member
  * of a workspace, as only a server that does not ask to confirm addresses
- * lets an unconfirmed account sign in. Such an account is never handed
- * over to the address's owner: what it made (workspaces, their keys) stays
- * with whoever made it, so it is closed instead.
+ * (or did not, when it was used) lets an unconfirmed account sign in. Such
+ * an account is neither released by a link nor taken over by a sign-up nor
+ * joined by a provider: its maker confirms it from their own session, the
+ * address's owner may have it closed in so many words (`erase`), and a
+ * password reset, which proves the address, hands it to the owner with the
+ * keys and pending invitations of the workspaces it alone owns removed.
  */
 export const wasUsed = async (
   ctx: AuthCtx,
@@ -273,7 +276,12 @@ export const takeOver = async (
   const hash = await password.hash(signUp.password);
 
   const updated = await runWithTransaction(ctx.context.adapter, async () => {
-    if (!(await claimUnconfirmed(ctx, user.id))) {
+    // A confirmed address, or an account in use (on a server that once let
+    // unconfirmed accounts in): nothing is taken over, the answer the same.
+    if (
+      !(await claimUnconfirmed(ctx, user.id)) ||
+      (await wasUsed(ctx, user.id))
+    ) {
       return null;
     }
 
@@ -310,6 +318,9 @@ export const takeOver = async (
     return false;
   }
 
+  // Once more, committed: a password sign-in that read the old password may
+  // have written a session the transaction did not see.
+  await internalAdapter.deleteUserSessions(user.id);
   await sendVerificationEmailFn(ctx, updated);
 
   return true;
@@ -561,7 +572,7 @@ export const releaseUnconfirmedAccount = async (
   }
 
   try {
-    return await runWithTransaction(ctx.context.adapter, async () => {
+    const done = await runWithTransaction(ctx.context.adapter, async () => {
       if (!(await confirmUnconfirmed(ctx, userId))) {
         return "none";
       }
@@ -574,6 +585,14 @@ export const releaseUnconfirmedAccount = async (
 
       return "released";
     });
+
+    // Once more, committed: a password sign-in that read the old password
+    // may have written a session the transaction did not see.
+    if (done === "released") {
+      await ctx.context.internalAdapter.deleteUserSessions(userId);
+    }
+
+    return done;
   } catch (error) {
     if (error instanceof UsedAccountError) {
       return "used";
