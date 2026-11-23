@@ -20,7 +20,7 @@ from typing import Any
 import pytest
 import yaml
 
-from conftest import INFRA, render, role_file
+from conftest import INFRA, ansible_render, render, role_file
 
 ROLE = INFRA / "roles" / "peal_backup"
 SCRIPT = ROLE / "templates" / "peal-backup.j2"
@@ -183,7 +183,9 @@ def test_a_collector_still_starting_is_asked_again(tmp_path: Path, collector: Co
 
 
 def test_the_role_retries_a_report_for_a_minute() -> None:
-    assert role_file("peal_backup", "defaults") == {"peal_backup_report_retries": 6, "peal_backup_report_retry_delay": 10}
+    defaults = role_file("peal_backup", "defaults")
+
+    assert (defaults["peal_backup_report_retries"], defaults["peal_backup_report_retry_delay"]) == (6, 10)
 
 
 def test_a_failure_the_collector_misses_still_fails_the_run(tmp_path: Path, collector: Collector) -> None:
@@ -200,7 +202,8 @@ def _unit(name: str) -> dict[str, dict[str, str]]:
     """A unit file, by section and key, as the role writes it."""
     sections: dict[str, dict[str, str]] = {}
     current: dict[str, str] = {}
-    for line in render((ROLE / "templates" / f"{name}.j2").read_text()).splitlines():
+    text = (ROLE / "templates" / f"{name}.j2").read_text()
+    for line in str(ansible_render(text, peal_backup_copy=False)).splitlines():
         if line.startswith("["):
             current = sections.setdefault(line.strip("[]"), {})
         elif "=" in line and not line.startswith("#"):

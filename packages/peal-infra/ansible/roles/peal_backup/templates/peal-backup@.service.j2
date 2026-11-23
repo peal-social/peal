@@ -4,6 +4,10 @@
 Description=Back the Peal database up (%i)
 Requires=docker.service
 After=docker.service
+{% if peal_backup_copy | bool %}
+# Then the backup copy (peal-backup-copy.service), once this one succeeded.
+OnSuccess=peal-backup-copy.service
+{% endif %}
 
 [Service]
 Type=oneshot

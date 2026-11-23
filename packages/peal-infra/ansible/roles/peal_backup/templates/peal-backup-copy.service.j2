@@ -1,0 +1,28 @@
+# Managed by Ansible (peal-infra). Copies the backups into the backup copy's
+# bucket, which a bucket lock keeps for {{ peal_backup_copy_lock_days }} days whatever
+# this server's keys do (README.md, "The backup copy"). Runs after each
+# backup that succeeded and from its daily timer, never during a backup.
+[Unit]
+Description=Copy the Peal database's backups to the locked bucket
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Plain settings; the keys are read by name from the credentials file.
+Environment=PEAL_BACKUP_COPY_ENDPOINT=https://{{ peal_backup_endpoint }}
+Environment=PEAL_BACKUP_COPY_REGION={{ (peal_settings | default({})).get('PGBACKREST_REPO1_S3_REGION', 'auto') }}
+Environment=PEAL_BACKUP_COPY_SOURCE_BUCKET={{ peal_backup_bucket }}
+Environment=PEAL_BACKUP_COPY_SOURCE_PATH={{ peal_backup_path }}
+Environment=PEAL_BACKUP_COPY_BUCKET={{ peal_backup_copy_bucket }}
+Environment=PEAL_BACKUP_COPY_CREDENTIALS={{ peal_root }}/credentials.env
+Environment=PEAL_BACKUP_COPY_REFRESH_DAYS={{ peal_backup_copy_refresh_days }}
+Environment=PEAL_BACKUP_COPY_OTLP_URL=http://127.0.0.1:{{ peal_ports.otlp_http }}/v1/metrics
+Environment=PEAL_BACKUP_COPY_REPORT_RETRIES={{ peal_backup_report_retries }}
+Environment=PEAL_BACKUP_COPY_REPORT_RETRY_DELAY={{ peal_backup_report_retry_delay }}
+# The backups' lock: pgBackRest rewrites backup.info as a backup ends.
+ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 /usr/local/sbin/peal-backup-copy copy
+NoNewPrivileges=true
+PrivateTmp=true
+Nice=10
+IOSchedulingClass=idle

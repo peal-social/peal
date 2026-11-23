@@ -120,6 +120,8 @@ peal_runtime_required_credentials: >-
   {{ peal_required_credentials
      + (['PEAL_HEARTBEAT_TOKEN'] if peal_heartbeat_url else [])
      + (['DOCS_ANTHROPIC_API_KEY'] if peal_docs_server | bool else [])
+     + (['PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID', 'PEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY']
+        if peal_backup_copy | default(false) | bool else [])
      + (['PEAL_BLOG_S3_ACCESS_KEY_ID', 'PEAL_BLOG_S3_SECRET_ACCESS_KEY']
         + (['PEAL_BLOG_RESEND_API_KEY'] if peal_blog_mail | bool else []) if peal_blog | bool else [])
      + ({

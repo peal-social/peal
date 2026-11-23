@@ -285,3 +285,29 @@ def test_the_sandbox_takes_the_blog_s_bucket_but_no_tag_of_its_own(inventory: Pa
     written = yaml.safe_load((inventory / "group_vars" / "sandbox" / "cloudflare.yml").read_text())
     assert written["peal_blog_bucket"] == "peal-sandbox-blog"
     assert "blog" not in written["cloudflare_access_aud"]
+
+
+# The backup copy's (peal_backup_copy): its locked bucket and its key, once
+# the stack has made them (peal:backupCopy); before, nothing of it.
+COPY_OUTPUTS = {
+    "backupCopyBucket": "peal-production-backup-copy",
+    "backupCopyKey": {"accessKeyId": "copy-id", "secretAccessKey": "copy-secret-synthetic"},
+}
+
+
+def test_a_stack_with_the_backup_copy_gives_its_bucket_and_key(inventory: Path) -> None:
+    run(inventory, {**PRODUCTION_OUTPUTS, **COPY_OUTPUTS}, group="production")
+
+    written = yaml.safe_load((inventory / "group_vars" / "production" / "cloudflare.yml").read_text())
+    assert written["peal_backup_copy_bucket"] == "peal-production-backup-copy"
+    credentials = vault_of(inventory, "production")["peal_credentials"]
+    assert credentials["PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID"] == "copy-id"
+    assert credentials["PEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY"] == "copy-secret-synthetic"
+    assert "copy-secret-synthetic" not in (inventory / "group_vars" / "production" / "vault.yml").read_text()
+
+
+def test_a_stack_without_the_backup_copy_writes_nothing_of_it(inventory: Path) -> None:
+    run(inventory, PRODUCTION_OUTPUTS, group="production")
+
+    assert "backup_copy" not in (inventory / "group_vars" / "production" / "cloudflare.yml").read_text()
+    assert not any("BACKUP_COPY" in name for name in vault_of(inventory, "production")["peal_credentials"])

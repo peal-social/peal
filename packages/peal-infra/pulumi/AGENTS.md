@@ -79,4 +79,9 @@ credentials and how to adopt what exists.
   keeps from being bypassed. A day, not more: EmDash overwrites a replaced
   image under the same key, with no hash in its URLs. Production's names alone: the sandbox is
   behind Access.
+- The backup copy (`backupCopy`, off unless `on`: a paid resource the
+  owner approves): its bucket, lock, lifecycle and key
+  (`test/environment-backup-copy.test.ts`). The lock stays longer than a
+  week (pgBackRest's full backups) and shorter than the lifecycle, and its
+  days match the Ansible project's `peal_backup_copy_lock_days`.
 - Pin `@pulumi/pulumi` and `@pulumi/cloudflare` exactly, as everything else.

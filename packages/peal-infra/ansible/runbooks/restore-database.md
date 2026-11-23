@@ -298,6 +298,88 @@ cover: single posts, files or channels deleted since the restore point come
 back with the restore, as only whole accounts and workspaces are recorded;
 and a restore to a point more than 42 days back, which no backup allows.
 
+## The backup copy
+
+Where the environment runs it (`peal_backup_copy`, README.md, "The backup
+copy"), every backup is copied into a second bucket,
+`peal-<environment>-backup-copy`, whose lock keeps each object 14 days
+whatever key asks. Restore from it when the backup bucket's repository is
+gone or cannot be trusted; otherwise restore from the backup bucket, as
+above.
+
+What it protects against: someone who holds the server, or the backups'
+key, deleting or overwriting the backups. The copies of the last 14 days
+stay, and since a full backup is taken each week, so does the newest one
+with everything a restore from it needs. What it does not protect against:
+
+- the backup passphrase lost: the copy holds the files pgBackRest
+  encrypted, and nothing reads them without it. Keep it off the server,
+  where README.md's "Credentials" says;
+- copies older than 14 days: the server's copy key may delete those, and
+  the lifecycle rule deletes everything after 35 days;
+- a server taken more than 14 days before anyone notices: every copy made
+  before then is unlocked. The copy's alerts and the backups' fire within
+  hours of a stop;
+- runs written after the server was taken: whoever holds it may write new
+  runs of their own making. Restore from a run older than the incident.
+
+1. **Take the keys back first.** On a server that was taken, rebuild the
+   server ([A new server](#a-new-server)) rather than trust it, and replace
+   both buckets' keys: on the environment's Pulumi stack,
+   `pulumi up --replace` the URNs of `key-backups` and `key-backup-copy`
+   (`pulumi stack --show-urns`), then `scripts/cloudflare_from_pulumi.py`
+   and `site.yml`, which write the new keys.
+
+2. **List the copy's complete runs**, newest last, each named after the
+   time it started (UTC), with the settings its unit holds:
+
+   ```sh
+   sudo env $(systemctl show peal-backup-copy.service --property=Environment --value) \
+     python3 /usr/local/sbin/peal-backup-copy runs
+   ```
+
+   Pick the newest run from before the incident.
+
+3. **Rebuild the repository from that run**, under a new path of the backup
+   bucket, which must be empty. It writes every file the run's index names;
+   a file the copy lost to its lifecycle rule is listed as `missing`, which
+   only matters when it belongs to the backup you restore (step 4 tells):
+
+   ```sh
+   sudo env $(systemctl show peal-backup-copy.service --property=Environment --value) \
+     python3 /usr/local/sbin/peal-backup-copy rebuild \
+     --run 2026-11-23T021500Z --to-path /production-from-2026-11-23T021500Z
+   ```
+
+4. **See and check the rebuilt backups**, with pgBackRest reading that path
+   (`info` lists them, `verify` reads every file):
+
+   ```sh
+   sudo peal-compose run --rm --no-deps --user postgres --entrypoint pgbackrest \
+     -e PGBACKREST_REPO1_PATH=/production-from-2026-11-23T021500Z postgres info
+   sudo peal-compose run --rm --no-deps --user postgres --entrypoint pgbackrest \
+     -e PGBACKREST_REPO1_PATH=/production-from-2026-11-23T021500Z postgres verify
+   ```
+
+5. **Restore** as [On the same server](#on-the-same-server) does, steps 2
+   to 8, with the same path in step 4's command:
+
+   ```sh
+   sudo peal-compose run --rm --no-deps --user postgres --entrypoint pgbackrest \
+     -e PGBACKREST_REPO1_PATH=/production-from-2026-11-23T021500Z postgres restore --delta
+   ```
+
+   A restore to a time works too, within what the run held.
+
+6. **Start the backups over** on the backup bucket's own path, which holds
+   nothing to trust: [Starting a server's database over](#starting-a-servers-database-over),
+   steps 2 to 7. Keep the rebuilt path until the restore is confirmed final,
+   then delete it in the dashboard. The copy goes on copying from the next
+   backup.
+
+Practise the rebuild on the sandbox with [Practise](#practise): steps 2 to
+4 change nothing of the running server.
+
 ## Starting a server's database over
 
 pgBackRest ties a server's backups to the database cluster they were taken

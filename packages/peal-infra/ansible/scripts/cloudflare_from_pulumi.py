@@ -100,6 +100,9 @@ def inventory_values(group: str, outputs: Outputs) -> dict[str, Any]:
     # The blog's bucket (peal_blog), once the stack has made it.
     if "blogBucket" in outputs:
         values["peal_blog_bucket"] = outputs["blogBucket"]
+    # The backup copy's locked bucket (peal_backup_copy), once made.
+    if "backupCopyBucket" in outputs:
+        values["peal_backup_copy_bucket"] = outputs["backupCopyBucket"]
     return values
 
 
@@ -118,6 +121,10 @@ def vault_values(outputs: Outputs) -> dict[str, str] | None:
     if "blogKey" in outputs:
         values["PEAL_BLOG_S3_ACCESS_KEY_ID"] = outputs["blogKey"]["accessKeyId"]
         values["PEAL_BLOG_S3_SECRET_ACCESS_KEY"] = outputs["blogKey"]["secretAccessKey"]
+    # The backup copy's key, for its bucket alone, once made.
+    if "backupCopyKey" in outputs:
+        values["PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID"] = outputs["backupCopyKey"]["accessKeyId"]
+        values["PEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY"] = outputs["backupCopyKey"]["secretAccessKey"]
     return values
 
 

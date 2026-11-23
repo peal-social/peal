@@ -42,6 +42,14 @@ at the edge for a day, by their whole query (`site-cache`, never a 3xx,
 4xx or 5xx). Before its first `up` with them, check that the peal.social
 zone has no dynamic redirect or cache ruleset made by hand: a zone has one
 ruleset per phase, so one would need importing first.
+With `peal:backupCopy` set to `on`, a stack also makes the backup copy
+(the Ansible project's README, "The backup copy"), a paid resource, off by
+default: `bucket-backup-copy` (`peal-<env>-backup-copy`, protected, kept
+when its resource goes), `lock-backup-copy` (every object locked 14 days,
+`backupCopyLockDays`), `lifecycle-backup-copy` (objects deleted after 35
+days, unfinished uploads after one) and `key-backup-copy`, for that bucket
+alone (`backupCopyBucket`, `backupCopyKey`). The key reads and writes
+objects; neither it nor the server's other keys can change the lock.
 `test/sandbox-resources.ts` holds every resource the sandbox's stack makes,
 by name and inputs: the sandbox is applied, and a change there is a change
 its preview shows.

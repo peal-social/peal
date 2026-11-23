@@ -55,6 +55,11 @@ peal_credentials:
   # PEAL_BLOG_S3_ACCESS_KEY_ID: REPLACE
   # PEAL_BLOG_S3_SECRET_ACCESS_KEY: REPLACE
   # PEAL_BLOG_RESEND_API_KEY: REPLACE
+  # With peal_backup_copy (README.md, "The backup copy"): the locked copy
+  # bucket's key, for that bucket alone, which
+  # scripts/cloudflare_from_pulumi.py writes once the stack has made it.
+  # PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID: REPLACE
+  # PEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY: REPLACE
   # Optional, each turning a feature on (the docs' environment variables
   # page): the writing assistant's provider key; Stripe's, with
   # STRIPE_LOOKUP_KEY_PREFIX in peal_settings when its prices' lookup keys
