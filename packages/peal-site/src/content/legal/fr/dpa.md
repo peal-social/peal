@@ -1,10 +1,10 @@
 ---
 title: Accord de traitement des données
 description: Ce que Peal fait, en tant que sous-traitant, des données personnelles qu’une organisation traite au moyen du service hébergé (article 28 du RGPD).
-draft: true
+draft: false
 ---
 
-Date d’entrée en vigueur : [Date]
+Date d’entrée en vigueur : 23 novembre 2026
 
 ## En bref
 
@@ -19,7 +19,8 @@ Ce résumé vous aide à lire l’accord. Il n’en fait pas partie, et ce sont 
 
 ## À propos de cet accord
 
-Cet accord de traitement des données fait partie des [conditions d’utilisation](/fr/terms/) conclues entre Peal SAS (« nous »), 15 rue Paul Verlaine, 85710 La Garnache, France, et le client qui les a acceptées (« vous »). Il s’applique chaque fois que nous traitons des données personnelles pour votre compte dans le service Peal hébergé à l’adresse app.peal.social, et il constitue le contrat qu’exige l’article 28, paragraphe 3, du règlement général sur la protection des données (RGPD) de l’Union européenne.
+- Cet accord de traitement des données fait partie des [conditions d’utilisation](/fr/terms/) conclues entre Peal SAS (« nous »), 15 rue Paul Verlaine, 85710 La Garnache, France, et le client qui les a acceptées (« vous »).
+- Il s’applique chaque fois que nous traitons des données personnelles pour votre compte dans le service Peal hébergé à l’adresse app.peal.social, et il constitue le contrat qu’exige l’article 28, paragraphe 3, du règlement général sur la protection des données (RGPD) de l’Union européenne.
 
 Vous l’acceptez avec les conditions, et il ne demande aucune signature. Si vos propres règles demandent un exemplaire signé, écrivez à privacy@peal.social et nous vous en envoyons un contresigné.
 
@@ -31,7 +32,8 @@ Lorsque cet accord et les conditions se contredisent au sujet des données perso
 
 **En clair**
 
-C’est le contrat RGPD entre votre organisation et nous. Il vient avec les conditions, il n’y a donc rien à signer, et il ne concerne que les données que nous traitons pour vous.
+- C’est le contrat RGPD entre votre organisation et nous.
+- Il vient avec les conditions, il n’y a donc rien à signer, et il ne concerne que les données que nous traitons pour vous.
 
 </aside>
 
@@ -49,7 +51,8 @@ C’est le contrat RGPD entre votre organisation et nous. Il vient avec les cond
 
 **En clair**
 
-Les mots ont le sens que leur donne le RGPD. « Vos données personnelles », ce sont les données d’autres personnes que vous traitez au moyen de Peal.
+- Les mots ont le sens que leur donne le RGPD.
+- « Vos données personnelles », ce sont les données d’autres personnes que vous traitez au moyen de Peal.
 
 </aside>
 
@@ -65,7 +68,9 @@ Pour les données que la [politique de confidentialité](/fr/privacy/) désigne 
 
 **En clair**
 
-Vous décidez de ce qui est fait des données de votre audience et de vos contacts, et nous l’exécutons. Si vous travaillez pour des clients, il en va de même un cran plus haut. Pour votre propre compte et votre facturation, nous répondons nous-mêmes des données.
+- Vous décidez de ce qui est fait des données de votre audience et de vos contacts, et nous l’exécutons.
+- Si vous travaillez pour des clients, il en va de même un cran plus haut.
+- Pour votre propre compte et votre facturation, nous répondons nous-mêmes des données.
 
 </aside>
 
@@ -83,7 +88,8 @@ Nous ne vendons pas vos données personnelles. Nous ne nous en servons pas pour 
 
 **En clair**
 
-Nous faisons ce dont le service a besoin et ce que vous demandez par son intermédiaire, et rien d’autre. Si l’une de vos instructions nous paraît illicite, nous vous le disons.
+- Nous faisons ce dont le service a besoin et ce que vous demandez par son intermédiaire, et rien d’autre.
+- Si l’une de vos instructions nous paraît illicite, nous vous le disons.
 
 </aside>
 
@@ -109,7 +115,8 @@ Vous êtes responsable de la sécurité de ce que vous maîtrisez : les mots de 
 
 **En clair**
 
-Nous sécurisons le service comme le décrit l’annexe II. Vous sécurisez votre côté : qui est membre, avec quel rôle, et quelles clés et applications peuvent agir pour vous.
+- Nous sécurisons le service comme le décrit l’annexe II.
+- Vous sécurisez votre côté : qui est membre, avec quel rôle, et quelles clés et applications peuvent agir pour vous.
 
 </aside>
 
@@ -119,7 +126,10 @@ Vous nous donnez une autorisation générale de faire appel à des sous-traitant
 
 Nous imposons à chaque sous-traitant ultérieur, par un contrat écrit, des obligations de protection des données équivalentes à celles de cet accord. Nous restons pleinement responsables envers vous de ce qu’un sous-traitant ultérieur fait de vos données personnelles.
 
-Avant qu’un nouveau sous-traitant ultérieur ne commence à traiter vos données personnelles, nous l’annonçons sur cette page et par e-mail aux propriétaires de votre organisation, au moins 30 jours à l’avance. Vous pouvez vous y opposer par écrit à privacy@peal.social avant qu’il ne commence, pour des motifs raisonnables liés à la protection des données. Nous cherchons alors un moyen de fournir le service sans ce sous-traitant ultérieur pour vos données. Si nous n’en trouvons aucun dans les 30 jours qui suivent votre opposition, vous pouvez mettre fin au contrat, ou à la partie du service concernée, sans frais, et nous remboursons la part non utilisée de toute période payée. [À confirmer avec le conseil : le préavis de 30 jours, et si un remplacement urgent, par exemple après la panne d’un prestataire, peut prendre effet plus tôt.]
+- Avant qu’un nouveau sous-traitant ultérieur ne commence à traiter vos données personnelles, nous l’annonçons sur cette page et par e-mail aux propriétaires de votre organisation, au moins 30 jours à l’avance.
+- Vous pouvez vous y opposer par écrit à privacy@peal.social avant qu’il ne commence, pour des motifs raisonnables liés à la protection des données.
+- Nous cherchons alors un moyen de fournir le service sans ce sous-traitant ultérieur pour vos données.
+- Si nous n’en trouvons aucun dans les 30 jours qui suivent votre opposition, vous pouvez mettre fin au contrat, ou à la partie du service concernée, sans frais, et nous remboursons la part non utilisée de toute période payée.
 
 Un fournisseur que vous choisissez vous-même et connectez avec votre propre clé, comme un fournisseur de texte, d’images ou de vidéos, n’est pas notre sous-traitant ultérieur. Il agit pour vous, selon les conditions que vous avez acceptées avec lui.
 
@@ -127,7 +137,9 @@ Un fournisseur que vous choisissez vous-même et connectez avec votre propre cl�
 
 **En clair**
 
-Vous nous autorisez à faire appel aux prestataires de la page des sous-traitants, et nous répondons d’eux. Vous êtes prévenu de l’arrivée d’un nouveau 30 jours à l’avance, et vous pouvez vous y opposer. Si nous ne pouvons pas nous en passer, vous pouvez partir sans frais.
+- Vous nous autorisez à faire appel aux prestataires de la page des sous-traitants, et nous répondons d’eux.
+- Vous êtes prévenu de l’arrivée d’un nouveau 30 jours à l’avance, et vous pouvez vous y opposer.
+- Si nous ne pouvons pas nous en passer, vous pouvez partir sans frais.
 
 </aside>
 
@@ -141,7 +153,8 @@ Si une personne nous écrit pour exercer un droit sur vos données personnelles,
 
 **En clair**
 
-Vous pouvez traiter la plupart des demandes depuis l’application. Si une personne nous écrit au sujet de données qui sont les vôtres, nous l’orientons vers vous et vous aidons là où l’application ne suffit pas.
+- Vous pouvez traiter la plupart des demandes depuis l’application.
+- Si une personne nous écrit au sujet de données qui sont les vôtres, nous l’orientons vers vous et vous aidons là où l’application ne suffit pas.
 
 </aside>
 
@@ -155,7 +168,8 @@ Cette aide est comprise dans le service. Si une demande exige un travail qui va 
 
 **En clair**
 
-Si vous devez évaluer les risques liés à l’utilisation de Peal, ou répondre à une autorité, nous vous donnons les informations dont nous disposons. L’aide courante est gratuite.
+- Si vous devez évaluer les risques liés à l’utilisation de Peal, ou répondre à une autorité, nous vous donnons les informations dont nous disposons.
+- L’aide courante est gratuite.
 
 </aside>
 
@@ -179,13 +193,16 @@ En cas de violation de vos données, vous êtes prévenu rapidement, avec ce qu�
 
 Sur demande, nous vous donnons les informations nécessaires pour démontrer que nous respectons cet accord et l’article 28 du RGPD.
 
-Lorsque ces informations ne suffisent pas, vous pouvez auditer le traitement de vos données personnelles, vous-même ou par l’intermédiaire d’un auditeur indépendant tenu à la confidentialité, une fois par période de 12 mois, et de nouveau après une violation de données personnelles ou lorsqu’une autorité de contrôle l’exige. Vous nous prévenez par écrit 30 jours à l’avance et convenez du périmètre avec nous. L’audit a lieu pendant les heures de travail, sans perturber le service ni accéder aux données d’autres clients, et à vos frais. [À confirmer avec le conseil : la fréquence, le préavis et qui supporte les frais.]
+- Lorsque ces informations ne suffisent pas, vous pouvez auditer le traitement de vos données personnelles, vous-même ou par l’intermédiaire d’un auditeur indépendant tenu à la confidentialité, une fois par période de 12 mois, et de nouveau après une violation de données personnelles ou lorsqu’une autorité de contrôle l’exige.
+- Vous nous prévenez par écrit 30 jours à l’avance et convenez du périmètre avec nous.
+- L’audit a lieu pendant les heures de travail, sans perturber le service ni accéder aux données d’autres clients, et à vos frais.
 
 <aside>
 
 **En clair**
 
-Nous répondons à vos questions sur la façon dont nous protégeons vos données. Si cela ne suffit pas, vous pouvez nous auditer une fois par an, avec un préavis et à vos frais.
+- Nous répondons à vos questions sur la façon dont nous protégeons vos données.
+- Si cela ne suffit pas, vous pouvez nous auditer une fois par an, avec un préavis et à vos frais.
 
 </aside>
 
@@ -201,23 +218,24 @@ Nous ne conservons que ce que le droit de l’Union européenne ou d’un État 
 
 **En clair**
 
-Prenez une copie quand vous le souhaitez. Quand vous partez, vos données sont supprimées, et elles ont disparu des sauvegardes environ cinq semaines plus tard.
+- Prenez une copie quand vous le souhaitez.
+- Quand vous partez, vos données sont supprimées, et elles ont disparu des sauvegardes environ cinq semaines plus tard.
 
 </aside>
 
 ## Transferts internationaux
 
-Le serveur de Peal, sa base de données et ses médias se trouvent dans l’Union européenne. Certains sous-traitants ultérieurs sont établis aux États-Unis ou peuvent accéder aux données depuis ce pays ; la page des [sous-traitants](/fr/subprocessors/) indique lesquels, et ce qui encadre chaque transfert : la décision d’adéquation de la Commission européenne relative au cadre de protection des données UE–États-Unis, ou les clauses contractuelles types adoptées par la Commission (décision d’exécution (UE) 2021/914).
+- Le serveur de Peal, sa base de données et ses médias se trouvent dans l’Union européenne.
+- Certains sous-traitants ultérieurs sont établis aux États-Unis ou peuvent accéder aux données depuis ce pays ; la page des [sous-traitants](/fr/subprocessors/) indique lesquels, et ce qui encadre chaque transfert : la décision d’adéquation de la Commission européenne relative au cadre de protection des données UE–États-Unis, ou les clauses contractuelles types adoptées par la Commission (décision d’exécution (UE) 2021/914).
 
 Nous ne transférons vos données personnelles hors de l’Espace économique européen d’aucune autre manière, sauf sur votre instruction. Publier une publication sur une plateforme que vous avez connectée est une telle instruction.
-
-[À confirmer avec le conseil : pour un client établi hors de l’Espace économique européen, dans un pays sans décision d’adéquation, si les clauses contractuelles types (module quatre, de sous-traitant à responsable du traitement) doivent être incorporées ici.]
 
 <aside>
 
 **En clair**
 
-Vos données restent dans l’UE. Quelques prestataires sont américains, et chacun de ces transferts repose sur une garantie que le droit de l’UE reconnaît.
+- Vos données restent dans l’UE.
+- Quelques prestataires sont américains, et chacun de ces transferts repose sur une garantie que le droit de l’UE reconnaît.
 
 </aside>
 
@@ -233,7 +251,8 @@ Cet accord est régi par le droit français, et les litiges relèvent des tribun
 
 **En clair**
 
-Cet accord dure aussi longtemps que nous détenons vos données. Les règles de responsabilité, le droit applicable et les tribunaux sont ceux des conditions.
+- Cet accord dure aussi longtemps que nous détenons vos données.
+- Les règles de responsabilité, le droit applicable et les tribunaux sont ceux des conditions.
 
 </aside>
 
