@@ -28,8 +28,11 @@
   `test/billing/api/contract.test.ts`: change both, never one. The plan
   `payAsYouGo` is per-account pricing, the only one sold. The pricing functions refuse
   a count that is not a whole number of zero or more (`RangeError`);
-  Stripe's rounding of a half cent on a meter is assumed half up until a
-  sandbox invoice settles it.
+  Stripe rounds a half cent on a meter half up, as the pricing functions
+  do: its sandbox invoices settled it (50 messages and 5 X units bill 1
+  cent each). An invoice under Stripe's minimum charge (50 cents) is marked
+  paid with nothing charged, its amount carried on the customer's balance
+  to the next one.
 - Allowances are computed per billing account (`allowancesOf` in
   `domain/plans.ts`, `Entitlements.allowancesFor(accounts)` and
   `allowanceOf(limit)`): `free` holds the rate card's free accounts (2;

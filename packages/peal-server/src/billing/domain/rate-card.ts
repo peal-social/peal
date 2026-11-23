@@ -288,10 +288,11 @@ export const accountsMonthly = (
 /**
  * What `accountDays` cost, in cents: each band's rate divided by
  * `daysPerMonth` per account-day, the band's bounds multiplied by it, and
- * each band's amount rounded half up to the cent, as Stripe is assumed to
- * round a graduated price (not confirmed; for this ladder half up, half
- * even and rounding the total give the same amounts, as a band's
- * fractions are thirds).
+ * each band's amount rounded to the cent, as Stripe's sandbox invoices
+ * bill a graduated price (61, 62, 63, 301, 3,001, 3,002, 3,005 and 3,200
+ * account-days, to the cent). A band's fractions are thirds, so half up,
+ * half even and rounding the total give the same amounts for this ladder:
+ * those invoices do not tell them apart.
  */
 export const accountsCharge = (
   accountDays: number,
@@ -335,9 +336,9 @@ export const billableUnits = (
 ): number => Math.max(0, counted(used) - card.meters[meter].allowance);
 
 /**
- * What `billable` units of `meter` cost, in cents, rounded half up. The
- * rule Stripe uses for a half cent (50 messages, 5 X units) is assumed,
- * not confirmed: a sandbox invoice is to settle it.
+ * What `billable` units of `meter` cost, in cents, rounded half up, as
+ * Stripe rounds a half cent: its sandbox invoices bill 50 messages and 5 X
+ * units 1 cent each, 150 messages 2 and 12,345 X units 1,235.
  */
 export const meterCharge = (
   meter: Meter,
