@@ -1,7 +1,7 @@
 import { Effect, Layer, Match, Option } from "effect";
 
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
-import type { Platform } from "#shared/domain/platform.ts";
+import type { Platform, SitePlatform } from "#shared/domain/platform.ts";
 import type { ProductEvent } from "#shared/domain/product-event.ts";
 import { WebhookEvents } from "#webhooks/application/webhook-events.ts";
 import type { WebhookEvent } from "#webhooks/domain/webhook-event.ts";
@@ -13,20 +13,49 @@ const platformOf = (platform: Platform | null) =>
     onSome: (known) => ({ platform: known }),
   });
 
+// An article's website, null once its channel is gone, likewise.
+const siteOf = (platform: SitePlatform | null) =>
+  Option.match(Option.fromNullishOr(platform), {
+    onNone: () => ({}),
+    onSome: (known) => ({ platform: known }),
+  });
+
 const untold = () => Option.none<ProductEvent>();
 
 /**
  * The product analytics event a webhook event tells, if any: a channel
- * connected or disconnected, a post scheduled, published or failed. Ids,
- * platforms, counts and codes only: never a permalink, a time zone or an
- * instant. Exhaustive, so a new type does not compile until it says.
+ * connected, disconnected, to reconnect or expiring, a post scheduled,
+ * published or failed, an article published or failed, a file refused.
+ * What a member does in a request and nothing else tells (a channel
+ * turned off, a reply sent) is `api_operation`'s, and what comes in
+ * (comments, messages) is never told, for its volume. Ids, platforms,
+ * counts and codes only: never a permalink, a time zone, an instant or
+ * a site's own error code. Exhaustive, so a new type does not compile until it says.
  */
 export const productEventOf: (
   event: WebhookEvent
 ) => Option.Option<ProductEvent> = Match.type<WebhookEvent>().pipe(
   Match.discriminatorsExhaustive("type")({
-    "article.failed": untold,
-    "article.published": untold,
+    "article.failed": ({ data }) =>
+      Option.some<ProductEvent>({
+        name: "article_failed",
+        properties: {
+          articleId: data.articleId,
+          channelId: data.channelId,
+          ...siteOf(data.platform),
+          reason: data.reason,
+        },
+      }),
+    "article.published": ({ data }) =>
+      Option.some<ProductEvent>({
+        name: "article_published",
+        properties: {
+          articleId: data.articleId,
+          channelId: data.channelId,
+          ...siteOf(data.platform),
+          siteStatus: data.siteStatus,
+        },
+      }),
     "boost.budget_reached": untold,
     "boost.ended": untold,
     "boost.failed": untold,
@@ -51,11 +80,23 @@ export const productEventOf: (
         properties: { channelId: data.channelId, platform: data.platform },
       }),
     "channel.enabled": untold,
-    "channel.expiring": untold,
-    "channel.reconnect_needed": untold,
+    "channel.expiring": ({ data }) =>
+      Option.some<ProductEvent>({
+        name: "channel_expiring",
+        properties: { channelId: data.channelId, platform: data.platform },
+      }),
+    "channel.reconnect_needed": ({ data }) =>
+      Option.some<ProductEvent>({
+        name: "channel_reconnect_needed",
+        properties: { channelId: data.channelId, platform: data.platform },
+      }),
     "comment.received": untold,
     "comment.replied": untold,
-    "media.failed": untold,
+    "media.failed": ({ data }) =>
+      Option.some<ProductEvent>({
+        name: "media_failed",
+        properties: { mediaId: data.mediaId, reason: data.reason },
+      }),
     "media.ready": untold,
     "message.received": untold,
     "message.sent": untold,
@@ -112,7 +153,10 @@ export const productEventOf: (
  * analytics event is queued when it returns, before that transaction
  * commits. One that then rolls back leaves an analytics event for what did
  * not happen, and a workflow step run again can send one twice. Both are
- * rare, and nothing but analytics reads these events.
+ * rare, and nothing but analytics reads these events. An event published
+ * again under a key it already had (a channel's daily reminder to
+ * reconnect, a file probed again) is told again: `publish` does not say
+ * whether the key was new.
  */
 export const analysedWebhookEvents = <E, R>(
   told: Layer.Layer<WebhookEvents, E, R>

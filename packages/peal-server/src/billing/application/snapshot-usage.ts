@@ -17,6 +17,7 @@ import { MeterUsageStore } from "./ports/meter-usage-store.ts";
 import { UsageLedger } from "./ports/usage-ledger.ts";
 import type { WorkspaceUsageRecord } from "./ports/usage-ledger.ts";
 import { UsageSnapshotSink } from "./ports/usage-snapshot-sink.ts";
+import type { DayCounters } from "./ports/usage-snapshot-sink.ts";
 import { UsageStates } from "./ports/usage-states.ts";
 import type { WorkspaceDayState } from "./ports/usage-states.ts";
 import { StartAccountDays } from "./start-account-days.ts";
@@ -37,6 +38,42 @@ export interface UsageSnapshotRun {
 
 /** How many workspaces one batch reads and writes. */
 export const snapshotBatchSize = 500;
+
+const noCounters: DayCounters = {
+  assistantImages: 0,
+  managedAds: 0,
+  outboundMessages: 0,
+  publishedPosts: 0,
+};
+
+// The ledger's counters of a day, added up by workspace: the posts that
+// went out across platforms, and each billing meter's units. The states
+// the snapshot writes itself are left out.
+const dayCountersOf = (
+  records: readonly WorkspaceUsageRecord[]
+): ReadonlyMap<WorkspaceId, DayCounters> => {
+  const counted = new Map<WorkspaceId, DayCounters>();
+
+  for (const { record, workspaceId } of records) {
+    const { meter, quantity } = record;
+
+    if (
+      meter === "publishedPosts" ||
+      meter === "assistantImages" ||
+      meter === "managedAds" ||
+      meter === "outboundMessages"
+    ) {
+      const before = counted.get(workspaceId) ?? noCounters;
+
+      counted.set(workspaceId, {
+        ...before,
+        [meter]: before[meter] + quantity,
+      });
+    }
+  }
+
+  return counted;
+};
 
 const recordsOf = (
   day: DateTime.Utc,
@@ -95,10 +132,29 @@ export class SnapshotUsage extends Context.Service<
         const sink = yield* UsageSnapshotSink;
         const store = yield* BillingAccountStore;
 
+        // What the ledger counted that day for a batch's workspaces, in one
+        // plain read: a workspace it counted nothing for has every counter
+        // at zero, and a read that fails leaves them all without counters.
+        const countersOf = (
+          day: DateTime.Utc,
+          workspaceIds: readonly WorkspaceId[]
+        ) =>
+          ledger.ofWorkspaces(workspaceIds, { from: day, to: day }).pipe(
+            Effect.map((records) => Option.some(dayCountersOf(records))),
+            Effect.catchCause((cause) =>
+              Effect.logWarning(
+                "Reading the ledger's counters of the snapshot's workspaces failed",
+                cause
+              ).pipe(
+                Effect.as(Option.none<ReadonlyMap<WorkspaceId, DayCounters>>())
+              )
+            )
+          );
+
         // The days of a batch's workspaces worth telling, with the billing
-        // accounts the sweep just gave them, in one plain read that writes
-        // nothing: accounts that cannot be read leave them without one,
-        // and nothing here stops the snapshot.
+        // accounts the sweep just gave them and the day's counters, each in
+        // one plain read that writes nothing: accounts that cannot be read
+        // leave them without one, and nothing here stops the snapshot.
         const tell = (day: DateTime.Utc, told: readonly WorkspaceDayState[]) =>
           !sink.enabled || told.length === 0
             ? Effect.void
@@ -109,12 +165,24 @@ export class SnapshotUsage extends Context.Service<
                     cause
                   ).pipe(Effect.as(new Map<WorkspaceId, BillingAccount>()))
                 ),
-                Effect.flatMap((held) =>
+                Effect.zip(
+                  countersOf(
+                    day,
+                    told.map(({ workspaceId }) => workspaceId)
+                  )
+                ),
+                Effect.flatMap(([held, counted]) =>
                   sink.told(
                     day,
                     told.map((state) => ({
                       billingAccountId: Option.fromUndefinedOr(
                         held.get(state.workspaceId)?.id
+                      ),
+                      counters: counted.pipe(
+                        Option.map(
+                          (counters) =>
+                            counters.get(state.workspaceId) ?? noCounters
+                        )
                       ),
                       state,
                     }))

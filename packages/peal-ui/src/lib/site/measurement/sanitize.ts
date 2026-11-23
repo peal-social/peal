@@ -42,7 +42,7 @@ export interface CommonProperties {
  * The events these surfaces send, and no other. Names are persisted for
  * whoever queries PostHog: add, never rename.
  */
-export const siteEvents: ReadonlySet<string> = new Set([
+export const siteEventNames = [
   "$opt_in",
   "$pageleave",
   "$pageview",
@@ -53,7 +53,13 @@ export const siteEvents: ReadonlySet<string> = new Set([
   "docs_search_used",
   "pricing_calculator_used",
   "site_cta_clicked",
-]);
+] as const;
+
+/** The name of an event these surfaces send. */
+export type SiteEventName = (typeof siteEventNames)[number];
+
+/** The same names, for an event the SDK hands back under any name. */
+export const siteEvents: ReadonlySet<string> = new Set(siteEventNames);
 
 /** The properties kept as the SDK sets them: ids, numbers and enums. */
 export const keptProperties: ReadonlySet<string> = new Set([

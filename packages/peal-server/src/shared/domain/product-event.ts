@@ -2,6 +2,7 @@ import { Option, Schema, SchemaIssue } from "effect";
 
 import {
   ChannelIdSchema,
+  MediaAssetIdSchema,
   PostIdSchema,
   UserIdSchema,
   Uuid7Schema,
@@ -9,10 +10,12 @@ import {
 } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { LocaleSchema } from "#shared/domain/locale.ts";
+import { MeterSchema } from "#shared/domain/meter.ts";
 import { PaidPlanSchema, PlanSchema } from "#shared/domain/plan.ts";
 import {
   ChannelPlatformSchema,
   PlatformSchema,
+  SitePlatformSchema,
 } from "#shared/domain/platform.ts";
 
 // What product analytics may say of what people do in Peal: ids, names
@@ -99,6 +102,15 @@ export const ProductEventSchema = Schema.Union([
     succeeded: Schema.Boolean,
     via: OperationViaSchema,
   }),
+  // The API or the MCP endpoint answered a key or an application on `day`
+  // (UTC), reads included: a key's as its workspace, an application's as
+  // its person, in the workspace its token is bound to when it is. Once
+  // each a day for each run of the server, so readers take one per
+  // workspace or person, `via` and `day`. Never a partner key's.
+  event("api_used", {
+    day: AnalyticsTokenSchema,
+    via: Schema.Literals(["apiKey", "oauth"]),
+  }),
   // A tool of the MCP endpoint that ran, reading or changing.
   event("mcp_tool_called", {
     changes: Schema.Boolean,
@@ -118,13 +130,30 @@ export const ProductEventSchema = Schema.Union([
   // usage snapshot, for a workspace with a connected account: what it
   // holds as the snapshot runs, and the day's assistant requests. A rerun
   // of the day sends it again: readers take one per workspace and day.
+  // Beside the state, the day's counters of the usage ledger, when it
+  // could be read: the posts that went out, and the units of the billing
+  // meters the workspace claimed (none on a server that does not bill).
   event("workspace_snapshot", {
+    assistantImages: Schema.optionalKey(Schema.Int),
     assistantRequests: Schema.Int,
     channels: Schema.Int,
     // The day (UTC) the state is of, `YYYY-MM-DD`.
     day: AnalyticsTokenSchema,
+    managedAds: Schema.optionalKey(Schema.Int),
     mediaStorageBytes: Schema.Int,
     members: Schema.Int,
+    outboundMessages: Schema.optionalKey(Schema.Int),
+    publishedPosts: Schema.optionalKey(Schema.Int),
+  }),
+  // A billing account without a payment method used the `allowed` units
+  // of `meter` its month includes: the meter pauses until next month.
+  // Sent as the billing workspace's service identity, with the notice its
+  // billing managers get: once a meter and month, but for a unit given
+  // back and claimed again. The notice names the billing workspace alone,
+  // so the event carries no `billing_account_id`.
+  event("allowance_reached", {
+    allowed: Schema.Int,
+    meter: MeterSchema,
   }),
   // A Stripe subscription's state, as recorded: Stripe's status and the
   // billing interval are billing's vocabulary, tokens here. Beside it, the
@@ -148,6 +177,39 @@ export const ProductEventSchema = Schema.Union([
   event("channel_disconnected", {
     channelId: ChannelIdSchema,
     platform: ChannelPlatformSchema,
+  }),
+  // The channel's authorization stopped working, or ends soon and cannot
+  // be renewed: nothing goes out there until someone reconnects it. Told
+  // when it happens and with each daily reminder while it lasts, a week
+  // at most: readers count channels, never events.
+  event("channel_reconnect_needed", {
+    channelId: ChannelIdSchema,
+    platform: ChannelPlatformSchema,
+  }),
+  event("channel_expiring", {
+    channelId: ChannelIdSchema,
+    platform: ChannelPlatformSchema,
+  }),
+  // An article and its website, as posts and their channels above:
+  // `siteStatus` is what the site made of it, `reason` Peal's own code.
+  event("article_published", {
+    articleId: Uuid7Schema,
+    channelId: ChannelIdSchema,
+    platform: Schema.optionalKey(SitePlatformSchema),
+    siteStatus: Schema.Literals(["publish", "draft", "future"]),
+  }),
+  event("article_failed", {
+    articleId: Uuid7Schema,
+    channelId: ChannelIdSchema,
+    platform: Schema.optionalKey(SitePlatformSchema),
+    reason: AnalyticsTokenSchema,
+  }),
+  // An uploaded file Peal refused or could not probe, by its reason's
+  // code. A probe tried again tells it again: readers take one per
+  // `mediaId` and `reason`.
+  event("media_failed", {
+    mediaId: MediaAssetIdSchema,
+    reason: AnalyticsTokenSchema,
   }),
   event("post_scheduled", {
     postId: PostIdSchema,
@@ -269,7 +331,8 @@ const PropertyKeySchema = Schema.String.check(
 
 /**
  * The person properties Peal sets, and no other: `kind` and `locale`
- * replaced, `signed_up_at` and `signup_method` set once, `internal` for
+ * replaced (a service identity's `kind` set once, with each of its
+ * events), `signed_up_at` and `signup_method` set once, `internal` for
  * staff.
  */
 export const PersonPropertiesSchema = Schema.Struct({

@@ -39,6 +39,7 @@ import { WorkspaceStanding } from "#billing/application/workspace-standing.ts";
 import { XPassThrough } from "#billing/application/x-pass-through.ts";
 import { AccountPlanHoldersLive } from "#billing/infrastructure/account-plan-holders.ts";
 import { AccountPlanPoolsLive } from "#billing/infrastructure/account-plan-pools.ts";
+import { analysedBillingNotices } from "#billing/infrastructure/analysed-billing-notices.ts";
 import { AnalyticsUsageSnapshotSinkLive } from "#billing/infrastructure/analytics-usage-snapshot-sink.ts";
 import { AuditedAccountDeskLive } from "#billing/infrastructure/audited-account-desk.ts";
 import { AuditedCreditProblemReviewLive } from "#billing/infrastructure/audited-credit-problem-review.ts";
@@ -232,7 +233,9 @@ export const BillingMetersLive = MeteredUsageLive.pipe(
       RecordsLive,
       HoldersLive,
       StripeUsageBillingLive,
-      NotifiedBillingNoticesLive
+      // The meters' notices, an allowance reached among them, are told to
+      // product analytics too.
+      analysedBillingNotices(NotifiedBillingNoticesLive)
     )
   )
 );

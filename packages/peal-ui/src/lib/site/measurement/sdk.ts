@@ -1,4 +1,5 @@
 import type { initOptionsOf } from "./options";
+import type { SiteEventName } from "./sanitize";
 
 /** The SDK's options, as `initOptionsOf` writes them. */
 export type SiteSdkOptions = ReturnType<typeof initOptionsOf>;
@@ -7,7 +8,8 @@ export type SiteSdkOptions = ReturnType<typeof initOptionsOf>;
 export interface SiteSdk {
   readonly init: (token: string, options: SiteSdkOptions) => void;
   readonly capture: (
-    event: string,
+    // A name outside the allowlist does not compile: `before_send` would drop it.
+    event: SiteEventName,
     properties: Record<string, boolean | number | string>,
     /** Sent with the browser's beacon, as a page is left. */
     leaving?: boolean

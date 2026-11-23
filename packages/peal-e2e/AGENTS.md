@@ -66,7 +66,9 @@
   checks pages opened without a reload in both modes, Allow and
   withdrawal in place, the app's own requests naming the session (a tag
   added in the settings, its header read with `browser.route`) and no
-  longer once withdrawn and the recording going on across pages. Every
+  longer once withdrawn and the recording going on across pages. It ends by
+  disconnecting a seeded channel on the channels page and reading the
+  server's `channel_disconnected` at the stand-in, as the member's. Every
   journey runs in Chromium alone: WebKit's runs in CI failed more often
   than they found anything, and are gone.
 - The run serves the marketing site too (`scripts/site.ts`): the build

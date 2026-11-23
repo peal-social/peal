@@ -177,7 +177,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
         assert.strictEqual(operation?.properties["actor_kind"], "service");
         assert.strictEqual(operation?.properties["via"], "apiKey");
-        assert.deepStrictEqual(operation?.properties["$set"], {
+        assert.deepStrictEqual(operation?.properties["$set_once"], {
           kind: "service",
         });
       })

@@ -52,6 +52,11 @@ const t = messages(locale);
       )
     }
     <h1>{entry.data.title}</h1>
-    <Content />
+    {/* A section's plain-language lines, an <aside> in the Markdown. */}
+    <div
+      class="[&_aside]:border-brand [&_aside]:my-6 [&_aside]:border-s-2 [&_aside]:ps-5 [&_aside>:first-child]:mt-0 [&_aside>:last-child]:mb-0"
+    >
+      <Content />
+    </div>
   </article>
 </Base>
