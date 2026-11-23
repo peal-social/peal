@@ -400,6 +400,67 @@ layer(BlueskyTest)("connecting a Bluesky account", (it) => {
     })
   );
 
+  // What the libraries would validate entry by entry, at seconds and
+  // gigabytes a megabyte, never reaches them: the start is refused at once,
+  // as an identity that cannot be used.
+  it.effect.each(["hugeDocument", "manyServices", "manyScopes"] as const)(
+    "refuses a sign-in whose servers answer %s, before the library reads it",
+    (hostile) =>
+      Effect.gen(function* hostileStart() {
+        const workspaceId = yield* freshWorkspace;
+        const network = yield* FakeNetwork;
+
+        network.refreshWith(hostile);
+
+        const failure = yield* ConnectChannel.use((connect) =>
+          connect.start(manager(workspaceId), "bluesky", {
+            connection: Option.none(),
+            handle: Option.some("@bob.test"),
+            instance: Option.none(),
+          })
+        ).pipe(Effect.flip, Effect.timeout("5 seconds"));
+
+        network.refreshWith("rotate");
+
+        assert.strictEqual(failure._tag, "InvalidHandle");
+      })
+  );
+
+  it.effect("refuses a token answer too large, once the member is back", () =>
+    Effect.gen(function* hostileTokens() {
+      const workspaceId = yield* freshWorkspace;
+      const network = yield* FakeNetwork;
+      const connect = yield* ConnectChannel;
+
+      const authorizationUrl = yield* connect.start(
+        manager(workspaceId),
+        "bluesky",
+        {
+          connection: Option.none(),
+          handle: Option.some("@bob.test"),
+          instance: Option.none(),
+        }
+      );
+
+      const back = network.approve(authorizationUrl);
+
+      network.refreshWith("hugeTokens");
+
+      const failure = yield* connect
+        .complete(manager(workspaceId), "bluesky", {
+          code: Option.some(back.code),
+          error: Option.none(),
+          issuer: Option.some(back.iss),
+          state: back.state,
+        })
+        .pipe(Effect.flip, Effect.timeout("5 seconds"));
+
+      network.refreshWith("rotate");
+
+      assert.strictEqual(failure._tag, "AuthorizationFailed");
+    })
+  );
+
   it.effect("reconnects the channel to the same account", () =>
     Effect.gen(function* reconnects() {
       const workspaceId = yield* freshWorkspace;

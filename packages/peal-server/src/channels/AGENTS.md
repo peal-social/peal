@@ -492,6 +492,21 @@
   `OutboundGuard` for an open one only to reach loopback fakes.
 - The AT Protocol OAuth client runs on Bun only with the handle resolver built
   on Peal's guarded fetch; its default one needs Node's undici.
+- Every answer the AT Protocol's libraries read (DID documents, handles,
+  servers' metadata, PAR and token answers) goes through
+  `boundedDocuments` (`platforms/bluesky/bounded-documents.ts`), inside
+  the authorizer's `observed` fetch, which is the only fetch they are
+  given: read whole up to `maxDocumentBytes` (32 KiB) and, as JSON, no
+  more than `maxArrayEntries` (256) array entries in total nor
+  `maxNestingDepth` (16) deep, or the fetch fails with `HostileAnswer`,
+  which the sign-in tells as an identity it cannot use (`InvalidHandle`
+  at the start, `AuthorizationFailed` once back, `TokenExpired` on a
+  refresh). The libraries validate with zod, entry by entry and an issue
+  per failing one: a megabyte of entries costs seconds and gigabytes.
+  Never stringify a library error whole: `reasonOf` keeps the message it
+  holds (never a validation error's getter), cut at `maxReasonLength`.
+  Publishing, reading and messages reach the PDS through Effect's client
+  and Schemas, never these libraries, under `publicHttpClient`'s limits.
 - The refresh sweep takes each platform's cutoff from every way in the
   server has for it (`PlatformAuthorizers.every`), the latest one, then
   checks each channel against its own way in's policy: a platform's first
