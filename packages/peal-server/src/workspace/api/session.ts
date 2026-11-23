@@ -6,6 +6,7 @@ import type { BrowserAnalytics, Me } from "peal-contract";
 import { forbidden, personRequired } from "#shared/api/forbidden.ts";
 import { BrowserMeasurement } from "#shared/application/browser-measurement.ts";
 import type { BrowserMeasurementSettings } from "#shared/application/browser-measurement.ts";
+import { SupportChatIdentity } from "#shared/application/support-chat-identity.ts";
 import { Accounts } from "#workspace/application/accounts.ts";
 import type { CurrentAccount } from "#workspace/application/accounts.ts";
 import { standingConsent } from "#workspace/domain/browser-analytics-consent.ts";
@@ -52,15 +53,41 @@ export const browserAnalyticsOf = (
   };
 };
 
+/**
+ * What the support chat names the person with: the signature of the
+ * account's own email, only in the person's own session in the web app
+ * (never through an application, nor while staff act as them, when the
+ * web app opens no chat), and null where the server holds no secret.
+ */
+export const supportChatOf = Effect.fn("session.supportChat")(
+  function* supportChatOf({ account, principal }: CurrentAccount) {
+    if (
+      Option.isSome(principal.impersonatedBy) ||
+      Option.isSome(principal.oauth)
+    ) {
+      return null;
+    }
+
+    const { sign } = yield* SupportChatIdentity;
+
+    return Option.match(yield* sign(account.email), {
+      onNone: () => null,
+      onSome: (emailSignature) => ({ emailSignature }),
+    });
+  }
+);
+
 const toMe = (
   current: CurrentAccount,
-  browserAnalytics: BrowserAnalytics | null
+  browserAnalytics: BrowserAnalytics | null,
+  supportChat: { readonly emailSignature: string } | null
 ): Me => {
   const { account, principal, workspaces } = current;
 
   return {
     browserAnalytics,
     impersonatedBy: Option.getOrNull(principal.impersonatedBy),
+    supportChat,
     user: {
       email: account.email,
       emailVerified: account.emailVerified,
@@ -90,6 +117,7 @@ export const SessionHandlers = HttpApiBuilder.group(
   Effect.fn(function* sessionHandlers(handlers) {
     const accounts = yield* Accounts;
     const { settings } = yield* BrowserMeasurement;
+    const identity = yield* SupportChatIdentity;
 
     return handlers.handleAll({
       me: () =>
@@ -116,7 +144,10 @@ export const SessionHandlers = HttpApiBuilder.group(
 
           return toMe(
             current,
-            browserAnalyticsOf(current, settings, yield* DateTime.now)
+            browserAnalyticsOf(current, settings, yield* DateTime.now),
+            yield* supportChatOf(current).pipe(
+              Effect.provideService(SupportChatIdentity, identity)
+            )
           );
         }),
     });

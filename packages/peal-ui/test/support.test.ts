@@ -1,9 +1,11 @@
 import { retentionPeriods } from "peal-contract/data-processing";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   conversationCookieSeconds,
   hasConversation,
+  identify,
+  identityCommandsOf,
   sessionCookieName,
   sessionDataOf,
 } from "../src/lib/support/crisp";
@@ -50,6 +52,7 @@ describe("the support chat's settings", () => {
     ).toStrictEqual({
       "data-art": "pixel",
       "data-email": undefined,
+      "data-email-signature": undefined,
       "data-locale": "fr",
       "data-name": undefined,
       "data-placement": "float",
@@ -168,5 +171,69 @@ describe("the launcher's strings", () => {
     expect(launcherLabel(supportMessages.en, 2)).toBe(
       "Chat with Peal, 2 unread"
     );
+  });
+});
+
+const person = {
+  email: "ada@example.test",
+  name: "Ada",
+  userId: "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f",
+  workspaceId: "4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f70",
+};
+
+// The server's signature of the address, which Crisp verifies.
+const signature =
+  "a4c921058897c197f1db3c26023ca8bc06b14a14eb1ae2d0d81967327859471b";
+
+describe("the person the chat names", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("is named with the email and its signature, as Crisp verifies it", () => {
+    expect(
+      identityCommandsOf({ ...person, emailSignature: signature })[0]
+    ).toStrictEqual(["set", "user:email", [person.email, signature]]);
+  });
+
+  it("is named with the email alone where the server signs nothing", () => {
+    expect(identityCommandsOf(person)[0]).toStrictEqual([
+      "set",
+      "user:email",
+      [person.email],
+    ]);
+  });
+
+  it("reaches Crisp's queue with the pair", () => {
+    const queued: unknown[] = [];
+    vi.stubGlobal("window", { $crisp: queued });
+
+    identify({ ...person, emailSignature: signature });
+
+    expect(queued).toStrictEqual([
+      ["set", "user:email", [person.email, signature]],
+      ["set", "user:nickname", [person.name]],
+      [
+        "set",
+        "session:data",
+        [
+          [
+            ["user_id", person.userId],
+            ["workspace_id", person.workspaceId],
+          ],
+        ],
+      ],
+    ]);
+  });
+
+  it("carries the signature on the app's launcher", () => {
+    expect(
+      supportAttributes(website, {
+        locale: "en",
+        person: { ...person, emailSignature: signature },
+        placement: "menu",
+        source: "app",
+      })["data-email-signature"]
+    ).toBe(signature);
   });
 });

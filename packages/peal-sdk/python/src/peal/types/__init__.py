@@ -651,6 +651,7 @@ if typing.TYPE_CHECKING:
     from .mastodon_quote_policy import MastodonQuotePolicy
     from .mastodon_visibility import MastodonVisibility
     from .me import Me
+    from .me_support_chat import MeSupportChat
     from .me_user import MeUser
     from .me_user_locale import MeUserLocale
     from .media import Media
@@ -1821,6 +1822,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "MastodonQuotePolicy": ".mastodon_quote_policy",
     "MastodonVisibility": ".mastodon_visibility",
     "Me": ".me",
+    "MeSupportChat": ".me_support_chat",
     "MeUser": ".me_user",
     "MeUserLocale": ".me_user_locale",
     "Media": ".media",
@@ -3002,6 +3004,7 @@ __all__ = [
     "MastodonQuotePolicy",
     "MastodonVisibility",
     "Me",
+    "MeSupportChat",
     "MeUser",
     "MeUserLocale",
     "Media",

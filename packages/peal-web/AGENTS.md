@@ -364,7 +364,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   workspace layout puts `SupportLauncher` in the bottom bar, which makes
   peal-ui's `<peal-support>` (placement `menu`: nothing shows) with the
   person's email, name, id and workspace and the page's language, never
-  while staff act as someone; the account menu's **Support**
+  while staff act as someone, and the email's signature where `GET
+  /api/me` gives one (`supportChat.emailSignature`: the server's, under
+  `PEAL_CRISP_IDENTITY_SECRET`, which Crisp verifies; the app never signs
+  anything itself); the account menu's **Support**
   (`supportChat`) opens the chat through `openSupportChat` and shows the
   replies waiting (`listenToSupportUnread`). Every sign-out calls
   `forgetConversation`, so the next person in the browser starts their own.

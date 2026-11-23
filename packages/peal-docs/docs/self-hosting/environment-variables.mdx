@@ -215,6 +215,14 @@ The captcha is off until you set both Turnstile keys:
 | `TURNSTILE_SECRET_KEY` | unset: the captcha is off | The widget's secret key, which the server checks tokens with. Keep it secret.                                                                                               |
 | `TURNSTILE_VERIFY_URL` | Cloudflare's `siteverify` | Another address to check tokens at, such as a fake one in tests.                                                                                                            |
 
+### Support chat [#support-chat]
+
+With the web app's support chat on (`PEAL_CRISP_WEBSITE_ID`), the server can sign the address the chat names each signed-in person with, so Crisp marks their conversation verified:
+
+| Variable                     | Default                       | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PEAL_CRISP_IDENTITY_SECRET` | unset: no address is verified | The identity verification secret of your Crisp website (Crisp's **Settings**, **Workspace Settings**, **Advanced configuration**, **Identity Verification**, once you turn on verifying user emails). The server signs each person's own account address with it (HMAC-SHA256), never one a browser sends, and the app hands the signature to the chat. Keep it secret. Unset, the chat names people unverified, and an address in a conversation proves nothing. |
+
 ### Product analytics [#product-analytics]
 
 Product analytics is off until you set `PEAL_POSTHOG_KEY`. The server then sends PostHog events about how your server is used, from the server alone. They hold identifiers, names Peal chose and numbers, never a post's content, a name or an address.

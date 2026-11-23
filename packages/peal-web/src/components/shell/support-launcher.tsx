@@ -27,7 +27,7 @@ export const SupportLauncher = ({
 }) => {
   const host = useRef<HTMLSpanElement>(null);
   const launcher = useRef<HTMLElement | null>(null);
-  const { email, name, userId, workspaceId } = person;
+  const { email, emailSignature, name, userId, workspaceId } = person;
 
   useEffect(() => {
     const made = document.createElement("peal-support");
@@ -50,7 +50,7 @@ export const SupportLauncher = ({
 
     const attributes = supportAttributes(websiteId, {
       locale,
-      person: { email, name, userId, workspaceId },
+      person: { email, emailSignature, name, userId, workspaceId },
       placement: "menu",
       source: "app",
     });
@@ -62,7 +62,7 @@ export const SupportLauncher = ({
         made.setAttribute(attribute, value);
       }
     }
-  }, [email, locale, name, userId, websiteId, workspaceId]);
+  }, [email, emailSignature, locale, name, userId, websiteId, workspaceId]);
 
   return <span ref={host} className="contents" />;
 };

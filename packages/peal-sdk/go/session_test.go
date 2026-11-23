@@ -365,6 +365,14 @@ func TestSettersMe(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetSupportChat", func(t *testing.T) {
+		obj := &Me{}
+		var fernTestValueSupportChat *MeSupportChat
+		obj.SetSupportChat(fernTestValueSupportChat)
+		assert.Equal(t, fernTestValueSupportChat, obj.SupportChat)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetUser", func(t *testing.T) {
 		obj := &Me{}
 		var fernTestValueUser *MeUser
@@ -448,6 +456,39 @@ func TestGettersMe(t *testing.T) {
 			}
 		}()
 		_ = obj.GetImpersonatedBy() // Should return zero value
+	})
+
+	t.Run("GetSupportChat", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Me{}
+		var expected *MeSupportChat
+		obj.SupportChat = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetSupportChat(), "getter should return the property value")
+	})
+
+	t.Run("GetSupportChat_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Me{}
+		obj.SupportChat = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetSupportChat(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetSupportChat_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *Me
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetSupportChat() // Should return zero value
 	})
 
 	t.Run("GetUser", func(t *testing.T) {
@@ -581,6 +622,37 @@ func TestSettersMarkExplicitMe(t *testing.T) {
 		// It verifies that setting a field via setter allows successful JSON round-trip
 	})
 
+	t.Run("SetSupportChat_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &Me{}
+		var fernTestValueSupportChat *MeSupportChat
+
+		// Act
+		obj.SetSupportChat(fernTestValueSupportChat)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 	t.Run("SetUser_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -620,6 +692,77 @@ func TestSettersMarkExplicitMe(t *testing.T) {
 
 		// Act
 		obj.SetWorkspaces(fernTestValueWorkspaces)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersMeSupportChat(t *testing.T) {
+	t.Run("SetEmailSignature", func(t *testing.T) {
+		obj := &MeSupportChat{}
+		var fernTestValueEmailSignature string
+		obj.SetEmailSignature(fernTestValueEmailSignature)
+		assert.Equal(t, fernTestValueEmailSignature, obj.EmailSignature)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersMeSupportChat(t *testing.T) {
+	t.Run("GetEmailSignature", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MeSupportChat{}
+		var expected string
+		obj.EmailSignature = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetEmailSignature(), "getter should return the property value")
+	})
+
+	t.Run("GetEmailSignature_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *MeSupportChat
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetEmailSignature() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitMeSupportChat(t *testing.T) {
+	t.Run("SetEmailSignature_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MeSupportChat{}
+		var fernTestValueEmailSignature string
+
+		// Act
+		obj.SetEmailSignature(fernTestValueEmailSignature)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -1627,6 +1770,39 @@ func TestJSONMarshalingMe(t *testing.T) {
 	})
 }
 
+func TestJSONMarshalingMeSupportChat(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &MeSupportChat{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled MeSupportChat
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj MeSupportChat
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj MeSupportChat
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingMeUser(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -1825,6 +2001,7 @@ func TestRequiredNullableRoundTripMeUser(t *testing.T) {
 func TestOptionalNullableRoundTripMe(t *testing.T) {
 	optionalNullableKeys := []string{
 		"browserAnalytics",
+		"supportChat",
 	}
 	marshalToMap := func(t *testing.T, obj *Me) map[string]json.RawMessage {
 		data, err := json.Marshal(obj)
@@ -1837,7 +2014,7 @@ func TestOptionalNullableRoundTripMe(t *testing.T) {
 	t.Run("NullPreserved", func(t *testing.T) {
 		t.Parallel()
 		var obj Me
-		require.NoError(t, json.Unmarshal([]byte(`{"browserAnalytics":null}`), &obj))
+		require.NoError(t, json.Unmarshal([]byte(`{"browserAnalytics":null,"supportChat":null}`), &obj))
 		result := marshalToMap(t, &obj)
 		for _, key := range optionalNullableKeys {
 			value, ok := result[key]
@@ -1892,6 +2069,22 @@ func TestStringMe(t *testing.T) {
 	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *Me
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringMeSupportChat(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &MeSupportChat{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *MeSupportChat
 		result := obj.String()
 		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
 	})
@@ -2035,6 +2228,29 @@ func TestExtraPropertiesMe(t *testing.T) {
 	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
 		t.Parallel()
 		var obj *Me
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesMeSupportChat(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &MeSupportChat{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *MeSupportChat
 		extraProps := obj.GetExtraProperties()
 		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})

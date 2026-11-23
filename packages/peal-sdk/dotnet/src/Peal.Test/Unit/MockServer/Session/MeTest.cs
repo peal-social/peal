@@ -24,6 +24,9 @@ public class MeTest : BaseMockServerTest
                 ]
               },
               "impersonatedBy": "impersonatedBy",
+              "supportChat": {
+                "emailSignature": "emailSignature"
+              },
               "user": {
                 "email": "email",
                 "emailVerified": true,
@@ -89,6 +92,9 @@ public class MeTest : BaseMockServerTest
                 ]
               },
               "impersonatedBy": "impersonatedBy",
+              "supportChat": {
+                "emailSignature": "emailSignature"
+              },
               "user": {
                 "email": "email",
                 "emailVerified": true,

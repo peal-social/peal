@@ -7,6 +7,7 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .browser_analytics import BrowserAnalytics
+from .me_support_chat import MeSupportChat
 from .me_user import MeUser
 from .membership import Membership
 
@@ -19,6 +20,9 @@ class Me(UniversalBaseModel):
     ] = None
     impersonated_by: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="impersonatedBy"), pydantic.Field(alias="impersonatedBy")
+    ] = None
+    support_chat: typing_extensions.Annotated[
+        typing.Optional[MeSupportChat], FieldMetadata(alias="supportChat"), pydantic.Field(alias="supportChat")
     ] = None
     user: MeUser
     workspaces: typing.List[Membership]

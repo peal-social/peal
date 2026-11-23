@@ -95,7 +95,7 @@
       },
       "response": {
         "status": 200,
-        "body": "{\n  \"browserAnalytics\": {\n    \"token\": \"token\",\n    \"environment\": \"environment\",\n    \"consent\": \"undecided\",\n    \"decidedAt\": \"decidedAt\",\n    \"excludedWorkspaceIds\": [\n      \"excludedWorkspaceIds\"\n    ]\n  },\n  \"impersonatedBy\": \"impersonatedBy\",\n  \"user\": {\n    \"email\": \"email\",\n    \"emailVerified\": true,\n    \"id\": \"id\",\n    \"image\": \"image\",\n    \"locale\": \"en\",\n    \"name\": \"name\",\n    \"hasPassword\": true,\n    \"twoStepEnabled\": true\n  },\n  \"workspaces\": [\n    {\n      \"id\": \"id\",\n      \"name\": \"name\",\n      \"permissions\": [\n        \"activity:read\"\n      ],\n      \"role\": \"role\",\n      \"slug\": \"slug\",\n      \"twoStepRequired\": true\n    }\n  ]\n}",
+        "body": "{\n  \"browserAnalytics\": {\n    \"token\": \"token\",\n    \"environment\": \"environment\",\n    \"consent\": \"undecided\",\n    \"decidedAt\": \"decidedAt\",\n    \"excludedWorkspaceIds\": [\n      \"excludedWorkspaceIds\"\n    ]\n  },\n  \"impersonatedBy\": \"impersonatedBy\",\n  \"supportChat\": {\n    \"emailSignature\": \"emailSignature\"\n  },\n  \"user\": {\n    \"email\": \"email\",\n    \"emailVerified\": true,\n    \"id\": \"id\",\n    \"image\": \"image\",\n    \"locale\": \"en\",\n    \"name\": \"name\",\n    \"hasPassword\": true,\n    \"twoStepEnabled\": true\n  },\n  \"workspaces\": [\n    {\n      \"id\": \"id\",\n      \"name\": \"name\",\n      \"permissions\": [\n        \"activity:read\"\n      ],\n      \"role\": \"role\",\n      \"slug\": \"slug\",\n      \"twoStepRequired\": true\n    }\n  ]\n}",
         "headers": {
           "Content-Type": "application/json"
         }

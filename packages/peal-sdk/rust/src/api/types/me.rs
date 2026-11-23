@@ -8,6 +8,9 @@ pub struct Me {
     #[serde(rename = "impersonatedBy")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub impersonated_by: Option<String>,
+    #[serde(rename = "supportChat")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub support_chat: Option<MeSupportChat>,
     pub user: MeUser,
     #[serde(default)]
     pub workspaces: Vec<Membership>,
@@ -24,6 +27,7 @@ impl Me {
 pub struct MeBuilder {
     browser_analytics: Option<BrowserAnalytics>,
     impersonated_by: Option<String>,
+    support_chat: Option<MeSupportChat>,
     user: Option<MeUser>,
     workspaces: Option<Vec<Membership>>,
 }
@@ -36,6 +40,11 @@ impl MeBuilder {
 
     pub fn impersonated_by(mut self, value: impl Into<String>) -> Self {
         self.impersonated_by = Some(value.into());
+        self
+    }
+
+    pub fn support_chat(mut self, value: MeSupportChat) -> Self {
+        self.support_chat = Some(value);
         self
     }
 
@@ -57,6 +66,7 @@ impl MeBuilder {
         Ok(Me {
             browser_analytics: self.browser_analytics,
             impersonated_by: self.impersonated_by,
+            support_chat: self.support_chat,
             user: self.user.ok_or_else(|| BuildError::missing_field("user"))?,
             workspaces: self
                 .workspaces
