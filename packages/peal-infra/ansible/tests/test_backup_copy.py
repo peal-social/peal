@@ -78,7 +78,8 @@ def endpoint() -> Iterator[str]:
         port = _run(["docker", "port", name, "8333/tcp"]).stdout.split(":")[-1].strip()
         url = f"http://127.0.0.1:{port}"
         bucket = backup_copy.Bucket(url, "us-east-1", "peal-test", ACCESS_KEY, SECRET_KEY)
-        for _ in range(120):
+        # Three minutes: a loaded machine takes its time to start a store.
+        for _ in range(360):
             try:
                 list(bucket.list())
                 break
