@@ -48,7 +48,7 @@
         src: ../roles/peal_backup/templates/{{ item }}.j2
         dest: "{{ render_dir }}/{{ inventory_hostname }}/{{ item }}"
         mode: "0600"
-      loop: [peal-backup-copy.service, peal-backup-copy.timer]
+      loop: [peal-backup-copy.service, peal-backup-copy.timer, peal-backup.tmpfiles]
       when: peal_backup_copy | bool
 
 - name: Render the templates of the uptime server

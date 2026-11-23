@@ -14,5 +14,8 @@ Type=oneshot
 # The full and the differential backups are two units: one waits for the
 # other rather than meet pgBackRest's lock and report a failure.
 ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/local/sbin/peal-backup %i
+# A backup that ends otherwise than in success, in the script or not (flock,
+# a signal), reports its failure; the script's own report may come first.
+ExecStopPost=/bin/sh -c 'test "$$SERVICE_RESULT" = success || exec /usr/local/sbin/peal-backup %i --failed'
 Nice=10
 IOSchedulingClass=idle

@@ -65,6 +65,17 @@
         # Read by the run's own user (DynamicUser); it holds no secret.
         mode: "0755"
 
+    # The backups' lock's file, readable by the copy's own user: made at
+    # each boot, and now.
+    - name: Make the backups' lock readable by the copy
+      ansible.builtin.template:
+        src: peal-backup.tmpfiles.j2
+        dest: /etc/tmpfiles.d/peal-backup.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Make the backups' lock
+
     - name: Write the backup copy's service and timer
       ansible.builtin.template:
         src: "{{ item }}.j2"
@@ -101,4 +112,5 @@
         - /usr/local/sbin/peal-backup-copy
         - /etc/systemd/system/peal-backup-copy.service
         - /etc/systemd/system/peal-backup-copy.timer
+        - /etc/tmpfiles.d/peal-backup.conf
       notify: Reload systemd
