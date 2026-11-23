@@ -17,6 +17,9 @@ public record Me : IJsonOnDeserialized
     [JsonPropertyName("impersonatedBy")]
     public string? ImpersonatedBy { get; set; }
 
+    [JsonPropertyName("supportChat")]
+    public MeSupportChat? SupportChat { get; set; }
+
     [JsonPropertyName("user")]
     public required MeUser User { get; set; }
 

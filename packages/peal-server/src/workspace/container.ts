@@ -1,6 +1,7 @@
 import { Layer } from "effect";
 
 import { KeyedPseudonymsLive } from "#shared/infrastructure/keyed-pseudonyms.ts";
+import { SupportChatIdentityLive } from "#shared/infrastructure/support-chat-identity.ts";
 import { AccountHandlers } from "#workspace/api/account.ts";
 import { ApiKeysHandlers } from "#workspace/api/api-keys.ts";
 import { BrowserAnalyticsHandlers } from "#workspace/api/browser-analytics.ts";
@@ -346,7 +347,7 @@ export const WorkspaceCronsLive = Layer.mergeAll(
  * the staff console's. The settings' endpoints need WorkspaceSettingsLive.
  */
 export const WorkspaceApiLive = Layer.mergeAll(
-  SessionHandlers,
+  SessionHandlers.pipe(Layer.provide(SupportChatIdentityLive)),
   CredentialHandlers,
   ApiKeysHandlers,
   WorkspacesHandlers,

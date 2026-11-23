@@ -69,6 +69,15 @@ same on all three:
   without a `<peal-support>` it does nothing. The app makes the element
   itself (`SupportLauncher`) and forgets the conversation at sign-out
   (`forgetConversation`).
+- Only the app names a person (`data-source="app"`): the site, the docs
+  and the blog set no email. The app sets the account's email with the
+  server's signature (`GET /api/me`'s `supportChat.emailSignature`, an
+  HMAC-SHA256 under `PEAL_CRISP_IDENTITY_SECRET`, `identityCommandsOf`:
+  `["set", "user:email", [email, signature]]`), or the email alone where
+  the server holds no secret. With the secret set and identity
+  verification on in Crisp's settings, a chat's verified mark is what
+  support trusts; an unverified email, which anyone can set from a page's
+  console, proves nothing.
 - Crisp's window takes Peal's colours and Geist through `support.css`,
   over the variables Crisp sets on `.crisp-client` and the attributes its
   markup carries (`[data-chat-status]`, `[data-maximized]`), never its

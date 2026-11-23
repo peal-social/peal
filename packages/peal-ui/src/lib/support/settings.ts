@@ -42,6 +42,12 @@ export type SupportPlacement = "bar" | "float" | "menu";
 /** Who is signed in, in the app: the chat names them to Peal's team. */
 export interface SupportPerson {
   readonly email: string;
+  /**
+   * The server's signature of `email` (HMAC-SHA256 under the chat
+   * provider's identity secret, hex), which the provider checks to mark
+   * the conversation verified: none where the server holds no secret.
+   */
+  readonly emailSignature?: string | undefined;
   readonly name: string;
   readonly userId: string;
   readonly workspaceId: string;
@@ -63,6 +69,7 @@ export const supportAttributes = (
   "data-art":
     page.source === "site" || page.source === "blog" ? "pixel" : "icon",
   "data-email": page.person?.email,
+  "data-email-signature": page.person?.emailSignature,
   "data-locale": page.locale,
   "data-name": page.person?.name,
   "data-placement": page.placement,

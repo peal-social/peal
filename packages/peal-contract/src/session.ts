@@ -31,6 +31,18 @@ export const MeSchema = Schema.Struct({
   browserAnalytics: Schema.optionalKey(Schema.NullOr(BrowserAnalyticsSchema)),
   // Staff impersonating the user, if any.
   impersonatedBy: Schema.NullOr(Schema.String),
+  // What the web app's support chat names the user with: the signature
+  // of the account's own email that the chat provider verifies. Null
+  // where the server holds no identity secret, through an application,
+  // and in a session staff act in. Left out by servers older than it.
+  supportChat: Schema.optionalKey(
+    Schema.NullOr(
+      Schema.Struct({
+        // HMAC-SHA256 of `user.email` under the provider's secret, in hex.
+        emailSignature: Schema.String,
+      })
+    )
+  ),
   user: Schema.Struct({
     email: Schema.String,
     emailVerified: Schema.Boolean,

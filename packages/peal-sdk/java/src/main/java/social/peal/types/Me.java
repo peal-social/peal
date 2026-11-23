@@ -30,6 +30,8 @@ public final class Me {
 
     private final Optional<String> impersonatedBy;
 
+    private final Optional<MeSupportChat> supportChat;
+
     private final MeUser user;
 
     private final List<Membership> workspaces;
@@ -39,11 +41,13 @@ public final class Me {
     private Me(
             Optional<BrowserAnalytics> browserAnalytics,
             Optional<String> impersonatedBy,
+            Optional<MeSupportChat> supportChat,
             MeUser user,
             List<Membership> workspaces,
             Map<String, Object> additionalProperties) {
         this.browserAnalytics = browserAnalytics;
         this.impersonatedBy = impersonatedBy;
+        this.supportChat = supportChat;
         this.user = user;
         this.workspaces = workspaces;
         this.additionalProperties = additionalProperties;
@@ -63,6 +67,14 @@ public final class Me {
             return Optional.empty();
         }
         return impersonatedBy;
+    }
+
+    @JsonIgnore
+    public Optional<MeSupportChat> getSupportChat() {
+        if (supportChat == null) {
+            return Optional.empty();
+        }
+        return supportChat;
     }
 
     @JsonProperty("user")
@@ -87,6 +99,12 @@ public final class Me {
         return impersonatedBy;
     }
 
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("supportChat")
+    private Optional<MeSupportChat> _getSupportChat() {
+        return supportChat;
+    }
+
     @java.lang.Override
     public boolean equals(Object other) {
         if (this == other) return true;
@@ -101,13 +119,14 @@ public final class Me {
     private boolean equalTo(Me other) {
         return browserAnalytics.equals(other.browserAnalytics)
                 && impersonatedBy.equals(other.impersonatedBy)
+                && supportChat.equals(other.supportChat)
                 && user.equals(other.user)
                 && workspaces.equals(other.workspaces);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.browserAnalytics, this.impersonatedBy, this.user, this.workspaces);
+        return Objects.hash(this.browserAnalytics, this.impersonatedBy, this.supportChat, this.user, this.workspaces);
     }
 
     @java.lang.Override
@@ -144,6 +163,12 @@ public final class Me {
 
         _FinalStage impersonatedBy(Nullable<String> impersonatedBy);
 
+        _FinalStage supportChat(Optional<MeSupportChat> supportChat);
+
+        _FinalStage supportChat(MeSupportChat supportChat);
+
+        _FinalStage supportChat(Nullable<MeSupportChat> supportChat);
+
         _FinalStage workspaces(List<Membership> workspaces);
 
         _FinalStage addWorkspaces(Membership workspaces);
@@ -157,6 +182,8 @@ public final class Me {
 
         private List<Membership> workspaces = new ArrayList<>();
 
+        private Optional<MeSupportChat> supportChat = Optional.empty();
+
         private Optional<String> impersonatedBy = Optional.empty();
 
         private Optional<BrowserAnalytics> browserAnalytics = Optional.empty();
@@ -169,6 +196,7 @@ public final class Me {
         public Builder from(Me other) {
             browserAnalytics(other.getBrowserAnalytics());
             impersonatedBy(other.getImpersonatedBy());
+            supportChat(other.getSupportChat());
             user(other.getUser());
             workspaces(other.getWorkspaces());
             return this;
@@ -202,6 +230,31 @@ public final class Me {
             if (workspaces != null) {
                 this.workspaces.addAll(workspaces);
             }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage supportChat(Nullable<MeSupportChat> supportChat) {
+            if (supportChat.isNull()) {
+                this.supportChat = null;
+            } else if (supportChat.isEmpty()) {
+                this.supportChat = Optional.empty();
+            } else {
+                this.supportChat = Optional.of(supportChat.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage supportChat(MeSupportChat supportChat) {
+            this.supportChat = Optional.ofNullable(supportChat);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "supportChat", nulls = Nulls.SKIP)
+        public _FinalStage supportChat(Optional<MeSupportChat> supportChat) {
+            this.supportChat = supportChat;
             return this;
         }
 
@@ -257,13 +310,14 @@ public final class Me {
 
         @java.lang.Override
         public Me build() {
-            return new Me(browserAnalytics, impersonatedBy, user, workspaces, additionalProperties);
+            return new Me(browserAnalytics, impersonatedBy, supportChat, user, workspaces, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("browserAnalytics")
                     || key.equalsIgnoreCase("impersonatedBy")
+                    || key.equalsIgnoreCase("supportChat")
                     || key.equalsIgnoreCase("user")
                     || key.equalsIgnoreCase("workspaces")) {
                 return;

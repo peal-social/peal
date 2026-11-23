@@ -96,6 +96,9 @@ const WorkspaceLayout = async ({
         locale={locale}
         person={{
           email: user.email,
+          // Its signature from the server, which the chat provider
+          // verifies; none where the server holds no identity secret.
+          emailSignature: me.value.supportChat?.emailSignature,
           name: user.name,
           userId: user.id,
           workspaceId,

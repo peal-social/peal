@@ -1055,6 +1055,7 @@ module Peal
     autoload :YouTubeVideoCategory, ::File.join(__dir__, "peal/types/you_tube_video_category")
     autoload :LookupResultYoutubeVideoCategories, ::File.join(__dir__, "peal/types/lookup_result_youtube_video_categories")
     autoload :LookupResult, ::File.join(__dir__, "peal/types/lookup_result")
+    autoload :MeSupportChat, ::File.join(__dir__, "peal/types/me_support_chat")
     autoload :MeUserLocale, ::File.join(__dir__, "peal/types/me_user_locale")
     autoload :MeUser, ::File.join(__dir__, "peal/types/me_user")
     autoload :Membership, ::File.join(__dir__, "peal/types/membership")

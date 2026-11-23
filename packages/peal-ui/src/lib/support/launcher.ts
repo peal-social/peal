@@ -75,7 +75,9 @@ export class PealSupport extends HTMLElement {
   static readonly observedAttributes = [
     "data-website-id",
     "data-email",
+    "data-email-signature",
     "data-name",
+    "data-source",
     "data-user-id",
     "data-workspace-id",
   ];
@@ -166,6 +168,12 @@ export class PealSupport extends HTMLElement {
   }
 
   #person(): SupportPerson | undefined {
+    // Only the app names a person: nobody is signed in on the site, the
+    // docs or the blog.
+    if (this.dataset["source"] !== "app") {
+      return undefined;
+    }
+
     const email = presentOrUndefined(this.dataset["email"]);
     const userId = presentOrUndefined(this.dataset["userId"]);
     const workspaceId = presentOrUndefined(this.dataset["workspaceId"]);
@@ -176,6 +184,7 @@ export class PealSupport extends HTMLElement {
       ? undefined
       : {
           email,
+          emailSignature: presentOrUndefined(this.dataset["emailSignature"]),
           name: presentOrUndefined(this.dataset["name"]) ?? email,
           userId,
           workspaceId,

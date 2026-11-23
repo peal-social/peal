@@ -21,6 +21,12 @@ class Me extends JsonSerializableType
     public ?string $impersonatedBy;
 
     /**
+     * @var ?MeSupportChat $supportChat
+     */
+    #[JsonProperty('supportChat')]
+    public ?MeSupportChat $supportChat;
+
+    /**
      * @var MeUser $user
      */
     #[JsonProperty('user')]
@@ -38,6 +44,7 @@ class Me extends JsonSerializableType
      *   workspaces: array<Membership>,
      *   browserAnalytics?: ?BrowserAnalytics,
      *   impersonatedBy?: ?string,
+     *   supportChat?: ?MeSupportChat,
      * } $values
      */
     public function __construct(
@@ -45,6 +52,7 @@ class Me extends JsonSerializableType
     ) {
         $this->browserAnalytics = $values['browserAnalytics'] ?? null;
         $this->impersonatedBy = $values['impersonatedBy'] ?? null;
+        $this->supportChat = $values['supportChat'] ?? null;
         $this->user = $values['user'];
         $this->workspaces = $values['workspaces'];
     }

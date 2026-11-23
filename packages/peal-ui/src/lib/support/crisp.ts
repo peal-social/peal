@@ -80,6 +80,27 @@ export const sessionDataOf = (
   ["workspace_id", person.workspaceId],
 ];
 
+/**
+ * The commands that name a signed-in person to Crisp: the email with the
+ * server's signature where there is one, which Crisp checks against the
+ * website's identity secret to mark the conversation verified, then the
+ * name and the session data. An email without a signature is what anyone
+ * on the page could set: support trusts the verified mark alone.
+ */
+export const identityCommandsOf = (
+  person: SupportPerson
+): readonly CrispCommand[] => [
+  [
+    "set",
+    "user:email",
+    person.emailSignature === undefined
+      ? [person.email]
+      : [person.email, person.emailSignature],
+  ],
+  ["set", "user:nickname", [person.name]],
+  ["set", "session:data", [sessionDataOf(person)]],
+];
+
 /** What the launcher hears of Crisp. */
 export type CrispNews =
   | { readonly kind: "closed" }
@@ -257,9 +278,10 @@ export const identify = (person: SupportPerson): void => {
   }
 
   identified = person.userId;
-  push("set", "user:email", [person.email]);
-  push("set", "user:nickname", [person.name]);
-  push("set", "session:data", [sessionDataOf(person)]);
+
+  for (const command of identityCommandsOf(person)) {
+    push(...command);
+  }
 };
 
 /**

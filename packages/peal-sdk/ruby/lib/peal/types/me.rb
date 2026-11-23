@@ -9,6 +9,8 @@ module Peal
 
       field :impersonated_by, -> { String }, optional: false, nullable: true, api_name: "impersonatedBy"
 
+      field :support_chat, -> { Peal::Types::MeSupportChat }, optional: true, nullable: true, api_name: "supportChat"
+
       field :user, -> { Peal::Types::MeUser }, optional: false, nullable: false
 
       field :workspaces, -> { Internal::Types::Array[Peal::Types::Membership] }, optional: false, nullable: false

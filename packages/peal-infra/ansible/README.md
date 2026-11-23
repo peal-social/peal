@@ -630,6 +630,26 @@ included, but for the Zero Trust team.
 backup passphrase (`PGBACKREST_REPO1_CIPHER_PASS`) outside the server, in a
 password manager: the backups cannot be read without it.
 
+### Support chat
+
+The app's support chat names each signed-in person by their account's
+address. Anyone on a page can set an address in the chat themselves, so an
+address alone proves nothing. Crisp's identity verification fixes that:
+
+1. In Crisp, as the website's owner: **Settings**, **Workspace Settings**,
+   **Advanced configuration**, **Identity Verification**, turn on verifying
+   user emails with signatures, and copy the secret it makes. Crisp's
+   documentation gives this feature from its Mini plan up.
+2. Put it in each environment's vault as
+   `peal_credentials.PEAL_CRISP_IDENTITY_SECRET` (or in
+   `credentials.env`), then run `site.yml`. The server signs the session's
+   own address with it, and the app hands the signature to the chat.
+
+With the secret set and verification on, the chat's verified mark is what
+support trusts: an unverified address, typed by a visitor or set from a
+page's console, proves nothing about who writes. Without the secret, every
+address in the chat is unverified.
+
 ### A new server
 
 1. Create it in the provider's console, from its Ubuntu LTS image, with
