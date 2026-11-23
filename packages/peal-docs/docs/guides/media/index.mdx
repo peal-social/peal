@@ -412,6 +412,72 @@ A slide video is a job that runs on the server, so you can leave the page. It's 
 
 The video is an MP4 file in the library, with no description. It isn't marked as made by AI, since Shotstack only puts your own files together. Peal never writes the captions or the video to its logs, and keeps the captions only while the video is made. No MCP tool makes slide videos, because each one is paid by the workspace's Shotstack account.
 
+### Render an edit through the API [#render-an-edit]
+
+A program, or a video editor that writes Shotstack's format, can send a whole [Shotstack Edit](https://shotstack.io/docs/api/#tocs_edit) instead of a list of images. Peal checks it and renders it with the workspace's Shotstack connection, as the same job as a slide video, with the same rights.
+
+Send `POST /api/workspaces/{workspaceId}/media/slideshows/edits` with the edit in `edit`. The answer is `202` with the job, which you follow as above. The job's `durationSeconds` is the latest end of a clip whose start and length are numbers, and its `imageMediaIds` lists every library file the edit names, images or not.
+
+```json
+{
+  "edit": {
+    "timeline": {
+      "tracks": [
+        {
+          "clips": [
+            {
+              "asset": { "type": "rich-text", "text": "Out on Friday" },
+              "start": 0,
+              "length": 3
+            }
+          ]
+        },
+        {
+          "clips": [
+            {
+              "asset": { "type": "image", "src": "peal:media/<media-id>" },
+              "start": 0,
+              "length": 4
+            },
+            {
+              "asset": { "type": "video", "src": "peal:media/<media-id>" },
+              "start": 4,
+              "length": 6
+            }
+          ]
+        }
+      ]
+    },
+    "output": { "aspectRatio": "9:16" }
+  }
+}
+```
+
+Name each file of the library `peal:media/<media-id>`. It must be a ready file of a kind its asset takes: an image for an image asset, a video for a video asset, an audio file for an audio asset or the soundtrack, an audio or video file for captions, and an image or a video for a luma matte. Fonts may also come from `https://fonts.gstatic.com/`. An asset Shotstack generates from a `prompt` needs no file. Any other address is refused, and so are merge fields.
+
+| Setting              | Values                                                                 | Default             |
+| -------------------- | ---------------------------------------------------------------------- | ------------------- |
+| `output.format`      | `mp4`                                                                  | `mp4`               |
+| `output.resolution`  | `preview`, `mobile`, `sd`, `hd` or `1080`                              | `1080`              |
+| `output.aspectRatio` | `16:9`, `9:16` or `1:1`, the job's `landscape`, `portrait` or `square` | `16:9`              |
+| `output.fps`         | up to 30                                                               | Shotstack's default |
+| Tracks               | up to 20                                                               |                     |
+| Clips                | up to 200 in all                                                       |                     |
+| Length               | every clip whose start and length are numbers ends by 300 seconds      |                     |
+
+The output takes no `size`, `range`, `scaleTo`, `repeat`, `poster` or `thumbnail`. Peal replaces the destinations so that Shotstack hosts no copy, turns the timeline's cache off, and drops `callback` and `disk`. A refused edit is `SlideshowRequestRejected` (422), and nothing is asked or counted:
+
+| Reason               | What happened                                                                                |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `editInvalid`        | Shotstack's schema refuses the edit, it merges fields, or it names a file at another address |
+| `mediaNotFound`      | A `peal:media/` file isn't a ready file of the workspace's library                           |
+| `mediaNotSupported`  | A library file is of a kind its asset can't take, such as an audio file as an image          |
+| `outputNotSupported` | The output isn't one Peal renders                                                            |
+| `editTooLarge`       | The edit has more than 20 tracks or 200 clips                                                |
+| `editTooLong`        | A clip ends past 300 seconds                                                                 |
+
+Peal never writes the edit to its logs, and keeps it only while the video is rendered.
+
 ## Attach media to a post [#attach]
 
 In the composer, files go under **Images and videos**. A post holds up to 20 images and videos, and each platform takes fewer, as listed [below](#platforms). Saving the draft keeps them.
