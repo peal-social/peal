@@ -563,6 +563,30 @@ that member's notices answer 500 until the release is rolled forward.
 3. **The first lists a row:** do not roll back past this release; release
    a fix forward instead. Never change the rows by hand.
 
+## Past edits rendered whole
+
+The release that renders a whole Shotstack Edit (`POST
+…/media/slideshows/edits`, no migration) keeps such a job in
+`assistant.slideshows` like a slide video, its `plan` an object with one
+key, `edit`, which the release before does not decode. Its run claims the
+job (it becomes `running`), fails to read the plan and stops there,
+sending nothing to Shotstack: the job stays `running` until the workspace
+asks for another slide video 40 minutes after it was asked, when it fails
+`interrupted`, and holds the workspace's turn until then. A job that
+ended has no plan any more, and a video already rendered is a plain MP4
+of the media library, which the release before reads.
+
+1. **Edit jobs on their way:**
+
+   ```sh
+   sudo peal-compose exec postgres psql --username peal --dbname peal --command \
+     "SELECT count(*) FROM assistant.slideshows WHERE status IN ('queued', 'running') AND plan ? 'edit'"
+   ```
+
+2. **It counts more than 0:** wait for them to end (20 minutes at most
+   once running), then check again; roll back once it counts 0. Never
+   change the rows by hand.
+
 ## Past Slack
 
 The release that posts to Slack (no migration: platforms, options and
