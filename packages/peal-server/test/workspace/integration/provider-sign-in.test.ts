@@ -16,7 +16,7 @@ import {
   FakeOidc,
 } from "#test/workspace/fakes/fake-oidc.ts";
 import type { FakeOidcProvider } from "#test/workspace/fakes/fake-oidc.ts";
-import { enrolled } from "#test/workspace/support.ts";
+import { enrolled, withCookies } from "#test/workspace/support.ts";
 
 import {
   emailTo,
@@ -888,3 +888,64 @@ layer(Layer.mergeAll(withFakePostHog(appWithOidc), MigratedSqlLive), {
     })
   );
 });
+
+// Where accounts work before their address is confirmed, an unconfirmed
+// account may be in use, by its own maker most of the time: a provider's
+// sign-in never joins nor erases it.
+layer(
+  Layer.mergeAll(
+    appWithOidc({ AUTH_REQUIRE_EMAIL_VERIFICATION: "false" }),
+    MigratedSqlLive
+  ),
+  settings
+)(
+  "signing in through a provider where addresses need no confirmation",
+  (it) => {
+    it.effect(
+      "refuses to take over an unconfirmed account in use, changing nothing",
+      () =>
+        Effect.gen(function* inUse() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const email = newEmail("in-use");
+
+          const made = yield* app.request("/api/auth/sign-up/email", {
+            body: { email, locale: "en", name: "Maker", password },
+          });
+
+          const cookie = withCookies("", made);
+          const maker = yield* sessionUser(cookie);
+
+          const workspaceId = yield* workspaceOf(
+            { cookies: cookie, email, id: maker.id },
+            "Maker notes"
+          );
+
+          const identity = verified(email);
+          const finished = yield* providerSignIn(identity);
+
+          assert.strictEqual(finished.error, "account_in_use");
+          assert.isFalse(setsSession(finished.reply));
+          assert.deepStrictEqual(yield* ownersOf(identity.sub), []);
+
+          const account = yield* accountOf(email);
+
+          assert.isFalse(account?.email_verified);
+          assert.strictEqual(account?.name, "Maker");
+
+          // Its maker still signs in with the password.
+          const signedIn = yield* app.request("/api/auth/sign-in/email", {
+            body: { email, password },
+          });
+
+          assert.strictEqual(signedIn.status, 200);
+
+          const [row] = yield* sql<{ readonly workspaces: number }>`
+          SELECT count(*)::int AS workspaces FROM auth.organization
+          WHERE id = ${workspaceId}`.pipe(Effect.orDie);
+
+          assert.strictEqual(row?.workspaces, 1);
+        })
+    );
+  }
+);

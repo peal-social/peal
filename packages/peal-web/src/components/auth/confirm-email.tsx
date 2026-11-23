@@ -7,19 +7,27 @@ import type { ReactElement, ReactNode } from "react";
 
 import { authClient } from "#auth/client.ts";
 import { confirmationResultOf } from "#auth/email-confirmation.ts";
-import type { ConfirmationResult } from "#auth/email-confirmation.ts";
+import type {
+  ConfirmationIntent,
+  ConfirmationResult,
+} from "#auth/email-confirmation.ts";
 import { AuthCard } from "#components/auth/auth-card.tsx";
 import { ResendVerificationForm } from "#components/auth/resend-verification-form.tsx";
 import { Link } from "#i18n/navigation.ts";
 
-type State = ConfirmationResult | "idle" | "pending";
+// What the page shows: the server's answer, a post on its way, or the
+// step that asks before an account is deleted (`eraseAsked`).
+type State = ConfirmationResult | "eraseAsked" | "idle" | "pending";
 
-// Posts the emailed token, from this browser.
-const post = async (token: string): Promise<ConfirmationResult> => {
+// Posts the emailed token, from this browser, with why.
+const post = async (
+  token: string,
+  intent: ConfirmationIntent
+): Promise<ConfirmationResult> => {
   try {
     return confirmationResultOf(
       await authClient.$fetch("/confirm-email", {
-        body: { token },
+        body: { intent, token },
         method: "POST",
       })
     );
@@ -34,15 +42,18 @@ const card = (
   children: ReactNode
 ): ReactElement => (
   <AuthCard title={title} description={description}>
-    {children}
+    <div className="flex flex-col gap-2">{children}</div>
   </AuthCard>
 );
 
 /**
- * Confirms the address the emailed token names: posts it once the page
- * runs, so a mail gateway that only opens the link confirms nothing, and
- * offers a button for a browser that did not post it. The token leaves
- * the address bar as soon as the page has read it.
+ * Confirms the address the emailed token names. As it opens, the page
+ * posts the token on its own (`auto`), which confirms only from the
+ * browser that made the account, so a mail gateway that opens the link,
+ * or another browser, changes nothing. Anywhere else, the page says what
+ * confirming here does and asks (`confirm`); deleting an account someone
+ * else made and used takes its own button and a second step (`erase`).
+ * The token leaves the address bar as soon as the page has read it.
  */
 export const ConfirmEmail = ({
   token,
@@ -53,33 +64,60 @@ export const ConfirmEmail = ({
   const [state, setState] = useState<State>("idle");
   const posted = useRef(false);
 
-  const confirm = useCallback(() => {
-    setState("pending");
-    void post(token).then(setState);
-  }, [token]);
+  const send = useCallback(
+    (intent: ConfirmationIntent) => {
+      setState("pending");
+      void post(token, intent).then(setState);
+    },
+    [token]
+  );
 
   useEffect(() => {
     window.history.replaceState(null, "", window.location.pathname);
 
-    // Once, React's development double run included: a second post would
-    // find the address confirmed.
+    // Once, React's development double run included.
     if (!posted.current) {
       posted.current = true;
-      confirm();
+      send("auto");
     }
-  }, [confirm]);
+  }, [send]);
+
+  const signIn = (
+    <Link href="/login" className={buttonVariants({ variant: "outline" })}>
+      {t("signIn")}
+    </Link>
+  );
 
   if (state === "idle" || state === "pending" || state === "failed") {
     return card(
       t("confirmTitle"),
       state === "failed" ? t("failedDescription") : t("confirming"),
       <Button
-        onClick={confirm}
+        onClick={() => {
+          send("auto");
+        }}
         disabled={state === "pending"}
         focusableWhenDisabled
       >
-        {t("confirm")}
+        {t("tryAgain")}
       </Button>
+    );
+  }
+
+  if (state === "choose") {
+    return card(
+      t("confirmTitle"),
+      t("chooseDescription"),
+      <>
+        <Button
+          onClick={() => {
+            send("confirm");
+          }}
+        >
+          {t("confirm")}
+        </Button>
+        {signIn}
+      </>
     );
   }
 
@@ -107,7 +145,7 @@ export const ConfirmEmail = ({
     return card(
       t("alreadyTitle"),
       t("alreadyDescription"),
-      <div className="flex flex-col gap-2">
+      <>
         <Link href="/login" className={buttonVariants()}>
           {t("signIn")}
         </Link>
@@ -117,7 +155,52 @@ export const ConfirmEmail = ({
         >
           {t("forgotPassword")}
         </Link>
-      </div>
+      </>
+    );
+  }
+
+  if (state === "inUse") {
+    return card(
+      t("inUseTitle"),
+      t("inUseDescription"),
+      <>
+        <Link href="/login" className={buttonVariants()}>
+          {t("signIn")}
+        </Link>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setState("eraseAsked");
+          }}
+        >
+          {t("notMine")}
+        </Button>
+      </>
+    );
+  }
+
+  if (state === "eraseAsked") {
+    return card(
+      t("eraseTitle"),
+      t("eraseDescription"),
+      <>
+        <Button
+          variant="destructive"
+          onClick={() => {
+            send("erase");
+          }}
+        >
+          {t("erase")}
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setState("inUse");
+          }}
+        >
+          {t("cancel")}
+        </Button>
+      </>
     );
   }
 
@@ -131,8 +214,8 @@ export const ConfirmEmail = ({
     );
   }
 
-  if (state === "inUse") {
-    return card(t("inUseTitle"), t("inUseDescription"), null);
+  if (state === "notErased") {
+    return card(t("notErasedTitle"), t("notErasedDescription"), signIn);
   }
 
   // A link that expired, or never worked.

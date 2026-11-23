@@ -6,7 +6,9 @@ import { Option, Schema } from "effect";
 const OutcomeSchema = Schema.Struct({
   status: Schema.Literals([
     "alreadyConfirmed",
+    "choose",
     "inUse",
+    "notErased",
     "passwordNeeded",
     "replaced",
     "signedIn",
@@ -16,6 +18,14 @@ const OutcomeSchema = Schema.Struct({
 const ErrorSchema = Schema.Struct({
   code: Schema.Literals(["INVALID_TOKEN", "TOKEN_EXPIRED"]),
 });
+
+/**
+ * Why the page posts: on its own as it opens (`auto`, which confirms only
+ * from the browser that made the account), the person's press of its
+ * button (`confirm`), or their explicit word that the account is not
+ * theirs and may be deleted (`erase`).
+ */
+export type ConfirmationIntent = "auto" | "confirm" | "erase";
 
 /**
  * What the confirmation page shows once the server answered: what it did,

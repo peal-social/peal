@@ -478,9 +478,23 @@ export const DrizzleAccountStore = Layer.effect(
       }
     );
 
+    const holdUnconfirmed = Effect.fn("AccountStore.holdUnconfirmed")(
+      function* holdUnconfirmed(userId: UserId) {
+        const held = yield* db
+          .update(user)
+          .set({ updatedAt: new Date() })
+          .where(and(eq(user.id, userId), eq(user.emailVerified, false)))
+          .returning({ id: user.id })
+          .pipe(Effect.mapError(failed));
+
+        return held.length > 0;
+      }
+    );
+
     return AccountStore.of({
       deleteUser,
       deleteWorkspace,
+      holdUnconfirmed,
       identification,
       records,
       standings,

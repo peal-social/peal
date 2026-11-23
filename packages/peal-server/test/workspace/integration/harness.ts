@@ -325,12 +325,15 @@ export interface Person {
  */
 export const confirmFrom = Effect.fn("confirmFrom")(function* confirmFrom(
   link: URL,
-  cookies: string
+  cookies: string,
+  // The page's own post, the person's press of its button, or their
+  // explicit word that the account is not theirs.
+  intent: "auto" | "confirm" | "erase" = "auto"
 ) {
   const app = yield* TestApp;
 
   return yield* app.request("/api/auth/confirm-email", {
-    body: { token: link.searchParams.get("token") ?? "" },
+    body: { intent, token: link.searchParams.get("token") ?? "" },
     headers: cookies === "" ? {} : { cookie: cookies },
   });
 });

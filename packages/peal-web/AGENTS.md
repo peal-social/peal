@@ -1000,14 +1000,19 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - The confirmation email's link opens `verify-email?token=`, which
   confirms nothing by itself: `ConfirmEmail`
   (`components/auth/confirm-email.tsx`) takes the token out of the
-  address bar, posts it once to `/api/auth/confirm-email` (a button
-  stays for a browser that did not), and says what the server answered
-  (`confirmationResultOf`, `#auth/email-confirmation.ts`, tested):
-  signed in; confirmed from another browser, so choose a password (the
-  forgot-password page); already confirmed, so sign in or choose a new
-  password; closed because someone else used the account first, so sign
-  up again; in use and not closable, so ask the operator; a link that no
-  longer works, with the resend form. The page sends no Referer and is
+  address bar, posts it once to `/api/auth/confirm-email` on its own
+  (`intent: "auto"`, which confirms only from the browser that made the
+  account), and says what the server answered (`confirmationResultOf`,
+  `#auth/email-confirmation.ts`, tested): signed in; from another
+  browser, what confirming there does, with **Confirm my address**
+  (`confirm`), after which the person chooses a password; an account in
+  use, to sign in on this browser and open the link again, or **This
+  account isn't mine**, which asks again before **Delete it so I can sign
+  up** (`erase`), the one way a page deletes an account; deleted, so sign
+  up again; not deletable, so ask the operator; already confirmed, so sign
+  in or choose a new password; a link that no longer works, with the
+  resend form. A reset that removed API keys someone made in the account
+  before its address was confirmed says how many (`ResetPasswordForm`). The page sends no Referer and is
   never cached nor indexed (`next.config.ts`, `metadata.referrer`), and
   loads no measurement nor support chat (both live under `(app)`).
 - The sign-in pages (sign-in, sign-up, forgot and reset password,

@@ -45,63 +45,81 @@ The staff context follows these rules too. What the law has a host keep is in
   `/verify-email?token=`, which posts the token to `/confirm-email`
   (`auth/email-confirmation.ts`, a plugin of Peal's, the token checked as
   Better Auth checks it: its secret, HS256, unexpired, the account it was
-  sent for). A mail gateway that opens the link confirms nothing. The
-  route answers `{ status }`: `signedIn`, `passwordNeeded`,
-  `alreadyConfirmed`, `replaced` or `inUse`, or 400 `INVALID_TOKEN` /
-  `TOKEN_EXPIRED`.
-- The confirmation signs in only the browser that signed up
-  (`auth/sign-up-browser.ts`). Every `/sign-up/email` the route answered
-  with a user (any other answer, a schema's refusal included, sets
-  nothing) sets a fresh nonce in `peal.sign_up_browser` (HttpOnly,
-  SameSite=Lax, `__Secure-` over HTTPS, 7 days), whatever the address, so
-  the answer tells nothing; where the request made the account, its
-  `auth.verification` row `sign-up-browser:<userId>` (`bindingOf`) keeps
-  the nonce's SHA-256 and the SHA-256 of the password hash it goes with.
-  A sign-up for an address that has an account runs `takeOver`, which
-  hashes the password either way (so a confirmed address takes as long),
-  checks its length again, and whose transaction starts with an update of
-  the user's row that holds only while the address is unconfirmed
-  (`claimUnconfirmed`): it stops there for a confirmed one, and otherwise
-  gives the new signer the password, name and language, a new binding,
-  ends the sessions and connected applications, and sends a fresh link.
-  The confirmation's transaction starts the same way, confirming the
-  address (`confirmUnconfirmed`), then spends the binding and compares in
-  constant time; without the nonce, or once the password changed, it
-  releases the account in that transaction (`releaseAccount`: the
-  credential account, the sessions, the connected applications go, the
-  name becomes the address's local part through `fittedName`, the
-  language the default, bearer tokens stop: `markTokensNotBefore`). So a
-  takeover and a confirmation never interleave. Better Auth's
-  `autoSignInAfterVerification` is off; the route signs the matching
-  browser in itself. The resend route sends a link only to the address.
-- An unconfirmed account that was used (`wasUsed`: a member of a
-  workspace, which only `AUTH_REQUIRE_EMAIL_VERIFICATION=false` allows) is
-  never handed over: the confirmation rolls back, and the account is
-  closed through `CloseAccount.closeUnclaimed` (the closure's erasure, no
-  password, its subscriptions cancelled, no email), reached through
-  `UnclaimedAccounts`: Better Auth's hooks ask that port, which
-  `WorkspaceSettingsLive` serves once built (`UnclaimedAccounts.served`);
-  unserved, nothing is closed and the answer is `inUse`. Closed:
-  `replaced`, and the person signs up afresh.
-- A provider's sign-in for an unconfirmed account confirms and releases it
-  (`requireLocalEmailVerified: false`, then `releaseUnconfirmedAccount` in
-  `providerAdmission` before Better Auth links it), so the provider's
-  person takes it over without its password; one that was used is closed
-  as above and the sign-in refused `account_replaced` (or
-  `account_in_use`). Tests confirm with `confirmFrom` and the sign-up's
-  cookies (`confirmedAccount`).
+  sent for) with an `intent`. A mail gateway that opens the link confirms
+  nothing. The route answers `{ status }` (`ConfirmationOutcomeSchema`), or
+  400 `INVALID_TOKEN` / `TOKEN_EXPIRED`.
+- Nothing about a link erases or releases an account without the person
+  saying so. `auto`, the page's own post as it opens, confirms only from
+  the account's maker's browser: the sign-up's binding (below), or a live
+  session of the account read from the database, never a cookie's cached
+  copy nor one staff act in (`holdsOwnSession`), which keeps the session
+  and the password (`signedIn`); otherwise it changes nothing (`choose`).
+  `confirm`, the page's button once it said what it does, confirms and
+  releases an account never used (`passwordNeeded`), and leaves a used one
+  as it is (`inUse`). `erase`, a button of its own with a step that says
+  what goes, alone closes a used account (`replaced`, or `notErased` when
+  the closure refuses). Each decision runs in one transaction whose first
+  statement confirms the address while it is unconfirmed, holding the row
+  (`confirmUnconfirmed`), and rolls back whatever changes nothing.
+- The maker's browser (`auth/sign-up-browser.ts`): every `/sign-up/email`
+  the route answered with a user (any other answer, a schema's refusal
+  included, sets nothing) sets a fresh nonce in `peal.sign_up_browser`
+  (HttpOnly, SameSite=Lax, `__Secure-` over HTTPS, 7 days), whatever the
+  address, so the answer tells nothing; where the request made the
+  account, its `auth.verification` row `sign-up-browser:<userId>`
+  (`bindingOf`) keeps the nonce's SHA-256 and the SHA-256 of the password
+  hash it goes with, compared in constant time. A resend asked with a live
+  session of the account renews it for that browser (`renewSignUpBrowser`);
+  any other resend only mails the address. A sign-up for an address that
+  has an account runs `takeOver`, which checks the password's length and
+  hashes it (the request that made an account hashes once more, thrown
+  away, so every answered sign-up costs two hashes), and whose transaction
+  starts with an update of the user's row that holds only while the
+  address is unconfirmed (`claimUnconfirmed`): it stops there for a
+  confirmed one, and otherwise gives the new signer the password, name and
+  language, a new binding, ends the sessions and connected applications,
+  and sends a fresh link. A release (`releaseAccount`) removes the
+  credential account, the sessions, the connected applications, the
+  binding, stops bearer tokens (`markTokensNotBefore`), and resets the
+  name to the address's local part (`fittedName`) and the language to the
+  default. Better Auth's `autoSignInAfterVerification` is off; the route
+  signs the matching browser in itself.
+- A used account (`wasUsed`: a member of a workspace, which only
+  `AUTH_REQUIRE_EMAIL_VERIFICATION=false` allows) is closed only on
+  `erase`, through `CloseAccount.closeUnclaimed` (the closure's erasure, no
+  password, its subscriptions cancelled, no email), which holds the user's
+  row while the address is unconfirmed (`AccountStore.holdUnconfirmed`)
+  before Stripe is asked anything, and again in the erasure's
+  transaction, right after the payer's hold, answering `AccountClaimed`
+  once confirmed. Better Auth's hooks reach it through `UnclaimedAccounts`,
+  which `WorkspaceSettingsLive` serves once built (`UnclaimedAccounts.served`);
+  unserved, nothing is closed (`notErased`).
+- A provider's sign-in for an unconfirmed account never used confirms and
+  releases it (`requireLocalEmailVerified: false`, then
+  `releaseUnconfirmedAccount` in `providerAdmission` before Better Auth
+  links it), so the provider's person takes it over without its password;
+  for a used one it changes nothing and refuses `account_in_use`. A
+  provider's sign-in never erases. Tests confirm with `confirmFrom` and the
+  sign-up's cookies (`confirmedAccount`).
+- A password reset proves the address too (`afterPasswordReset`,
+  `auth/reset-confirmation.ts`): it confirms an unconfirmed account,
+  holding its row, and when the account was used, deletes the API keys
+  made before the reset in the workspaces it alone belongs to; the reset's
+  answer says how many (`apiKeysRemoved`), which the reset page tells.
+  Partner keys and workspaces shared with other members are left.
 - A password reset ends the sessions (`revokeSessionsOnPasswordReset`)
-  and disconnects every connected application (`onPasswordReset`,
-  `disconnectAfterPasswordReset` in `auth/tokens-not-before.ts`): it
+  and disconnects every connected application
+  (`disconnectAfterPasswordReset` in `auth/tokens-not-before.ts`): it
   writes the account's instant first (`auth.verification` row
   `tokens-not-before:<userId>`, an hour), then deletes the OAuth
   provider's stored access tokens, refresh tokens, consents and the device
   codes not yet exchanged (`forgetConnectedApplications`). A bearer token
   issued before the instant, its second included, is refused
   (`issuedBeforeReset` in `access-tokens.ts`, one read a request), so a
-  JWT no longer lasts out its 15 minutes; a renewal that started before
-  the instant, or within 5 seconds after it, and still issued tokens has
-  them deleted, the instant moved to now and `invalid_grant` answered
+  JWT no longer lasts out its 15 minutes; any `/oauth2/token` answer (a
+  renewal, a code's exchange, a device code's) for a subject whose instant
+  is at or after the request's start less 5 seconds has its tokens
+  deleted, the instant moved to now and `invalid_grant` answered
   (`noteTokenRequest`, `refuseRenewalAcrossReset`). The reset email says
   so.
 - The person's choice about the web app's measurement is two columns of

@@ -53,7 +53,7 @@ La connexion par un fournisseur n’atteint un compte que par une adresse que le
 
 Un compte dont l’adresse n’a jamais été confirmée est relié au fournisseur lui aussi, et perd d’abord son mot de passe, ses sessions, ses applications connectées ainsi que le nom et la langue choisis à sa création : la personne qui l’a créé avec cette adresse n’en est peut-être pas titulaire, et le fournisseur dit que celle qui se connecte l’est.
 
-Avec `AUTH_REQUIRE_EMAIL_VERIFICATION=false`, un tel compte a pu être utilisé, et il n’est jamais transmis. S’il appartient à un espace de travail, il est fermé avec ce qu’il a créé, et la personne est invitée à se reconnecter, ce qui crée son propre compte. S’il ne peut pas être fermé (d’autres utilisent un espace de travail dont il est le seul propriétaire), la connexion est refusée et la personne est invitée à s’adresser à vous.
+Avec `AUTH_REQUIRE_EMAIL_VERIFICATION=false`, un tel compte a pu être utilisé, le plus souvent par la personne qui l’a créé. S’il appartient à un espace de travail, la connexion par un fournisseur ne change rien et est refusée : son auteur se connecte avec son mot de passe et confirme l’adresse, et si quelqu’un d’autre l’a créé avec l’adresse de la personne, celle-ci le supprime depuis le lien de confirmation, délibérément ([Votre compte](/guides/workspace/account#confirm)). La connexion par un fournisseur ne supprime jamais de compte.
 
 Une fois relié, l’identifiant du fournisseur connecte ce compte, même si l’adresse change chez le fournisseur. Rien d’autre ne relie un compte à un fournisseur, et la page du compte n’a ni lien ni déliaison.
 

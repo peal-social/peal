@@ -74,6 +74,7 @@ import {
 } from "./oauth.ts";
 import { providerAdmission } from "./provider-admission.ts";
 import { guardProviderSignIn } from "./provider-sign-in.ts";
+import { afterPasswordReset, tellRemovedKeys } from "./reset-confirmation.ts";
 import { refuseRevokedSessions } from "./revoked-sessions.ts";
 import type { AuthConfiguration } from "./settings.ts";
 import { offersProviders } from "./sign-in-provider-settings.ts";
@@ -81,11 +82,10 @@ import {
   signInProviderConfigs,
   signInProviderIds,
 } from "./sign-in-providers.ts";
-import { bindSignUpBrowser } from "./sign-up-browser.ts";
+import { bindSignUpBrowser, renewSignUpBrowser } from "./sign-up-browser.ts";
 import { refuseUnadmittedSignUps } from "./sign-up-gate.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
 import {
-  disconnectAfterPasswordReset,
   noteTokenRequest,
   refuseRenewalAcrossReset,
 } from "./tokens-not-before.ts";
@@ -683,7 +683,7 @@ export const makeAuth = ({
       }),
       enabled: true,
       minPasswordLength: 12,
-      onPasswordReset: disconnectAfterPasswordReset,
+      onPasswordReset: afterPasswordReset,
       requireEmailVerification: settings.requireEmailVerification,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: async ({ url, user }) => {
@@ -719,7 +719,10 @@ export const makeAuth = ({
         await forgetLeavingMember(ctx, hooks);
         expireVisitorCookie(ctx, site);
         await bindSignUpBrowser(ctx);
+        await renewSignUpBrowser(ctx);
         await refuseRenewalAcrossReset(ctx);
+
+        return await tellRemovedKeys(ctx);
       }),
       before: beforeEveryRoute(hooks),
     },
@@ -949,7 +952,7 @@ export const makeAuth = ({
     user: {
       // Who a sign-in provider lets in (provider-admission.ts): a confirmed
       // address, no two-step verification, and the sign-up gate.
-      validateUserInfo: providerAdmission(hooks.signUp, hooks.unclaimedAccount),
+      validateUserInfo: providerAdmission(hooks.signUp),
       additionalFields: {
         // Whether the person allows the web app to link what they do in it
         // to their account and to record their sessions, and when they
