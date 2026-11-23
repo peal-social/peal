@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
@@ -16,6 +18,8 @@ import {
   password,
   TestApp,
   apiKeyOf,
+  bodyOf,
+  signedUp,
   unconfirmedEmails,
   workspaceOf,
 } from "./harness.ts";
@@ -45,6 +49,11 @@ const SessionSchema = Schema.Struct({
 const ErrorSchema = Schema.Struct({ code: Schema.String });
 
 const OutcomeSchema = Schema.Struct({ status: Schema.String });
+
+const DeviceCodeSchema = Schema.Struct({
+  device_code: Schema.String,
+  user_code: Schema.String,
+});
 
 const signUp = Effect.fn("signUp")(function* signUp(
   email: string,
@@ -297,6 +306,144 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const confirmed = yield* confirmFrom(link, cookiesOf(created));
 
           assert.strictEqual(yield* outcomeOf(confirmed), "signedIn");
+        })
+    );
+
+    it.effect(
+      "keeps no session for a sign-in whose password was changed while it ran",
+      () =>
+        Effect.gen(function* raced() {
+          const sql = yield* SqlClient.SqlClient;
+          const email = newEmail("raced");
+          const created = yield* signUp(email, "en");
+          const { user } = yield* decode(SignUpSchema, created);
+
+          yield* confirmFrom(
+            linkIn(yield* emailTo(email, confirmSubject)),
+            cookiesOf(created)
+          );
+
+          // A reset that commits after the sign-in checked the password,
+          // before its session lands: forced with a trigger on the session's
+          // insert, for this account alone.
+          const name = `raced_${user.id.replaceAll("-", "")}`;
+
+          yield* sql
+            .unsafe(
+              `CREATE FUNCTION auth.${name}() RETURNS trigger AS $$
+              BEGIN
+                UPDATE auth.account SET password = 'synthetic-changed-hash'
+                WHERE user_id = NEW.user_id AND provider_id = 'credential';
+                RETURN NEW;
+              END $$ LANGUAGE plpgsql`
+            )
+            .pipe(Effect.orDie);
+          yield* sql
+            .unsafe(
+              `CREATE TRIGGER ${name} AFTER INSERT ON auth.session
+              FOR EACH ROW WHEN (NEW.user_id = '${user.id}')
+              EXECUTE FUNCTION auth.${name}()`
+            )
+            .pipe(Effect.orDie);
+
+          const sessionsBefore = (yield* storedOf(email)).sessions;
+
+          const signedIn = yield* signIn(email, password).pipe(
+            Effect.ensuring(
+              sql
+                .unsafe(`DROP TRIGGER ${name} ON auth.session`)
+                .pipe(
+                  Effect.andThen(sql.unsafe(`DROP FUNCTION auth.${name}()`)),
+                  Effect.orDie
+                )
+            )
+          );
+
+          assert.strictEqual(signedIn.status, 401);
+          assert.isFalse(setsSession(signedIn));
+          assert.strictEqual((yield* storedOf(email)).sessions, sessionsBefore);
+        })
+    );
+
+    it.effect(
+      "takes over no unconfirmed account in use, on a server that once let them in",
+      () =>
+        Effect.gen(function* usedOnce() {
+          const sql = yield* SqlClient.SqlClient;
+          const email = newEmail("used-once");
+          const made = yield* signUp(email, "en", { name: "Maker" });
+          const { user } = yield* decode(SignUpSchema, made);
+
+          // Used while the server did not ask to confirm addresses.
+          const workspaceId = randomUUID();
+
+          yield* sql`
+            INSERT INTO auth.organization (id, name, slug, created_at)
+            VALUES (${workspaceId}, 'Maker notes', ${`maker-${workspaceId}`}, now())`.pipe(
+            Effect.orDie
+          );
+          yield* sql`
+            INSERT INTO auth.member (id, organization_id, user_id, role, created_at)
+            VALUES (${randomUUID()}, ${workspaceId}, ${user.id}, 'owner', now())`.pipe(
+            Effect.orDie
+          );
+
+          const before = yield* storedOf(email);
+
+          const again = yield* signUp(email, "en", {
+            name: "Someone Else",
+            secret: "a passphrase of someone else",
+          });
+
+          assert.strictEqual(again.status, 200);
+          assert.isTrue(setsNonce(again));
+
+          const after = yield* storedOf(email);
+
+          assert.strictEqual(after.name, "Maker");
+          assert.strictEqual(after.hash, before.hash);
+        })
+    );
+
+    it.effect(
+      "refuses a token for no resource, which no route of Peal's takes",
+      () =>
+        Effect.gen(function* noResource() {
+          const app = yield* TestApp;
+          const person = yield* signedUp("no-resource");
+
+          const device = yield* bodyOf(
+            DeviceCodeSchema,
+            yield* app.request("/api/auth/device/code", {
+              form: {
+                client_id: "peal-cli",
+                scope: "offline_access workspace:read",
+              },
+            })
+          );
+
+          yield* app.request(`/api/auth/device?user_code=${device.user_code}`, {
+            headers: { cookie: person.cookies },
+          });
+
+          const approved = yield* app.request("/api/auth/device/approve", {
+            body: { userCode: device.user_code },
+            headers: { cookie: person.cookies },
+          });
+
+          assert.strictEqual(approved.status, 200);
+
+          const tokens = yield* app.request("/api/auth/oauth2/token", {
+            form: {
+              client_id: "peal-cli",
+              device_code: device.device_code,
+              grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+            },
+          });
+
+          assert.strictEqual(tokens.status, 400, JSON.stringify(tokens.body));
+          assert.include(JSON.stringify(tokens.body), "invalid_target");
+          assert.notInclude(JSON.stringify(tokens.body), "access_token");
         })
     );
 
@@ -783,8 +930,39 @@ const workspacesNamed = Effect.fn("workspacesNamed")(function* workspacesNamed(
 });
 
 const ResetSchema = Schema.Struct({
-  apiKeysRemoved: Schema.optional(Schema.Number),
+  apiKeysRemoved: Schema.optionalKey(Schema.Number),
+  invitationsCancelled: Schema.optionalKey(Schema.Number),
   status: Schema.Boolean,
+  usedBeforeConfirmation: Schema.optionalKey(Schema.Literal(true)),
+});
+
+// A reset through the emailed link, answered as the reset page reads it.
+const resetFor = Effect.fn("resetFor")(function* resetFor(
+  email: string,
+  newPassword: string
+) {
+  const app = yield* TestApp;
+
+  const requested = yield* app.request("/api/auth/request-password-reset", {
+    body: { email, redirectTo: "/reset-password" },
+  });
+
+  assert.strictEqual(requested.status, 200);
+
+  const opened = yield* open(
+    linkIn(yield* emailTo(email, /^Reset your Peal password/u)),
+    ""
+  );
+
+  const token =
+    new URL(
+      opened.headers.get("location") ?? "",
+      "http://localhost:3001"
+    ).searchParams.get("token") ?? "";
+
+  return yield* app.request("/api/auth/reset-password", {
+    body: { newPassword, token },
+  });
 });
 
 layer(UnconfirmedTest, { excludeTestServices: true, timeout: "180 seconds" })(
@@ -939,50 +1117,116 @@ layer(UnconfirmedTest, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
-      "confirms on a password reset, and removes the API keys its maker made",
+      "confirms on a password reset, and takes the ways in out of the workspaces it alone owns",
       () =>
         Effect.gen(function* reset() {
-          const app = yield* TestApp;
           const sql = yield* SqlClient.SqlClient;
           const { email, person, workspaceId } = yield* usedAccount("reset");
 
+          // The maker adds a second account of theirs, so the workspace has
+          // two members (deleting the account would be refused), makes an
+          // API key, and leaves an owner's invitation pending.
+          const second = randomUUID();
+
+          yield* sql`
+            INSERT INTO auth."user" (id, name, email, email_verified, created_at, updated_at)
+            VALUES (${second}, 'Second Account', ${newEmail("second")}, true, now(), now())`.pipe(
+            Effect.orDie
+          );
+          yield* sql`
+            INSERT INTO auth.member (id, organization_id, user_id, role, created_at)
+            VALUES (${randomUUID()}, ${workspaceId}, ${second}, 'editor', now())`.pipe(
+            Effect.orDie
+          );
           yield* apiKeyOf(person, workspaceId, ["post:read"]);
-
-          const requested = yield* app.request(
-            "/api/auth/request-password-reset",
-            { body: { email, redirectTo: "/reset-password" } }
+          yield* sql`
+            INSERT INTO auth.invitation (id, organization_id, email, role, status, expires_at, created_at, inviter_id)
+            VALUES (${randomUUID()}, ${workspaceId}, ${newEmail("invited")}, 'owner', 'pending',
+              now() + interval '7 days', now(), ${person.id})`.pipe(
+            Effect.orDie
           );
 
-          assert.strictEqual(requested.status, 200);
-
-          const opened = yield* open(
-            linkIn(yield* emailTo(email, /^Reset your Peal password/u)),
-            ""
-          );
-
-          const token =
-            new URL(
-              opened.headers.get("location") ?? "",
-              "http://localhost:3001"
-            ).searchParams.get("token") ?? "";
-
-          const done = yield* app.request("/api/auth/reset-password", {
-            body: { newPassword: "the owner's chosen passphrase", token },
-          });
+          const done = yield* resetFor(email, "the owner's chosen passphrase");
 
           assert.strictEqual(done.status, 200);
-          assert.strictEqual(
-            (yield* decode(ResetSchema, done)).apiKeysRemoved,
-            1
-          );
+          assert.deepStrictEqual(yield* decode(ResetSchema, done), {
+            apiKeysRemoved: 1,
+            invitationsCancelled: 1,
+            status: true,
+            usedBeforeConfirmation: true,
+          });
           assert.isTrue((yield* storedOf(email)).email_verified);
 
-          const [keys] = yield* sql<{ readonly keys: number }>`
-            SELECT count(*)::int AS keys FROM auth.apikey
-            WHERE reference_id = ${workspaceId}`.pipe(Effect.orDie);
+          const [left] = yield* sql<{
+            readonly invitations: number;
+            readonly keys: number;
+            readonly members: number;
+          }>`
+            SELECT
+              (SELECT count(*)::int FROM auth.apikey
+                WHERE reference_id = ${workspaceId}) AS keys,
+              (SELECT count(*)::int FROM auth.invitation
+                WHERE organization_id = ${workspaceId} AND status = 'pending') AS invitations,
+              (SELECT count(*)::int FROM auth.member
+                WHERE organization_id = ${workspaceId}) AS members`.pipe(
+            Effect.orDie
+          );
 
-          assert.strictEqual(keys?.keys, 0);
+          // The other member stays: it may be a real person's team.
+          assert.deepStrictEqual(left, {
+            invitations: 0,
+            keys: 0,
+            members: 2,
+          });
         })
+    );
+
+    it.effect(
+      "warns even when the account it takes back owns nothing alone",
+      () =>
+        Effect.gen(function* nothingOwned() {
+          const sql = yield* SqlClient.SqlClient;
+          const { email, person, workspaceId } = yield* usedAccount("shared");
+
+          // Another owner beside the maker: nothing is the account's alone.
+          const other = randomUUID();
+
+          yield* sql`
+            INSERT INTO auth."user" (id, name, email, email_verified, created_at, updated_at)
+            VALUES (${other}, 'Other Owner', ${newEmail("other-owner")}, true, now(), now())`.pipe(
+            Effect.orDie
+          );
+          yield* sql`
+            INSERT INTO auth.member (id, organization_id, user_id, role, created_at)
+            VALUES (${randomUUID()}, ${workspaceId}, ${other}, 'owner', now())`.pipe(
+            Effect.orDie
+          );
+          yield* apiKeyOf(person, workspaceId, ["post:read"]);
+
+          const done = yield* resetFor(email, "the owner's chosen passphrase");
+
+          assert.deepStrictEqual(yield* decode(ResetSchema, done), {
+            apiKeysRemoved: 0,
+            invitationsCancelled: 0,
+            status: true,
+            usedBeforeConfirmation: true,
+          });
+        })
+    );
+
+    it.effect("says nothing more when the account was never used", () =>
+      Effect.gen(function* neverUsed() {
+        const email = newEmail("never-used");
+
+        yield* signUp(email, "en");
+
+        const done = yield* resetFor(email, "the owner's chosen passphrase");
+
+        assert.deepStrictEqual(yield* decode(ResetSchema, done), {
+          status: true,
+        });
+        assert.isTrue((yield* storedOf(email)).email_verified);
+      })
     );
   }
 );

@@ -103,10 +103,28 @@ The staff context follows these rules too. What the law has a host keep is in
   sign-up's cookies (`confirmedAccount`).
 - A password reset proves the address too (`afterPasswordReset`,
   `auth/reset-confirmation.ts`): it confirms an unconfirmed account,
-  holding its row, and when the account was used, deletes the API keys
-  made before the reset in the workspaces it alone belongs to; the reset's
-  answer says how many (`apiKeysRemoved`), which the reset page tells.
-  Partner keys and workspaces shared with other members are left.
+  holding its row, and when the account was used, deletes, in that
+  transaction, the API keys made before the reset and the pending
+  invitations of every workspace it is the only owner of, whoever else
+  belongs. Members stay: removing them would hit a real, never-confirmed
+  user's team. The reset's answer then always carries
+  `usedBeforeConfirmation` with `apiKeysRemoved` and
+  `invitationsCancelled` (zero included), and the reset page warns,
+  naming what to check (members, invitations, webhooks, keys, connected
+  channels). Partner keys, webhook endpoints and channels are left.
+  `takeOver` stops at a used account too, so a server switched from
+  verification off to on hands nobody a used account by a sign-up.
+- A password sign-in is checked against what happened while it ran
+  (`auth/sign-in-credential.ts`): the before hook notes the credential's
+  hash, the after hook reads it again once the session is written, and a
+  credential gone or changed meanwhile deletes that session, expires its
+  cookie and answers `INVALID_EMAIL_OR_PASSWORD`. A release, a takeover
+  and a reset also end the account's sessions once more after their
+  transaction commits.
+- `/oauth2/token` refuses (`invalid_target`) any grant that would issue an
+  opaque access token, which a grant naming no resource gets: no route of
+  Peal's takes one, and the command line and MCP clients always name the
+  resource.
 - A password reset ends the sessions (`revokeSessionsOnPasswordReset`)
   and disconnects every connected application
   (`disconnectAfterPasswordReset` in `auth/tokens-not-before.ts`): it

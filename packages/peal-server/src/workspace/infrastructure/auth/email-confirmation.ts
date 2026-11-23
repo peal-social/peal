@@ -236,6 +236,12 @@ const confirm = async (
     expireCookie(ctx, cookie);
   }
 
+  // Once more, committed: a password sign-in that read the released
+  // password may have written a session the transaction did not see.
+  if (outcome === "passwordNeeded") {
+    await ctx.context.internalAdapter.deleteUserSessions(user.id);
+  }
+
   if (outcome === "signedIn") {
     await signInConfirmed(ctx, { ...user, emailVerified: true });
   } else if (

@@ -74,9 +74,13 @@ import {
 } from "./oauth.ts";
 import { providerAdmission } from "./provider-admission.ts";
 import { guardProviderSignIn } from "./provider-sign-in.ts";
-import { afterPasswordReset, tellRemovedKeys } from "./reset-confirmation.ts";
+import { afterPasswordReset, tellTakenBack } from "./reset-confirmation.ts";
 import { refuseRevokedSessions } from "./revoked-sessions.ts";
 import type { AuthConfiguration } from "./settings.ts";
+import {
+  noteSignInCredential,
+  refuseStaleSignIn,
+} from "./sign-in-credential.ts";
 import { offersProviders } from "./sign-in-provider-settings.ts";
 import {
   signInProviderConfigs,
@@ -459,6 +463,7 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await noteTwoStepSender(ctx);
     await claimResentInvitationEmail(ctx, hooks.invitationEmail);
     noteTokenRequest(ctx);
+    await noteSignInCredential(ctx);
   });
 
 // The columns of `auth.account` that hold what a provider issued. Peal needs
@@ -719,10 +724,11 @@ export const makeAuth = ({
         await forgetLeavingMember(ctx, hooks);
         expireVisitorCookie(ctx, site);
         await bindSignUpBrowser(ctx);
+        await refuseStaleSignIn(ctx);
         await renewSignUpBrowser(ctx);
         await refuseRenewalAcrossReset(ctx);
 
-        return await tellRemovedKeys(ctx);
+        return await tellTakenBack(ctx);
       }),
       before: beforeEveryRoute(hooks),
     },

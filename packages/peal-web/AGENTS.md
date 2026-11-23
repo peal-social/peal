@@ -1011,8 +1011,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   up** (`erase`), the one way a page deletes an account; deleted, so sign
   up again; not deletable, so ask the operator; already confirmed, so sign
   in or choose a new password; a link that no longer works, with the
-  resend form. A reset that removed API keys someone made in the account
-  before its address was confirmed says how many (`ResetPasswordForm`). The page sends no Referer and is
+  resend form. A reset of an account someone used before its address was
+  confirmed (`usedBeforeConfirmation`) always warns, with the keys and
+  invitations removed, zero included, and what to check: members,
+  invitations, webhooks, keys, connected channels (`ResetPasswordForm`). The page sends no Referer and is
   never cached nor indexed (`next.config.ts`, `metadata.referrer`), and
   loads no measurement nor support chat (both live under `(app)`).
 - The sign-in pages (sign-in, sign-up, forgot and reset password,

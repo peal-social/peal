@@ -13,130 +13,168 @@ import { disconnectAfterPasswordReset } from "./tokens-not-before.ts";
 // reset link went to it. So a reset confirms an unconfirmed account. Where
 // accounts work before their address is confirmed, someone may have made
 // the account with the address and used it: the owner, resetting, would
-// then hold workspaces whose API keys the maker kept. Those keys go, in the
-// workspaces the account alone belongs to, and the reset's answer says how
-// many (`apiKeysRemoved`), which the reset page tells.
+// then hold workspaces whose ways in the maker kept. In every workspace the
+// account is the only owner of, the API keys made before the reset and the
+// pending invitations go, in the transaction that confirms; the members
+// stay (a real, never-confirmed user's team would be hit otherwise), and
+// the reset's answer always says the account was used before
+// (`usedBeforeConfirmation`), with what went, so the reset page tells the
+// person what to check.
 
 type AuthCtx = Pick<GenericEndpointContext, "context">;
 
-// What a reset removed, by request, for the route's after hook.
-const removed = new WeakMap<Request, number>();
+/** What a reset of an account used before its confirmation removed. */
+export interface TakenBack {
+  readonly apiKeysRemoved: number;
+  readonly invitationsCancelled: number;
+}
 
-const decodeMembership = Schema.decodeUnknownOption(
-  Schema.Struct({ organizationId: Schema.String })
+// What a reset removed, by request, for the route's after hook.
+const removed = new WeakMap<Request, TakenBack>();
+
+const MembershipSchema = Schema.Struct({
+  organizationId: Schema.String,
+  role: Schema.String,
+});
+
+const decodeMemberships = Schema.decodeUnknownOption(
+  Schema.Array(MembershipSchema)
 );
 
-// The workspaces the user alone belongs to.
-const soleWorkspacesOf = async (
+// The workspaces the user is the only owner of, whoever else belongs.
+const ownedAloneBy = async (
   ctx: AuthCtx,
   userId: string
 ): Promise<readonly string[]> => {
   const adapter = await getCurrentAdapter(ctx.context.adapter);
 
-  const memberships: readonly unknown[] = await adapter.findMany({
-    model: "member",
-    where: [{ field: "userId", value: userId }],
-  });
-
-  const workspaces = memberships.flatMap((row) =>
-    Option.toArray(decodeMembership(row)).map(
-      ({ organizationId }) => organizationId
-    )
-  );
-
-  const counted = await Promise.all(
-    workspaces.map(async (workspaceId) => ({
-      members: await adapter.count({
+  const own = Option.getOrElse(
+    decodeMemberships(
+      await adapter.findMany({
         model: "member",
-        where: [{ field: "organizationId", value: workspaceId }],
+        where: [{ field: "userId", value: userId }],
+      })
+    ),
+    () => []
+  ).filter(({ role }) => role === "owner");
+
+  const owners = await Promise.all(
+    own.map(async ({ organizationId }) => ({
+      count: await adapter.count({
+        model: "member",
+        where: [
+          { field: "organizationId", value: organizationId },
+          { field: "role", value: "owner" },
+        ],
       }),
-      workspaceId,
+      organizationId,
     }))
   );
 
-  return counted
-    .filter(({ members }) => members === 1)
-    .map(({ workspaceId }) => workspaceId);
+  return owners
+    .filter(({ count }) => count === 1)
+    .map(({ organizationId }) => organizationId);
 };
 
 /**
  * Part of a password reset (`onPasswordReset`): confirms an unconfirmed
  * account, holding its row; when it was used before, deletes the API keys
- * made before now in the workspaces it alone belongs to. Says how many.
+ * made before now and the pending invitations in every workspace it is the
+ * only owner of. Says what went, zero included.
  */
 export const confirmOnReset = async (
   ctx: AuthCtx,
   userId: string,
   request: Request | undefined
 ): Promise<void> => {
-  const count = await runWithTransaction(ctx.context.adapter, async () => {
-    if (!(await confirmUnconfirmed(ctx, userId))) {
-      return 0;
+  const taken = await runWithTransaction(
+    ctx.context.adapter,
+    async (): Promise<TakenBack | undefined> => {
+      if (
+        !(await confirmUnconfirmed(ctx, userId)) ||
+        !(await wasUsed(ctx, userId))
+      ) {
+        return undefined;
+      }
+
+      const adapter = await getCurrentAdapter(ctx.context.adapter);
+      const owned = await ownedAloneBy(ctx, userId);
+
+      if (owned.length === 0) {
+        return { apiKeysRemoved: 0, invitationsCancelled: 0 };
+      }
+
+      const apiKeysRemoved = await adapter.deleteMany({
+        model: "apikey",
+        where: [
+          { field: "referenceId", operator: "in", value: [...owned] },
+          { field: "createdAt", operator: "lt", value: new Date() },
+        ],
+      });
+
+      const invitationsCancelled = await adapter.deleteMany({
+        model: "invitation",
+        where: [
+          { field: "organizationId", operator: "in", value: [...owned] },
+          { field: "status", value: "pending" },
+        ],
+      });
+
+      return { apiKeysRemoved, invitationsCancelled };
     }
+  );
 
-    if (!(await wasUsed(ctx, userId))) {
-      return 0;
-    }
-
-    const adapter = await getCurrentAdapter(ctx.context.adapter);
-    const now = new Date();
-    const sole = await soleWorkspacesOf(ctx, userId);
-
-    if (sole.length === 0) {
-      return 0;
-    }
-
-    return await adapter.deleteMany({
-      model: "apikey",
-      where: [
-        { field: "referenceId", operator: "in", value: [...sole] },
-        { field: "createdAt", operator: "lt", value: now },
-      ],
-    });
-  });
-
-  if (request !== undefined && count > 0) {
-    removed.set(request, count);
+  if (request !== undefined && taken !== undefined) {
+    removed.set(request, taken);
   }
 };
 
 /**
  * Better Auth's `emailAndPassword.onPasswordReset`: ends what the old
- * password let in (`disconnectAfterPasswordReset`), then confirms the
- * address the reset proved (`confirmOnReset`).
+ * password let in (`disconnectAfterPasswordReset`), confirms the address
+ * the reset proved (`confirmOnReset`), then ends the account's sessions
+ * once more: a password sign-in that read the old password may have
+ * written one after the library's own sweep.
  */
 export const afterPasswordReset = async (
   data: { readonly user: User },
   request?: Request
 ): Promise<void> => {
+  const ctx = getCurrentAuthEndpointContext();
+
   await disconnectAfterPasswordReset(data);
-  await confirmOnReset(getCurrentAuthEndpointContext(), data.user.id, request);
+  await confirmOnReset(ctx, data.user.id, request);
+  await ctx.context.internalAdapter.deleteUserSessions(data.user.id);
 };
 
 const isResetDone = Schema.is(
   Schema.Struct({ returned: Schema.Struct({ status: Schema.Literal(true) }) })
 );
 
-/**
- * Part of Better Auth's after hook, on `/reset-password`: an answer that
- * removed API keys says how many (`apiKeysRemoved`): the answer to put in
- * the route's place, or undefined to leave it as it is.
- */
-/** What a reset that removed API keys answers. */
-export interface RemovedKeysAnswer {
-  readonly apiKeysRemoved: number;
+/** What a reset of an account used before its confirmation answers. */
+export interface TakenBackAnswer extends TakenBack {
   readonly status: boolean;
+  readonly usedBeforeConfirmation: true;
 }
 
-export const tellRemovedKeys = async (
+/**
+ * Part of Better Auth's after hook, on `/reset-password`: the answer to put
+ * in the route's place when the reset took back an account used before its
+ * confirmation, or undefined to leave it as it is.
+ */
+export const tellTakenBack = async (
   ctx: GenericEndpointContext
-): Promise<RemovedKeysAnswer | undefined> => {
-  const count =
+): Promise<TakenBackAnswer | undefined> => {
+  const taken =
     ctx.path === "/reset-password" && ctx.request !== undefined
       ? removed.get(ctx.request)
       : undefined;
 
-  return count === undefined || !isResetDone(ctx.context)
+  return taken === undefined || !isResetDone(ctx.context)
     ? undefined
-    : await ctx.json({ apiKeysRemoved: count, status: true });
+    : await ctx.json({
+        ...taken,
+        status: true,
+        usedBeforeConfirmation: true as const,
+      });
 };
