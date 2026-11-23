@@ -8,8 +8,12 @@ import { BillingAccounts } from "#billing/application/billing-accounts.ts";
 import { AccountDayStore } from "#billing/application/ports/account-day-store.ts";
 import { BillingAccountStore } from "#billing/application/ports/billing-account-store.ts";
 import { UsageLedger } from "#billing/application/ports/usage-ledger.ts";
+import type { WorkspaceUsageRecord } from "#billing/application/ports/usage-ledger.ts";
 import { UsageSnapshotSink } from "#billing/application/ports/usage-snapshot-sink.ts";
-import type { ToldDayState } from "#billing/application/ports/usage-snapshot-sink.ts";
+import type {
+  DayCounters,
+  ToldDayState,
+} from "#billing/application/ports/usage-snapshot-sink.ts";
 import { UsageStates } from "#billing/application/ports/usage-states.ts";
 import type { WorkspaceDayState } from "#billing/application/ports/usage-states.ts";
 import { SnapshotUsage } from "#billing/application/snapshot-usage.ts";
@@ -80,12 +84,75 @@ const StatesTest = Layer.succeed(
   })
 );
 
-// A ledger that takes every write and keeps none.
-const LedgerTest = Layer.mock(UsageLedger, {
-  eraseWorkspace: () => Effect.void,
-  purgeBefore: () => Effect.succeed(0),
-  set: () => Effect.void,
-});
+// What the ledger counted yesterday: posts on two platforms and messages
+// for the first workspace, beside a state the snapshot writes itself,
+// and nothing for the others.
+const counted: readonly WorkspaceUsageRecord[] = [
+  {
+    record: {
+      day: yesterday,
+      dimension: "mastodon",
+      meter: "publishedPosts",
+      quantity: 2,
+    },
+    workspaceId: connected,
+  },
+  {
+    record: {
+      day: yesterday,
+      dimension: "x",
+      meter: "publishedPosts",
+      quantity: 1,
+    },
+    workspaceId: connected,
+  },
+  {
+    record: {
+      day: yesterday,
+      dimension: "",
+      meter: "outboundMessages",
+      quantity: 5,
+    },
+    workspaceId: connected,
+  },
+  {
+    record: { day: yesterday, dimension: "", meter: "members", quantity: 2 },
+    workspaceId: connected,
+  },
+];
+
+const countedFor: DayCounters = {
+  assistantImages: 0,
+  managedAds: 0,
+  outboundMessages: 5,
+  publishedPosts: 3,
+};
+
+const nothingCounted: DayCounters = {
+  assistantImages: 0,
+  managedAds: 0,
+  outboundMessages: 0,
+  publishedPosts: 0,
+};
+
+// A ledger that takes every write and keeps none, and reads the day's
+// counters as `readable` says.
+const ledgerThat = (readable: "counted" | "failing") =>
+  Layer.mock(UsageLedger, {
+    eraseWorkspace: () => Effect.void,
+    ofWorkspaces: (workspaceIds, { from, to }) =>
+      readable === "counted" &&
+      DateTime.Equivalence(from, yesterday) &&
+      DateTime.Equivalence(to, yesterday)
+        ? Effect.succeed(
+            counted.filter(({ workspaceId }) =>
+              workspaceIds.includes(workspaceId)
+            )
+          )
+        : Effect.fail(new DatabaseError({ cause: "synthetic" })),
+    purgeBefore: () => Effect.succeed(0),
+    set: () => Effect.void,
+  });
 
 const AccountDaysTest = Layer.mergeAll(
   Layer.succeed(
@@ -145,13 +212,14 @@ const DyingSink = Layer.succeed(
 
 const snapshotWith = (
   accounts: ReturnType<typeof accountsThat>,
-  sink: Layer.Layer<UsageSnapshotSink>
+  sink: Layer.Layer<UsageSnapshotSink>,
+  ledger: ReturnType<typeof ledgerThat> = ledgerThat("counted")
 ) =>
   SnapshotUsage.make(2).pipe(
     Layer.provide(
       Layer.mergeAll(
         StatesTest,
-        LedgerTest,
+        ledger,
         accounts,
         AccountDaysTest,
         NoMetersTest,
@@ -178,7 +246,7 @@ layer(snapshotWith(accountsThat("alone"), recordingSink(toldNow)))(
   "the snapshot's days told",
   (it) => {
     it.effect(
-      "tells each workspace with a connected account still there, with its billing account",
+      "tells each workspace with a connected account still there, with its billing account and the day's counters",
       () =>
         Effect.gen(function* tells() {
           const run = yield* runAtMidnight;
@@ -191,6 +259,7 @@ layer(snapshotWith(accountsThat("alone"), recordingSink(toldNow)))(
               states: [
                 {
                   billingAccountId: Option.some(aloneAccountId),
+                  counters: Option.some(countedFor),
                   state: stateOf(connected, 3),
                 },
               ],
@@ -200,6 +269,7 @@ layer(snapshotWith(accountsThat("alone"), recordingSink(toldNow)))(
               states: [
                 {
                   billingAccountId: Option.some(aloneAccountId),
+                  counters: Option.some(nothingCounted),
                   state: stateOf(other, 1),
                 },
               ],
@@ -223,14 +293,55 @@ layer(snapshotWith(accountsThat("failing"), recordingSink(toldUnread)))(
         assert.deepStrictEqual(
           (yield* Ref.get(toldUnread)).flatMap(({ states }) => states),
           [
-            { billingAccountId: Option.none(), state: stateOf(connected, 3) },
-            { billingAccountId: Option.none(), state: stateOf(other, 1) },
+            {
+              billingAccountId: Option.none(),
+              counters: Option.some(countedFor),
+              state: stateOf(connected, 3),
+            },
+            {
+              billingAccountId: Option.none(),
+              counters: Option.some(nothingCounted),
+              state: stateOf(other, 1),
+            },
           ]
         );
       })
     );
   }
 );
+
+const toldUncounted = Ref.makeUnsafe<readonly Told[]>([]);
+
+layer(
+  snapshotWith(
+    accountsThat("alone"),
+    recordingSink(toldUncounted),
+    ledgerThat("failing")
+  )
+)("the snapshot's days told, the ledger's counters unreadable", (it) => {
+  it.effect("tells them without counters, and the run goes on", () =>
+    Effect.gen(function* uncounted() {
+      const run = yield* runAtMidnight;
+
+      assert.strictEqual(run.workspaces, 4);
+      assert.deepStrictEqual(
+        (yield* Ref.get(toldUncounted)).flatMap(({ states }) => states),
+        [
+          {
+            billingAccountId: Option.some(aloneAccountId),
+            counters: Option.none(),
+            state: stateOf(connected, 3),
+          },
+          {
+            billingAccountId: Option.some(aloneAccountId),
+            counters: Option.none(),
+            state: stateOf(other, 1),
+          },
+        ]
+      );
+    })
+  );
+});
 
 layer(snapshotWith(accountsThat("alone"), DyingSink))(
   "the snapshot's days told to a sink that dies",

@@ -54,6 +54,7 @@ import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
 import { WorkspaceSeats } from "#workspace/application/workspace-seats.ts";
 import { WorkspaceSecurity } from "#workspace/application/workspace-security.ts";
 import { WorkspaceStanding } from "#workspace/application/workspace-standing.ts";
+import { analysedRequestLimits } from "#workspace/infrastructure/analysed-request-limits.ts";
 import { AccountModerationLive } from "#workspace/infrastructure/auth/account-moderation.ts";
 import { ApiKeyIssuerLive } from "#workspace/infrastructure/auth/api-key-issuer.ts";
 import { BetterAuthLive } from "#workspace/infrastructure/auth/better-auth.ts";
@@ -247,9 +248,12 @@ export const WorkspaceLive = Layer.mergeAll(
   Layer.provideMerge(EmailedAccountMail),
   Layer.provideMerge(ImpersonationGuardLive),
   Layer.provideMerge(LegalConnectionJournal),
+  // Product analytics hears a workspace's API was used, reads included.
   Layer.provideMerge(
-    CountedRequestLimits.pipe(
-      Layer.provide(Layer.merge(MemberDirectoryLive, DrizzlePartnerStore))
+    analysedRequestLimits(
+      CountedRequestLimits.pipe(
+        Layer.provide(Layer.merge(MemberDirectoryLive, DrizzlePartnerStore))
+      )
     )
   ),
   Layer.provideMerge(LoggedActivityJournal),

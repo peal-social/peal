@@ -39,6 +39,7 @@ const SinkTest = analyticsUsageSnapshotSink({
 
 const stateOf = (channels: number): ToldDayState => ({
   billingAccountId: Option.none(),
+  counters: Option.none(),
   state: {
     assistantRequests: 0,
     channels,
@@ -77,6 +78,12 @@ layer(SinkTest, { excludeTestServices: true })(
           yield* sink.told(yesterday, [
             {
               billingAccountId: Option.some(aloneAccountId),
+              counters: Option.some({
+                assistantImages: 1,
+                managedAds: 0,
+                outboundMessages: 5,
+                publishedPosts: 7,
+              }),
               state: {
                 assistantRequests: 4,
                 channels: 3,
@@ -100,13 +107,17 @@ layer(SinkTest, { excludeTestServices: true })(
             },
             $set_once: { kind: "service" },
             actor_kind: "service",
+            assistant_images: 1,
             assistant_requests: 4,
             billing_account_id: aloneAccountId,
             channels: 3,
             day: "2026-11-10",
             environment: "test",
+            managed_ads: 0,
             media_storage_bytes: 9_000_000_000,
             members: 2,
+            outbound_messages: 5,
+            published_posts: 7,
             workspace_id: workspaceId,
           });
         })

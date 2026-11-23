@@ -469,14 +469,34 @@ and no socket, for tests.
   `ProductAnalyticsLive` (`src/app/product-analytics.ts`) is one per build
   of the server, released after the HTTP server and the workers, so it
   sends what they queued.
-- Events come from five seams, never calls sprinkled in use cases: the
+- Events come from seven seams, never calls sprinkled in use cases: the
   activity journal's adapter (`api_operation`, every write but MCP's), the
   MCP middleware (`mcp_tool_called`, every tool call), the decorator over
-  `WebhookEvents` (post and channel milestones), Better Auth's hooks
-  (sign-ups, workspaces, subscriptions) and the daily usage snapshot's
-  sink (`workspace_snapshot`: billing's `UsageSnapshotSink`, adapter
-  `billing/infrastructure/analytics-usage-snapshot-sink.ts`, one event a
-  workspace with a connected account, as its service identity). A rerun
+  `WebhookEvents` (the milestones nothing else tells: a channel connected,
+  disconnected, to reconnect or expiring, a post scheduled, published or
+  failed, an article published or failed, a file refused; a channel to
+  reconnect or expiring is told again with each daily reminder, and a
+  file with each probe, so readers count channels and files, never
+  events; what a member
+  does in a request is `api_operation`'s, and what comes in, comments and
+  messages, is never told, for its volume), Better Auth's hooks
+  (sign-ups, workspaces, subscriptions), the decorator over billing's
+  `BillingNotices` (`allowance_reached`, with the notice its billing
+  managers get, as the billing workspace: once a meter and month, but for
+  a unit given back and claimed again), the decorator over
+  `RequestLimits` (`api_used`: a key's or an application's first request
+  let through each UTC day, through the API or the MCP endpoint, reads
+  included, as the key's workspace or the application's person, with the
+  workspace its token is bound to and never one a request names, which
+  nothing has checked yet there; kept in memory alone, `usesToldADay` at
+  most, so a restart tells the day again and readers take one per
+  workspace or person, `via` and `day`; never a session's or a partner
+  key's) and the daily usage
+  snapshot's sink (`workspace_snapshot`: billing's `UsageSnapshotSink`,
+  adapter `billing/infrastructure/analytics-usage-snapshot-sink.ts`, one
+  event a workspace with a connected account, as its service identity,
+  with the day's counters of the usage ledger when it could be read: the
+  posts that went out and the billing meters' units). A rerun
   of a day sends that day's snapshots again: readers take one row per
   workspace and `day`, never the event's timestamp, which is when it was
   handed over (the next day, from 00:11 UTC). A workspace that loses its
@@ -500,8 +520,9 @@ and no socket, for tests.
   workspace's latest state is an `argMax` over these events.
 - A property is an id, an enum, a number or a boolean: never a text
   someone wrote, a name, an address, a URL or what a platform answered.
-  Capture never fails, dies or waits on the network, and nothing is
-  ever sent twice. Staff are marked `internal` when they open the console;
+  Capture never fails, dies or waits on the network, and the delivery
+  never sends an event twice; a seam tells one again only where its
+  event says so. Staff are marked `internal` when they open the console;
   what they do as a member sends nothing.
 - An erasure forgets, durably: closing an account and deleting or
   offboarding a workspace call `ProductAnalytics.erase` inside the
