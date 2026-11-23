@@ -62,17 +62,18 @@ describe("the backup copy, with its setting on", () => {
     });
   });
 
-  it("locks every object for 14 days, longer than a week of backups", async () => {
+  it("locks every object for 35 days, 14 more than a file's copy may age", async () => {
     await settled;
 
-    expect(backupCopyLockDays * day).toBeGreaterThan(7 * day);
+    // peal_backup_copy_refresh_days in the Ansible project.
+    expect(backupCopyLockDays - 21).toBeGreaterThanOrEqual(14);
     expect(named("lock-backup-copy")?.inputs).toStrictEqual({
       accountId: "account-synthetic",
       bucketName: "peal-production-backup-copy",
       jurisdiction: "eu",
       rules: [
         {
-          condition: { maxAgeSeconds: 14 * day, type: "Age" },
+          condition: { maxAgeSeconds: 35 * day, type: "Age" },
           enabled: true,
           id: "lock-every-copy",
           prefix: "",
@@ -81,7 +82,7 @@ describe("the backup copy, with its setting on", () => {
     });
   });
 
-  it("deletes copies after 35 days, once the lock has long ended", async () => {
+  it("deletes copies after 49 days, once the lock has ended", async () => {
     await settled;
 
     expect(backupCopyRetentionDays).toBeGreaterThan(backupCopyLockDays);
@@ -99,7 +100,7 @@ describe("the backup copy, with its setting on", () => {
       {
         conditions: { prefix: "" },
         deleteObjectsTransition: {
-          condition: { maxAge: 35 * day, type: "Age" },
+          condition: { maxAge: 49 * day, type: "Age" },
         },
         enabled: true,
         id: "expire-copies",

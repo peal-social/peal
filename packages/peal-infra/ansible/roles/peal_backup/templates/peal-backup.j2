@@ -53,3 +53,10 @@ fi
 
 report peal_backup_last_success_timestamp "When the last database backup finished" ||
   echo "peal-backup: the backup is stored, but the collector did not record it" >&2
+{% if peal_backup_copy | default(false) %}
+# The backup copy follows each backup (peal-backup-copy): Grafana's
+# peal-backup-copy-behind compares this with the copy's own report, so a
+# copy that never succeeds alerts too.
+report peal_backup_copy_expected_timestamp "When a backup the backup copy must follow finished" ||
+  echo "peal-backup: the collector did not record that the copy is due" >&2
+{% endif %}

@@ -7,9 +7,13 @@ database."""
 
 from __future__ import annotations
 
+import contextlib
 import datetime
+import hashlib
+import http.client
 import http.server
 import importlib.util
+import io
 import json
 import os
 import re
@@ -98,12 +102,8 @@ def _put(bucket: Any, key: str, data: bytes) -> None:
     bucket.call("PUT", key, headers={"content-length": str(len(data))}, body=data)
 
 
-def _get(bucket: Any, key: str) -> bytes:
-    return bucket.call("GET", key)
-
-
 def _contents(bucket: Any, prefix: str) -> dict[str, bytes]:
-    return {key.removeprefix(prefix): _get(bucket, key) for key, _, _ in bucket.list(prefix)}
+    return {key.removeprefix(prefix): bucket.get(key) for key, _ in bucket.list(prefix)}
 
 
 # A repository as pgBackRest lays it out under its path, with a backup
@@ -122,12 +122,19 @@ REPOSITORY = {
 PART = 5 * 1024 * 1024
 
 
-def _settings(source: Any, copy_bucket: Any, path: str = "/production", refresh_days: int = 21) -> Any:
-    return backup_copy.Settings(source=source, copy=copy_bucket, path=path, refresh_days=refresh_days, part_size=PART)
+def _settings(source: Any, copy_bucket: Any, path: str = "/production") -> Any:
+    return backup_copy.Settings(source=source, copy=copy_bucket, path=path, refresh_days=21, part_size=PART,
+                                lock_days=35, max_run_hours=6)
 
 
-def _at(hours: float) -> datetime.datetime:
-    return datetime.datetime(2026, 11, 23, 2, 30, tzinfo=datetime.UTC) + datetime.timedelta(hours=hours)
+def _later() -> datetime.datetime:
+    """A run's time: the store's clock decides, so a run is named now, a
+    second after the last one, which has a name of its own."""
+    time.sleep(1.1)
+    return datetime.datetime.now(datetime.UTC)
+
+
+SOON = datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1)
 
 
 @pytest.fixture
@@ -142,41 +149,48 @@ def stack(endpoint: str) -> tuple[Any, Any]:
 @pytest.mark.skipif(not _docker_runs(), reason="Docker is not running")
 class TestTheCopy:
     """Against one SeaweedFS, started once for these tests in one of
-    xdist's workers (conftest's scheduler runs a class in one)."""
+    xdist's workers (conftest's scheduler runs a class in one): the S3
+    calls as R2 takes them, the store's own times, parts, and keys it
+    refuses to write twice."""
 
     def test_a_first_run_copies_the_repository_then_writes_its_index(self, stack: tuple[Any, Any]) -> None:
         source, copy_bucket = stack
 
-        run, written = backup_copy.copy(_settings(source, copy_bucket), _at(0))
+        run, written = backup_copy.copy(_settings(source, copy_bucket), _later())
 
-        assert run == "2026-11-23T023000Z"
         assert written == len(REPOSITORY) + 1
         copied = _contents(copy_bucket, f"{run}/")
         index = json.loads(copied.pop("index.json"))
         assert copied == REPOSITORY
         assert index["objects"] == {
-            key: {"copy": f"{run}/{key}", "size": len(data)} for key, data in REPOSITORY.items()
+            key: {
+                "copy": f"{run}/{key}",
+                "sha256": hashlib.sha256(data).hexdigest(),
+                "size": len(data),
+                "source_etag": hashlib.md5(data, usedforsecurity=False).hexdigest(),
+            }
+            for key, data in REPOSITORY.items()
         }
 
     def test_a_second_run_writes_nothing(self, stack: tuple[Any, Any]) -> None:
         source, copy_bucket = stack
-        backup_copy.copy(_settings(source, copy_bucket), _at(0))
-        before = sorted(copy_bucket.list())
+        backup_copy.copy(_settings(source, copy_bucket), _later())
+        before = sorted(key for key, _ in copy_bucket.list())
 
-        assert backup_copy.copy(_settings(source, copy_bucket), _at(24)) == (None, 0)
-        assert sorted(copy_bucket.list()) == before
+        assert backup_copy.copy(_settings(source, copy_bucket), _later()) == (None, 0)
+        assert sorted(key for key, _ in copy_bucket.list()) == before
 
-    def test_a_later_run_copies_what_changed_alone_under_its_own_prefix(self, stack: tuple[Any, Any]) -> None:
+    def test_a_later_run_copies_what_changed_alone(self, stack: tuple[Any, Any]) -> None:
         """backup.info, rewritten by the next backup, and a new segment;
         every earlier copy stays as it was, byte for byte."""
         source, copy_bucket = stack
-        first, _ = backup_copy.copy(_settings(source, copy_bucket), _at(0))
-        before = {key: etag for key, _, etag in copy_bucket.list()}
-        _put(source, "production/backup/peal/backup.info", b"[backup:current]\n20261122-021500F={}\n20261123-021500D={}\n")
+        first, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
+        before = {key: stored for key, stored in copy_bucket.list()}
+        _put(source, "production/backup/peal/backup.info", b"[backup:current]\n20261123-021500D={}\n")
         _put(source, "production/archive/peal/18-1/0000000100000000/000000010000000000000002-bb.zst", b"wal two")
         _put(source, "production/backup/peal/20261122-021500F/backup.manifest", b"manifest")
 
-        second, written = backup_copy.copy(_settings(source, copy_bucket), _at(24))
+        second, written = backup_copy.copy(_settings(source, copy_bucket), _later())
 
         assert written == 3
         assert sorted(_contents(copy_bucket, f"{second}/")) == [
@@ -184,120 +198,391 @@ class TestTheCopy:
             "backup/peal/backup.info",
             "index.json",
         ]
-        assert {key: etag for key, _, etag in copy_bucket.list() if key.startswith(f"{first}/")} == before
-        index = json.loads(_get(copy_bucket, f"{second}/index.json"))
-        assert index["objects"]["backup/peal/backup.info.copy"]["copy"].startswith(f"{first}/")
+        assert {key: stored for key, stored in copy_bucket.list() if key.startswith(f"{first}/")} == before
 
     def test_a_key_is_never_written_twice(self, stack: tuple[Any, Any]) -> None:
-        """The store refuses a PUT on a key that exists, and a run refuses
-        a prefix that holds anything."""
         source, copy_bucket = stack
-        run, _ = backup_copy.copy(_settings(source, copy_bucket), _at(0))
+        run, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
 
         with pytest.raises(backup_copy.CopyError):
             copy_bucket.put_new(f"{run}/backup/peal/backup.info", b"other", 5, PART)
-        _put(source, "production/backup/peal/backup.info", b"changed")
         with pytest.raises(backup_copy.CopyError, match="already holds"):
-            backup_copy.copy(_settings(source, copy_bucket), _at(0))
-        assert _get(copy_bucket, f"{run}/backup/peal/backup.info") == REPOSITORY["backup/peal/backup.info"]
+            backup_copy.copy(_settings(source, copy_bucket), backup_copy.run_time(run))
+        assert copy_bucket.get(f"{run}/backup/peal/backup.info") == REPOSITORY["backup/peal/backup.info"]
 
     def test_a_run_rebuilds_the_repository_as_it_found_it(self, stack: tuple[Any, Any]) -> None:
         """The first run's set, after the repository changed and lost its
-        files: complete, and as the first run found it."""
+        files: complete, checked, and as the first run found it."""
         source, copy_bucket = stack
-        first, _ = backup_copy.copy(_settings(source, copy_bucket), _at(0))
+        first, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
         _put(source, "production/backup/peal/backup.info", b"later")
-        backup_copy.copy(_settings(source, copy_bucket), _at(24))
-        for key, _, _ in list(source.list("production/")):
+        second, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
+        for key, _ in list(source.list("production/")):
             source.call("DELETE", key, expect=(204, 200))
 
-        missing = backup_copy.rebuild(_settings(source, copy_bucket), first, "/production-rebuilt")
+        missing = backup_copy.rebuild(_settings(source, copy_bucket), first, "/production-rebuilt", SOON)
 
         assert missing == []
         assert _contents(source, "production-rebuilt/") == REPOSITORY
-        assert backup_copy.complete_runs(copy_bucket) == [first, "2026-11-24T023000Z"]
+        lines = backup_copy.describe_runs(_settings(source, copy_bucket))
+        assert [line.split()[0] for line in lines] == [first, second]
+        assert all("all locked until" in line for line in lines)
 
     def test_a_rebuild_names_what_the_copy_lost(self, stack: tuple[Any, Any]) -> None:
         source, copy_bucket = stack
-        run, _ = backup_copy.copy(_settings(source, copy_bucket), _at(0))
+        run, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
         lost = "archive/peal/18-1/0000000100000000/000000010000000000000001-aa.zst"
         copy_bucket.call("DELETE", f"{run}/{lost}", expect=(204, 200))
 
-        assert backup_copy.rebuild(_settings(source, copy_bucket), run, "rebuilt") == [lost]
+        assert backup_copy.rebuild(_settings(source, copy_bucket), run, "rebuilt", SOON) == [lost]
 
     def test_a_rebuild_never_writes_over_a_repository(self, stack: tuple[Any, Any]) -> None:
         source, copy_bucket = stack
-        run, _ = backup_copy.copy(_settings(source, copy_bucket), _at(0))
+        run, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
 
         for path in ["/production", "production/", "/"]:
             with pytest.raises(backup_copy.CopyError, match="new path"):
-                backup_copy.rebuild(_settings(source, copy_bucket), run, path)
+                backup_copy.rebuild(_settings(source, copy_bucket), run, path, SOON)
         _put(source, "taken/backup/peal/backup.info", b"someone's")
         with pytest.raises(backup_copy.CopyError, match="already holds"):
-            backup_copy.rebuild(_settings(source, copy_bucket), run, "taken")
+            backup_copy.rebuild(_settings(source, copy_bucket), run, "taken", SOON)
 
-    def test_files_the_copy_holds_from_long_ago_are_copied_again(self, stack: tuple[Any, Any]) -> None:
-        """Before the copy's lifecycle rule deletes them: a file older in
-        the copy than the refresh is copied anew."""
+    def test_a_run_named_in_the_past_by_its_writer_is_not_trusted(self, stack: tuple[Any, Any]) -> None:
+        """Whoever holds the server writes a run named before the incident:
+        the store's time for its index gives it away."""
         source, copy_bucket = stack
-        backup_copy.copy(_settings(source, copy_bucket, refresh_days=21), _at(0))
+        honest, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
+        forged = "2026-11-01T021500Z"
+        for key, data in REPOSITORY.items():
+            copy_bucket.put_new(f"{forged}/{key}", data, len(data), PART)
+        index = json.dumps({"objects": {
+            key: {"copy": f"{forged}/{key}", "sha256": hashlib.sha256(data).hexdigest(), "size": len(data)}
+            for key, data in REPOSITORY.items()
+        }}).encode()
+        copy_bucket.put_new(f"{forged}/index.json", index, len(index), PART)
 
-        assert backup_copy.copy(_settings(source, copy_bucket, refresh_days=21), _at(24 * 20))[1] == 0
-        run, written = backup_copy.copy(_settings(source, copy_bucket, refresh_days=21), _at(24 * 22))
-        assert written == len(REPOSITORY) + 1
-        assert _contents(copy_bucket, f"{run}/").keys() - {"index.json"} == REPOSITORY.keys()
+        with pytest.raises(backup_copy.CopyError, match="not trusted"):
+            backup_copy.rebuild(_settings(source, copy_bucket), forged, "rebuilt", SOON)
+        assert any(line.startswith(f"{forged}  ") and "NOT TRUSTED" in line
+                   for line in backup_copy.describe_runs(_settings(source, copy_bucket)))
+        # Nor does the next run take it for the newest.
+        assert backup_copy.copy(_settings(source, copy_bucket), _later()) == (None, 0)
+        assert honest
 
     def test_the_command_reads_its_keys_from_the_file_and_reports(
         self, stack: tuple[Any, Any], tmp_path: Path, endpoint: str
     ) -> None:
-        """The keys by name from credentials.env, never printed; a success
+        """The keys by name from the credentials, never printed; a success
         and a failure each posted to the collector."""
         source, copy_bucket = stack
-        credentials = tmp_path / "credentials.env"
+        credentials = tmp_path / "credentials"
         credentials.write_text(
             f"PGBACKREST_REPO1_S3_KEY='{ACCESS_KEY}'\nPGBACKREST_REPO1_S3_KEY_SECRET='{SECRET_KEY}'\n"
             f"PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID={ACCESS_KEY}\nPEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY={SECRET_KEY}\n"
             "RESEND_API_KEY='re_synthetic'\n"
         )
-        posts: list[str] = []
-
-        class Handler(http.server.BaseHTTPRequestHandler):
-            def do_POST(self) -> None:
-                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-                posts.append(body["resourceMetrics"][0]["scopeMetrics"][0]["metrics"][0]["name"])
-                self.send_response(200)
-                self.send_header("Content-Length", "0")
-                self.end_headers()
-
-            def log_message(self, *_: object) -> None:
-                pass
-
-        collector = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        threading.Thread(target=collector.serve_forever, daemon=True).start()
-        environ = {
-            "PEAL_BACKUP_COPY_CREDENTIALS": str(credentials),
-            "PEAL_BACKUP_COPY_ENDPOINT": endpoint,
-            "PEAL_BACKUP_COPY_REGION": "us-east-1",
-            "PEAL_BACKUP_COPY_SOURCE_BUCKET": source.name,
-            "PEAL_BACKUP_COPY_SOURCE_PATH": "/production",
-            "PEAL_BACKUP_COPY_BUCKET": copy_bucket.name,
-            "PEAL_BACKUP_COPY_OTLP_URL": f"http://127.0.0.1:{collector.server_address[1]}/v1/metrics",
-            "PEAL_BACKUP_COPY_REPORT_RETRIES": "0",
-        }
-        try:
+        with _collector() as (url, posts):
+            environ = {
+                "PEAL_BACKUP_COPY_CREDENTIALS": str(credentials),
+                "PEAL_BACKUP_COPY_ENDPOINT": endpoint,
+                "PEAL_BACKUP_COPY_REGION": "us-east-1",
+                "PEAL_BACKUP_COPY_SOURCE_BUCKET": source.name,
+                "PEAL_BACKUP_COPY_SOURCE_PATH": "/production",
+                "PEAL_BACKUP_COPY_BUCKET": copy_bucket.name,
+                "PEAL_BACKUP_COPY_OTLP_URL": url,
+                "PEAL_BACKUP_COPY_REPORT_RETRIES": "0",
+            }
             ran = subprocess.run([sys.executable, str(SCRIPT), "copy"], env=environ,
                                  capture_output=True, text=True, check=False)
             failed = subprocess.run([sys.executable, str(SCRIPT), "copy"],
                                     env={**environ, "PEAL_BACKUP_COPY_BUCKET": "no-such-bucket"},
                                     capture_output=True, text=True, check=False)
-        finally:
-            collector.shutdown()
-            collector.server_close()
 
         assert ran.returncode == 0, ran.stderr
         assert failed.returncode == 1
+        assert "Traceback" not in failed.stderr
         assert SECRET_KEY not in ran.stdout + ran.stderr + failed.stdout + failed.stderr
         assert posts == ["peal_backup_copy_last_success_timestamp", "peal_backup_copy_last_failure_timestamp"]
+
+
+@contextlib.contextmanager
+def _collector() -> Iterator[tuple[str, list[str]]]:
+    """A collector's OTLP receiver on 127.0.0.1: the names of the gauges
+    posted to it."""
+    posts: list[str] = []
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self) -> None:
+            body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            posts.append(body["resourceMetrics"][0]["scopeMetrics"][0]["metrics"][0]["name"])
+            self.send_response(200)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+
+        def log_message(self, *_: object) -> None:
+            pass
+
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        yield f"http://127.0.0.1:{server.server_address[1]}/v1/metrics", posts
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+# The copy's rules over time, on a store of the test's whose clock the test
+# sets: its lock refuses to delete or overwrite what it wrote less than the
+# lock's days ago, and its lifecycle deletes what is older than 49 days.
+
+DAY = datetime.timedelta(days=1)
+START = datetime.datetime(2027, 1, 3, 2, 15, tzinfo=datetime.UTC)  # A Sunday.
+LOCK_DAYS = 35
+RETENTION_DAYS = 49
+
+
+class FakeStore:
+    """A bucket, with the store's clock, a lock and a lifecycle rule."""
+
+    def __init__(self, name: str, clock: list[datetime.datetime], lock_days: int = 0) -> None:
+        self.name = name
+        self.clock = clock
+        self.lock = datetime.timedelta(days=lock_days)
+        self.objects: dict[str, tuple[bytes, datetime.datetime]] = {}
+
+    def list(self, prefix: str = "") -> Iterator[tuple[str, Any]]:
+        for key, (data, modified) in sorted(self.objects.items()):
+            if key.startswith(prefix):
+                etag = hashlib.md5(data, usedforsecurity=False).hexdigest()
+                yield key, backup_copy.Stored(len(data), etag, modified)
+
+    def get(self, key: str) -> bytes:
+        if key not in self.objects:
+            raise backup_copy.CopyError(f"no {key}")
+        return self.objects[key][0]
+
+    def open(self, key: str) -> tuple[int, Any]:
+        data = self.get(key)
+        return len(data), io.BytesIO(data)
+
+    def put_new(self, key: str, body: Any, size: int, part_size: int) -> str:
+        if key in self.objects:
+            raise backup_copy.CopyError(f"{key} exists")
+        data = body if isinstance(body, bytes) else body.read(size)
+        self.objects[key] = (data, self.clock[0])
+        return hashlib.md5(data, usedforsecurity=False).hexdigest()
+
+    def write(self, key: str, data: bytes) -> None:
+        """Writes over a key, as pgBackRest does, or as whoever holds a key
+        tries to: the lock refuses a locked one."""
+        if key in self.objects and self.clock[0] - self.objects[key][1] < self.lock:
+            raise backup_copy.CopyError(f"{key} is locked")
+        self.objects[key] = (data, self.clock[0])
+
+    def delete(self, key: str) -> None:
+        if self.clock[0] - self.objects[key][1] < self.lock:
+            raise backup_copy.CopyError(f"{key} is locked")
+        del self.objects[key]
+
+    def expire(self, days: int) -> None:
+        for key, (_, modified) in list(self.objects.items()):
+            if self.clock[0] - modified > datetime.timedelta(days=days):
+                del self.objects[key]
+
+
+def _fake(lock_days: int = LOCK_DAYS) -> tuple[Any, Any, list[datetime.datetime]]:
+    clock = [START]
+    source, copy_bucket = FakeStore("backups", clock), FakeStore("copy", clock, lock_days)
+    for key, data in REPOSITORY.items():
+        source.write(f"production/{key}", data)
+    return source, copy_bucket, clock
+
+
+def _fake_settings(source: Any, copy_bucket: Any) -> Any:
+    return backup_copy.Settings(source=source, copy=copy_bucket, path="/production", refresh_days=21,
+                                part_size=PART, lock_days=LOCK_DAYS, max_run_hours=6)
+
+
+def _latest_index(copy_bucket: Any, now: datetime.datetime) -> tuple[Any, dict[str, Any]]:
+    """The newest run the copy trusts, and the files its index names."""
+    settings = _fake_settings(copy_bucket, copy_bucket)
+    runs = [run for run in backup_copy._runs(settings, dict(copy_bucket.list()), now) if run.trusted]
+    return runs[-1], json.loads(copy_bucket.get(f"{runs[-1].name}/index.json"))["objects"]
+
+
+def test_the_newest_index_is_always_locked_over_two_months() -> None:
+    """Sixty days of pgBackRest as Peal runs it: a full backup each Sunday,
+    a differential one the other days, a segment of the write-ahead log
+    each hour, four full backups kept, and archive.info, which the WAL's
+    decryption needs, written once. After each day's copy, every file the
+    newest index names has a copy the lock keeps for 14 days more at least;
+    and whatever stops the copy, the newest index stays whole and locked
+    for 14 days."""
+    source, copy_bucket, clock = _fake()
+    fulls: list[str] = []
+    for day in range(60):
+        clock[0] = START + day * DAY
+        label = f"{clock[0]:%Y%m%d-%H%M%S}{'F' if clock[0].weekday() == 6 else 'D'}"
+        if label.endswith("F"):
+            fulls.append(label)
+        source.write(f"production/backup/peal/{label}/backup.manifest", label.encode())
+        source.write(f"production/backup/peal/{label}/bundle/1", label.encode() * 100)
+        for hour in range(24):
+            source.write(f"production/archive/peal/18-1/{day:08d}/{hour:024d}.zst", f"wal {day} {hour}".encode())
+        source.write("production/backup/peal/backup.info", f"[backup:current]\n{label}={{}}\n".encode())
+        source.write("production/backup/peal/backup.info.copy", f"[backup:current]\n{label}={{}}\n".encode())
+        # Four full backups kept: the oldest expires with what it needs.
+        if len(fulls) > 4:
+            expired = fulls.pop(0)
+            for key in [key for key, _ in source.list("production/backup/peal/") if expired[:8] <= key.split("/")[3][:8] < fulls[0][:8]]:
+                del source.objects[key]
+        copy_bucket.expire(RETENTION_DAYS)
+
+        backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+
+        newest, objects = _latest_index(copy_bucket, clock[0])
+        listing = dict(copy_bucket.list())
+        assert objects.keys() == {key.removeprefix("production/") for key, _ in source.list("production/")}
+        stored = [listing[entry["copy"]].modified for entry in objects.values()] + [newest.stored]
+        # Locked for 14 days more at least, everything the newest index names.
+        assert min(stored) + datetime.timedelta(days=LOCK_DAYS) >= clock[0] + datetime.timedelta(days=14), day
+
+    # The server is taken: whoever holds it deletes all it can, every day,
+    # for 14 days, and writes nothing the copy trusts.
+    taken = clock[0]
+    newest, objects = _latest_index(copy_bucket, taken)
+    for day in range(1, 15):
+        clock[0] = taken + day * DAY - datetime.timedelta(minutes=1)
+        for key in list(copy_bucket.objects):
+            with contextlib.suppress(backup_copy.CopyError):
+                copy_bucket.delete(key)
+        copy_bucket.expire(RETENTION_DAYS)
+        assert all(entry["copy"] in copy_bucket.objects for entry in objects.values()), day
+        assert f"{newest.name}/index.json" in copy_bucket.objects
+
+
+def test_archive_info_written_once_stays_in_every_index_and_locked() -> None:
+    """The file that holds the WAL's key: never rewritten in the
+    repository, copied again before its copy leaves the lock."""
+    source, copy_bucket, clock = _fake()
+    for day in range(70):
+        clock[0] = START + day * DAY
+        source.write("production/backup/peal/backup.info", f"day {day}".encode())
+        backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+        _, objects = _latest_index(copy_bucket, clock[0])
+        entry = objects["archive/peal/archive.info"]
+        age = clock[0] - dict(copy_bucket.list())[entry["copy"]].modified
+        assert age <= datetime.timedelta(days=21), day
+
+
+def test_a_quiet_repository_still_gets_a_fresh_index() -> None:
+    """Nothing changes for weeks: the newest index is written again before
+    it, and what it names, leave the lock."""
+    source, copy_bucket, clock = _fake()
+    runs = []
+    for day in range(50):
+        clock[0] = START + day * DAY
+        run, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+        if run:
+            runs.append(day)
+
+    assert runs == [0, 21, 42]
+
+
+def test_a_run_named_in_the_future_or_long_after_is_ignored() -> None:
+    """An index named later than now, or stored long after its name: the
+    next run takes neither for the newest, and copies afresh."""
+    source, copy_bucket, clock = _fake()
+    backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    clock[0] += DAY
+    forged = f"{clock[0] + 3 * DAY:%Y-%m-%dT%H%M%S}Z"
+    copy_bucket.put_new(f"{forged}/index.json", b'{"objects": {}}', 15, PART)
+    late = f"{clock[0] - 2 * DAY:%Y-%m-%dT%H%M%S}Z"
+    copy_bucket.put_new(f"{late}/index.json", b'{"objects": {}}', 15, PART)
+
+    runs = backup_copy._runs(_fake_settings(source, copy_bucket), dict(copy_bucket.list()), clock[0])
+
+    assert {run.name: run.trusted for run in runs} == {
+        f"{START:%Y-%m-%dT%H%M%S}Z": True, forged: False, late: False,
+    }
+    assert backup_copy.copy(_fake_settings(source, copy_bucket), clock[0]) == (None, 0)
+
+
+def test_a_rebuild_refuses_what_was_written_at_or_after_the_incident() -> None:
+    source, copy_bucket, clock = _fake(lock_days=0)
+    run, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    incident = clock[0] + DAY
+    clock[0] += 2 * DAY
+
+    # The index is older than the incident: it rebuilds.
+    assert backup_copy.rebuild(_fake_settings(source, copy_bucket), run, "rebuilt", incident) == []
+    # Not before the incident, by the store's clock.
+    with pytest.raises(backup_copy.CopyError, match="not before"):
+        backup_copy.rebuild(_fake_settings(source, copy_bucket), run, "again", START)
+    # A copy deleted and written again, unlocked, after the index.
+    key = "archive/peal/archive.info"
+    copy_bucket.delete(f"{run}/{key}")
+    copy_bucket.put_new(f"{run}/{key}", REPOSITORY[key], len(REPOSITORY[key]), PART)
+    with pytest.raises(backup_copy.CopyError, match="written after"):
+        backup_copy.rebuild(_fake_settings(source, copy_bucket), run, "third", incident)
+    assert not list(source.list("third/"))
+
+
+def test_a_rebuild_checks_each_copy_s_bytes() -> None:
+    """A copy whose bytes changed, its size kept and its time too (a store
+    that went wrong): the rebuild stops on its SHA-256."""
+    source, copy_bucket, clock = _fake(lock_days=0)
+    run, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    key = f"{run}/backup/peal/20261122-021500F/backup.manifest"
+    data, modified = copy_bucket.objects[key]
+    copy_bucket.objects[key] = (b"X" * len(data), modified)
+
+    with pytest.raises(backup_copy.CopyError, match="does not hold"):
+        backup_copy.rebuild(_fake_settings(source, copy_bucket), run, "rebuilt", START + DAY)
+
+
+def test_a_copy_that_reads_back_wrong_stops_the_run() -> None:
+    """The source's ETag is the MD5 of its bytes: a read that differs
+    stops the run before its index."""
+    source, copy_bucket, clock = _fake()
+
+    class Garbled(FakeStore):
+        def open(self, key: str) -> tuple[int, Any]:
+            data = self.get(key)
+            return len(data), io.BytesIO(b"Y" * len(data))
+
+    garbled = Garbled("backups", clock)
+    garbled.objects = source.objects
+
+    with pytest.raises(backup_copy.CopyError, match="did not read back"):
+        backup_copy.copy(_fake_settings(garbled, copy_bucket), clock[0])
+    assert not [key for key in copy_bucket.objects if key.endswith("index.json")]
+
+
+def test_any_failure_is_reported_never_a_bare_traceback(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    credentials = tmp_path / "credentials"
+    credentials.write_text(
+        "PGBACKREST_REPO1_S3_KEY=synthetic\nPGBACKREST_REPO1_S3_KEY_SECRET=synthetic\n"
+        "PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID=synthetic\nPEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY=synthetic\n"
+    )
+
+    def broken(*_: object, **__: object) -> Any:
+        raise http.client.RemoteDisconnected("synthetic")
+
+    monkeypatch.setattr(backup_copy, "copy", broken)
+    with _collector() as (url, posts):
+        code = backup_copy.main(["copy"], {
+            "PEAL_BACKUP_COPY_CREDENTIALS": str(credentials),
+            "PEAL_BACKUP_COPY_ENDPOINT": "https://example.test",
+            "PEAL_BACKUP_COPY_SOURCE_BUCKET": "synthetic",
+            "PEAL_BACKUP_COPY_SOURCE_PATH": "/production",
+            "PEAL_BACKUP_COPY_BUCKET": "synthetic-copy",
+            "PEAL_BACKUP_COPY_OTLP_URL": url,
+            "PEAL_BACKUP_COPY_REPORT_RETRIES": "0",
+        })
+
+    assert code == 1
+    assert posts == ["peal_backup_copy_last_failure_timestamp"]
 
 
 def test_a_missing_key_is_named_and_stops_the_run(tmp_path: Path) -> None:
@@ -349,11 +634,22 @@ def test_the_copy_runs_after_each_backup_and_daily(rendered_copy: Path, environm
     assert environ["PEAL_BACKUP_COPY_SOURCE_BUCKET"] == group["peal_backup_bucket"]
     assert environ["PEAL_BACKUP_COPY_SOURCE_PATH"] == group["peal_backup_path"]
     assert environ["PEAL_BACKUP_COPY_BUCKET"] == "peal-synthetic-backup-copy"
-    assert environ["PEAL_BACKUP_COPY_CREDENTIALS"] == "/srv/peal/credentials.env"
+    # The credentials file reaches the run through systemd, as a user of
+    # its own, which could not read it otherwise.
+    assert environ["PEAL_BACKUP_COPY_CREDENTIALS"] == "%d/credentials"
+    assert "LoadCredential=credentials:/srv/peal/credentials.env" in service.splitlines()
+    assert "DynamicUser=true" in service.splitlines()
     # Settings alone: the keys stay in the credentials file.
     assert not [name for name in environ if "KEY" in name or "SECRET" in name]
-    # Under the backups' lock, so never while pgBackRest rewrites its files.
-    assert "ExecStart=/usr/bin/flock /run/peal-backup.lock " in service
+    assert environ["PEAL_BACKUP_COPY_LOCK_DAYS"] == "35"
+    # Under the backups' lock, so never while pgBackRest rewrites its files,
+    # and no longer than an index's time is trusted after its name.
+    assert "ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy" in service
+    assert "TimeoutStartSec=6h" in service.splitlines()
+    assert environ["PEAL_BACKUP_COPY_MAX_RUN_HOURS"] == "6"
+    for line in ["ProtectSystem=strict", "ProtectHome=true", "PrivateDevices=true", "NoNewPrivileges=true",
+                 "CapabilityBoundingSet=", "RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX"]:
+        assert line in service.splitlines()
 
 
 def test_the_role_installs_the_copy_only_with_the_flag() -> None:
@@ -397,7 +693,9 @@ def test_the_lock_and_the_refresh_agree_with_the_bucket_s_rules() -> None:
     defaults = role_file("peal_backup", "defaults")
 
     assert defaults["peal_backup_copy_lock_days"] == lock
-    assert 7 < lock < defaults["peal_backup_copy_refresh_days"] < retention
+    # Every file the newest index names stays locked 14 days after it.
+    assert lock - defaults["peal_backup_copy_refresh_days"] >= 14
+    assert retention > lock
 
 
 # Grafana's rules on the copy (peal-docker's rules.yaml), on the gauges the
@@ -406,6 +704,9 @@ RULES = INFRA.parent.parent / "peal-docker" / "config" / "production" / "grafana
 SUCCESS = "peal_backup_copy_last_success_timestamp_seconds"
 FAILURE = "peal_backup_copy_last_failure_timestamp_seconds"
 BACKUP = "peal_backup_last_success_timestamp_seconds"
+# What peal-backup posts after each backup where the copy is on.
+EXPECTED = "peal_backup_copy_expected_timestamp_seconds"
+BACKUP_SCRIPT = INFRA / "roles" / "peal_backup" / "templates" / "peal-backup.j2"
 
 
 def _rule(uid: str) -> dict[str, Any]:
@@ -424,10 +725,26 @@ def test_the_script_posts_the_gauges_the_rules_read() -> None:
 
     assert posted == {"peal_backup_copy_last_success_timestamp", "peal_backup_copy_last_failure_timestamp"}
     assert {SUCCESS, FAILURE} <= set(re.findall(r"peal_backup_copy_\w+", _query("peal-backup-copy-failed")))
-    assert {SUCCESS, BACKUP} <= set(re.findall(r"peal_backup\w+", _query("peal-backup-copy-behind")))
+    assert {SUCCESS, EXPECTED} <= set(re.findall(r"peal_backup\w+", _query("peal-backup-copy-behind")))
     for uid in ["peal-backup-copy-failed", "peal-backup-copy-behind"]:
         # A server without the copy posts none of its gauges.
         assert (_rule(uid)["noDataState"], _rule(uid)["labels"]) == ("OK", {"severity": "critical"})
+
+
+def test_the_backup_says_a_copy_is_due_only_where_the_copy_runs() -> None:
+    """So that a copy turned on that never succeeds alerts, and a server
+    without the copy posts nothing of it."""
+    script = BACKUP_SCRIPT.read_text()
+
+    on = str(ansible_render(script, peal_backup_copy=True, peal_compose_bin="peal-compose",
+                            peal_ports={"otlp_http": 14318}, peal_backup_report_retries=6,
+                            peal_backup_report_retry_delay=10))
+    off = str(ansible_render(script, peal_backup_copy=False, peal_compose_bin="peal-compose",
+                             peal_ports={"otlp_http": 14318}, peal_backup_report_retries=6,
+                             peal_backup_report_retry_delay=10))
+
+    assert "report peal_backup_copy_expected_timestamp " in on
+    assert "peal_backup_copy" not in off
 
 
 def _prometheus_image() -> str:
@@ -445,9 +762,12 @@ PROMTOOL_TESTS = [
     ("never failed", "peal-backup-copy-failed", 0, {SUCCESS: "100x20"}, [(15, False)]),
     ("no copy at all", "peal-backup-copy-failed", 0, {BACKUP: "100x20"}, [(15, False)]),
     ("a copy after each backup", "peal-backup-copy-behind", 21600,
-     {BACKUP: "1000x20", SUCCESS: "1100x20"}, [(15, False)]),
+     {EXPECTED: "1000x20", SUCCESS: "1100x20"}, [(15, False)]),
     ("a backup the copy missed", "peal-backup-copy-behind", 21600,
-     {BACKUP: "1000x9 30000x10", SUCCESS: "1100x20"}, [(5, False), (15, True)]),
+     {EXPECTED: "1000x9 30000x10", SUCCESS: "1100x20"}, [(5, False), (15, True)]),
+    # Turned on, and never once succeeded: it fires, rather than no data.
+    ("a copy that never succeeded", "peal-backup-copy-behind", 21600,
+     {EXPECTED: "30000x20"}, [(15, True)]),
     ("a server without the copy", "peal-backup-copy-behind", 21600, {BACKUP: "1000x20"}, [(15, False)]),
 ]
 

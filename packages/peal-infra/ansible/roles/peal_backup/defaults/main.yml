@@ -7,7 +7,8 @@ peal_backup_report_retry_delay: 10
 # The backup copy (peal_backup_copy, README.md "The backup copy"): how long
 # the copy's bucket lock keeps each object, as the environment's Pulumi
 # stack sets it (src/environment.ts, backupCopyLockDays), and how old a
-# file's copy may grow before a run copies it again, below the copy's
-# lifecycle rule (35 days), so what the backups still hold stays in it.
-peal_backup_copy_lock_days: 14
+# file's copy, and the newest index, may grow before a run copies it again:
+# 14 days below the lock, so every file the newest index names stays
+# locked for 14 days after it at least.
+peal_backup_copy_lock_days: 35
 peal_backup_copy_refresh_days: 21

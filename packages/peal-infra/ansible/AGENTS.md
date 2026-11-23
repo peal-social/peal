@@ -162,12 +162,15 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   against, and roll back by releasing the previous commit.
 - The backup copy (`peal_backup_copy`, off by default, a paid resource:
   README.md, "The backup copy") copies the backups into a bucket whose
-  lock keeps every object 14 days (the Pulumi stack's `backupCopy`). It
+  lock keeps every object 35 days (the Pulumi stack's `backupCopy`). It
   never writes a key twice: each run under a prefix of its own, an index
-  last, nothing when nothing changed (`tests/test_backup_copy.py`, against
-  SeaweedFS). Keep the lock longer than the interval of full backups, the
-  refresh (`peal_backup_copy_refresh_days`) below the lifecycle's 35 days,
-  and the lock's days the same in both projects.
+  last with each copy's SHA-256, nothing when nothing changed. Every file
+  the newest index names has a copy younger than the refresh
+  (`peal_backup_copy_refresh_days`, 21), which stays 14 days below the
+  lock, and the lock's days are the same in both projects; the store's
+  times, never a run's name, say which runs to trust
+  (`tests/test_backup_copy.py`: SeaweedFS, and a store with a clock over
+  two months).
 - The disks' health goes to the collector as the backups' does:
   `peal_disks` posts gauges of the md arrays and of SMART, and Grafana's
   rules alert on them (`peal-docker`'s `rules.yaml`), with no mail

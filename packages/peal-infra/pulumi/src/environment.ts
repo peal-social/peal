@@ -114,14 +114,16 @@ type Kind = "media" | "backups" | "blog";
  * The backup copy (README.md, "The backup copy"): how long the bucket lock
  * keeps every object from an overwrite or a deletion, whoever holds a key,
  * the server's included; and when its lifecycle rule deletes an object,
- * longer than the lock (which takes precedence anyway). The lock is longer
- * than a week, as pgBackRest takes a full backup each week: the newest
- * full backup, and every file a restore from it needs, are always locked.
- * The Ansible project's peal_backup role copies a file again once its copy
- * is 21 days old (peal_backup_copy_refresh_days), below the lifecycle's 35.
+ * longer than the lock (which takes precedence anyway). The Ansible
+ * project's peal_backup role copies a file again once its copy is 21 days
+ * old (peal_backup_copy_refresh_days), and writes a new index at least as
+ * often: every file the newest index names has a copy the store wrote
+ * less than 21 days before it, which a 35-day lock keeps 14 days more at
+ * least. The lifecycle (7 weeks) lets a file's copy outlive the refresh
+ * that replaces it; each file is held in two or three copies at most.
  */
-export const backupCopyLockDays = 14;
-export const backupCopyRetentionDays = 35;
+export const backupCopyLockDays = 35;
+export const backupCopyRetentionDays = 49;
 
 /** The backup copy's bucket, its lock and lifecycle rules, and its key. */
 export interface BackupCopy {

@@ -454,9 +454,11 @@ groups:
                     type: gt
                     params: [0]
 
-      # The copy runs right after each backup that succeeded: a backup that
-      # finished more than 6 hours after the last copy is not in the locked
-      # bucket, which a lost server would leave without its newest backups.
+      # The copy runs right after each backup that succeeded. Where the copy
+      # is on, peal-backup also reports that a copy is due: a backup that
+      # finished more than 6 hours after the last copy, or with no copy
+      # ever, is not in the locked bucket. A server without the copy
+      # reports neither: no data is OK.
       - uid: peal-backup-copy-behind
         title: The backup copy falls behind the backups
         condition: B
@@ -464,7 +466,7 @@ groups:
         noDataState: OK
         execErrState: Error
         annotations:
-          summary: A backup finished more than 6 hours after the last copy into the locked bucket. Read `journalctl --unit peal-backup-copy` on the server (packages/peal-infra/ansible/runbooks/restore-database.md, "The backup copy").
+          summary: A backup finished more than 6 hours after the last copy into the locked bucket, or no copy has succeeded since the copy was turned on. Read `journalctl --unit peal-backup-copy` on the server (packages/peal-infra/ansible/runbooks/restore-database.md, "The backup copy").
         labels:
           severity: critical
         data:
@@ -476,9 +478,10 @@ groups:
             model:
               refId: A
               instant: true
-              # Seconds from the last copy to the last backup, both searched
-              # for over 8 days; no copy ever reported, no data.
-              expr: max(max_over_time(peal_backup_last_success_timestamp_seconds[8d])) - max(max_over_time(peal_backup_copy_last_success_timestamp_seconds[8d]))
+              # Seconds from the last copy to the last backup the copy must
+              # follow, both searched for over 8 days; no copy in 8 days
+              # counts as none ever.
+              expr: max(max_over_time(peal_backup_copy_expected_timestamp_seconds[8d])) - (max(max_over_time(peal_backup_copy_last_success_timestamp_seconds[8d])) or vector(0))
           - refId: B
             datasourceUid: __expr__
             model:
