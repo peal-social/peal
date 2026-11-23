@@ -830,13 +830,15 @@ it. There is no bar across the top.
   moves. The pages are at `/login` and `/signup`.
 - The contract functions close the panel's content, in small muted text.
 
-PealCreative holds, in this order and without group labels: Home,
-Agent, Channels, Posts, Analytics, Inbox, Ads and Automations. Posts drills down
-to the posts list (its states as tabs), Calendar, Articles, Media and
-Import; Automations to Queues, Repeating posts, Follow-ups, Feeds and
-Comment rules. The creator tool is the composer: New post (C) opens it
-full-bleed, with the writing assistant, the media library and the
-signatures inside it. PealAPI holds Platforms, then API keys and Webhooks
+PealCreative holds, in this order: Home, Agent and Channels without a
+label; then **Studio**, what makes and plans the posts: Editor, Posts,
+Calendar and Media; then **Engage**, what answers and measures them:
+Inbox, Analytics and Ads. Posts drills down to the posts list (its
+states as tabs), Articles and Import. Automations (Queues, Repeating
+posts, Follow-ups, Feeds and Comment rules) are in Settings. The creator
+tools are the composer, which New post (C) opens full-bleed with the
+writing assistant, the media library and the signatures inside it, and
+the editor (below). PealAPI holds Platforms, then API keys and Webhooks
 under Build, and Partner under Partners; a page the API offers later
 (connect links, activity, usage, OAuth apps) joins it there. Settings
 keeps the person's own pages first, then what runs the workspace, in the
@@ -855,6 +857,50 @@ one (Posts, Notifications, Billing, Account). A page
 that opens one item is named after the item's kind (Comment, Message,
 Review). A state of a list is a tab of its page, never a page of its own:
 drafts and the posts that need an approval are tabs of Posts. Home keeps "Write once." as a greeting under the name.
+
+### The editor
+
+Studio's **Editor** makes a video from the library's images, in Peal's
+own look: no third party's editor, canvas or theme is embedded. It is
+built from peal-ui and ui-sdk's behaviours (a toolbar, a slider, a
+listbox), and its export is the workspace's own Shotstack account, as
+slide videos are. It shows only to members who may compose one
+(assistant:use and media:upload).
+
+- The panel's header holds **Export video** (a small ghost button, its
+  icon first), disabled until the video can be made.
+- The **stage**, on `muted` with a hairline, `{rounded.lg}`: the frame
+  in the video's shape (portrait, landscape or square), on ink, drawing
+  the clip at the playhead with its motion, its fade and its caption as
+  the export does (white on a translucent ink band at the foot); paused,
+  the clip shows whole, without its fade. Before any image, the frame
+  says to add some.
+- The **transport** under it: back a clip, play or pause, on a clip (a
+  toolbar of ghost icon buttons), then the playhead as a slider along
+  the whole width (a 4 px rail, the played part in `primary`, a round
+  thumb with a `primary` edge), then the time in mono figures, "0:04.3 /
+  0:12.0".
+- The **inspector** beside the stage, 18 rem, a bordered column of
+  sections under small headings: the chosen image (its caption with its
+  count, its motion, Earlier, Later and Remove as small ghost buttons),
+  the video (shape, each image's length or fit to the voice-over, the
+  transition), and the export (the length in all, what is left today,
+  why it cannot be made yet, the refusal, and where the video lands). On
+  a phone it goes under the stage.
+- The **timeline**, a bordered card under them, its header naming it
+  with **Add images**, **Add a voice-over** and **Remove**: three
+  tracks, each named in a muted column, the clips as wide as their
+  length. Captions on `brand-tint` (a dashed outline where there is
+  none); the images as thumbnails, one tab stop with arrow keys between
+  them, the chosen one ringed in `primary`; the voice-over on a lavender
+  tint, or "No voice-over" in a dashed outline. The playhead is a 2 px
+  `primary` line across the three.
+- Exports on their way show under the timeline as the library's
+  placeholders do, and a toast says when one lands in Media or why it
+  failed.
+- Without Shotstack chosen, the page is an empty state that links the
+  assistant settings (or asks an owner); without a payment method where
+  one is needed, an empty state whose button opens the upgrade dialog.
 
 ### The agent
 

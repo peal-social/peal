@@ -59,7 +59,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   measurement's question, connecting channels and assistants, a
   quickstart), `…/agent` and `…/agent/[chatId]` (the agent, for
   assistant:use), `…/platforms` (PealAPI's, for channel:read),
-  `[workspaceId]/channels`, `…/media`, `…/calendar`,
+  `[workspaceId]/channels`, `…/editor` (the Studio's video editor, for
+  assistant:use and media:upload: not-found otherwise), `…/media`,
+  `…/calendar`,
   `…/analytics`, `…/inbox` (a split view, its layout the list, for
   `engagement:read`: not-found otherwise, as for staff acting as a member)
   with `…/inbox/[threadId]`, `…/inbox/reviews/[threadId]` and
@@ -950,7 +952,18 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `Assistant.slideshows.errors` (`slideshowFailureKey`), storage's and a
   payment method's open the upgrade dialog. `SlideshowJobs` shows the
   jobs on their way (`SlideshowJobsView`, beside `VideoJobsView`) as
-  `VideoJobs` does. `GenerateVoiceover`'s dialog takes the text, and the
+  `VideoJobs` does. The Studio's **Editor** (`…/editor`, DESIGN.md "The
+  editor", `components/studio/`) is the same slide video on a timeline:
+  `EditorScreen` reads the status once hydrated, shows an empty state
+  without Shotstack or a payment method, and sends `slideshowRequestOf`
+  through `createSlideshow`, its refusals worded from
+  `Assistant.slideshows`. Its pure model is `#studio/timeline.ts`
+  (tested: clips end to end, the clip at an instant, the motion and the
+  fade as Shotstack draws them); its parts (`editor-parts.tsx`) are
+  ui-sdk's `Toolbar`, `Slider` (the playhead) and a horizontal `Listbox`
+  (the images), styled with peal-ui's tokens: never Shotstack's own
+  editor or its look. A change to what the timeline sends is a change to
+  the slideshows contract first. `GenerateVoiceover`'s dialog takes the text, and the
   voice as the provider's `speech` offer takes it (`voiceFieldOf`: a
   select of its voices, a field for a voice's id, or nothing), sent by
   `voiceoverRequestOf`; the new file lands in the library. A card of an
