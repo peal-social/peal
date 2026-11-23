@@ -13,6 +13,7 @@ const en = {
     body: "This document is not in force yet. Text in square brackets is still to be written.",
     title: "Draft pending legal review",
   },
+  legalContents: "Contents",
   home: {
     api: {
       action: "Explore the docs",
@@ -625,6 +626,7 @@ const fr: Messages = {
     body: "Ce document n’est pas encore en vigueur. Le texte entre crochets reste à rédiger.",
     title: "Projet en attente de relecture juridique",
   },
+  legalContents: "Sommaire",
   home: {
     api: {
       action: "Explorer la documentation",

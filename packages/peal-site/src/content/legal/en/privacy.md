@@ -32,7 +32,8 @@ Where we process personal data for an organisation, such as the comments under i
 
 **What it means**
 
-This policy covers the hosted service and this website. If you run Peal yourself, you answer for the data on your instance.
+- This policy covers the hosted service and this website.
+- If you run Peal yourself, you answer for the data on your instance.
 
 </aside>
 
@@ -48,7 +49,8 @@ This policy covers the hosted service and this website. If you run Peal yourself
 
 **What it means**
 
-Peal SAS, a French company, answers for the data this policy describes. Write to privacy@peal.social about anything in it.
+- Peal SAS, a French company, answers for the data this policy describes.
+- Write to privacy@peal.social about anything in it.
 
 </aside>
 
@@ -66,11 +68,21 @@ The organisations you belong to, your role in each, and the invitations you send
 
 ### Connected accounts
 
-The social media accounts you connect, their identifiers on each platform, and the access tokens the platforms issue to Peal. For a website, its address, name and icon, and what Peal publishes with, stored encrypted: a site's user name and application password, the key or token of an account on a publishing platform (DEV, Hashnode), or the token WordPress.com issues. For a chat, a Discord channel's webhook, a Telegram chat and the bot that posts there, or a Slack channel and the Slack workspace it is in, their identifiers and names, and the webhook's address or the bot's token, stored encrypted. For a LinkedIn company page, once we read LinkedIn comments, also the identifier on LinkedIn of the member who connected it, who may have no account with us when they connect through a connect link: LinkedIn limits the calls each member's sign-in may make a day, and Peal counts them under a keyed digest of that identifier, never the identifier itself, kept 7 days.
+- The social media accounts you connect, their identifiers on each platform, and the access tokens the platforms issue to Peal.
+- For a website, its address, name and icon, and what Peal publishes with, stored encrypted: a site's user name and application password, the key or token of an account on a publishing platform (DEV, Hashnode), or the token WordPress.com issues.
+- For a chat, a Discord channel's webhook, a Telegram chat and the bot that posts there, or a Slack channel and the Slack workspace it is in, their identifiers and names, and the webhook's address or the bot's token, stored encrypted.
+- For a LinkedIn company page, once we read LinkedIn comments, also the identifier on LinkedIn of the member who connected it, who may have no account with us when they connect through a connect link: LinkedIn limits the calls each member's sign-in may make a day, and Peal counts them under a keyed digest of that identifier, never the identifier itself, kept 7 days.
 
 ### Content
 
-The posts, media and schedules you create, the articles you write for an organisation's websites (each one's title, body, excerpt, tags, categories and featured image, what the site made of it and its address there, and who wrote it), with the name each media file had on the device it was uploaded from or at the address it was imported from, the publication history of each post, and how each post was created and scheduled (in the app, with an API key or through an application you connected, and by which member); per organisation and month, how many posts went out on X, and how many held a link. When a member asks the writing assistant to change a text, write a post from a subject or make an image, what they wrote is sent to the AI provider for that one answer, and we keep none of it; an image it makes is kept as the organisation's media, marked as made by AI. When an organisation brings its own image provider, the description of each image it asks for goes to that provider instead, with the organisation's own key, under that provider's terms; when it brings its own text provider, the texts and subjects its members send the writing assistant go to that provider instead, in the same way. For each, we keep the provider's address and model (and, for a text provider, the kind of API it speaks) and the key, stored encrypted and never shown again, until the organisation removes the provider or is deleted; and how many images or requests the organisation asked of it each day, until the organisation is deleted. Such a provider is the organisation's choice and acts for it: it is not one of ours. Videos come only from a video provider the organisation chose, with its own key, in the same way: the description of each video goes to that provider, and we keep it only while the video is made, then erase it; for each video asked for, we keep who asked, when, its aspect and length, the image it started from and the file it made or why it failed, until the organisation is deleted, and the video is kept as the organisation's media, marked as made by AI. Slide videos are composed only by a composition service the organisation chose (Shotstack), with its own key, in the same way: the images, captions and voice-over of each go to that service, the files by links that work for an hour, and we keep the captions only while the video is made, then erase them, and ask the service to keep no copy of the video; for each slide video asked for, we keep who asked, when, its aspect and length, its images and voice-over, whether the service's sandbox made it, and the file it made or why it failed, until the organisation is deleted, and the video is kept as the organisation's media. When such an image is attached to a post, Peal turns on the label each platform offers for content made with AI, which the member may change; the organisation that publishes it decides how it is disclosed, and answers for it.
+- The posts, media and schedules you create, the articles you write for an organisation's websites (each one's title, body, excerpt, tags, categories and featured image, what the site made of it and its address there, and who wrote it), with the name each media file had on the device it was uploaded from or at the address it was imported from, the publication history of each post, and how each post was created and scheduled (in the app, with an API key or through an application you connected, and by which member); per organisation and month, how many posts went out on X, and how many held a link.
+- When a member asks the writing assistant to change a text, write a post from a subject or make an image, what they wrote is sent to the AI provider for that one answer, and we keep none of it; an image it makes is kept as the organisation's media, marked as made by AI.
+- When an organisation brings its own image provider, the description of each image it asks for goes to that provider instead, with the organisation's own key, under that provider's terms; when it brings its own text provider, the texts and subjects its members send the writing assistant go to that provider instead, in the same way.
+- For each, we keep the provider's address and model (and, for a text provider, the kind of API it speaks) and the key, stored encrypted and never shown again, until the organisation removes the provider or is deleted; and how many images or requests the organisation asked of it each day, until the organisation is deleted.
+- Such a provider is the organisation's choice and acts for it: it is not one of ours.
+- Videos come only from a video provider the organisation chose, with its own key, in the same way: the description of each video goes to that provider, and we keep it only while the video is made, then erase it; for each video asked for, we keep who asked, when, its aspect and length, the image it started from and the file it made or why it failed, until the organisation is deleted, and the video is kept as the organisation's media, marked as made by AI.
+- Slide videos are composed only by a composition service the organisation chose (Shotstack), with its own key, in the same way: the images, captions and voice-over of each go to that service, the files by links that work for an hour, and we keep the captions only while the video is made, then erase them, and ask the service to keep no copy of the video; for each slide video asked for, we keep who asked, when, its aspect and length, its images and voice-over, whether the service's sandbox made it, and the file it made or why it failed, until the organisation is deleted, and the video is kept as the organisation's media.
+- When such an image is attached to a post, Peal turns on the label each platform offers for content made with AI, which the member may change; the organisation that publishes it decides how it is disclosed, and answers for it.
 
 ### Performance data
 
@@ -86,7 +98,9 @@ The addresses an organisation has Peal call when something happens in it, with t
 
 ### Usage counts
 
-Per organisation and day, how many posts went out on each platform and how many requests it made to the writing assistant, and, as the daily count found them shortly after the day ended, how many channels and members it had and how much media it stored. Where Peal bills per connected account: per billing account and day, the most accounts connected at once across its organisations, which its invoice is computed from and which is sent to the payment provider as a count, kept as long as the other usage counts. These are counts: they never hold what a post says or which member did what.
+- Per organisation and day, how many posts went out on each platform and how many requests it made to the writing assistant, and, as the daily count found them shortly after the day ended, how many channels and members it had and how much media it stored.
+- Where Peal bills per connected account: per billing account and day, the most accounts connected at once across its organisations, which its invoice is computed from and which is sent to the payment provider as a count, kept as long as the other usage counts.
+- These are counts: they never hold what a post says or which member did what.
 
 ### Short links and their click counts
 
@@ -94,11 +108,15 @@ When a post's author asks for its links to be shortened, each short link's code,
 
 ### Billing data
 
-Your plan, subscription status and invoices; each order placed before paying, with the consent given and the version of its words; the trial each account and organisation started; each withdrawal and what it refunded; each request to cancel a contract or to withdraw from it, with the date and time we received it and what became of it, and, when it came through the form that needs no account, what you wrote there (your name, the email address for the acknowledgement, the contract, the day wanted). Payments are handled by Stripe. Stripe collects your card or bank details: we never receive them. We receive what Stripe tells us of your customer record, subscription, payments and invoices, such as their status and amounts.
+- Your plan, subscription status and invoices; each order placed before paying, with the consent given and the version of its words; the trial each account and organisation started; each withdrawal and what it refunded; each request to cancel a contract or to withdraw from it, with the date and time we received it and what became of it, and, when it came through the form that needs no account, what you wrote there (your name, the email address for the acknowledgement, the contract, the day wanted).
+- Payments are handled by Stripe.
+- Stripe collects your card or bank details: we never receive them.
+- We receive what Stripe tells us of your customer record, subscription, payments and invoices, such as their status and amounts.
 
 ### Billing accounts
 
-Which person pays for each organisation (the member who created it, its oldest owner for one created before, or the owner it was handed to), and so which organisations share their plan; the offers to hand an organisation to another of its owners (who made each, to whom, and until when); and whether our staff required a person to add a payment method. To keep the free tier to one per person, our staff can see which accounts on a platform are connected in organisations paid for by different people without a subscription, compared by the platform's own account identifiers; that comparison is made when they look, and is not kept.
+- Which person pays for each organisation (the member who created it, its oldest owner for one created before, or the owner it was handed to), and so which organisations share their plan; the offers to hand an organisation to another of its owners (who made each, to whom, and until when); and whether our staff required a person to add a payment method.
+- To keep the free tier to one per person, our staff can see which accounts on a platform are connected in organisations paid for by different people without a subscription, compared by the platform's own account identifiers; that comparison is made when they look, and is not kept.
 
 ### Technical data
 
@@ -106,19 +124,30 @@ IP addresses, browser details and logs produced when you use the service, and, f
 
 ### Product analytics
 
-What you do in the service, as events our server sends to PostHog: that you signed up, when, with your language and how you signed in; that an organisation was made, and when; the operations you ask of the API and the tools an application you connected calls, by name, with whether each succeeded, the error's code and how long a tool took; that an account was connected or disconnected, and a post scheduled, published or failed, with the platform and the code of a failure's reason; the plan and status of a subscription; each day, for an organisation with a connected account, how many accounts it has connected and how many members it has, the size of the media it stores and how many requests it made to the writing assistant that day; and, of a billing account, whether it is on the free tier, whose it is and whether it stands alone. An event about something you did carries your account's identifier; one about an organisation, such as its daily counts, carries the organisation's identifier instead. Each also carries the identifiers of the organisation, its billing account, and the post or connected account it is about. It never carries your name, your email address, your IP address, your browser, or what a post, a file or a message holds, and nothing is stored in or read from your browser for these events of our server. Where you allowed it in the app (see Session recordings and identified usage), the identifier of your session there joins them. PostHog also keeps a record of you and of each organisation, made of those identifiers and facts, until the account or the organisation is deleted.
+- What you do in the service, as events our server sends to PostHog: that you signed up, when, with your language and how you signed in; that an organisation was made, and when; the operations you ask of the API and the tools an application you connected calls, by name, with whether each succeeded, the error's code and how long a tool took; that an account was connected or disconnected, and a post scheduled, published or failed, with the platform and the code of a failure's reason; the plan and status of a subscription; each day, for an organisation with a connected account, how many accounts it has connected and how many members it has, the size of the media it stores and how many requests it made to the writing assistant that day; and, of a billing account, whether it is on the free tier, whose it is and whether it stands alone.
+- An event about something you did carries your account's identifier; one about an organisation, such as its daily counts, carries the organisation's identifier instead.
+- Each also carries the identifiers of the organisation, its billing account, and the post or connected account it is about.
+- It never carries your name, your email address, your IP address, your browser, or what a post, a file or a message holds, and nothing is stored in or read from your browser for these events of our server.
+- Where you allowed it in the app (see Session recordings and identified usage), the identifier of your session there joins them.
+- PostHog also keeps a record of you and of each organisation, made of those identifiers and facts, until the account or the organisation is deleted.
 
 ### Usage measurement in the app
 
-Where we measure the app's use, the pages of the signed-in app you open, as a pattern without their identifiers (such as /:id/posts), when, how long you stayed and how far down you scrolled; a random identifier kept in your browser's memory until the page is reloaded; your browser's family and version, your system, the kind of device, and the size of the window and the screen; and the errors the app meets, with their addresses, identifiers and queries removed. Nothing stays in your browser for it: PostHog's code only checks that the browser's storage works, writing a test entry and removing it at once, and reads whether its own debug mode is on. Nothing names you or your organisations, and no identifier of these events is kept once you allow more or withdraw. A browser that sends Do Not Track or Global Privacy Control isn't measured at all.
+- Where we measure the app's use, the pages of the signed-in app you open, as a pattern without their identifiers (such as /:id/posts), when, how long you stayed and how far down you scrolled; a random identifier kept in your browser's memory until the page is reloaded; your browser's family and version, your system, the kind of device, and the size of the window and the screen; and the errors the app meets, with their addresses, identifiers and queries removed.
+- Nothing stays in your browser for it: PostHog's code only checks that the browser's storage works, writing a test entry and removing it at once, and reads whether its own debug mode is on.
+- Nothing names you or your organisations, and no identifier of these events is kept once you allow more or withdraw.
+- A browser that sends Do Not Track or Global Privacy Control isn't measured at all.
 
 ### Session recordings and identified usage
 
-Only once you allow it in the app: the same events under your account's identifier, with your organisation's; a recording of your session in which every text, field and image is masked, so it shows the layout, your clicks and the pages you open, never what you write or read; and your session's identifier, kept in your browser's storage and sent with your requests to Peal, so our server's events join the session. Your choice, and when you made it, is kept with your account.
+- Only once you allow it in the app: the same events under your account's identifier, with your organisation's; a recording of your session in which every text, field and image is masked, so it shows the layout, your clicks and the pages you open, never what you write or read; and your session's identifier, kept in your browser's storage and sent with your requests to Peal, so our server's events join the session.
+- Your choice, and when you made it, is kept with your account.
 
 ### Website measurement
 
-On this website, the documentation and the blog, where we measure them: the pages you open, as their address without its query, when, how long you stayed and how far down you scrolled; the site you came from, as its domain alone; the campaign labels of the link you followed (source, medium and campaign); which of a fixed list of buttons you clicked; how many accounts you tried in the price calculator; that you searched the documentation, with the length of what you typed and the number of results, never the text; how fast the page loaded; your browser's family and version, your system, the kind of device, and the size of the window and the screen; and an identifier for the day, which PostHog works out from your IP address and your browser's description with a key it deletes each day, keeping neither the address nor that description. Nothing is stored in your browser for it, and it names nobody. A browser that sends Do Not Track or Global Privacy Control isn't measured at all.
+- On this website, the documentation and the blog, where we measure them: the pages you open, as their address without its query, when, how long you stayed and how far down you scrolled; the site you came from, as its domain alone; the campaign labels of the link you followed (source, medium and campaign); which of a fixed list of buttons you clicked; how many accounts you tried in the price calculator; that you searched the documentation, with the length of what you typed and the number of results, never the text; how fast the page loaded; your browser's family and version, your system, the kind of device, and the size of the window and the screen; and an identifier for the day, which PostHog works out from your IP address and your browser's description with a key it deletes each day, keeping neither the address nor that description.
+- Nothing is stored in your browser for it, and it names nobody.
+- A browser that sends Do Not Track or Global Privacy Control isn't measured at all.
 
 ### Website visits linked across visits and to your account
 
@@ -126,7 +155,8 @@ Only once you allow it on the website: the same events under an identifier kept 
 
 ### Support chat
 
-Once you open it on this website, the documentation, the blog or the app: the messages and files you and Peal's team exchange, and when, and the email address you leave there to be answered by email; your IP address, your browser and system, your language, and the page you wrote from; in the app, your name, your email address and the identifiers of your account and of your organisation; and an identifier of the conversation in a cookie of your browser, so that you find it again. Nothing reaches Crisp, the chat's provider, before you open the chat, unless that cookie remains from a chat you opened before.
+- Once you open it on this website, the documentation, the blog or the app: the messages and files you and Peal's team exchange, and when, and the email address you leave there to be answered by email; your IP address, your browser and system, your language, and the page you wrote from; in the app, your name, your email address and the identifiers of your account and of your organisation; and an identifier of the conversation in a cookie of your browser, so that you find it again.
+- Nothing reaches Crisp, the chat's provider, before you open the chat, unless that cookie remains from a chat you opened before.
 
 ### Communications
 
@@ -134,19 +164,52 @@ The messages you send us and the emails we send you.
 
 ### Comments on your posts, and people who are not users
 
-When an organisation's post is live on a platform where Peal reads comments (Mastodon and Bluesky, and Facebook Pages, Instagram, YouTube and LinkedIn company pages once we turn them on), the comments people leave under it in public: each one's text, when it was written, what it answers, and its author's public handle, display name and identifier on the platform, as the platform gives them: to anyone on Mastodon and Bluesky, and on Facebook, Instagram and YouTube to the connected account, through the permissions it granted (Facebook gives a name and no handle, and may give no author at all; YouTube gives the name its author displays; on LinkedIn we keep the author's LinkedIn identifier and no name). On YouTube, whose policies let us keep what its API gives for 30 days without reading it again, a post's comments lose their text and their author 29 days after the last read that found all of them, until a read finds them again, and a channel disconnected takes its comments with it at once; this content is from YouTube, under its terms. On LinkedIn, whose terms let us keep other members' profile data 24 hours, a post's comments lose their text and their author 24 hours after the last read that found all of them, until a read finds them again. We read nothing else of these people: no picture, no profile, no list of followers, no private message (direct messages are below). We keep whether the organisation answered a comment, and the replies its members send from Peal. We process these comments for the organisation, which decides what it answers, and use them for nothing else: we build no profile of their authors, show them no advertising, take no automated decision about them and train no model on what they wrote. A comment deleted on its platform loses its text and its author in Peal the next time we read the post. If you commented under a post and want to exercise your rights, write to the organisation that published it or to us (see Contact). For these comments the organisation is the controller, and we process them on its behalf (Article 28); it relies on its legitimate interest in reading and answering what is said under its own posts (Article 6(1)(f)). As we can reach the people who comment only through the platform, this policy is how they are informed (Article 14(5)(b)).
+- When an organisation's post is live on a platform where Peal reads comments (Mastodon and Bluesky, and Facebook Pages, Instagram, YouTube and LinkedIn company pages once we turn them on), the comments people leave under it in public: each one's text, when it was written, what it answers, and its author's public handle, display name and identifier on the platform, as the platform gives them: to anyone on Mastodon and Bluesky, and on Facebook, Instagram and YouTube to the connected account, through the permissions it granted (Facebook gives a name and no handle, and may give no author at all; YouTube gives the name its author displays; on LinkedIn we keep the author's LinkedIn identifier and no name).
+- On YouTube, whose policies let us keep what its API gives for 30 days without reading it again, a post's comments lose their text and their author 29 days after the last read that found all of them, until a read finds them again, and a channel disconnected takes its comments with it at once; this content is from YouTube, under its terms.
+- On LinkedIn, whose terms let us keep other members' profile data 24 hours, a post's comments lose their text and their author 24 hours after the last read that found all of them, until a read finds them again.
+- We read nothing else of these people: no picture, no profile, no list of followers, no private message (direct messages are below).
+- We keep whether the organisation answered a comment, and the replies its members send from Peal.
+- We process these comments for the organisation, which decides what it answers, and use them for nothing else: we build no profile of their authors, show them no advertising, take no automated decision about them and train no model on what they wrote.
+- A comment deleted on its platform loses its text and its author in Peal the next time we read the post.
+- If you commented under a post and want to exercise your rights, write to the organisation that published it or to us (see Contact).
+- For these comments the organisation is the controller, and we process them on its behalf (Article 28); it relies on its legitimate interest in reading and answering what is said under its own posts (Article 6(1)(f)).
+- As we can reach the people who comment only through the platform, this policy is how they are informed (Article 14(5)(b)).
 
 ### Reviews of an organisation's locations, and people who are not users
 
-When an organisation connects a Google Business Profile location, and once we turn the reading of reviews on, the reviews people leave about that location on Google, as Google gives them to the connected account through the permission it granted: each one's stars, text, when it was written and last changed, the name its author shows on Google (none when they chose to stay anonymous), and how many photos it holds. We keep neither the photos nor the author's picture or profile. We keep the location's reply as Google shows it, whether the organisation marked a review answered, and the replies its members send from Peal. Google's policies let us store what its API gives for 30 days at most: we keep a review 29 days after it was written or last changed, then delete it with the replies sent to it; a review Google no longer shows is deleted at our next complete read, and all of a location's reviews are deleted at once when its channel is disconnected or its organisation deleted. We process these reviews for the organisation, which decides what it answers, and use them for nothing else: we build no profile of their authors, show them no advertising, take no automated decision about them and train no model on what they wrote; this content is from Google, under its terms. If you reviewed a location and want to exercise your rights, write to the organisation or to us (see Contact). For these reviews the organisation is the controller, and we process them on its behalf (Article 28); it relies on its legitimate interest in reading and answering what is said in public about its own locations (Article 6(1)(f)). As we can reach the people who write reviews only through Google, this policy is how they are informed (Article 14(5)(b)).
+- When an organisation connects a Google Business Profile location, and once we turn the reading of reviews on, the reviews people leave about that location on Google, as Google gives them to the connected account through the permission it granted: each one's stars, text, when it was written and last changed, the name its author shows on Google (none when they chose to stay anonymous), and how many photos it holds.
+- We keep neither the photos nor the author's picture or profile.
+- We keep the location's reply as Google shows it, whether the organisation marked a review answered, and the replies its members send from Peal.
+- Google's policies let us store what its API gives for 30 days at most: we keep a review 29 days after it was written or last changed, then delete it with the replies sent to it; a review Google no longer shows is deleted at our next complete read, and all of a location's reviews are deleted at once when its channel is disconnected or its organisation deleted.
+- We process these reviews for the organisation, which decides what it answers, and use them for nothing else: we build no profile of their authors, show them no advertising, take no automated decision about them and train no model on what they wrote; this content is from Google, under its terms.
+- If you reviewed a location and want to exercise your rights, write to the organisation or to us (see Contact).
+- For these reviews the organisation is the controller, and we process them on its behalf (Article 28); it relies on its legitimate interest in reading and answering what is said in public about its own locations (Article 6(1)(f)).
+- As we can reach the people who write reviews only through Google, this policy is how they are informed (Article 14(5)(b)).
 
 ### Direct messages to an organisation's accounts, and people who are not users
 
-When an organisation connects a Mastodon or Bluesky account, a Facebook Page (Messenger) or an Instagram account, once we turn the reading of direct messages on, and only once a member of the organisation turns it on for that account, the private conversations people hold with that account, as the platform gives them to the connected account through the permissions it granted: for each conversation, the other accounts in it (their identifier, handle and the name they show), and for each message its text, who sent it, when, and how many files it carries (a story the account is mentioned in counts as one). We keep neither the files, a story or a link to them, nor anyone's picture or profile. On Messenger and Instagram, Meta tells our server when a message arrives: we read that notice for identifiers alone and keep nothing of it. We keep whether a member read a conversation, and the messages its members send from Peal, with whether a member wrote one themselves in Peal's web app: on Messenger and Instagram, only such a message may go out up to seven days after the person's last message, with Meta's Human Agent tag, instead of 24 hours. We keep each message 30 days after it was sent, a message sent from Peal 30 days after sending ended or it was left unconfirmed, and a conversation until its last message is that old; a message or a conversation its platform no longer shows is deleted within a day where we can read the conversation, and the account's list of conversations, whole (one too long for that goes by the 30 days, and a list that comes back empty deletes nothing, so a conversation deleted on the platform then goes by the 30 days too); on Messenger and Instagram, we never read the account's list of conversations whole, so a conversation deleted there stays until its 30 days are up, and Meta gives a conversation's 20 latest messages only, so a longer one goes by the 30 days too, a message its author takes back on Instagram is deleted when Instagram tells us, and Messenger tells us nothing of one taken back, so it stays until its 30 days. All of an account's conversations are also deleted at once when its messages are turned off, its channel is disconnected or its organisation deleted. We process these messages for the organisation, which decides what it answers, and use them for nothing else: we build no profile of their authors, show them no advertising, take no automated decision about them, train no model on what they wrote and give them to no writing assistant; our staff do not read them. Within the organisation, only its owners, admins and editors read them; an API key only when an owner of the organisation, in person, gave it that permission, and an application connected through OAuth, such as an AI assistant, only once an owner of the organisation allowed it, the application's provider then processing what it reads under its own terms. Peal never starts a conversation: it answers those someone else began. On Instagram and Facebook Pages, a member may also send the author of a comment under the organisation's post the one private message the platform allows, in answer to that comment, within seven days of it, where the account's messages are on; a rule a member set to answer comments by keyword may send it too, the member's text, after the rule's public reply to that comment and never to anyone who did not comment. We keep it, with its author or the rule that sent it, the comment it answers (by its identifier) and how sending ended, 30 days after sending ended, and delete it at once with the comment, the account's channel or the organisation. If you wrote to an organisation's account and want to exercise your rights, write to the organisation or to us (see Contact). For these messages the organisation is the controller, and we process them on its behalf (Article 28); it relies on its legitimate interest in reading and answering the messages sent to its own accounts (Article 6(1)(f)). As we can reach the people who write only through the platform, this policy is how they are informed (Article 14(5)(b)).
+- When an organisation connects a Mastodon or Bluesky account, a Facebook Page (Messenger) or an Instagram account, once we turn the reading of direct messages on, and only once a member of the organisation turns it on for that account, the private conversations people hold with that account, as the platform gives them to the connected account through the permissions it granted: for each conversation, the other accounts in it (their identifier, handle and the name they show), and for each message its text, who sent it, when, and how many files it carries (a story the account is mentioned in counts as one).
+- We keep neither the files, a story or a link to them, nor anyone's picture or profile.
+- On Messenger and Instagram, Meta tells our server when a message arrives: we read that notice for identifiers alone and keep nothing of it.
+- We keep whether a member read a conversation, and the messages its members send from Peal, with whether a member wrote one themselves in Peal's web app: on Messenger and Instagram, only such a message may go out up to seven days after the person's last message, with Meta's Human Agent tag, instead of 24 hours.
+- We keep each message 30 days after it was sent, a message sent from Peal 30 days after sending ended or it was left unconfirmed, and a conversation until its last message is that old; a message or a conversation its platform no longer shows is deleted within a day where we can read the conversation, and the account's list of conversations, whole (one too long for that goes by the 30 days, and a list that comes back empty deletes nothing, so a conversation deleted on the platform then goes by the 30 days too); on Messenger and Instagram, we never read the account's list of conversations whole, so a conversation deleted there stays until its 30 days are up, and Meta gives a conversation's 20 latest messages only, so a longer one goes by the 30 days too, a message its author takes back on Instagram is deleted when Instagram tells us, and Messenger tells us nothing of one taken back, so it stays until its 30 days.
+- All of an account's conversations are also deleted at once when its messages are turned off, its channel is disconnected or its organisation deleted.
+- We process these messages for the organisation, which decides what it answers, and use them for nothing else: we build no profile of their authors, show them no advertising, take no automated decision about them, train no model on what they wrote and give them to no writing assistant; our staff do not read them.
+- Within the organisation, only its owners, admins and editors read them; an API key only when an owner of the organisation, in person, gave it that permission, and an application connected through OAuth, such as an AI assistant, only once an owner of the organisation allowed it, the application's provider then processing what it reads under its own terms.
+- Peal never starts a conversation: it answers those someone else began.
+- On Instagram and Facebook Pages, a member may also send the author of a comment under the organisation's post the one private message the platform allows, in answer to that comment, within seven days of it, where the account's messages are on; a rule a member set to answer comments by keyword may send it too, the member's text, after the rule's public reply to that comment and never to anyone who did not comment.
+- We keep it, with its author or the rule that sent it, the comment it answers (by its identifier) and how sending ended, 30 days after sending ended, and delete it at once with the comment, the account's channel or the organisation.
+- If you wrote to an organisation's account and want to exercise your rights, write to the organisation or to us (see Contact).
+- For these messages the organisation is the controller, and we process them on its behalf (Article 28); it relies on its legitimate interest in reading and answering the messages sent to its own accounts (Article 6(1)(f)).
+- As we can reach the people who write only through the platform, this policy is how they are informed (Article 14(5)(b)).
 
 ### Review data
 
-When a member sends someone a review link to a post, what that person, who needs no account, gives on the link's page: the name they choose, the comments they write, what they decide (an approval, a request for changes) and when. We take no email address from a reviewer, and send them nothing. Members' comments and decisions are kept with their account. We process a reviewer's data for the organisation that sent the link. We act as that organisation's processor for this data (Article 28).
+- When a member sends someone a review link to a post, what that person, who needs no account, gives on the link's page: the name they choose, the comments they write, what they decide (an approval, a request for changes) and when.
+- We take no email address from a reviewer, and send them nothing.
+- Members' comments and decisions are kept with their account.
+- We process a reviewer's data for the organisation that sent the link.
+- We act as that organisation's processor for this data (Article 28).
 
 Some data about you can come from someone else: the email address a member enters to invite you to an organisation; the name a reviewer gives on a review link; the comments people write on your published posts, with their public handle and display name, which the platforms send us; the reviews people write about your locations on Google, with the name they show there, which Google sends us; the direct messages people send to your accounts on Mastodon, Bluesky, Messenger and Instagram, with their handle and the name they show, which the platforms send us; and the figures the platforms give for the posts and accounts you connected.
 
@@ -172,7 +235,8 @@ Your name, email address and a password, or a Google account, are needed to crea
 
 **What it means**
 
-A name, an email address and a password, or a Google account, are required to have an account. Everything else is needed only by the feature that uses it.
+- A name, an email address and a password, or a Google account, are required to have an account.
+- Everything else is needed only by the feature that uses it.
 
 </aside>
 
@@ -212,17 +276,28 @@ Where processing relies on legitimate interests, you can object to it at any tim
 
 **What it means**
 
-Most of what we do with your data is needed to provide the service you signed up for. Security and anonymous measurement rest on our legitimate interests, and you can object to them. Session recordings and the website's cookie rest on your consent, which you can withdraw. A few records are kept because French law requires it.
+- Most of what we do with your data is needed to provide the service you signed up for.
+- Security and anonymous measurement rest on our legitimate interests, and you can object to them.
+- Session recordings and the website's cookie rest on your consent, which you can withdraw.
+- A few records are kept because French law requires it.
 
 </aside>
 
 ## Data from connected platforms
 
-When you connect a social media account, the platform shares data with Peal within the permissions you grant. Peal uses that data to publish the posts you schedule and to show how they perform. On Mastodon and Bluesky, and on Facebook Pages, Instagram, YouTube and LinkedIn company pages once we turn them on and you allow it, Peal also reads the public replies to the posts it published for you, to show them to your organisation and let its members answer. Peal makes no other use of that data, and never sells it.
+- When you connect a social media account, the platform shares data with Peal within the permissions you grant.
+- Peal uses that data to publish the posts you schedule and to show how they perform.
+- On Mastodon and Bluesky, and on Facebook Pages, Instagram, YouTube and LinkedIn company pages once we turn them on and you allow it, Peal also reads the public replies to the posts it published for you, to show them to your organisation and let its members answer.
+- Peal makes no other use of that data, and never sells it.
 
-When a member signs in to an ad network to connect ad accounts, the network shares, within the permissions that member grants, the ad accounts they can reach, then the campaigns, ads and daily numbers of the accounts the organisation connects. Peal uses them to show what the ads did, and to run the boosts members ask for. On Meta, the member who signed in can ask Meta to delete what Peal holds about them: Peal then removes their sign-ins and the ad accounts these connect.
+- When a member signs in to an ad network to connect ad accounts, the network shares, within the permissions that member grants, the ad accounts they can reach, then the campaigns, ads and daily numbers of the accounts the organisation connects.
+- Peal uses them to show what the ads did, and to run the boosts members ask for.
+- On Meta, the member who signed in can ask Meta to delete what Peal holds about them: Peal then removes their sign-ins and the ad accounts these connect.
 
-Google Ads accounts are read only: Peal reads their campaigns and each campaign's daily cost, impressions and clicks, and changes nothing there. Peal's use and transfer of information received from Google APIs to any other app will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements. Removing the sign-in from the organisation's Ads page deletes what Peal read of its accounts. Revoking Peal's access in the Google account stops Peal's reads, and deletes nothing: what was read stays until the sign-in is removed.
+- Google Ads accounts are read only: Peal reads their campaigns and each campaign's daily cost, impressions and clicks, and changes nothing there.
+- Peal's use and transfer of information received from Google APIs to any other app will adhere to the [Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy), including the Limited Use requirements.
+- Removing the sign-in from the organisation's Ads page deletes what Peal read of its accounts.
+- Revoking Peal's access in the Google account stops Peal's reads, and deletes nothing: what was read stays until the sign-in is removed.
 
 You can disconnect an account in Peal, from the organisation's Channels page: Peal then deletes the tokens it holds for it. You can also revoke Peal's access from the platform's own settings.
 
@@ -232,19 +307,27 @@ The identifier of the member who connected a LinkedIn page goes with the page: w
 
 **What it means**
 
-We use what a platform shares with us to publish your posts and to show you their figures and the replies to them. Disconnecting an account deletes the tokens we hold for it. Google Ads accounts are only read.
+- We use what a platform shares with us to publish your posts and to show you their figures and the replies to them.
+- Disconnecting an account deletes the tokens we hold for it.
+- Google Ads accounts are only read.
 
 </aside>
 
 ## Recipients and sub-processors
 
-Personal data is shared with the service providers that help run Peal and, where the law requires it, with public authorities. When you sign in with Google, Google learns that you sign in to Peal, and gives us your name, your email address and whether it confirmed it; Google processes this as a controller, under its own terms and privacy policy. The identification data French law has us keep (see Retention) is handed only to a judicial authority, or another authority the law empowers, on its written request (LCEN, Article 6, V, B); each answer is recorded with who gave it, the authority and its reference. Each of these providers processes personal data only on our instructions, under a data processing agreement (GDPR Article 28).
+- Personal data is shared with the service providers that help run Peal and, where the law requires it, with public authorities.
+- When you sign in with Google, Google learns that you sign in to Peal, and gives us your name, your email address and whether it confirmed it; Google processes this as a controller, under its own terms and privacy policy.
+- The identification data French law has us keep (see Retention) is handed only to a judicial authority, or another authority the law empowers, on its written request (LCEN, Article 6, V, B); each answer is recorded with who gave it, the authority and its reference.
+- Each of these providers processes personal data only on our instructions, under a data processing agreement (GDPR Article 28).
 
 The [sub-processors](/subprocessors/) page lists them, with what each one does, where it processes data and what covers a transfer outside the European Union. They provide hosting, media storage and backups, the network, email delivery, payments, bot protection, the writing assistant, the support chat and product analytics.
 
 The platforms you publish to receive the content you publish there. They process it as controllers, under their own privacy policies.
 
-When a member boosts a published post, the ad network the ad runs on (Meta Platforms, for ads on Facebook and Instagram) receives what the ad needs: the post's identifier, the budget, the dates, the audience asked for (countries and an age range), and, when that audience is in the European Union, who benefits from the ad and who pays for it. It processes them as a controller, under its own terms and privacy policy, and bills the advertiser itself: we receive and hold no payment details for ads. For ads in the European Union, that network is Meta Platforms Ireland Limited, which may transfer data to Meta Platforms, Inc. in the United States under the EU-US Data Privacy Framework. Google Ads, which Peal only reads, receives nothing from us but the requests that read the accounts a member connected.
+- When a member boosts a published post, the ad network the ad runs on (Meta Platforms, for ads on Facebook and Instagram) receives what the ad needs: the post's identifier, the budget, the dates, the audience asked for (countries and an age range), and, when that audience is in the European Union, who benefits from the ad and who pays for it.
+- It processes them as a controller, under its own terms and privacy policy, and bills the advertiser itself: we receive and hold no payment details for ads.
+- For ads in the European Union, that network is Meta Platforms Ireland Limited, which may transfer data to Meta Platforms, Inc. in the United States under the EU-US Data Privacy Framework.
+- Google Ads, which Peal only reads, receives nothing from us but the requests that read the accounts a member connected.
 
 Once we turn the reading of Messenger's and Instagram's direct messages on, Meta Platforms receives the messages a member sends from Peal to a conversation on its service, and processes them as a controller, under its own terms and privacy policy.
 
@@ -254,19 +337,25 @@ Members of an organisation see each other's name, email address and role. A memb
 
 **What it means**
 
-The providers that help run Peal process data on our instructions, and the sub-processors page lists them. The platforms you publish to and the ad networks you use receive what you send them, and answer for it themselves. An authority gets identification data only on a written request the law allows.
+- The providers that help run Peal process data on our instructions, and the sub-processors page lists them.
+- The platforms you publish to and the ad networks you use receive what you send them, and answer for it themselves.
+- An authority gets identification data only on a written request the law allows.
 
 </aside>
 
 ## International transfers
 
-Peal's server, its database and its media are in the European Union. Some providers listed on the [sub-processors](/subprocessors/) page are established in the United States or may reach the data from there: Cloudflare, for the network and bot protection; Resend, for email; Stripe, for payments; Anthropic, for the writing assistant when it is on; and PostHog, for product analytics. Each of those transfers rests on the European Commission's adequacy decision for the EU-US Data Privacy Framework, for providers certified under it, and on the standard contractual clauses the Commission adopted (Article 46(2)(c)). You can ask privacy@peal.social for a copy of the safeguards.
+- Peal's server, its database and its media are in the European Union.
+- Some providers listed on the [sub-processors](/subprocessors/) page are established in the United States or may reach the data from there: Cloudflare, for the network and bot protection; Resend, for email; Stripe, for payments; Anthropic, for the writing assistant when it is on; and PostHog, for product analytics.
+- Each of those transfers rests on the European Commission's adequacy decision for the EU-US Data Privacy Framework, for providers certified under it, and on the standard contractual clauses the Commission adopted (Article 46(2)(c)).
+- You can ask privacy@peal.social for a copy of the safeguards.
 
 <aside>
 
 **What it means**
 
-Your data is stored in the European Union. A few of our providers are American, and each of those transfers rests on the EU-US Data Privacy Framework or on standard contractual clauses.
+- Your data is stored in the European Union.
+- A few of our providers are American, and each of those transfers rests on the EU-US Data Privacy Framework or on standard contractual clauses.
 
 </aside>
 
@@ -313,7 +402,9 @@ This table is written from the same registry as the information that comes with 
 
 **What it means**
 
-Closing your account erases your account data at once, and an organisation's data goes when the organisation is deleted. Direct messages are kept 30 days, server logs about a month, and deleted data leaves the backups within five weeks. A few records stay longer because the law requires it, such as your name and email address, kept apart for 5 years after you close your account.
+- Closing your account erases your account data at once, and an organisation's data goes when the organisation is deleted.
+- Direct messages are kept 30 days, server logs about a month, and deleted data leaves the backups within five weeks.
+- A few records stay longer because the law requires it, such as your name and email address, kept apart for 5 years after you close your account.
 
 </aside>
 
@@ -329,7 +420,12 @@ Under the GDPR, you have the right to:
 - object to processing based on legitimate interests (Article 21);
 - withdraw your consent at any time where processing relies on it, without affecting the processing that came before (Article 7(3)): for session recordings and identified usage, on your account page, as easily as you gave it.
 
-Closing your account erases your data at once, except the identification data above, which French law requires us to keep (Article 17(3)(b)); your copy of your data lists it, and you can still ask for it by writing to privacy@peal.social. You can download a copy of your data at any time from your account settings, or with the command line; we email you each time a copy is downloaded, so a copy someone else took does not go unnoticed. To exercise these rights, write to privacy@peal.social. The GDPR requires an answer within one month, which can be extended in some cases (Article 12(3)). We act on a request sent from the email address of the account, or once its holder confirms it from that address. Where we still have reasonable doubts about who is asking, we may ask for what is needed to confirm it (Article 12(6)), and nothing more.
+- Closing your account erases your data at once, except the identification data above, which French law requires us to keep (Article 17(3)(b)); your copy of your data lists it, and you can still ask for it by writing to privacy@peal.social.
+- You can download a copy of your data at any time from your account settings, or with the command line; we email you each time a copy is downloaded, so a copy someone else took does not go unnoticed.
+- To exercise these rights, write to privacy@peal.social.
+- The GDPR requires an answer within one month, which can be extended in some cases (Article 12(3)).
+- We act on a request sent from the email address of the account, or once its holder confirms it from that address.
+- Where we still have reasonable doubts about who is asking, we may ask for what is needed to confirm it (Article 12(6)), and nothing more.
 
 You also have the right to lodge a complaint with a supervisory authority, in particular in the EU country where you live, where you work or where you think the infringement took place (Article 77). In France, the authority is the Commission nationale de l'informatique et des libertés (CNIL), 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07, www.cnil.fr.
 
@@ -339,7 +435,10 @@ No decision with legal or similarly significant effects on you is made solely by
 
 **What it means**
 
-You can see, correct, export and delete your data, and object to the uses that rest on our legitimate interests. You can download a copy from your account settings at any time. Write to privacy@peal.social for anything else: you get an answer within a month. You can also complain to the CNIL, or to the authority of the EU country you live in.
+- You can see, correct, export and delete your data, and object to the uses that rest on our legitimate interests.
+- You can download a copy from your account settings at any time.
+- Write to privacy@peal.social for anything else: you get an answer within a month.
+- You can also complain to the CNIL, or to the authority of the EU country you live in.
 
 </aside>
 
@@ -353,9 +452,24 @@ The app at app.peal.social uses only what it needs to work, so it asks no consen
 - in the browser's storage: the time format you chose (`peal.hour-format`); until the tab is closed, the sign-in to a platform you started, so that Peal can finish it when you come back; and, for an instant, `peal.measurement-news`, which tells your other tabs of Peal that you changed your choice about measurement or signed out, and is removed as soon as it is written;
 - Cloudflare Turnstile, on sign-up, password reset and review links, to tell people from bots.
 
-Where the app measures its use, it counts the pages you open and keeps nothing in your browser for it, so it asks no consent for that. It asks before anything else, on your home page. Only once you allow it does PostHog's code keep entries in the browser's storage, each named after the measurement project's token: `ph_<token>_posthog` in local storage, which holds the identifiers it gives you and your session, and `ph_<token>_posthog`, `ph_<token>_session_registered_properties`, `ph_<token>_window_id` and `ph_<token>_primary_window_exists` in session storage, until the tab is closed. Withdrawing your consent on your account page, signing out, or leaving the app in that tab removes them. Closing the tab, or a session that ends by itself, leaves the local storage entry until you next open the app, which removes or replaces it, or until your browser clears its storage. Your other tabs of Peal follow a withdrawal or a sign-out at once, and catch up with a choice that expired when you show them again. We ask again after six months, whatever you chose.
+- Where the app measures its use, it counts the pages you open and keeps nothing in your browser for it, so it asks no consent for that.
+- It asks before anything else, on your home page.
+- Only once you allow it does PostHog's code keep entries in the browser's storage, each named after the measurement project's token: `ph_<token>_posthog` in local storage, which holds the identifiers it gives you and your session, and `ph_<token>_posthog`, `ph_<token>_session_registered_properties`, `ph_<token>_window_id` and `ph_<token>_primary_window_exists` in session storage, until the tab is closed.
+- Withdrawing your consent on your account page, signing out, or leaving the app in that tab removes them.
+- Closing the tab, or a session that ends by itself, leaves the local storage entry until you next open the app, which removes or replaces it, or until your browser clears its storage.
+- Your other tabs of Peal follow a withdrawal or a sign-out at once, and catch up with a choice that expired when you show them again.
+- We ask again after six months, whatever you chose.
 
-This website, the documentation and the blog count visits without storing anything in your browser. They ask you once, in a notice, whether they may keep a cookie, and keep your answer, and its date, in the cookie `peal.consent` for six months, and PostHog keeps its own copy of it in the cookie `peal_site_consent`. Only once you allow it does PostHog's code set the cookie `ph_<token>_posthog`, named after the measurement project's token, for what is left of your answer's six months: it holds the identifiers it gives you and your visit, the address of a page of the visit without its query, and the origin of the site you came from, never its full address. It also keeps `ph_<token>_posthog`, `ph_<token>_session_registered_properties`, `ph_<token>_window_id` and `ph_<token>_primary_window_exists` in the browser's session storage until the tab is closed. When you create an account in that browser while your answer allows it, Peal removes `ph_<token>_posthog` and sets `peal_site_retired` until you close your browser, which holds the identifier the cookie held, so that a page of this website left open doesn't bring it back; it does so the same way whether or not the address already had an account. Refusing, or a browser that sends Do Not Track or Global Privacy Control, removes it. These cookies are set on the parent domain, so one answer covers the website, the documentation and the blog, and the app never reads them. **Cookie settings**, in the footer of the website and the blog and at the foot of each documentation page, changes your answer; refusing removes PostHog's cookie and its session storage at once. A browser that sends Do Not Track or Global Privacy Control isn't measured and isn't asked, and **Cookie settings** removes what an earlier visit left. We ask again after six months, whatever you chose. The documentation remembers your theme and language in your browser's storage.
+- This website, the documentation and the blog count visits without storing anything in your browser.
+- They ask you once, in a notice, whether they may keep a cookie, and keep your answer, and its date, in the cookie `peal.consent` for six months, and PostHog keeps its own copy of it in the cookie `peal_site_consent`.
+- Only once you allow it does PostHog's code set the cookie `ph_<token>_posthog`, named after the measurement project's token, for what is left of your answer's six months: it holds the identifiers it gives you and your visit, the address of a page of the visit without its query, and the origin of the site you came from, never its full address.
+- It also keeps `ph_<token>_posthog`, `ph_<token>_session_registered_properties`, `ph_<token>_window_id` and `ph_<token>_primary_window_exists` in the browser's session storage until the tab is closed.
+- When you create an account in that browser while your answer allows it, Peal removes `ph_<token>_posthog` and sets `peal_site_retired` until you close your browser, which holds the identifier the cookie held, so that a page of this website left open doesn't bring it back; it does so the same way whether or not the address already had an account.
+- Refusing, or a browser that sends Do Not Track or Global Privacy Control, removes it.
+- These cookies are set on the parent domain, so one answer covers the website, the documentation and the blog, and the app never reads them. **Cookie settings**, in the footer of the website and the blog and at the foot of each documentation page, changes your answer; refusing removes PostHog's cookie and its session storage at once.
+- A browser that sends Do Not Track or Global Privacy Control isn't measured and isn't asked, and **Cookie settings** removes what an earlier visit left.
+- We ask again after six months, whatever you chose.
+- The documentation remembers your theme and language in your browser's storage.
 
 The support chat loads nothing until you open it. Once you do, Crisp keeps the conversation's identifier in the cookie `crisp-client/session/<id>` for 183 days, so that you find your conversation again on this website, the documentation, the blog and the app, and its code keeps a few entries in your browser's storage for the chat window. This is what the chat you asked for needs, so it asks no consent. Signing out of the app removes the cookie.
 
@@ -363,13 +477,22 @@ The support chat loads nothing until you open it. Once you do, Crisp keeps the c
 
 **What it means**
 
-The app uses only the cookies it needs to work. This website, the documentation and the blog count visits without a cookie, and set one for measurement only if you allow it; Cookie settings changes your answer. The support chat sets a cookie once you open it.
+- The app uses only the cookies it needs to work.
+- This website, the documentation and the blog count visits without a cookie, and set one for measurement only if you allow it; Cookie settings changes your answer.
+- The support chat sets a cookie once you open it.
 
 </aside>
 
 ## Security
 
-Access tokens for connected accounts are stored encrypted with AES-256-GCM. Traffic is encrypted in transit. The server, in Paris, opens no port to the internet: it is reached only through an encrypted tunnel, and its administration and monitoring sit behind a sign-in reserved to Peal's staff. Passwords are stored hashed; a second sign-in step is available to everyone, and an organisation can require it of its members. Sign-ins, the API and public forms are rate-limited. Backups are encrypted before they leave the server, and kept in the EU. The server applies security updates automatically. Every action Peal's staff take on an account is recorded with its reason, and the identification data French law has us keep is readable only by staff who hold that role.
+- Access tokens for connected accounts are stored encrypted with AES-256-GCM.
+- Traffic is encrypted in transit.
+- The server, in Paris, opens no port to the internet: it is reached only through an encrypted tunnel, and its administration and monitoring sit behind a sign-in reserved to Peal's staff.
+- Passwords are stored hashed; a second sign-in step is available to everyone, and an organisation can require it of its members.
+- Sign-ins, the API and public forms are rate-limited.
+- Backups are encrypted before they leave the server, and kept in the EU.
+- The server applies security updates automatically.
+- Every action Peal's staff take on an account is recorded with its reason, and the identification data French law has us keep is readable only by staff who hold that role.
 
 <aside>
 
@@ -387,7 +510,8 @@ Peal is not meant for children. You must be at least 18, or of age where you liv
 
 **What it means**
 
-Peal is for adults. If a child gave us their data, tell us and we delete it.
+- Peal is for adults.
+- If a child gave us their data, tell us and we delete it.
 
 </aside>
 
@@ -420,7 +544,8 @@ Changes since this policy was first published:
 
 **What it means**
 
-We email you 30 days before a substantial change. Smaller ones take effect when they are published, and all of them are listed here.
+- We email you 30 days before a substantial change.
+- Smaller ones take effect when they are published, and all of them are listed here.
 
 </aside>
 

@@ -1,6 +1,7 @@
 /* The site's only stylesheet: peal-ui's theme (Tailwind, the tokens and the
    components' classes, as DESIGN.md sets them) and Tailwind's typography
    plugin for the legal documents. Pages style themselves with Tailwind
-   classes. */
+   classes, but the legal documents, whose Markdown takes none. */
 @import "peal-ui/styles/globals.css";
+@import "./legal.css";
 @plugin "@tailwindcss/typography";
