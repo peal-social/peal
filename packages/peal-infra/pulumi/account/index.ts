@@ -13,7 +13,7 @@ importExisting();
 const settings = readSettings(
   AccountSettingsSchema,
   ["accountId", "domain", "linkDomain", "ownerName", "zoneId"],
-  ["uptime", "blueskyDid"]
+  ["uptime", "blueskyDid", "domainVerifications"]
 );
 
 const shared = new PealAccount(
