@@ -114,7 +114,10 @@ peal_settings:
   X_CLIENT_ID: OTdwb0p4d0QzaWFpRU5iamYzWGU6MTpjaQ
   # LinkedIn members' profiles: the app "Peal" on Peal's LinkedIn page
   # serves both environments, with both redirect URLs. Company pages take
-  # a second app, for the Community Management API, not made yet.
+  # a second app, "Peal Pages", for the Community Management API: its id
+  # (LINKEDIN_PAGES_CLIENT_ID) goes here once LinkedIn grants the API, as
+  # LinkedIn refuses the pages' sign-in until then. Pinterest stays off:
+  # its app has Trial access, whose Pins are seen by their creator alone.
   LINKEDIN_CLIENT_ID: 77p5yfnzeheaa2
   # Meta: the app "Peal" (Facebook Pages, and Instagram through a Page)
   # and its Threads app. Both stay in development mode until App Review,

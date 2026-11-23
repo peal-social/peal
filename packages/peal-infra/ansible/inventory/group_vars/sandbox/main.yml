@@ -40,8 +40,15 @@ peal_settings:
   X_CLIENT_ID: aG1fSFFkWUF1OGJYM2ZZQktRbEk6MTpjaQ
   # LinkedIn members' profiles: the app "Peal" on Peal's LinkedIn page
   # serves both environments, with both redirect URLs. Company pages take
-  # a second app, for the Community Management API, not made yet.
+  # a second app, "Peal Pages", for the Community Management API: its id
+  # (LINKEDIN_PAGES_CLIENT_ID) goes here once LinkedIn grants the API, as
+  # LinkedIn refuses the pages' sign-in until then.
   LINKEDIN_CLIENT_ID: 77p5yfnzeheaa2
+  # Pinterest: the app "Peal Social" serves both environments, with both
+  # redirect URLs. It has Trial access, so the server calls Pinterest's
+  # Sandbox, where Pins are seen by their creator alone.
+  PINTEREST_APP_ID: "1642794"
+  PINTEREST_SANDBOX: "true"
   # One WordPress.com app serves both environments, with both callbacks.
   WORDPRESS_COM_CLIENT_ID: "153160"
   # Google Ads, read only, once its own OAuth client, "Peal: Google Ads",
