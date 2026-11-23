@@ -18,7 +18,7 @@
     "@tailwindcss/typography": "0.5.20",
     "@tailwindcss/vite": "4.3.5",
     "astro": "7.4.13",
-    "effect": "4.1.4",
+    "effect": "4.1.5",
     "geist": "1.9.2",
     "peal-contract": "workspace:*",
     "peal-ui": "workspace:*",
