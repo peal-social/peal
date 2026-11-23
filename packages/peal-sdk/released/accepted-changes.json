@@ -157,5 +157,10 @@
     "change": "An API key made from now on stops working (401) once the member who made it leaves the workspace, is removed from it or closes their account, and once their role is changed to one that could not give one of the key's permissions; keys made before stay",
     "kind": "behaviour",
     "reason": "A key outlived the member who made it, with everything they held, and with no expiry: a member about to be removed or demoted could keep their access through a key. A key now records its maker (ApiKey.createdBy), and follows their standing in the workspace."
+  },
+  {
+    "change": "A partner key whose maker is recorded stops working (401) once they leave the partner's home workspace, are removed from it or close their account, and once their role there no longer holds partner:manage; keys whose maker closed their account before stay",
+    "kind": "behaviour",
+    "reason": "A partner key outlived the admin who made it, across every customer workspace: an admin about to be removed kept access through it. Partner keys now follow their maker as API keys do, and PartnerKey.createdBy names them."
   }
 ]

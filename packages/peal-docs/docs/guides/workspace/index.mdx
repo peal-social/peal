@@ -49,7 +49,7 @@ A member's [API keys](#api-keys) follow them:
 - When a member is removed, leaves the workspace or closes their account, the keys they made in it stop working at once.
 - When you give a member a role with fewer permissions, the keys they made that hold a permission the new role doesn't have stop working.
 
-Before you confirm a removal, or a role change that revokes keys, Peal tells you how many of their keys stop working. Each key revoked this way is kept in the [activity log](#activity) as `apiKeys.revoke`, by whoever removed the member or changed the role, or by the member who left.
+In a [partner account](/developers/embedding#keys)'s home workspace, the partner keys a member made stop working too when they go, or when their new role can't manage the partner account. Before you confirm a removal, or a role change that revokes keys, Peal tells you how many of their keys stop working. Each key revoked this way is kept in the [activity log](#activity) as `apiKeys.revoke` (a partner key as `partnerAccount.revokeKey`), by whoever removed the member or changed the role, or by the member who left.
 
 ### Invite people [#invitations]
 

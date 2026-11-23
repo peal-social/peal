@@ -989,6 +989,14 @@ func TestSettersPartnerKey(t *testing.T) {
 		assert.NotNil(t, obj.explicitFields)
 	})
 
+	t.Run("SetCreatedBy", func(t *testing.T) {
+		obj := &PartnerKey{}
+		var fernTestValueCreatedBy *APIKeyMaker
+		obj.SetCreatedBy(fernTestValueCreatedBy)
+		assert.Equal(t, fernTestValueCreatedBy, obj.CreatedBy)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetExpiresAt", func(t *testing.T) {
 		obj := &PartnerKey{}
 		var fernTestValueExpiresAt *string
@@ -1061,6 +1069,39 @@ func TestGettersPartnerKey(t *testing.T) {
 			}
 		}()
 		_ = obj.GetCreatedAt() // Should return zero value
+	})
+
+	t.Run("GetCreatedBy", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PartnerKey{}
+		var expected *APIKeyMaker
+		obj.CreatedBy = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetCreatedBy(), "getter should return the property value")
+	})
+
+	t.Run("GetCreatedBy_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PartnerKey{}
+		obj.CreatedBy = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetCreatedBy(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetCreatedBy_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *PartnerKey
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetCreatedBy() // Should return zero value
 	})
 
 	t.Run("GetExpiresAt", func(t *testing.T) {
@@ -1242,6 +1283,37 @@ func TestSettersMarkExplicitPartnerKey(t *testing.T) {
 
 		// Act
 		obj.SetCreatedAt(fernTestValueCreatedAt)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetCreatedBy_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &PartnerKey{}
+		var fernTestValueCreatedBy *APIKeyMaker
+
+		// Act
+		obj.SetCreatedBy(fernTestValueCreatedBy)
 
 		// Assert - object with explicitly set field can be marshaled/unmarshaled
 		bytes, err := json.Marshal(obj)
@@ -1970,6 +2042,7 @@ func TestJSONMarshalingPartnerStanding(t *testing.T) {
 
 func TestRequiredNullableRoundTripPartnerKey(t *testing.T) {
 	requiredNullableKeys := []string{
+		"createdBy",
 		"expiresAt",
 	}
 	marshalToMap := func(t *testing.T, obj *PartnerKey) map[string]json.RawMessage {
@@ -1983,7 +2056,7 @@ func TestRequiredNullableRoundTripPartnerKey(t *testing.T) {
 	t.Run("NullPreserved", func(t *testing.T) {
 		t.Parallel()
 		var obj PartnerKey
-		require.NoError(t, json.Unmarshal([]byte(`{"expiresAt":null}`), &obj))
+		require.NoError(t, json.Unmarshal([]byte(`{"createdBy":null,"expiresAt":null}`), &obj))
 		result := marshalToMap(t, &obj)
 		for _, key := range requiredNullableKeys {
 			value, ok := result[key]

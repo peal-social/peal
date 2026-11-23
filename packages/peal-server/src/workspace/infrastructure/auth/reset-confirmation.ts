@@ -8,6 +8,7 @@ import { Option, Schema } from "effect";
 
 import { confirmUnconfirmed, wasUsed } from "./sign-up-browser.ts";
 import { disconnectAfterPasswordReset } from "./tokens-not-before.ts";
+import { forgetTrustedBrowsersOf } from "./two-step.ts";
 
 // A password reset proves the address as a confirmation link does: the
 // reset link went to it. So a reset confirms an unconfirmed account. Where
@@ -156,6 +157,10 @@ export const afterPasswordReset = async (
       { field: "identifier", operator: "starts_with", value: "2fa-" },
     ],
   });
+
+  // A browser trusted before the reset skips the second step no more: it
+  // asks for a code again, once it has the new password.
+  await forgetTrustedBrowsersOf(ctx.context.adapter, data.user.id);
 };
 
 const isResetDone = Schema.is(

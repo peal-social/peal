@@ -91,17 +91,19 @@ describe(KeysAtStakeNote, () => {
   it("says how many keys a removal revokes", async () => {
     await expect(
       render("en", <KeysAtStakeNote count={2} />)
-    ).resolves.toContain("The 2 API keys they made stop working too.");
+    ).resolves.toContain(
+      "The 2 API and partner keys they made stop working too."
+    );
     await expect(
       render("en", <KeysAtStakeNote count={1} />)
-    ).resolves.toContain("The API key they made stops working too.");
+    ).resolves.toContain("The API or partner key they made stops working too.");
   });
 
   it("says how many keys a role change revokes, in French", async () => {
     await expect(
       render("fr", <KeysAtStakeNote count={3} role="Éditeur" />)
     ).resolves.toContain(
-      "3 clés d’API créées par ce membre permettent ce que le rôle Éditeur ne permet pas, et cessent de fonctionner."
+      "3 clés d’API et partenaires créées par ce membre permettent ce que le rôle Éditeur ne permet pas, et cessent de fonctionner."
     );
   });
 

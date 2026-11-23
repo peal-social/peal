@@ -64,10 +64,27 @@ export class PartnerStore extends Context.Service<
       digest: string,
       createdBy: UserId
     ) => Effect.Effect<void, DatabaseError>;
-    /** The key kept under this digest, expired or not. */
-    readonly keyByDigest: (
-      digest: string
-    ) => Effect.Effect<Option.Option<PartnerKey>, DatabaseError>;
+    /**
+     * The key kept under this digest, expired or not, with the role its
+     * maker holds in the partner's home workspace now (none once they are
+     * no longer a member, or for a key with no recorded maker), in one
+     * read.
+     */
+    readonly keyByDigest: (digest: string) => Effect.Effect<
+      Option.Option<{
+        readonly key: PartnerKey;
+        readonly makerRole: Option.Option<string>;
+      }>,
+      DatabaseError
+    >;
+    /**
+     * Deletes the keys `userId` made for the partner whose home workspace
+     * this is, and answers their ids: none when it is no home workspace.
+     */
+    readonly removeKeysMadeBy: (
+      workspaceId: WorkspaceId,
+      userId: UserId
+    ) => Effect.Effect<readonly PartnerKeyId[], DatabaseError>;
     /** Deletes the partner's key, and says whether it was there. */
     readonly removeKey: (
       partnerId: PartnerId,

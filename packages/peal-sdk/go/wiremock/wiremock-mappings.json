@@ -6656,7 +6656,7 @@
       },
       "response": {
         "status": 200,
-        "body": "[\n  {\n    \"createdAt\": \"createdAt\",\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"scopes\": [\n      \"workspaces:read\"\n    ],\n    \"start\": \"start\"\n  }\n]",
+        "body": "[\n  {\n    \"createdAt\": \"createdAt\",\n    \"createdBy\": {\n      \"id\": \"id\",\n      \"name\": \"name\"\n    },\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"scopes\": [\n      \"workspaces:read\"\n    ],\n    \"start\": \"start\"\n  }\n]",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -6692,7 +6692,7 @@
       },
       "response": {
         "status": 201,
-        "body": "{\n  \"key\": \"key\",\n  \"partnerKey\": {\n    \"createdAt\": \"createdAt\",\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"scopes\": [\n      \"workspaces:read\"\n    ],\n    \"start\": \"start\"\n  }\n}",
+        "body": "{\n  \"key\": \"key\",\n  \"partnerKey\": {\n    \"createdAt\": \"createdAt\",\n    \"createdBy\": {\n      \"id\": \"id\",\n      \"name\": \"name\"\n    },\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"scopes\": [\n      \"workspaces:read\"\n    ],\n    \"start\": \"start\"\n  }\n}",
         "headers": {
           "Content-Type": "application/json"
         }

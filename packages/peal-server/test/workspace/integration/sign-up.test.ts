@@ -806,6 +806,13 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             VALUES (gen_random_uuid(), ${`synthetic-session-${user?.id ?? ""}`}, ${user?.id ?? ""},
               now() + interval '1 day', now(), now())`.pipe(Effect.orDie);
 
+          // And a browser it trusts to skip the second step, as the
+          // library keeps one.
+          yield* sql`
+            INSERT INTO auth.verification (identifier, value, expires_at, created_at, updated_at)
+            VALUES (${`trust-device-synthetic-${user?.id ?? ""}`}, ${user?.id ?? ""},
+              now() + interval '30 days', now(), now())`.pipe(Effect.orDie);
+
           assert.strictEqual((yield* storedOf(email)).sessions, 1);
 
           const again = yield* signUp(email, "en", { name: "Second" });
@@ -816,6 +823,13 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(stored.name, "Second");
           assert.strictEqual(stored.sessions, 0);
+
+          const trusted =
+            yield* sql`SELECT identifier FROM auth.verification WHERE value = ${user?.id ?? ""} AND identifier LIKE 'trust-device-%'`.pipe(
+              Effect.orDie
+            );
+
+          assert.lengthOf(trusted, 0);
           assert.isFalse(stored.email_verified);
 
           // The resend route sends a link, which only the browser of the

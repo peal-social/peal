@@ -13,21 +13,30 @@ export interface MemberStandingChange {
   readonly workspaceId: string;
 }
 
+/** The ids of the keys a change revoked, by kind. */
+export interface RevokedKeyIds {
+  readonly apiKeyIds: readonly string[];
+  readonly partnerKeyIds: readonly string[];
+}
+
 /**
- * Revokes the API keys the member made in the workspace that their new
- * standing does not cover, and answers their ids. A failure throws.
+ * Revokes the API keys, and the partner keys of the partner whose home
+ * workspace it is, that the member made and their new standing does not
+ * cover, and answers their ids. A failure throws.
  */
 export type MemberKeysSettler = (
   change: MemberStandingChange
-) => Promise<readonly string[]>;
+) => Promise<RevokedKeyIds>;
+
+const none: RevokedKeyIds = { apiKeyIds: [], partnerKeyIds: [] };
 
 // The keys a request revoked, for its workspace's activity log, which its
 // after hook keeps.
-const revoked = new WeakMap<Request, readonly string[]>();
+const revoked = new WeakMap<Request, RevokedKeyIds>();
 
-/** The API keys this request revoked as its member's standing changed. */
-export const revokedKeysOf = (request: Request): readonly string[] =>
-  revoked.get(request) ?? [];
+/** The keys this request revoked as its member's standing changed. */
+export const revokedKeysOf = (request: Request): RevokedKeyIds =>
+  revoked.get(request) ?? none;
 
 /**
  * Before a member's standing changes, once the route has checked the
@@ -43,8 +52,16 @@ export const settleMemberKeys = async (
 ): Promise<void> => {
   const ids = await settle(change);
 
-  if (request !== undefined && ids.length > 0) {
-    revoked.set(request, [...revokedKeysOf(request), ...ids]);
+  if (
+    request !== undefined &&
+    ids.apiKeyIds.length + ids.partnerKeyIds.length > 0
+  ) {
+    const before = revokedKeysOf(request);
+
+    revoked.set(request, {
+      apiKeyIds: [...before.apiKeyIds, ...ids.apiKeyIds],
+      partnerKeyIds: [...before.partnerKeyIds, ...ids.partnerKeyIds],
+    });
   }
 };
 

@@ -70,6 +70,7 @@ export const PartnerAccountHandlers = HttpApiBuilder.group(
             .pipe(
               Effect.catchTags({
                 DatabaseError: Effect.die,
+                DirectoryUnavailable: Effect.die,
                 MissingPermission: forbidden,
                 PartnerNotFound: noPartner,
                 PermissionNotGrantable: invalid("permissions"),
@@ -79,7 +80,7 @@ export const PartnerAccountHandlers = HttpApiBuilder.group(
 
           return {
             key: Redacted.value(created.key),
-            partnerKey: partnerKeyView(created.partnerKey),
+            partnerKey: partnerKeyView(created),
           };
         }),
       get: () =>
@@ -120,6 +121,7 @@ export const PartnerAccountHandlers = HttpApiBuilder.group(
           const listed = yield* keys.list(actor).pipe(
             Effect.catchTags({
               DatabaseError: Effect.die,
+              DirectoryUnavailable: Effect.die,
               MissingPermission: forbidden,
               PartnerNotFound: noPartner,
             })

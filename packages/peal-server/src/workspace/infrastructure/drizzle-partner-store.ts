@@ -1,4 +1,4 @@
-import { and, asc, between, count, eq, gte, lt } from "drizzle-orm";
+import { and, asc, between, count, eq, gte, inArray, lt } from "drizzle-orm";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
@@ -7,13 +7,14 @@ import { PermissionSchema } from "#shared/domain/access.ts";
 import { anyUuid } from "#shared/infrastructure/any-uuid.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 import { PartnerStore } from "#workspace/application/partner-store.ts";
+import { PartnerKeyIdSchema } from "#workspace/domain/partner-id.ts";
 import {
   PartnerKey,
   PartnerScopeSchema,
 } from "#workspace/domain/partner-key.ts";
 import { Partner } from "#workspace/domain/partner.ts";
 
-import { organization } from "./auth-schema.generated.ts";
+import { member, organization } from "./auth-schema.generated.ts";
 import {
   partnerKeys,
   partners,
@@ -55,6 +56,7 @@ const known = <A extends string>(
 const toKey = (row: typeof partnerKeys.$inferSelect) =>
   decodeKey({
     createdAt: utc(row.createdAt),
+    createdBy: Option.fromNullOr(row.createdBy),
     expiresAt: Option.fromNullOr(row.expiresAt).pipe(Option.map(utc)),
     id: row.id,
     name: row.name,
@@ -152,10 +154,21 @@ export const DrizzlePartnerStore = Layer.effect(
           .where(eq(partners.id, partnerId))
           .limit(1)
           .pipe(Effect.mapError(failed), Effect.flatMap(first)),
+      // The key, its partner's home workspace, and its maker's membership
+      // there: on the digest's, the partners' and the members' unique
+      // indexes.
       keyByDigest: (digest) =>
         db
-          .select()
+          .select({ key: partnerKeys, makerRole: member.role })
           .from(partnerKeys)
+          .innerJoin(partners, eq(partners.id, partnerKeys.partnerId))
+          .leftJoin(
+            member,
+            and(
+              eq(member.organizationId, partners.workspaceId),
+              eq(member.userId, partnerKeys.createdBy)
+            )
+          )
           .where(eq(partnerKeys.keyDigest, digest))
           .limit(1)
           .pipe(
@@ -163,7 +176,14 @@ export const DrizzlePartnerStore = Layer.effect(
             Effect.flatMap(([row]) =>
               row === undefined
                 ? Effect.succeedNone
-                : toKey(row).pipe(Effect.map(Option.some))
+                : toKey(row.key).pipe(
+                    Effect.map((key) =>
+                      Option.some({
+                        key,
+                        makerRole: Option.fromNullOr(row.makerRole),
+                      })
+                    )
+                  )
             )
           ),
       keys: (partnerId) =>
@@ -274,6 +294,28 @@ export const DrizzlePartnerStore = Layer.effect(
           .pipe(
             Effect.mapError(failed),
             Effect.map((rows) => rows.length > 0)
+          ),
+      removeKeysMadeBy: (workspaceId, userId) =>
+        db
+          .delete(partnerKeys)
+          .where(
+            and(
+              eq(partnerKeys.createdBy, userId),
+              inArray(
+                partnerKeys.partnerId,
+                db
+                  .select({ id: partners.id })
+                  .from(partners)
+                  .where(eq(partners.workspaceId, workspaceId))
+              )
+            )
+          )
+          .returning({ id: partnerKeys.id })
+          .pipe(
+            Effect.mapError(failed),
+            Effect.map((rows) =>
+              rows.map(({ id }) => PartnerKeyIdSchema.make(id))
+            )
           ),
       save: (partner) =>
         db

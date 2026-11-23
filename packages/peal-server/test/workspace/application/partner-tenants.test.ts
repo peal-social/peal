@@ -110,6 +110,7 @@ const StoresTest = Layer.mergeAll(
         Ref.set(purgedBefore, Option.some(before)).pipe(Effect.as(4)),
       recordUsage: fail("recordUsage"),
       removeKey: fail("removeKey"),
+      removeKeysMadeBy: fail("removeKeysMadeBy"),
       save: fail("save"),
       usage: fail("usage"),
       usageBetween: (_, from, to) =>

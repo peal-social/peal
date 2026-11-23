@@ -375,7 +375,8 @@ const CreateKeyForm = ({
   );
 };
 
-const KeyRow = ({
+/** One partner key: its name, how it starts, who made it, what it may do. */
+export const KeyRow = ({
   mayManage,
   partnerKey,
   workspaceId,
@@ -414,6 +415,11 @@ const KeyRow = ({
         <span className="font-medium">{partnerKey.name}</span>
         <span className="text-muted-foreground font-mono text-sm">
           {t("keyStartsWith", { start: partnerKey.start })}
+        </span>
+        <span className="text-muted-foreground text-sm">
+          {partnerKey.createdBy === null
+            ? t("keyMakerGone")
+            : t("keyMadeBy", { name: partnerKey.createdBy.name })}
         </span>
         <span className="text-muted-foreground text-sm">
           {t("keyCreated", {

@@ -281,7 +281,17 @@ The staff context follows these rules too. What the law has a host keep is in
   revoking it as far as it goes. Keep that check: the revocations keep
   the list truthful, the check closes every interleaving. The leaving
   member's keys go only once every before guard let the leave through
-  (`settleLeavingMemberKeys` comes last). The members list gives a
+  (`settleLeavingMemberKeys` comes last).
+- Partner keys follow their maker the same way (`partnerKeyBeyondMaker`):
+  `partner_keys.created_by` is the member of the home workspace who made
+  the key, and it stays only while they are a member whose role holds
+  partner:manage. `ApiKeyMakers.settle` revokes them with the API keys
+  (`PartnerStore.removeKeysMadeBy`; kept as `partnerAccount.revokeKey`),
+  closing the account deletes them, and `PartnerKeys.verify` refuses and
+  revokes one past its maker's standing from the same read that finds
+  the key (`keyByDigest` joins the maker's membership). A key with no
+  recorded maker stays. The list names the maker (`createdBy`), and the
+  members' counts include them. The members list gives a
   reader with member:update what each change would revoke
   (`apiKeysAtStake`), which the web app's dialogs say before confirming.
 - Staff (Better Auth's admin role) act through the staff context's use

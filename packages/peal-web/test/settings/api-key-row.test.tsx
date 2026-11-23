@@ -1,11 +1,12 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime } from "effect";
 import { NextIntlClientProvider } from "next-intl";
-import type { ApiKey } from "peal-contract";
+import type { ApiKey, PartnerKey } from "peal-contract";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import { KeyRow } from "#components/settings/api-keys.tsx";
+import { KeyRow as PartnerKeyRow } from "#components/settings/partner-settings.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
 const render = async (locale: "en" | "fr", view: ReactNode) =>
@@ -53,5 +54,44 @@ describe(KeyRow, () => {
       "Créée avant que les clés n’enregistrent qui les crée"
     );
     expect(html).not.toContain("Ana");
+  });
+});
+
+const partnerKey: PartnerKey = {
+  createdAt: DateTime.makeUnsafe("2026-11-20T09:00:00Z"),
+  createdBy: { id: "ana", name: "Ana" },
+  expiresAt: null,
+  id: "key-2",
+  name: "backend",
+  permissions: ["post:read"],
+  scopes: ["workspaces:read"],
+  start: "peal_partner_ab",
+};
+
+describe(PartnerKeyRow, () => {
+  it("names the member who made the partner key", async () => {
+    const html = await render(
+      "en",
+      <PartnerKeyRow
+        mayManage={false}
+        partnerKey={partnerKey}
+        workspaceId="workspace"
+      />
+    );
+
+    expect(html).toContain("Made by Ana");
+  });
+
+  it("says a key's maker is gone, in French", async () => {
+    const html = await render(
+      "fr",
+      <PartnerKeyRow
+        mayManage={false}
+        partnerKey={{ ...partnerKey, createdBy: null }}
+        workspaceId="workspace"
+      />
+    );
+
+    expect(html).toContain("Créée par une personne qui n’est plus membre");
   });
 });

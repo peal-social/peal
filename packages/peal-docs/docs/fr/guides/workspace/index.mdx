@@ -49,7 +49,7 @@ Les [clés d’API](#api-keys) d’un membre suivent sa place dans l’espace :
 - Quand un membre est retiré, quitte l’espace de travail ou ferme son compte, les clés qu’il y a créées cessent aussitôt de fonctionner.
 - Quand vous donnez à un membre un rôle aux permissions plus restreintes, les clés qu’il a créées et qui portent une permission que le nouveau rôle n’a pas cessent de fonctionner.
 
-Avant que vous confirmiez un retrait, ou un changement de rôle qui révoque des clés, Peal vous dit combien de ses clés cessent de fonctionner. Chaque clé révoquée ainsi est gardée dans le [journal d’activité](#activity) comme `apiKeys.revoke`, au nom de la personne qui a retiré le membre ou changé son rôle, ou du membre qui est parti.
+Dans l’espace de travail principal d’un [compte partenaire](/developers/embedding#keys), les clés partenaires qu’un membre a créées cessent aussi de fonctionner quand il part, ou quand son nouveau rôle ne gère pas le compte partenaire. Avant que vous confirmiez un retrait, ou un changement de rôle qui révoque des clés, Peal vous dit combien de ses clés cessent de fonctionner. Chaque clé révoquée ainsi est gardée dans le [journal d’activité](#activity) comme `apiKeys.revoke` (une clé partenaire comme `partnerAccount.revokeKey`), au nom de la personne qui a retiré le membre ou changé son rôle, ou du membre qui est parti.
 
 ### Inviter des personnes [#invitations]
 

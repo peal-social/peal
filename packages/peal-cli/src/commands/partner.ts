@@ -112,6 +112,9 @@ const keys = Command.make(
           ? "until revoked"
           : `expires ${instant(key.expiresAt)}`,
         key.scopes.join(" "),
+        key.createdBy === null
+          ? "made by a former member"
+          : `made by ${key.createdBy.name}`,
       ])
     )) {
       yield* Console.log(line);

@@ -216,7 +216,7 @@ describe("peal partner", () => {
 
       assert.match(
         keys,
-        /backend\s+peal_partner_synt…\s+until revoked\s+workspaces:read workspaces:write/u
+        /backend\s+peal_partner_synt…\s+until revoked\s+workspaces:read workspaces:write\s+made by Ana/u
       );
 
       const owned = yield* session.printed([

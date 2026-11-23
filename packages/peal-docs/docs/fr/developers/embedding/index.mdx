@@ -84,6 +84,8 @@ Une clé partenaire commence par `peal_partner_`, et s’envoie en `Authorizatio
 
 Vous pouvez révoquer une clé au même endroit, ou avec `DELETE /api/workspaces/{workspaceId}/partner/keys/{partnerKeyId}`. Elle cesse de fonctionner aussitôt.
 
+La liste montre qui a créé chaque clé (`createdBy`). Une clé suit son créateur : elle cesse de fonctionner dès qu’il quitte votre espace de travail principal, en est retiré ou ferme son compte, et dès que son rôle y est un rôle qui ne gère pas le compte partenaire (tout rôle en dessous d’administrateur). Avant un retrait ou un tel changement de rôle, l’application web dit combien de ses clés cessent de fonctionner. Pour que votre backend continue de tourner quand quelqu’un part, utilisez une clé créée par un propriétaire qui reste.
+
 Les portées d’une clé décident de ce qu’elle fait de vos espaces de travail :
 
 | Portée d’une clé    | Ce qu’elle permet                                           |

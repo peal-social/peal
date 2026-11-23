@@ -1,10 +1,24 @@
-import { Result, Schema } from "effect";
+import { Option, Result, Schema } from "effect";
 
 import { PermissionSchema } from "#shared/domain/access.ts";
 import type { Permission } from "#shared/domain/access.ts";
+import { UserIdSchema } from "#shared/domain/ids.ts";
 
 import { PartnerIdSchema, PartnerKeyIdSchema } from "./partner-id.ts";
 import { PermissionNotGrantable } from "./permission-not-grantable.ts";
+import { permissionsFor } from "./roles.ts";
+
+/**
+ * Whether a partner key outlives the standing of its maker, who holds
+ * `role` in the partner's home workspace (none: no longer a member): a
+ * key stays only while its maker could still make one (partner:manage).
+ * A key with no recorded maker is not asked.
+ */
+export const partnerKeyBeyondMaker = (role: Option.Option<string>): boolean =>
+  Option.match(role, {
+    onNone: () => true,
+    onSome: (held) => !permissionsFor(held).includes("partner:manage"),
+  });
 
 /** What every partner key starts with, which tells it from other keys. */
 export const partnerKeyPrefix = "peal_partner_";
@@ -72,6 +86,9 @@ export class PartnerKey extends Schema.Class<PartnerKey>(
   "peal-server/workspace/domain/PartnerKey"
 )({
   createdAt: Schema.DateTimeUtc,
+  // The member of the home workspace who made it; none once their account
+  // is closed, or for a key made before Peal recorded it.
+  createdBy: Schema.Option(UserIdSchema),
   expiresAt: Schema.Option(Schema.DateTimeUtc),
   id: PartnerKeyIdSchema,
   name: Schema.String,

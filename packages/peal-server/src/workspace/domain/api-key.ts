@@ -7,6 +7,8 @@ import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { MissingPermission } from "#shared/domain/missing-permission.ts";
 
 import { personOnlyPermissions } from "./oauth-grant.ts";
+import { partnerKeyBeyondMaker } from "./partner-key.ts";
+import type { PartnerKey } from "./partner-key.ts";
 import { PermissionNotGrantable } from "./permission-not-grantable.ts";
 import { permissionsFor } from "./roles.ts";
 import type { Role } from "./roles.ts";
@@ -145,16 +147,31 @@ export interface KeysAtStake {
   readonly roles: Readonly<Record<Role, number>>;
 }
 
-/** What `keysBeyond` would revoke of `userId`'s keys, counted. */
+/**
+ * What `keysBeyond` would revoke of `userId`'s keys, counted, with the
+ * partner keys they made when the workspace is a partner's home
+ * (`partnerKeyBeyondMaker`).
+ */
 export const keysAtStake = (
   keys: readonly ApiKey[],
-  userId: UserId
+  userId: UserId,
+  partnerKeys: readonly PartnerKey[] = []
 ): KeysAtStake => {
+  const theirs = partnerKeys.filter(({ createdBy }) =>
+    Option.contains(createdBy, userId)
+  ).length;
+
+  const partnerBeyond = (role: Option.Option<string>) =>
+    partnerKeyBeyondMaker(role) ? theirs : 0;
+
   const beyond = (role: Role) =>
-    keysBeyond(keys, userId, Option.some(role)).length;
+    keysBeyond(keys, userId, Option.some(role)).length +
+    partnerBeyond(Option.some(role));
 
   return {
-    removal: keysBeyond(keys, userId, Option.none()).length,
+    removal:
+      keysBeyond(keys, userId, Option.none()).length +
+      partnerBeyond(Option.none()),
     roles: {
       admin: beyond("admin"),
       contributor: beyond("contributor"),

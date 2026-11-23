@@ -441,10 +441,10 @@ export const DrizzleAccountStore = Layer.effect(
           )
           .pipe(Effect.mapError(failed));
 
-        // The partner keys they created stay their partner's, without them.
+        // The partner keys they created stop working with their account, as
+        // their API keys do; keys with no recorded maker stay.
         yield* db
-          .update(partnerKeys)
-          .set({ createdBy: null })
+          .delete(partnerKeys)
           .where(eq(partnerKeys.createdBy, userId))
           .pipe(Effect.mapError(failed));
 

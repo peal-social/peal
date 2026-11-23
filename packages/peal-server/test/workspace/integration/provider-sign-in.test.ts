@@ -213,12 +213,31 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
 
           assert.strictEqual(created.status, 200);
 
+          // A browser the account trusts to skip the second step, as the
+          // library keeps one.
+          const sql = yield* SqlClient.SqlClient;
+
+          yield* sql`
+            INSERT INTO auth.verification (identifier, value, expires_at, created_at, updated_at)
+            SELECT ${`trust-device-synthetic-${email}`}, id, now() + interval '30 days', now(), now()
+            FROM auth."user" WHERE email = ${email.toLowerCase()}`.pipe(
+            Effect.orDie
+          );
+
           const identity = verified(email);
           const finished = yield* providerSignIn(identity);
 
           // The provider vouches for the address: the account is the
-          // provider's person's now, confirmed, and its password is gone.
+          // provider's person's now, confirmed, and its password is gone,
+          // with the browsers it trusted.
           assert.isNull(finished.error);
+
+          const trusted =
+            yield* sql`SELECT identifier FROM auth.verification WHERE identifier = ${`trust-device-synthetic-${email}`}`.pipe(
+              Effect.orDie
+            );
+
+          assert.lengthOf(trusted, 0);
           assert.isTrue(setsSession(finished.reply));
 
           const account = yield* accountOf(email);

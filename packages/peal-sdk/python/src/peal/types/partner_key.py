@@ -6,12 +6,16 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .api_key_maker import ApiKeyMaker
 from .partner_scope import PartnerScope
 from .permission import Permission
 
 
 class PartnerKey(UniversalBaseModel):
     created_at: typing_extensions.Annotated[str, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")]
+    created_by: typing_extensions.Annotated[
+        typing.Optional[ApiKeyMaker], FieldMetadata(alias="createdBy"), pydantic.Field(alias="createdBy")
+    ] = None
     expires_at: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="expiresAt"), pydantic.Field(alias="expiresAt")
     ] = None

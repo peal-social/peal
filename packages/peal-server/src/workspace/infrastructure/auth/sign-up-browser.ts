@@ -18,6 +18,7 @@ import { defaultLocale, LocaleSchema } from "#shared/domain/locale.ts";
 import { forgetConnectedApplications } from "./connected-applications.ts";
 import { bindingOf } from "./sign-up-binding.ts";
 import { markTokensNotBefore } from "./tokens-not-before.ts";
+import { forgetTrustedBrowsersOf } from "./two-step.ts";
 import { UsedAccountError } from "./used-account-error.ts";
 
 // A password's sign-up binds the account's confirmation to the browser that
@@ -190,6 +191,10 @@ export const releaseAccount = async (
   await markTokensNotBefore(ctx, user.id);
   await forgetConnectedApplications(ctx, user.id);
   await internalAdapter.deleteVerificationByIdentifier(bindingOf(user.id));
+  await forgetTrustedBrowsersOf(
+    await getCurrentAdapter(ctx.context.adapter),
+    user.id
+  );
 };
 
 /**
@@ -309,6 +314,12 @@ export const takeOver = async (
     await internalAdapter.deleteUserSessions(user.id);
     await markTokensNotBefore(ctx, user.id);
     await forgetConnectedApplications(ctx, user.id);
+    // A browser the old password's holder had trusted asks for a code
+    // again.
+    await forgetTrustedBrowsersOf(
+      await getCurrentAdapter(ctx.context.adapter),
+      user.id
+    );
     await bind(ctx, user.id, nonce, hash);
 
     return changed;

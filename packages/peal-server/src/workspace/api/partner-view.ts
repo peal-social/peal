@@ -11,12 +11,12 @@ import type {
 
 import type { MovedChannel } from "#workspace/application/channel-mover.ts";
 import type { HealthPage } from "#workspace/application/partner-health.ts";
+import type { ListedPartnerKey } from "#workspace/application/partner-keys.ts";
 import type {
   CountedWorkspace,
   CountedWorkspacePage,
   PartnerUsage,
 } from "#workspace/application/partner-workspaces.ts";
-import type { PartnerKey } from "#workspace/domain/partner-key.ts";
 import type { Partner } from "#workspace/domain/partner.ts";
 
 // What the API and the MCP tools answer of partner accounts.
@@ -37,8 +37,12 @@ export const partnerUsageView = (usage: PartnerUsage): PartnerUsageView => ({
   workspaces: usage.workspaces,
 });
 
-export const partnerKeyView = (key: PartnerKey): PartnerKeyView => ({
+export const partnerKeyView = ({
+  maker,
+  partnerKey: key,
+}: ListedPartnerKey): PartnerKeyView => ({
   createdAt: key.createdAt,
+  createdBy: Option.getOrNull(maker),
   expiresAt: Option.getOrNull(key.expiresAt),
   id: key.id,
   name: key.name,

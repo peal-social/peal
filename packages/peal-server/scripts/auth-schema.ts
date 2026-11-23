@@ -49,7 +49,8 @@ const auth = makeAuth({
     invitationEmail: async () => await Promise.resolve(true),
     log: ignore,
     memberAllowance: async () => await Promise.resolve(Option.none()),
-    memberKeys: async () => await Promise.resolve([]),
+    memberKeys: async () =>
+      await Promise.resolve({ apiKeyIds: [], partnerKeyIds: [] }),
     memberLeft: nothing,
     memberUpgrade: async () =>
       await Promise.resolve({

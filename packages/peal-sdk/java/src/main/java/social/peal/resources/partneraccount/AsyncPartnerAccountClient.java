@@ -306,7 +306,7 @@ public class AsyncPartnerAccountClient {
     }
 
     /**
-     * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys.
+     * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
     public CompletableFuture<CreatedPartnerKey> createKey(String workspaceId, NewPartnerKey request) {
         CompletableFuture<PealClientHttpResponse<CreatedPartnerKey>> rawFuture =
@@ -321,7 +321,7 @@ public class AsyncPartnerAccountClient {
     }
 
     /**
-     * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys.
+     * Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with <code>permissions</code> (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with <code>scopes</code>. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.
      */
     public CompletableFuture<CreatedPartnerKey> createKey(
             String workspaceId, NewPartnerKey request, RequestOptions requestOptions) {
