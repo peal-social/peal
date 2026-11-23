@@ -963,8 +963,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   ui-sdk on peal-ui's tokens: `StudioToolbar`, `StudioTransport`,
   `StudioTimeline` (one `Listbox` of clips grouped by track, pointer
   moves and trims, `#studio/timeline-geometry.ts`, tested) and
-  `StudioInspector`. The document is Shotstack's Edit
-  (`#studio/edit-document.ts`, tested), library files named
+  `StudioInspector` (keyframes in `studio-animation.tsx`). The document
+  is Shotstack's Edit (`#studio/edit-document.ts`, `#studio/figures.ts`,
+  `#studio/tweens.ts`, `#studio/captions.ts`, tested against Shotstack's
+  zod schema), library files named
   `peal:media/<id>` wherever it is kept or sent, swapped for their
   hour-long addresses only in the preview (`previewOf`, `storedOf`); the
   draft lives in `localStorage` (`#studio/draft.ts`). Shotstack's Edit
@@ -972,6 +974,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   a track is added with its clips. The SDK publishes no way to choose a
   clip, so the timeline's choice is the editor's own (`clip:selected`
   follows the canvas's); a move across tracks is two of its commands.
+  The SDK merges a clip's change into the clip, objects deeply and
+  arrays whole: a nested field is changed, never taken off (a shape's
+  outline thins to 0). Shapes are figures in code (`FigureKind`, the
+  clip kind `figure`), as the lint rules refuse "shape" in a name; the
+  asset's own field is written through a constant. Captions are rich
+  captions of another clip, by its alias: the SDK links a caption added
+  on a track to the first sound or film it finds, the bottom track first,
+  naming it `source_` and its id's last eight characters, so
+  `captionSourcesOf` lists them in that order and the engine relinks one
+  asked of another clip; the server takes no subtitle file.
   The SDK fetches fonts, WebAssembly and emoji: the committed patch
   (`patches/`, made by `scripts/relay-studio-assets.ts`, which a
   version bump runs again inside `bun patch`) points them at

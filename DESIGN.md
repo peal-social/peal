@@ -861,7 +861,7 @@ drafts and the posts that need an approval are tabs of Posts. Home keeps "Write 
 ### The editor
 
 Studio's **Editor** makes a video of the library's pictures, videos and
-sounds and of texts, on tracks. Shotstack's Studio SDK is its engine
+sounds, of texts, shapes and captions, on tracks. Shotstack's Studio SDK is its engine
 (the document, every change, undo and redo, the playback and the
 preview's canvas); every control around it is Peal's, built from peal-ui
 and ui-sdk's behaviours (toolbar, listbox, slider, select), in Peal's
@@ -873,13 +873,16 @@ media:upload).
 - The panel's header holds **Export video** (a small ghost button, its
   icon first), disabled until there is a clip.
 - The **toolbar** above the stage, one tab stop with arrow keys between
-  its controls: **Add files** (the library's picker), **Add text**, then
+  its controls: **Add files** (the library's picker), **Add text**,
+  **Add shape** (a menu: rectangle, circle, line, each with its icon) and
+  **Add captions** (of the chosen sound or video, else of the first the
+  engine finds; disabled until there is one), then
   Undo and Redo (icon buttons), **Duplicate** and **Delete** for the
   chosen clip, and **Start over**, in small ghost buttons with a hairline
   between groups.
 - The **stage**, on `muted` with a hairline, `{rounded.lg}`, 48 % of the
   window's height: the SDK's canvas, fitted to it. Before the first clip,
-  it says to add a file or a text.
+  it says to add a file, a text or a shape.
 - The **transport** under it: back to the previous edge, play or pause,
   on to the next edge (a toolbar of ghost icon buttons), then the
   playhead as a slider along the whole width (a 4 px rail, the played
@@ -891,10 +894,18 @@ media:upload).
   the transport and scrolling inside: the chosen clip's sections under
   small headings (its timing; its sound: volume, what it skips, fades;
   its words and style: font among Peal's offered fonts, size, weight,
-  colour, alignment, background and box; its layout: fit, position,
-  offset, scale, opacity; its motion, how it comes in and goes out, and
-  its filter), then the video's (shape, resolution, frame rate,
-  backdrop). A number applies when it is left or on Enter, a slider when
+  colour, alignment, background and box; a shape's fill and its
+  opacity, outline and its width, and its size by its kind; a caption's
+  source among the edit's sounds and videos, its font, size, colour, the
+  spoken word's colour, background and its opacity, under a muted line
+  that the words come at render; its layout: fit, position; its motion,
+  how it comes in and goes out, its filter, then its offset across and
+  down, scale, rotation and opacity, each a value on a slider or, with
+  its **Animate** switch on, its keyframes: a list of small muted
+  cards, each its from and to, its start and length, how it changes
+  (steady, curve, jump) and, for a curve, its easing, with a remove icon
+  button, and **Add a keyframe** under them), then the video's (shape,
+  resolution, frame rate, backdrop). A number applies when it is left or on Enter, a slider when
   it is let go, a choice at once: each is one undo. On a phone it goes
   under the stage.
 - The **timeline**, a bordered card under them, its header naming it
@@ -902,8 +913,9 @@ media:upload).
   row per track, the first on top as the video layers them, each named
   in a muted column with its delete button. Clips sit where they start,
   as wide as they last, tinted by what they hold (pictures
-  `brand-tint`, texts lavender, videos a lighter lavender, sounds a sun
-  tint), with their icon and name; the chosen one is ringed in
+  `brand-tint`, shapes a lighter `brand-tint`, texts and captions
+  lavender, videos a lighter lavender, sounds a sun tint), with their
+  icon and name; the chosen one is ringed in
   `primary`. Dragging a clip moves it, up or down to another track;
   dragging its edges trims it; both snap to the playhead, the start and
   the other clips' edges. The clips are one listbox, arrow keys between
