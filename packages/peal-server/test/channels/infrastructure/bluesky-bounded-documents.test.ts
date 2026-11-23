@@ -120,6 +120,35 @@ const answering = (body: Uint8Array | string): PublicFetch =>
     { preconnect: () => {} }
   );
 
+// A fetch that answers this text a byte a chunk, as a server dripping its
+// answer would.
+const dripping = (text: string): PublicFetch =>
+  Object.assign(
+    async () => {
+      const bytes = encoder.encode(text);
+      let at = 0;
+
+      return await Promise.resolve(
+        new Response(
+          new ReadableStream<Uint8Array>({
+            pull: (controller) => {
+              if (at >= bytes.byteLength) {
+                controller.close();
+
+                return;
+              }
+
+              controller.enqueue(bytes.subarray(at, at + 1));
+              at += 1;
+            },
+          }),
+          { headers: { "content-type": "application/json" }, status: 200 }
+        )
+      );
+    },
+    { preconnect: () => {} }
+  );
+
 describe(boundedDocuments, () => {
   it("hands a real document over as it was sent", async () => {
     const sent = JSON.stringify(didDocument);
@@ -141,5 +170,25 @@ describe(boundedDocuments, () => {
 
     await expect(failure).rejects.toBeInstanceOf(TypeError);
     await expect(failure).rejects.toHaveProperty("cause.why", "large");
+  });
+
+  it("refuses an answer dripped in thousands of chunks, small as it is", async () => {
+    const dripped = JSON.stringify({ id: "x".repeat(10_000) });
+
+    const failure = boundedDocuments(dripping(dripped))(
+      "https://pds.example/.well-known/did.json"
+    );
+
+    await expect(failure).rejects.toHaveProperty("cause.why", "large");
+  });
+
+  it("takes an answer that comes in a few small chunks", async () => {
+    const sent = JSON.stringify({ id: "did:web:pds.example" });
+
+    const response = await boundedDocuments(dripping(sent))(
+      "https://pds.example/.well-known/did.json"
+    );
+
+    await expect(response.text()).resolves.toBe(sent);
   });
 });

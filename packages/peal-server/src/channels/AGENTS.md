@@ -498,7 +498,9 @@
   the authorizer's `observed` fetch, which is the only fetch they are
   given: read whole up to `maxDocumentBytes` (32 KiB) and, as JSON, no
   more than `maxArrayEntries` (256) array entries in total nor
-  `maxNestingDepth` (16) deep, or the fetch fails with `HostileAnswer`,
+  `maxNestingDepth` (16) deep, read into one buffer and in `maxChunks`
+  (2048) chunks at most (an answer dripped a byte a chunk is refused as
+  too large), or the fetch fails with `HostileAnswer`,
   which the sign-in tells as an identity it cannot use (`InvalidHandle`
   at the start, `AuthorizationFailed` once back, `TokenExpired` on a
   refresh). The libraries validate with zod, entry by entry and an issue

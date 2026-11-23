@@ -104,22 +104,37 @@ interface ChunkReader {
   >;
 }
 
-const readOn = async (
+// A body within the limit comes in a few chunks. A server that drips its
+// answer a byte a chunk is refused as one too large, so nothing is kept
+// per chunk but the bytes themselves, in the one buffer.
+const maxChunks = 2048;
+
+// Reads into the one buffer and answers how much of it is filled: all of
+// it (one byte past the limit) once the body is too large, or came in too
+// many chunks, and the rest is left unread.
+const readInto = async (
   reader: ChunkReader,
-  read: readonly Uint8Array[],
-  received: number
-): Promise<readonly Uint8Array[]> => {
-  if (received > maxDocumentBytes) {
-    await reader.cancel();
-
-    return read;
-  }
-
+  body: Uint8Array,
+  filled: number,
+  chunks: number
+): Promise<number> => {
   const { done, value } = await reader.read();
 
-  return done
-    ? read
-    : await readOn(reader, [...read, value], received + value.byteLength);
+  if (done) {
+    return filled;
+  }
+
+  const room = body.byteLength - filled;
+
+  if (value.byteLength >= room || chunks >= maxChunks) {
+    await reader.cancel();
+
+    return body.byteLength;
+  }
+
+  body.set(value, filled);
+
+  return await readInto(reader, body, filled + value.byteLength, chunks + 1);
 };
 
 const readBounded = async (response: Response): Promise<Uint8Array> => {
@@ -129,20 +144,10 @@ const readBounded = async (response: Response): Promise<Uint8Array> => {
     return new Uint8Array();
   }
 
-  const chunks = await readOn(reader, [], 0);
+  const body = new Uint8Array(maxDocumentBytes + 1);
+  const filled = await readInto(reader, body, 0, 0);
 
-  const body = new Uint8Array(
-    chunks.reduce((total, chunk) => total + chunk.byteLength, 0)
-  );
-
-  let at = 0;
-
-  for (const chunk of chunks) {
-    body.set(chunk, at);
-    at += chunk.byteLength;
-  }
-
-  return body;
+  return body.subarray(0, filled);
 };
 
 /**
