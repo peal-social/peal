@@ -1,5 +1,6 @@
 import { Context, Effect, Layer, Option, Schema } from "effect";
 
+import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Actor, Permission } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
 import { UserIdSchema } from "#shared/domain/ids.ts";
@@ -26,6 +27,7 @@ import { DirectoryUnavailable } from "./directory-unavailable.ts";
 import type { InvalidEmailAddress } from "./invalid-email-address.ts";
 import { InvitationNotFound } from "./invitation-not-found.ts";
 import { MemberDirectory } from "./member-directory.ts";
+import { PartnerStore } from "./partner-store.ts";
 import type { TooManyInvitations } from "./too-many-invitations.ts";
 import { WorkspaceApiKeys } from "./workspace-api-keys.ts";
 import { WorkspacePeople } from "./workspace-people.ts";
@@ -165,6 +167,7 @@ export class WorkspaceMembers extends Context.Service<
       const people = yield* WorkspacePeople;
       const directory = yield* MemberDirectory;
       const apiKeys = yield* WorkspaceApiKeys;
+      const partners = yield* PartnerStore;
 
       // The role the user holds in the actor's workspace, read again: what
       // they may see and give depends on it.
@@ -188,21 +191,28 @@ export class WorkspaceMembers extends Context.Service<
 
         // What removing each member, or changing their role, would revoke
         // of the keys they made: for who may manage members alone.
+        const unavailable = Effect.mapError(
+          ({ cause }: DatabaseError) => new DirectoryUnavailable({ cause })
+        );
+
         const keys = manages
-          ? yield* apiKeys
-              .list(actor.workspaceId)
-              .pipe(
-                Effect.mapError(
-                  ({ cause }) => new DirectoryUnavailable({ cause })
-                )
-              )
+          ? yield* apiKeys.list(actor.workspaceId).pipe(unavailable)
+          : [];
+
+        // The partner keys too, when the workspace is a partner's home.
+        const partner = manages
+          ? yield* partners.ofWorkspace(actor.workspaceId).pipe(unavailable)
+          : Option.none();
+
+        const partnerKeys = Option.isSome(partner)
+          ? yield* partners.keys(partner.value.id).pipe(unavailable)
           : [];
 
         return (yield* people.members(actor.workspaceId)).map(
           ({ twoStepEnabled, ...listed }): ListedMember => ({
             ...listed,
             apiKeysAtStake: manages
-              ? Option.some(keysAtStake(keys, listed.userId))
+              ? Option.some(keysAtStake(keys, listed.userId, partnerKeys))
               : Option.none(),
             twoStepEnabled: manages
               ? Option.some(twoStepEnabled)

@@ -31,6 +31,10 @@ public class CreateKeyTest : BaseMockServerTest
               "key": "key",
               "partnerKey": {
                 "createdAt": "createdAt",
+                "createdBy": {
+                  "id": "id",
+                  "name": "name"
+                },
                 "expiresAt": "expiresAt",
                 "id": "id",
                 "name": "name",
@@ -104,6 +108,10 @@ public class CreateKeyTest : BaseMockServerTest
               "key": "key",
               "partnerKey": {
                 "createdAt": "createdAt",
+                "createdBy": {
+                  "id": "id",
+                  "name": "name"
+                },
                 "expiresAt": "expiresAt",
                 "id": "id",
                 "name": "name",

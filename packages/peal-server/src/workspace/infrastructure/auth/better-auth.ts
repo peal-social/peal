@@ -408,7 +408,7 @@ export const BetterAuthLive = Layer.effect(
                     user.value,
                     Option.fromNullOr(role)
                   )
-                : Effect.succeed([])
+                : Effect.succeed({ apiKeyIds: [], partnerKeyIds: [] })
             ),
             Effect.withSpan("BetterAuth.memberKeys")
           )

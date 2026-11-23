@@ -1759,6 +1759,108 @@ func (a AltTextTooLongEncodedTag) Ptr() *AltTextTooLongEncodedTag {
 }
 
 var (
+	aPIKeyMakerFieldID   = big.NewInt(1 << 0)
+	aPIKeyMakerFieldName = big.NewInt(1 << 1)
+)
+
+type APIKeyMaker struct {
+	ID   string `json:"id" url:"id"`
+	Name string `json:"name" url:"name"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *APIKeyMaker) GetID() string {
+	if a == nil {
+		return ""
+	}
+	return a.ID
+}
+
+func (a *APIKeyMaker) GetName() string {
+	if a == nil {
+		return ""
+	}
+	return a.Name
+}
+
+func (a *APIKeyMaker) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *APIKeyMaker) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeyMaker) SetID(id string) {
+	a.ID = id
+	a.require(aPIKeyMakerFieldID)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeyMaker) SetName(name string) {
+	a.Name = name
+	a.require(aPIKeyMakerFieldName)
+}
+
+func (a *APIKeyMaker) UnmarshalJSON(data []byte) error {
+	type unmarshaler APIKeyMaker
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = APIKeyMaker(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *APIKeyMaker) MarshalJSON() ([]byte, error) {
+	type embed APIKeyMaker
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *APIKeyMaker) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
 	aPIKeyNotFoundEncodedFieldCode      = big.NewInt(1 << 0)
 	aPIKeyNotFoundEncodedFieldMessage   = big.NewInt(1 << 1)
 	aPIKeyNotFoundEncodedFieldRequestID = big.NewInt(1 << 2)

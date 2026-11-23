@@ -479,21 +479,24 @@ func (c *CreatedPartnerKey) String() string {
 
 var (
 	partnerKeyFieldCreatedAt   = big.NewInt(1 << 0)
-	partnerKeyFieldExpiresAt   = big.NewInt(1 << 1)
-	partnerKeyFieldID          = big.NewInt(1 << 2)
-	partnerKeyFieldName        = big.NewInt(1 << 3)
-	partnerKeyFieldPermissions = big.NewInt(1 << 4)
-	partnerKeyFieldScopes      = big.NewInt(1 << 5)
-	partnerKeyFieldStart       = big.NewInt(1 << 6)
+	partnerKeyFieldCreatedBy   = big.NewInt(1 << 1)
+	partnerKeyFieldExpiresAt   = big.NewInt(1 << 2)
+	partnerKeyFieldID          = big.NewInt(1 << 3)
+	partnerKeyFieldName        = big.NewInt(1 << 4)
+	partnerKeyFieldPermissions = big.NewInt(1 << 5)
+	partnerKeyFieldScopes      = big.NewInt(1 << 6)
+	partnerKeyFieldStart       = big.NewInt(1 << 7)
 )
 
 // partnerKeyNullableFields maps the wire names of PartnerKey's nullable fields (required or optional) to their field bits.
 var partnerKeyNullableFields = map[string]*big.Int{
+	"createdBy": partnerKeyFieldCreatedBy,
 	"expiresAt": partnerKeyFieldExpiresAt,
 }
 
 type PartnerKey struct {
 	CreatedAt   string         `json:"createdAt" url:"createdAt"`
+	CreatedBy   *APIKeyMaker   `json:"createdBy,omitempty" url:"createdBy,omitempty"`
 	ExpiresAt   *string        `json:"expiresAt,omitempty" url:"expiresAt,omitempty"`
 	ID          string         `json:"id" url:"id"`
 	Name        string         `json:"name" url:"name"`
@@ -513,6 +516,13 @@ func (p *PartnerKey) GetCreatedAt() string {
 		return ""
 	}
 	return p.CreatedAt
+}
+
+func (p *PartnerKey) GetCreatedBy() *APIKeyMaker {
+	if p == nil {
+		return nil
+	}
+	return p.CreatedBy
 }
 
 func (p *PartnerKey) GetExpiresAt() *string {
@@ -578,6 +588,13 @@ func (p *PartnerKey) require(field *big.Int) {
 func (p *PartnerKey) SetCreatedAt(createdAt string) {
 	p.CreatedAt = createdAt
 	p.require(partnerKeyFieldCreatedAt)
+}
+
+// SetCreatedBy sets the CreatedBy field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (p *PartnerKey) SetCreatedBy(createdBy *APIKeyMaker) {
+	p.CreatedBy = createdBy
+	p.require(partnerKeyFieldCreatedBy)
 }
 
 // SetExpiresAt sets the ExpiresAt field and marks it as non-optional;

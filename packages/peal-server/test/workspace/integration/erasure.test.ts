@@ -467,7 +467,7 @@ const userRows = {
     sql`SELECT count(*)::int AS count FROM staff.audit_events
       WHERE target_id = ${id}
         OR EXISTS (SELECT 1 FROM jsonb_each_text(object_ids) AS named(name, value) WHERE value = ${id})`,
-  // The partner keys they created stay their partner's, without them.
+  // The partner keys they created go with their account.
   "workspace.partner_keys": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM workspace.partner_keys WHERE created_by = ${id}`,
 } satisfies Readonly<Record<string, Count>>;

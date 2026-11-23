@@ -219,7 +219,10 @@ export const WorkspaceLive = Layer.mergeAll(
   // What follows a member's standing to the keys they made: Better
   // Auth's hooks, the members' removal and their list reach it.
   Layer.provideMerge(
-    ApiKeyMakers.layer.pipe(Layer.provideMerge(DrizzleWorkspaceApiKeys))
+    ApiKeyMakers.layer.pipe(
+      Layer.provideMerge(DrizzleWorkspaceApiKeys),
+      Layer.provide(DrizzlePartnerStore)
+    )
   ),
   // What Better Auth's hooks close an account nobody claimed through,
   // which WorkspaceSettingsLive serves with CloseAccount.

@@ -15,6 +15,12 @@ class PartnerKey extends JsonSerializableType
     public string $createdAt;
 
     /**
+     * @var ?ApiKeyMaker $createdBy
+     */
+    #[JsonProperty('createdBy')]
+    public ?ApiKeyMaker $createdBy;
+
+    /**
      * @var ?string $expiresAt
      */
     #[JsonProperty('expiresAt')]
@@ -58,6 +64,7 @@ class PartnerKey extends JsonSerializableType
      *   permissions: array<value-of<Permission>>,
      *   scopes: array<value-of<PartnerScope>>,
      *   start: string,
+     *   createdBy?: ?ApiKeyMaker,
      *   expiresAt?: ?string,
      * } $values
      */
@@ -65,6 +72,7 @@ class PartnerKey extends JsonSerializableType
         array $values,
     ) {
         $this->createdAt = $values['createdAt'];
+        $this->createdBy = $values['createdBy'] ?? null;
         $this->expiresAt = $values['expiresAt'] ?? null;
         $this->id = $values['id'];
         $this->name = $values['name'];

@@ -5412,6 +5412,10 @@ export const studioGroupsLive = (studio: Studio) =>
             Effect.as([
               {
                 createdAt: at("2026-10-02T09:00:00Z"),
+                createdBy: {
+                  id: "0190f3a0-0000-7000-8000-00000000e1aa",
+                  name: "Ana",
+                },
                 expiresAt: null,
                 id: "0190f3a0-0000-7000-8000-00000000e101",
                 name: "backend",

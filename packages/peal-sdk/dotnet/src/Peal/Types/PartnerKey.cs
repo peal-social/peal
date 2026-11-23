@@ -14,6 +14,9 @@ public record PartnerKey : IJsonOnDeserialized
     [JsonPropertyName("createdAt")]
     public required string CreatedAt { get; set; }
 
+    [JsonPropertyName("createdBy")]
+    public ApiKeyMaker? CreatedBy { get; set; }
+
     [JsonPropertyName("expiresAt")]
     public string? ExpiresAt { get; set; }
 
