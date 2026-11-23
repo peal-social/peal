@@ -44,15 +44,15 @@ const provider = (answers: Readonly<Record<string, Answer>>) =>
   Effect.acquireRelease(
     Effect.promise(async () => {
       const received: Received[] = [];
+      // A map, so a path is only ever a key, never a property name.
+      const byPath = new Map(Object.entries(answers));
 
       const server = createServer((request, response) => {
         request.resume();
         request.on("end", () => {
           received.push({ headers: request.headers, url: request.url ?? "" });
 
-          const answer = Object.hasOwn(answers, request.url ?? "")
-            ? answers[request.url ?? ""]
-            : undefined;
+          const answer = byPath.get(request.url ?? "");
 
           if (answer === undefined) {
             response.writeHead(418).end();

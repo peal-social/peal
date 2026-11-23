@@ -91,9 +91,8 @@ const provider = (answers: Readonly<Record<string, Answer>>) =>
 
           const path = request.url ?? "";
 
-          const answer = Object.hasOwn(answers, path)
-            ? answers[path]
-            : undefined;
+          // A map, so a path is only ever a key, never a property name.
+          const answer = new Map(Object.entries(answers)).get(path);
 
           if (answer === undefined) {
             response.writeHead(404).end();
