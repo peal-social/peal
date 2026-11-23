@@ -12,7 +12,7 @@
 # Dependencies: the server's production dependencies and its workspace
 # packages, and nothing the other workspaces need. Bun skips the workspaces
 # listed in bun.lock whose manifests are not copied here.
-FROM oven/bun:1.4.4-slim@sha256:1846adf22496bd711036aae8be147e57bdebbaea2e5264e3e0b5af1db187d9a4 AS dependencies
+FROM oven/bun:1.4.5-slim@sha256:b780593f3e10918cbdaec3d5a08d52224b9198069a65eb47812085c2ec007643 AS dependencies
 
 WORKDIR /app
 
@@ -30,7 +30,7 @@ RUN mkdir /cc-runtime && \
     cp --parents /usr/lib/*-linux-gnu/libstdc++.so.6 /usr/lib/*-linux-gnu/libgcc_s.so.1 /cc-runtime/
 
 # Runtime: Bun on a distroless base, with no shell or package manager.
-FROM oven/bun:1.4.4-distroless@sha256:153a951ae40106e125898103e6e990ee0f38e6aee7f561029e26cf9fbed23470
+FROM oven/bun:1.4.5-distroless@sha256:3a210956422ad81cf7532e1fc1f2eb9275d6ef4c2337a9d25d530f798e80726a
 
 WORKDIR /app
 
