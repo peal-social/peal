@@ -389,6 +389,80 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         })
     );
 
+    it.effect(
+      "refuse, when it is used, a key past its maker's standing however it got there, and keep the others",
+      () =>
+        Effect.gen(function* whenUsed() {
+          const sql = yield* SqlClient.SqlClient;
+          const owner = yield* signedUp("checking-owner");
+          const admin = yield* signedUp("slipping-admin");
+          const gone = yield* signedUp("slipped-admin");
+          const workspaceId = yield* workspaceOf(owner, "Checked");
+
+          yield* join(owner, workspaceId, admin, "admin");
+          yield* join(owner, workspaceId, gone, "admin");
+
+          const billing = yield* apiKeyOf(admin, workspaceId, [
+            "billing:manage",
+          ]);
+
+          const reader = yield* apiKeyOf(admin, workspaceId, ["post:read"]);
+          const goneKey = yield* apiKeyOf(gone, workspaceId, ["post:read"]);
+          const older = yield* apiKeyOf(gone, workspaceId, ["post:read"]);
+          const ownerKey = yield* apiKeyOf(owner, workspaceId, ["post:read"]);
+
+          yield* unrecorded(older.apiKey.id);
+
+          // As a key made while its maker's standing changed would find
+          // it: the change written past every hook.
+          yield* sql`UPDATE auth.member SET role = 'editor' WHERE organization_id = ${workspaceId} AND user_id = ${admin.id}`;
+          yield* sql`DELETE FROM auth.member WHERE organization_id = ${workspaceId} AND user_id = ${gone.id}`;
+
+          assert.isFalse(yield* works(billing.key));
+          assert.isFalse(yield* works(goneKey.key));
+          assert.isTrue(yield* works(reader.key));
+          assert.isTrue(yield* works(older.key));
+          assert.isTrue(yield* works(ownerKey.key));
+
+          // Refused, they are revoked too.
+          const left =
+            yield* sql`SELECT id FROM auth.apikey WHERE reference_id = ${workspaceId} ORDER BY id`;
+
+          assert.sameMembers(
+            left.map((row) => String(row["id"])),
+            [reader.apiKey.id, older.apiKey.id, ownerKey.apiKey.id]
+          );
+        })
+    );
+
+    it.effect(
+      "revoke a leaving member's keys only once the guards before let the leave through",
+      () =>
+        Effect.gen(function* lockedOut() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const owner = yield* signedUp("requiring-owner");
+          const leaver = yield* signedUp("locked-out-admin");
+          const workspaceId = yield* workspaceOf(owner, "Required");
+
+          yield* join(owner, workspaceId, leaver, "admin");
+
+          const leaverKey = yield* apiKeyOf(leaver, workspaceId, ["post:read"]);
+
+          // The workspace now requires two-step verification, which the
+          // admin's account does not have: leaving stays open to them.
+          yield* sql`INSERT INTO workspace.security_policies (workspace_id, two_step_required, updated_at) VALUES (${workspaceId}, true, now())`;
+
+          const left = yield* app.request("/api/auth/organization/leave", {
+            body: { organizationId: workspaceId },
+            headers: asPerson(leaver),
+          });
+
+          assert.strictEqual(left.status, 200);
+          assert.isFalse(yield* works(leaverKey.key));
+        })
+    );
+
     it.effect("keep every key of the only owner, whom leaving is refused", () =>
       Effect.gen(function* onlyOwner() {
         const app = yield* TestApp;

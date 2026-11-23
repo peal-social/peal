@@ -273,7 +273,15 @@ The staff context follows these rules too. What the law has a host keep is in
   the change ran; each key revoked is kept in the activity log as
   `apiKeys.revoke` by whoever asked for the change.
   `WorkspacePeople.removeMembers` revokes in its transaction, and
-  `AccountStore.deleteUser` in the closure's. The members list gives a
+  `AccountStore.deleteUser` in the closure's. Making a key checks, then
+  inserts, so one made while its maker's standing changes can land past
+  every revocation: `AuthGateway.apiKey`, which the API and the MCP
+  endpoint share, reads the maker's role with the key's workspace (one
+  read, `standingOf`) and refuses a key `beyondMaker` holds past it,
+  revoking it as far as it goes. Keep that check: the revocations keep
+  the list truthful, the check closes every interleaving. The leaving
+  member's keys go only once every before guard let the leave through
+  (`settleLeavingMemberKeys` comes last). The members list gives a
   reader with member:update what each change would revoke
   (`apiKeysAtStake`), which the web app's dialogs say before confirming.
 - Staff (Better Auth's admin role) act through the staff context's use
