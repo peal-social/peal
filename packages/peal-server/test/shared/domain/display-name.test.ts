@@ -41,7 +41,7 @@ describe(readsAsAddress, () => {
     "St. John",
     "J.R.R. Tolkien",
     "Ph.D. candidates",
-    "Acme Inc.",
+    "Synthetic Studio Inc.",
     "Équipe Marketing",
     "Studio 54",
     "Anne-Marie O'Neil",
