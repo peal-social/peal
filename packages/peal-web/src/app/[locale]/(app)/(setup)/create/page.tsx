@@ -8,7 +8,6 @@ import { CreateWorkspaceForm } from "#components/create-workspace-form.tsx";
 import { SetupColumn } from "#components/setup/setup-column.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { setupPageTitle } from "#shell/page-title.ts";
 
 // Another workspace, on the setup page with its name empty: the workspace
 // switcher's New workspace opens it. The person owns it, and its setup
@@ -38,6 +37,6 @@ const CreateWorkspacePage = async ({
   );
 };
 
-export const generateMetadata = setupPageTitle;
+export { setupPageTitle as generateMetadata } from "#shell/page-title.ts";
 
 export default CreateWorkspacePage;

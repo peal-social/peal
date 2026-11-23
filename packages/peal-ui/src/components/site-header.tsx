@@ -663,13 +663,13 @@ export { SiteHeader };
 
 export type {
   SiteHeaderProps,
-  SiteIcon,
   SiteLink,
   SiteMenu,
   SiteMenuFeature,
   SiteMenuGroup,
   SiteMenuLink,
-  SiteMark,
   SiteNavItem,
   SiteNavLink,
 };
+
+export type { SiteIcon, SiteMark } from "./site-icons";

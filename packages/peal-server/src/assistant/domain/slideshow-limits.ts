@@ -1,7 +1,5 @@
 import { Duration } from "effect";
 
-import { maxVideoBytes } from "./video-limits.ts";
-
 /**
  * How many slide videos a workspace may ask for each UTC day, whatever
  * each ends with: the workspace's own service account pays, so this
@@ -41,7 +39,7 @@ export const maxSlideshowSeconds = 90;
  * far less. Larger is `unusableAnswer`; the plan's storage must have room
  * for it before anything is asked.
  */
-export const maxSlideshowBytes = maxVideoBytes;
+export { maxVideoBytes as maxSlideshowBytes } from "./video-limits.ts";
 
 /**
  * How often Peal reads where a render stands: the service's guide polls

@@ -8,14 +8,13 @@ import { NewChannel } from "#components/channels/new-channel.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { docsUrlConfig } from "#shell/docs-url.ts";
-import { platformPageTitle } from "#shell/page-title.ts";
 import { workspaceAt } from "#shell/workspace-path.ts";
 
 // The platform an address names, or none for a word no channel connects to.
 const platformOf = (word: string) =>
   ChannelPlatformSchema.literals.find((platform) => platform === word);
 
-export const generateMetadata = platformPageTitle;
+export { platformPageTitle as generateMetadata } from "#shell/page-title.ts";
 
 // One platform's form, under Channels › New channel in the breadcrumb.
 const ChannelPlatformPage = async ({

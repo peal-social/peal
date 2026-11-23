@@ -8,7 +8,6 @@ import { setupHiddenPlatformsConfig } from "#home/setup-config.ts";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
 import { membershipOf } from "#posts/membership.ts";
-import { setupChannelsPageTitle } from "#shell/page-title.ts";
 import { setupChannelsPath, workspacePath } from "#shell/workspace-path.ts";
 
 // A new workspace's second step, once it is made: its channels, connected
@@ -51,6 +50,6 @@ const SetupChannelsPage = async ({
   );
 };
 
-export const generateMetadata = setupChannelsPageTitle;
+export { setupChannelsPageTitle as generateMetadata } from "#shell/page-title.ts";
 
 export default SetupChannelsPage;

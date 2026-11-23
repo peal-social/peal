@@ -9,7 +9,6 @@ import { currentUser } from "#auth/session.ts";
 import { FirstWorkspace } from "#components/first-workspace.tsx";
 import { redirect } from "#i18n/navigation.ts";
 import { routing } from "#i18n/routing.ts";
-import { setupPageTitle } from "#shell/page-title.ts";
 import { homeWorkspaceOf, workspacePath } from "#shell/workspace-path.ts";
 import { elidesBefore, firstNameOf } from "#workspaces/new-workspace.ts";
 
@@ -77,6 +76,6 @@ const AppPage = async ({ params }: PageProps<"/[locale]">) => {
   return <FirstWorkspace name={name} />;
 };
 
-export const generateMetadata = setupPageTitle;
+export { setupPageTitle as generateMetadata } from "#shell/page-title.ts";
 
 export default AppPage;
