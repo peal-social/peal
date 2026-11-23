@@ -1,9 +1,16 @@
 import { localePaths } from "./i18n/locales.ts";
 
-// The legal documents platforms ask for during app review. Each is a page at
-// /<document> (and /<locale>/<document>), written in
+// The legal documents: those platforms ask for during app review, then the
+// data processing agreement and the sub-processors it names. Each is a page
+// at /<document> (and /<locale>/<document>), written in
 // src/content/legal/<locale>/<document>.md.
-export const legalDocuments = ["privacy", "terms", "data-deletion"] as const;
+export const legalDocuments = [
+  "privacy",
+  "terms",
+  "data-deletion",
+  "dpa",
+  "subprocessors",
+] as const;
 
 export type LegalDocument = (typeof legalDocuments)[number];
 
