@@ -43,9 +43,10 @@ describe("what the account shares", () => {
     ]);
   });
 
-  it("forwards hello@, maxime@, notifications@, sandbox@ and security@ to the owner", async () => {
+  it("forwards developers@, hello@, maxime@, notifications@, sandbox@ and security@ to the owner", async () => {
     const addresses = await Promise.all(result.forwardedAddresses.map(valueOf));
     expect(addresses).toStrictEqual([
+      "developers@example.test",
       "hello@example.test",
       "maxime@example.test",
       "notifications@example.test",
