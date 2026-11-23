@@ -1,1 +1,0 @@
-ALTER TABLE "assistant"."text_providers" ADD COLUMN "provider" text;

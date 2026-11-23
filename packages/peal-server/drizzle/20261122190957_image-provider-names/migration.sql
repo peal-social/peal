@@ -1,1 +1,0 @@
-ALTER TABLE "assistant"."image_providers" ADD COLUMN "provider" text;
