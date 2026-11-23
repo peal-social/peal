@@ -253,6 +253,23 @@ The staff context follows these rules too. What the law has a host keep is in
   owner in person gives them, as the owner's leave for an application;
   partner keys never hold those. Keys are created only through `POST /api/workspaces/:workspaceId/api-keys`:
   Better Auth's own key routes are disabled.
+- A key records its maker in Better Auth's `metadata` (`makerMetadata`,
+  `{"createdBy": <user id>}`, read with `makerOf`), and the list names
+  them while they are a member. Keys follow their maker's standing
+  (`ApiKeyMakers`, `keysBeyond` in `workspace/domain/api-key.ts`): a
+  member removed, leaving or closing their account loses every key they
+  made in that workspace, and one given a lower role those holding a
+  permission the role could not give a new key (`grantableBy`). Keys with
+  no recorded maker (made before) are left alone. Better Auth's routes do
+  it in their before hooks, once the rest is checked, so a change that
+  fails after leaves the keys gone, never the keys outliving their maker
+  (`member-keys.ts`), and again in the after hooks, for a key made while
+  the change ran; each key revoked is kept in the activity log as
+  `apiKeys.revoke` by whoever asked for the change.
+  `WorkspacePeople.removeMembers` revokes in its transaction, and
+  `AccountStore.deleteUser` in the closure's. The members list gives a
+  reader with member:update what each change would revoke
+  (`apiKeysAtStake`), which the web app's dialogs say before confirming.
 - Staff (Better Auth's admin role) act through the staff context's use
   cases only (`StaffActions`): each checks `mayAct`
   (`staff/domain/account-rules.ts`), records an `AuditEvent` in

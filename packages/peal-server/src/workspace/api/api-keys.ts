@@ -6,10 +6,15 @@ import type { ApiKey as ApiKeyView } from "peal-contract";
 import { actorOf } from "#shared/api/actor.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
 import { ApiKeys } from "#workspace/application/api-keys.ts";
+import type { KeyMaker } from "#workspace/application/api-keys.ts";
 import type { ApiKey } from "#workspace/domain/api-key.ts";
 
-const toView = (apiKey: ApiKey): ApiKeyView => ({
+const toView = (
+  apiKey: ApiKey,
+  maker: Option.Option<KeyMaker>
+): ApiKeyView => ({
   createdAt: apiKey.createdAt,
+  createdBy: Option.getOrNull(maker),
   expiresAt: Option.getOrNull(apiKey.expiresAt),
   id: apiKey.id,
   name: apiKey.name,
@@ -37,6 +42,7 @@ export const ApiKeysHandlers = HttpApiBuilder.group(
             .pipe(
               Effect.catchTags({
                 AuthUnavailable: Effect.die,
+                DirectoryUnavailable: Effect.die,
                 MissingPermission: forbidden,
                 PermissionNotGrantable: forbidden,
                 UserRequired: forbidden,
@@ -44,7 +50,7 @@ export const ApiKeysHandlers = HttpApiBuilder.group(
             );
 
           return {
-            apiKey: toView(issued.apiKey),
+            apiKey: toView(issued.apiKey, issued.maker),
             key: Redacted.value(issued.key),
           };
         }),
@@ -55,11 +61,12 @@ export const ApiKeysHandlers = HttpApiBuilder.group(
           const keys = yield* apiKeys.list(actor).pipe(
             Effect.catchTags({
               AuthUnavailable: Effect.die,
+              DirectoryUnavailable: Effect.die,
               MissingPermission: forbidden,
             })
           );
 
-          return keys.map(toView);
+          return keys.map(({ apiKey, maker }) => toView(apiKey, maker));
         }),
       revoke: ({ params }) =>
         Effect.gen(function* revoke() {

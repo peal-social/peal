@@ -582,3 +582,14 @@ It makes no roll-back safe.
    minutes; wait and check again. While a channel or a connect link names
    it, do not roll back past this release; release a fix forward instead.
    Never change the rows by hand.
+
+## Past API keys that follow their makers
+
+The release that records who made each API key keeps it in the key's
+`metadata` (`{"createdBy": "<user id>"}`), which the release before
+ignores: its keys keep working there, their list names no maker, and a
+member who leaves, is removed, closes their account or is given a lower
+role keeps the keys they made until someone revokes them. No migration;
+nothing to check before rolling back. Once this release is back, a key
+made while the release before ran has no maker, and stays as keys made
+before it do.

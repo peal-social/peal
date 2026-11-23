@@ -22,6 +22,10 @@ import type { Invitation } from "#workspace/domain/invitation.ts";
 
 /** What clients see of a member. */
 export const memberView = (person: ListedMember): MemberView => ({
+  ...Option.match(person.apiKeysAtStake, {
+    onNone: () => ({}),
+    onSome: (apiKeysAtStake) => ({ apiKeysAtStake }),
+  }),
   email: person.email,
   joinedAt: person.joinedAt,
   name: person.name,

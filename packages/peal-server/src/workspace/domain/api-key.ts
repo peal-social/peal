@@ -1,12 +1,15 @@
 import { Option, Result, Schema } from "effect";
 
-import { can, PermissionSchema } from "#shared/domain/access.ts";
-import type { Actor, Permission } from "#shared/domain/access.ts";
-import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { Actor, can, PermissionSchema } from "#shared/domain/access.ts";
+import type { Permission } from "#shared/domain/access.ts";
+import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { MissingPermission } from "#shared/domain/missing-permission.ts";
 
 import { personOnlyPermissions } from "./oauth-grant.ts";
 import { PermissionNotGrantable } from "./permission-not-grantable.ts";
+import { permissionsFor } from "./roles.ts";
+import type { Role } from "./roles.ts";
 
 /**
  * An API key of a workspace, as it is listed. The key itself is shown once,
@@ -16,6 +19,9 @@ export class ApiKey extends Schema.Class<ApiKey>(
   "peal-server/workspace/domain/ApiKey"
 )({
   createdAt: Schema.DateTimeUtc,
+  // The member who made it; none for a key made before Peal recorded its
+  // maker.
+  createdBy: Schema.Option(UserIdSchema),
   expiresAt: Schema.Option(Schema.DateTimeUtc),
   id: Schema.NonEmptyString,
   name: Schema.String,
@@ -83,4 +89,68 @@ export const grantableBy = (
         )
       )
     : Result.fail(new MissingPermission({ permission: missing }));
+};
+
+// The actor a member is, in person, in a workspace where they hold `role`
+// (as Better Auth stores it): what a key they made there may hold.
+const inPerson = (userId: UserId, workspaceId: WorkspaceId, role: string) =>
+  new Actor({
+    permissions: permissionsFor(role),
+    subject: { _tag: "user", impersonatedBy: Option.none(), userId },
+    workspaceId,
+  });
+
+/**
+ * The keys `userId` made that their standing in the workspace no longer
+ * covers: every one once they are no longer a member (`role` none) and,
+ * holding `role`, those with a permission that role could not give a new
+ * key (`grantableBy`), so a key never does more than its maker could. A
+ * key with no recorded maker is left alone.
+ */
+export const keysBeyond = (
+  keys: readonly ApiKey[],
+  userId: UserId,
+  role: Option.Option<string>
+): readonly ApiKey[] =>
+  keys.filter(
+    (key) =>
+      Option.contains(key.createdBy, userId) &&
+      Option.match(role, {
+        onNone: () => true,
+        onSome: (held) =>
+          Result.isFailure(
+            grantableBy(inPerson(userId, key.workspaceId, held), [
+              ...key.permissions,
+            ])
+          ),
+      })
+  );
+
+/**
+ * How many of the keys a member made would stop working: if they left
+ * the workspace (`removal`), and if their role became each role.
+ */
+export interface KeysAtStake {
+  readonly removal: number;
+  readonly roles: Readonly<Record<Role, number>>;
+}
+
+/** What `keysBeyond` would revoke of `userId`'s keys, counted. */
+export const keysAtStake = (
+  keys: readonly ApiKey[],
+  userId: UserId
+): KeysAtStake => {
+  const beyond = (role: Role) =>
+    keysBeyond(keys, userId, Option.some(role)).length;
+
+  return {
+    removal: keysBeyond(keys, userId, Option.none()).length,
+    roles: {
+      admin: beyond("admin"),
+      contributor: beyond("contributor"),
+      editor: beyond("editor"),
+      owner: beyond("owner"),
+      viewer: beyond("viewer"),
+    },
+  };
 };

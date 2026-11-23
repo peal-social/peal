@@ -29,6 +29,7 @@ import {
   verification,
 } from "./auth-schema.generated.ts";
 import { bindingOf, tokensNotBeforeOf } from "./auth/sign-up-binding.ts";
+import { makerOf } from "./drizzle-workspace-api-keys.ts";
 import {
   partnerKeys,
   partners,
@@ -358,6 +359,40 @@ export const DrizzleAccountStore = Layer.effect(
           .delete(deviceCode)
           .where(eq(deviceCode.userId, userId))
           .pipe(Effect.mapError(failed));
+
+        // The API keys they made in the workspaces they leave stop working
+        // with their account; keys with no recorded maker stay.
+        const memberships = yield* db
+          .select({ workspaceId: member.organizationId })
+          .from(member)
+          .where(eq(member.userId, userId))
+          .pipe(Effect.mapError(failed));
+
+        // A key names its workspace in a text column.
+        const keys =
+          memberships.length === 0
+            ? []
+            : yield* db
+                .select({ id: apikey.id, metadata: apikey.metadata })
+                .from(apikey)
+                .where(
+                  inArray(
+                    apikey.referenceId,
+                    memberships.map(({ workspaceId }) => workspaceId)
+                  )
+                )
+                .pipe(Effect.mapError(failed));
+
+        const theirs = keys
+          .filter(({ metadata }) => Option.contains(makerOf(metadata), userId))
+          .map(({ id }) => id);
+
+        if (theirs.length > 0) {
+          yield* db
+            .delete(apikey)
+            .where(inArray(apikey.id, theirs))
+            .pipe(Effect.mapError(failed));
+        }
 
         // Subscriptions belong to workspaces, but one made for the user
         // would refer to them by id alone.

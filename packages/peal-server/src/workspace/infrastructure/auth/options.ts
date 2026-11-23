@@ -64,6 +64,13 @@ import {
 } from "./invitation-emails.ts";
 import type { InvitationEmailAllowance } from "./invitation-emails.ts";
 import {
+  settleLeavingMemberKeys,
+  settleMemberKeys,
+  sweepLeftMemberKeys,
+  sweepMemberKeys,
+} from "./member-keys.ts";
+import type { MemberKeysSettler } from "./member-keys.ts";
+import {
   apiResourceOf,
   cliClientId,
   mcpResourceOf,
@@ -162,6 +169,13 @@ export interface AuthHooks extends BillingHooks {
    * the rest.
    */
   readonly memberLeft: (workspaceId: string, userId: string) => Promise<void>;
+  /**
+   * Awaited before a member leaves, is removed or has their role changed,
+   * once the route has checked the rest: revokes the API keys they made
+   * in the workspace that their new standing does not cover. A failure
+   * throws, and refuses the change.
+   */
+  readonly memberKeys: MemberKeysSettler;
   readonly resetPassword: (link: AuthLink) => void;
   /** Awaited on each sign-up: whether the server's mode admits the address. */
   readonly signUp: SignUpAdmission;
@@ -458,6 +472,7 @@ const beforeEveryRoute = (hooks: AuthHooks) =>
     await refuseImpersonatedChanges(ctx);
     refusePersonalSubscriptions(ctx);
     await keepPayerLeaving(ctx, hooks);
+    await settleLeavingMemberKeys(ctx, hooks.memberKeys);
     await refuseLockedOutMembers(ctx, hooks.twoStep);
     await guardTwoStepChanges(ctx, hooks.twoStep);
     await noteTwoStepSender(ctx);
@@ -717,6 +732,8 @@ export const makeAuth = ({
     },
     hooks: {
       after: createAuthMiddleware(async (ctx) => {
+        // Before the activity log, which names the keys it revoked.
+        await sweepLeftMemberKeys(ctx, hooks);
         await recordWorkspaceChange(ctx, hooks.workspaceChange);
         await forgetTrustedBrowsers(ctx);
         await tellTwoStepChange(ctx, hooks.twoStepChanged);
@@ -763,10 +780,20 @@ export const makeAuth = ({
           // bills or not: a payer who is no longer an owner pays for it no
           // more.
           afterRemoveMember: async ({ member }) => {
+            await sweepMemberKeys(hooks, {
+              role: null,
+              userId: member.userId,
+              workspaceId: member.organizationId,
+            });
             await hooks.ownersChanged(member.organizationId);
             await hooks.memberLeft(member.organizationId, member.userId);
           },
           afterUpdateMemberRole: async ({ member }) => {
+            await sweepMemberKeys(hooks, {
+              role: member.role,
+              userId: member.userId,
+              workspaceId: member.organizationId,
+            });
             await hooks.ownersChanged(member.organizationId);
           },
           // An invitation is accepted, or a member added, only while the
@@ -829,11 +856,18 @@ export const makeAuth = ({
           },
           // The workspace's payer stays one of its owners until they hand
           // it to another payer.
+          // Then the API keys they made that their new standing does not
+          // cover go, before it changes (member-keys.ts).
           beforeRemoveMember: async ({ member }) => {
             await keepPayer(hooks, {
               organizationId: member.organizationId,
               role: Option.none(),
               userId: member.userId,
+            });
+            await settleMemberKeys(hooks.memberKeys, {
+              role: null,
+              userId: member.userId,
+              workspaceId: member.organizationId,
             });
           },
           beforeUpdateMemberRole: async ({ member, newRole }) => {
@@ -842,6 +876,11 @@ export const makeAuth = ({
               organizationId: member.organizationId,
               role: Option.some(newRole.split(",").map((role) => role.trim())),
               userId: member.userId,
+            });
+            await settleMemberKeys(hooks.memberKeys, {
+              role: newRole,
+              userId: member.userId,
+              workspaceId: member.organizationId,
             });
           },
         },
