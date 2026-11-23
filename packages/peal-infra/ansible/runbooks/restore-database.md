@@ -309,14 +309,15 @@ from the backup bucket, as above.
 
 What it protects against: someone who holds the server, or the backups'
 key, deleting or overwriting the backups. The newest complete run before
-that stays whole and locked for 14 days after it at least: every file it
-names has a copy the store wrote less than 21 days before it. What it does
+that stays whole and locked for 14 days from that run at least, about 13
+days after the server was taken at worst: every file it names has a copy
+the store wrote less than 21 days before it. What it does
 not protect against:
 
 - the backup passphrase lost: the copy holds the files pgBackRest
   encrypted, and nothing reads them without it. Keep it off the server,
   where README.md's "Credentials" says;
-- a server taken more than 14 days before anyone restores: the newest
+- a server taken more than 13 days before anyone restores: the newest
   honest run may then hold copies past their lock, which whoever holds the
   server can delete. The copy's alerts and the backups' fire within hours;
 - runs written after the server was taken: whoever holds it may write
@@ -343,16 +344,17 @@ not protect against:
    ```sh
    sudo env $(systemctl show peal-backup-copy.service --property=Environment --value) \
      PEAL_BACKUP_COPY_CREDENTIALS=/srv/peal/credentials.env \
-     python3 -I /usr/local/sbin/peal-backup-copy runs
+     python3 -I /usr/local/sbin/peal-backup-copy runs --before 2026-11-24T08:00:00Z
    ```
 
    Each line gives the run's name, when the store wrote its index, when it
-   wrote the oldest copy the index names, and until when the lock keeps
-   them all. Pick the newest run whose index the store wrote before the
-   incident. Never one marked `NOT TRUSTED` (its index was stored before
-   its name, more than 6 hours after it, or is named in the future), and
-   prefer one marked `all locked until` a time still to come: a run whose
-   copies left their lock before the incident may have had them replaced.
+   wrote the oldest copy the index names, until when the lock keeps them
+   all, and whether `rebuild` would take it with that `--before`. Pick the
+   newest run it would take. Never one marked `NOT TRUSTED` (its name is no
+   time, or its index was stored before its name, more than 12 hours after
+   it, or is named in the future) or `NOT READABLE`, and prefer one marked
+   `all locked until` a time still to come: a run whose copies left their
+   lock before the incident may have had them replaced.
 
 4. **Rebuild the repository from that run**, under a new path of the backup
    bucket, which must be empty. It refuses a run the store's times give
@@ -396,16 +398,19 @@ not protect against:
    steps 2 to 7. Keep the rebuilt path until the restore is confirmed final,
    then delete it in the dashboard.
 
-8. **Keep the incident's window out of every later restore.** The copy
-   bucket still holds what was written into it while the server was taken,
-   and those runs stay until the lifecycle deletes them. Write the window
-   in the incident's record, and pass its start as `--before` to any
-   rebuild from a run of that time. The copy goes on in the same bucket:
-   after step 7 the repository is new, nothing of it matches what the copy
-   holds, so the next run copies it afresh and names nothing written
-   before. A bucket of its own for the copy from then on is the owner's
-   call, and a Pulumi change of its own (another bucket's name, approved
-   as a paid resource).
+8. **Trust no run of the incident's window again.** The copy bucket still
+   holds what was written into it while the server was taken, and those
+   runs stay until the lifecycle deletes them. Set
+   `peal_backup_copy_trust_after` to the incident's end, as an instant
+   with its zone (`2026-11-24T12:00:00Z`), in the environment's
+   `group_vars/<environment>/main.yml`, and run `site.yml`: no later run
+   reuses anything of a run the store wrote before it, and `runs` marks
+   them all `NOT TRUSTED`. Write the window in the incident's record, and
+   pass its start as `--before` to any rebuild from a run of that time.
+   Once the lifecycle has deleted the window's runs (49 days), the setting
+   may go back to empty. A bucket of its own for the copy from then on is
+   the owner's call, and a Pulumi change of its own (another bucket's
+   name, approved as a paid resource).
 
 Practise the rebuild on the sandbox with [Practise](#practise): steps 3 to
 5 change nothing of the running server.

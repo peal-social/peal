@@ -12,3 +12,9 @@ peal_backup_report_retry_delay: 10
 # locked for 14 days after it at least.
 peal_backup_copy_lock_days: 35
 peal_backup_copy_refresh_days: 21
+# After an incident in which the repository was kept (the restore runbook,
+# "The backup copy"): an instant with its zone, such as
+# 2026-11-24T12:00:00Z, the incident's end. No run the store wrote before
+# it is trusted, so the copy reuses nothing of a run written while the
+# server was held. Empty: every run is judged by its times alone.
+peal_backup_copy_trust_after: ""

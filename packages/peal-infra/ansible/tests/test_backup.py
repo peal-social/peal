@@ -83,7 +83,8 @@ def collector() -> Iterator[Collector]:
     running.close()
 
 
-def _run(folder: Path, port: int, backup_type: str = "diff", fails: str | None = None) -> subprocess.CompletedProcess[str]:
+def _run(folder: Path, port: int, backup_type: str = "diff", fails: str | None = None,
+         *more: str) -> subprocess.CompletedProcess[str]:
     """peal-backup as Ansible renders it, run with sh. The stand-in for
     `peal-compose` records each pgBackRest command, and the one named
     `fails` exits as pgBackRest does on a mismatched stanza."""
@@ -101,7 +102,7 @@ fi
     script = folder / "peal-backup"
     script.write_text(render(SCRIPT.read_text(), peal_compose_bin=str(compose), peal_ports={"otlp_http": port}, **RETRIES))
     return subprocess.run(
-        ["sh", str(script), backup_type],
+        ["sh", str(script), backup_type, *more],
         check=False,
         capture_output=True,
         text=True,
@@ -180,6 +181,26 @@ def test_a_collector_still_starting_is_asked_again(tmp_path: Path, collector: Co
 
     name, _, _ = _gauge(collector)
     assert name == ("peal_backup_last_success_timestamp" if fails is None else "peal_backup_last_failure_timestamp")
+
+
+def test_a_run_systemd_ended_reports_its_failure_alone(tmp_path: Path, collector: Collector) -> None:
+    """The unit's ExecStopPost, when flock, a signal or a limit ended the
+    run: a failure is reported, and pgBackRest is not called."""
+    ran = _run(tmp_path, collector.port, "diff", None, "--failed")
+
+    assert ran.returncode == 0, ran.stderr
+    assert not (tmp_path / "pgbackrest.calls").exists()
+    name, backup_type, _ = _gauge(collector)
+    assert (name, backup_type) == ("peal_backup_last_failure_timestamp", "diff")
+
+
+def test_the_unit_reports_a_run_that_did_not_succeed() -> None:
+    service = (ROLE / "templates" / "peal-backup@.service.j2").read_text()
+
+    assert (
+        "ExecStopPost=/bin/sh -c 'test \"$$SERVICE_RESULT\" = success || exec /usr/local/sbin/peal-backup %i --failed'"
+        in service.splitlines()
+    )
 
 
 def test_the_role_retries_a_report_for_a_minute() -> None:

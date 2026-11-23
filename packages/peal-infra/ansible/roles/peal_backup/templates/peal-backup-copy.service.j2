@@ -23,17 +23,30 @@ Environment=PEAL_BACKUP_COPY_BUCKET={{ peal_backup_copy_bucket }}
 Environment=PEAL_BACKUP_COPY_CREDENTIALS=%d/credentials
 Environment=PEAL_BACKUP_COPY_LOCK_DAYS={{ peal_backup_copy_lock_days }}
 Environment=PEAL_BACKUP_COPY_REFRESH_DAYS={{ peal_backup_copy_refresh_days }}
-Environment=PEAL_BACKUP_COPY_MAX_RUN_HOURS=6
+Environment=PEAL_BACKUP_COPY_MAX_RUN_HOURS=12
+{% if peal_backup_copy_trust_after %}
+# After an incident (the restore runbook, "The backup copy"): no run the
+# store wrote before this is trusted.
+Environment=PEAL_BACKUP_COPY_TRUST_AFTER={{ peal_backup_copy_trust_after }}
+{% endif %}
 Environment=PEAL_BACKUP_COPY_OTLP_URL=http://127.0.0.1:{{ peal_ports.otlp_http }}/v1/metrics
 Environment=PEAL_BACKUP_COPY_REPORT_RETRIES={{ peal_backup_report_retries }}
 Environment=PEAL_BACKUP_COPY_REPORT_RETRY_DELAY={{ peal_backup_report_retry_delay }}
-# The backups' lock: pgBackRest rewrites backup.info as a backup ends. Root
-# makes the lock's file, which the run's user then opens to read alone.
+# The backups' lock: pgBackRest rewrites backup.info as a backup ends.
+# tmpfiles.d makes its file at boot (peal-backup.conf, 0644); root makes it
+# again here, readable by all whatever the umask, and the run's user opens
+# it to read alone.
 ExecStartPre=+/usr/bin/touch /run/peal-backup.lock
+ExecStartPre=+/usr/bin/chmod 0644 /run/peal-backup.lock
 ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy
+# A run that ends otherwise than in success, in Python or not (flock, the
+# memory or the time limit), reports its failure.
+ExecStopPost=/usr/bin/python3 -I /usr/local/sbin/peal-backup-copy failed
 # The index's time is trusted up to this long after the run's name
-# (PEAL_BACKUP_COPY_MAX_RUN_HOURS).
-TimeoutStartSec=6h
+# (PEAL_BACKUP_COPY_MAX_RUN_HOURS): a run copies at 20 MB/s or more, so 12
+# hours take a repository of 800 GB from nothing at least; a larger one
+# needs a longer limit, in both.
+TimeoutStartSec=12h
 Nice=10
 IOSchedulingClass=idle
 MemoryMax=512M

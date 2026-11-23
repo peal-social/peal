@@ -1134,11 +1134,17 @@ log.
 `peal-backup-copy` (`roles/peal_backup/files/backup_copy.py`, Python's
 standard library alone) runs after each backup that succeeded (the backup
 unit's `OnSuccess`) and from a daily timer at 06:45 UTC, under the backups'
-lock, as a user systemd makes for each run, to which it hands
-`credentials.env` (`LoadCredential`), in a sandbox (no home, a read-only
-system, no devices or capabilities, the internet and the collector alone),
-for 6 hours at most. Each run writes under a prefix of its own, the time it
-started (`2026-11-23T021500Z/`), so no key is ever written twice: the
+lock (`/run/peal-backup.lock`, which tmpfiles.d makes at boot readable by
+all, `/etc/tmpfiles.d/peal-backup.conf`), as a user systemd makes for each
+run, to which it hands `credentials.env` (`LoadCredential`), in a sandbox
+(no home, a read-only system, no devices or capabilities, the internet and
+the collector alone), for 12 hours at most: at 20 MB/s or more, a first run
+copies a repository of 800 GB at least, and a larger one needs a longer
+limit (`TimeoutStartSec` and `PEAL_BACKUP_COPY_MAX_RUN_HOURS` together).
+While it runs, a backup waits for it. Each run writes under a prefix of its
+own, the time it started and random characters
+(`2026-11-23T021500Z-1a2b3c4d/`), so no key is ever written twice and no
+one can take the next run's prefix: the
 repository's files the newest index does not hold as they are now
 (`backup.info` and the manifests as each run finds them; a segment or a
 backup file once), those whose copy the store wrote more than 21 days ago,
@@ -1152,22 +1158,31 @@ its own where they are the content's MD5.
 So every file the newest complete run names, `archive.info` (whose
 passphrase decrypts the write-ahead log) included, has a copy the store
 wrote less than 21 days before that run: **the newest run before the server
-is taken stays whole and locked for 14 days after it, at least**, whatever
-the server's keys do. Within those 14 days, alerts must be read and the
-copy restored from (`tests/test_backup_copy.py` checks it day by day over
-two months).
+is taken stays whole and locked for 14 days from that run, at least**,
+whatever the server's keys do. A run succeeds each day, so that is about 13
+days after the server is taken, at worst. Within them, alerts must be read
+and the copy restored from (`tests/test_backup_copy.py` checks it day by
+day over two months).
 
 The store's clock, not a run's name, says when a run was written: a run
-whose index the store wrote before its name, more than 6 hours after it, or
-that is named in the future, is not trusted, and neither the next run nor
-a rebuild takes it; a rebuild also refuses an index that names a copy the
-store wrote after it, and anything the store wrote at or after the time
-the incident began. The files are those pgBackRest encrypted on the
+whose index the store wrote before its name, more than 12 hours after it,
+or that is named in the future, whose name is no time, or that the store
+wrote before `peal_backup_copy_trust_after` (empty unless an incident sets
+it), is not trusted, and neither the next run nor a rebuild takes it; a
+rebuild also refuses an index that names a copy the store wrote after it,
+and anything the store wrote at or after the time the incident began. An
+index that does not read as one the copy writes is skipped (`NOT READABLE`
+in `runs`), and the next run falls back on the run before it: nothing the
+copy bucket holds stops a command. A run checks, last, that the store
+dates its index as its name says, and fails on a host clock too far from
+the store's. The files are those pgBackRest encrypted on the
 server: the copy is no use without the backup passphrase, kept off the
 server as [Credentials](#credentials) says.
 
-The copy reports to the collector when it matched the backups, or failed,
-and `peal-backup` reports, after each backup, that a copy is due: Grafana
+The copy reports to the collector when it matched the backups, or failed
+(in Python, or otherwise: the unit's `ExecStopPost` reports a run that
+flock, the memory or the time limit ended, as the backup's unit does for
+the backup), and `peal-backup` reports, after each backup, that a copy is due: Grafana
 alerts when the last copy failed (`peal-backup-copy-failed`), and when a
 backup finished more than 6 hours after the last copy, or none ever
 succeeded (`peal-backup-copy-behind`). A server without the copy reports
@@ -1187,8 +1202,15 @@ Turn it on, for the sandbox first, once the owner approved the bucket:
    (`group_vars/<environment>/main.yml`), run `site.yml --check --diff`,
    then `site.yml`. `peal_preflight` refuses the flag without the bucket,
    and `site.yml` the flag without the key.
-4. Run it once by hand, `sudo systemctl start peal-backup-copy`, and read
-   `sudo journalctl --unit peal-backup-copy`.
+4. Check it as it runs after a boot, its usual order: reboot the server
+   (`sudo systemctl reboot`), then, before any backup, start the copy by
+   hand and check the lock's file is readable by all:
+
+   ```sh
+   sudo systemctl start peal-backup-copy
+   sudo stat -c %a /run/peal-backup.lock    # 644
+   sudo journalctl --unit peal-backup-copy  # copied run …
+   ```
 
 With the flag off, the role installs nothing of it, removes what an earlier
 run installed, and every rendered file stays as it was. A self-hoster's

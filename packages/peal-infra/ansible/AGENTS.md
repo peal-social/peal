@@ -170,7 +170,10 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   lock, and the lock's days are the same in both projects; the store's
   times, never a run's name, say which runs to trust
   (`tests/test_backup_copy.py`: SeaweedFS, and a store with a clock over
-  two months).
+  two months). Nothing the copy bucket holds may stop a command: parse
+  whatever is read from it where it is read, and make a failure local to
+  that run or object (an untrusted or unreadable run), never an exception
+  out of `copy`, `runs` or `rebuild`.
 - The disks' health goes to the collector as the backups' does:
   `peal_disks` posts gauges of the md arrays and of SMART, and Grafana's
   rules alert on them (`peal-docker`'s `rules.yaml`), with no mail

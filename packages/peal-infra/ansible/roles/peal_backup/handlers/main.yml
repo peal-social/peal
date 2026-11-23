@@ -2,3 +2,7 @@
 - name: Reload systemd
   ansible.builtin.systemd_service:
     daemon_reload: true
+
+- name: Make the backups' lock
+  ansible.builtin.command: systemd-tmpfiles --create /etc/tmpfiles.d/peal-backup.conf
+  changed_when: true

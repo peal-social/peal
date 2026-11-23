@@ -8,6 +8,7 @@ database."""
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import datetime
 import hashlib
 import http.client
@@ -125,7 +126,7 @@ PART = 5 * 1024 * 1024
 
 def _settings(source: Any, copy_bucket: Any, path: str = "/production") -> Any:
     return backup_copy.Settings(source=source, copy=copy_bucket, path=path, refresh_days=21, part_size=PART,
-                                lock_days=35, max_run_hours=6)
+                                lock_days=35, max_run_hours=12)
 
 
 def _later() -> datetime.datetime:
@@ -207,8 +208,6 @@ class TestTheCopy:
 
         with pytest.raises(backup_copy.CopyError):
             copy_bucket.put_new(f"{run}/backup/peal/backup.info", b"other", 5, PART)
-        with pytest.raises(backup_copy.CopyError, match="already holds"):
-            backup_copy.copy(_settings(source, copy_bucket), backup_copy.run_time(run))
         assert copy_bucket.get(f"{run}/backup/peal/backup.info") == REPOSITORY["backup/peal/backup.info"]
 
     def test_a_run_rebuilds_the_repository_as_it_found_it(self, stack: tuple[Any, Any]) -> None:
@@ -362,9 +361,9 @@ class FakeStore:
             raise backup_copy.CopyError(f"no {key}")
         return self.objects[key][0]
 
-    def open(self, key: str) -> tuple[int, Any]:
+    def open(self, key: str) -> tuple[int, str, Any]:
         data = self.get(key)
-        return len(data), io.BytesIO(data)
+        return len(data), hashlib.md5(data, usedforsecurity=False).hexdigest(), io.BytesIO(data)
 
     def put_new(self, key: str, body: Any, size: int, part_size: int) -> str:
         if key in self.objects:
@@ -401,7 +400,7 @@ def _fake(lock_days: int = LOCK_DAYS) -> tuple[Any, Any, list[datetime.datetime]
 
 def _fake_settings(source: Any, copy_bucket: Any) -> Any:
     return backup_copy.Settings(source=source, copy=copy_bucket, path="/production", refresh_days=21,
-                                part_size=PART, lock_days=LOCK_DAYS, max_run_hours=6)
+                                part_size=PART, lock_days=LOCK_DAYS, max_run_hours=12)
 
 
 def _latest_index(copy_bucket: Any, now: datetime.datetime) -> tuple[Any, dict[str, Any]]:
@@ -494,7 +493,7 @@ def test_a_run_named_in_the_future_or_long_after_is_ignored() -> None:
     """An index named later than now, or stored long after its name: the
     next run takes neither for the newest, and copies afresh."""
     source, copy_bucket, clock = _fake()
-    backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    honest, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
     clock[0] += DAY
     forged = f"{clock[0] + 3 * DAY:%Y-%m-%dT%H%M%S}Z"
     copy_bucket.put_new(f"{forged}/index.json", b'{"objects": {}}', 15, PART)
@@ -504,7 +503,7 @@ def test_a_run_named_in_the_future_or_long_after_is_ignored() -> None:
     runs = backup_copy._runs(_fake_settings(source, copy_bucket), dict(copy_bucket.list()), clock[0])
 
     assert {run.name: run.trusted for run in runs} == {
-        f"{START:%Y-%m-%dT%H%M%S}Z": True, forged: False, late: False,
+        honest: True, forged: False, late: False,
     }
     assert backup_copy.copy(_fake_settings(source, copy_bucket), clock[0]) == (None, 0)
 
@@ -548,9 +547,9 @@ def test_a_copy_that_reads_back_wrong_stops_the_run() -> None:
     source, copy_bucket, clock = _fake()
 
     class Garbled(FakeStore):
-        def open(self, key: str) -> tuple[int, Any]:
+        def open(self, key: str) -> tuple[int, str, Any]:
             data = self.get(key)
-            return len(data), io.BytesIO(b"Y" * len(data))
+            return len(data), hashlib.md5(data, usedforsecurity=False).hexdigest(), io.BytesIO(b"Y" * len(data))
 
     garbled = Garbled("backups", clock)
     garbled.objects = source.objects
@@ -584,6 +583,116 @@ def test_any_failure_is_reported_never_a_bare_traceback(tmp_path: Path, monkeypa
 
     assert code == 1
     assert posts == ["peal_backup_copy_last_failure_timestamp"]
+
+
+@pytest.mark.parametrize(("result", "reported"), [("exit-code", True), ("timeout", True), ("oom-kill", True), ("success", False)])
+def test_the_unit_reports_a_run_that_did_not_succeed(result: str, reported: bool) -> None:
+    """ExecStopPost runs `failed`: whatever ended the run but success
+    (flock, the time or memory limit), the failure gauge is posted."""
+    with _collector() as (url, posts):
+        code = backup_copy.main(["failed"], {
+            "SERVICE_RESULT": result, "PEAL_BACKUP_COPY_OTLP_URL": url, "PEAL_BACKUP_COPY_REPORT_RETRIES": "0",
+        })
+
+    assert code == 0
+    assert posts == (["peal_backup_copy_last_failure_timestamp"] if reported else [])
+
+
+# Whatever the copy bucket holds, written by whoever holds its key, stops
+# no command: a run it cannot read is a run it does not trust.
+
+PLANTED = ["2026-99-99T999999Z", "2026-02-30T250000Z", "0000-00-00T000000Z-ff"]
+
+
+def test_a_planted_name_that_is_no_time_stops_nothing() -> None:
+    source, copy_bucket, clock = _fake()
+    honest, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    for name in PLANTED:
+        copy_bucket.put_new(f"{name}/index.json", b"x", 1, PART)
+    clock[0] += DAY
+    source.write("production/backup/peal/backup.info", b"next day")
+
+    later, written = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    lines = list(backup_copy.describe_runs(_fake_settings(source, copy_bucket), clock[0]))
+
+    assert later is not None and written == 2
+    assert sum("NOT TRUSTED: its name is no time" in line for line in lines) == len(PLANTED)
+    assert backup_copy.rebuild(_fake_settings(source, copy_bucket), honest, "rebuilt", clock[0]) == []
+
+
+@pytest.mark.parametrize("content", [b"x", b"{}", b'{"objects": []}', b'{"objects": {"a": {"copy": "elsewhere"}}}',
+                                     b'{"objects": {"a": {"copy": "2027-01-03T021500Z/a", "size": -1, "sha256": "", "source_etag": ""}}}',
+                                     b"[" * 100_000])
+def test_a_trusted_index_that_is_none_stops_nothing(content: bytes) -> None:
+    """An index the store's times make trusted, but that is not one the
+    copy writes: the next run falls back on the run before, `runs` says so
+    and goes on, and `rebuild` refuses it alone."""
+    source, copy_bucket, clock = _fake(lock_days=0)
+    honest, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    clock[0] += datetime.timedelta(minutes=10)
+    forged = f"{clock[0]:%Y-%m-%dT%H%M%S}Z"
+    copy_bucket.put_new(f"{forged}/index.json", content, len(content), PART)
+    clock[0] += DAY
+
+    assert backup_copy.copy(_fake_settings(source, copy_bucket), clock[0]) == (None, 0)
+    lines = list(backup_copy.describe_runs(_fake_settings(source, copy_bucket), clock[0]))
+    assert [line.split()[0] for line in lines] == [honest, forged]
+    assert "NOT READABLE" in lines[1]
+    with pytest.raises(backup_copy.CopyError, match="not readable"):
+        backup_copy.rebuild(_fake_settings(source, copy_bucket), forged, "rebuilt", clock[0])
+    assert backup_copy.rebuild(_fake_settings(source, copy_bucket), honest, "rebuilt", clock[0]) == []
+
+
+def test_runs_says_which_runs_rebuild_would_take() -> None:
+    source, copy_bucket, clock = _fake()
+    first, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    incident = clock[0] + DAY
+    clock[0] += 2 * DAY
+    source.write("production/backup/peal/backup.info", b"after")
+    second, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+
+    lines = list(backup_copy.describe_runs(_fake_settings(source, copy_bucket), clock[0], before=incident))
+
+    assert lines[0].startswith(f"{first} ") and lines[0].endswith("REBUILD WOULD TAKE IT")
+    assert lines[1].startswith(f"{second} ") and "REBUILD REFUSES IT" in lines[1]
+
+
+def test_no_run_stored_before_the_trust_begins_is_reused() -> None:
+    """After an incident in which the repository was kept: a run written
+    while the server was held, timely by the store's clock, is reused by
+    no later run once PEAL_BACKUP_COPY_TRUST_AFTER names the incident's
+    end."""
+    source, copy_bucket, clock = _fake()
+    backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    clock[0] += DAY
+    held, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0] + datetime.timedelta(seconds=1))
+    trust = clock[0] + datetime.timedelta(hours=1)
+    clock[0] += DAY
+    settings = dataclasses.replace(_fake_settings(source, copy_bucket), trust_after=trust)
+
+    run, written = backup_copy.copy(settings, clock[0])
+
+    assert written == len(REPOSITORY) + 1
+    assert all(entry["copy"].startswith(f"{run}/")
+               for entry in json.loads(copy_bucket.get(f"{run}/index.json"))["objects"].values())
+    assert any("PEAL_BACKUP_COPY_TRUST_AFTER" in line for line in backup_copy.describe_runs(settings, clock[0]))
+
+
+def test_a_host_clock_far_from_the_store_s_fails_the_run() -> None:
+    """A run named a day ahead of the store's clock writes an index no
+    later run trusts: it fails, rather than report a copy it does not
+    hold."""
+    source, copy_bucket, clock = _fake()
+
+    with pytest.raises(backup_copy.CopyError, match="clock"):
+        backup_copy.copy(_fake_settings(source, copy_bucket), clock[0] - DAY)
+
+
+def test_the_bucket_never_shows_its_keys() -> None:
+    bucket = backup_copy.Bucket("https://example.test", "auto", "synthetic", "synthetic-id", "synthetic-secret-value")
+
+    assert "synthetic-secret-value" not in repr(bucket)
+    assert "synthetic-id" not in repr(bucket)
 
 
 def test_a_missing_key_is_named_and_stops_the_run(tmp_path: Path) -> None:
@@ -646,11 +755,27 @@ def test_the_copy_runs_after_each_backup_and_daily(rendered_copy: Path, environm
     # Under the backups' lock, so never while pgBackRest rewrites its files,
     # and no longer than an index's time is trusted after its name.
     assert "ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy" in service
-    assert "TimeoutStartSec=6h" in service.splitlines()
-    assert environ["PEAL_BACKUP_COPY_MAX_RUN_HOURS"] == "6"
+    assert "TimeoutStartSec=12h" in service.splitlines()
+    assert environ["PEAL_BACKUP_COPY_MAX_RUN_HOURS"] == "12"
+    assert "PEAL_BACKUP_COPY_TRUST_AFTER" not in environ
+    # The lock's file readable by the run's user whatever the umask, and a
+    # run that ends otherwise than in success reports it.
+    lines = service.splitlines()
+    assert lines.index("ExecStartPre=+/usr/bin/touch /run/peal-backup.lock") < lines.index(
+        "ExecStartPre=+/usr/bin/chmod 0644 /run/peal-backup.lock") < lines.index(
+        "ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy")
+    assert "ExecStopPost=/usr/bin/python3 -I /usr/local/sbin/peal-backup-copy failed" in lines
+    assert (folder / "peal-backup.tmpfiles").read_text().splitlines()[-1] == "f /run/peal-backup.lock 0644 root root -"
     for line in ["ProtectSystem=strict", "ProtectHome=true", "PrivateDevices=true", "NoNewPrivileges=true",
                  "CapabilityBoundingSet=", "RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX"]:
         assert line in service.splitlines()
+
+
+def test_the_trust_s_start_reaches_the_unit(rendered_with: Callable[..., Path]) -> None:
+    folder = rendered_with(**COPY, peal_backup_copy_trust_after="2026-11-24T12:00:00Z") / "peal-production"
+
+    assert "Environment=PEAL_BACKUP_COPY_TRUST_AFTER=2026-11-24T12:00:00Z" in (
+        folder / "peal-backup-copy.service").read_text().splitlines()
 
 
 def test_the_role_installs_the_copy_only_with_the_flag() -> None:
