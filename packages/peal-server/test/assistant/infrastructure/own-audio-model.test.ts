@@ -38,21 +38,27 @@ const decodeAddress = Schema.decodeUnknownSync(
   Schema.Struct({ port: Schema.Number })
 );
 
+// The answer for a path: found by comparing each path the test gave, so
+// a request's path never names what is called.
+const answerFor = (
+  answers: Readonly<Record<string, Answer>>,
+  path: string
+): Answer | undefined =>
+  Object.entries(answers).find(([known]) => known === path)?.[1];
+
 // A provider answering each path as `answers` says, recording what it was
 // sent; closed with the scope.
 const provider = (answers: Readonly<Record<string, Answer>>) =>
   Effect.acquireRelease(
     Effect.promise(async () => {
       const received: Received[] = [];
-      // A map, so a path is only ever a key, never a property name.
-      const byPath = new Map(Object.entries(answers));
 
       const server = createServer((request, response) => {
         request.resume();
         request.on("end", () => {
           received.push({ headers: request.headers, url: request.url ?? "" });
 
-          const answer = byPath.get(request.url ?? "");
+          const answer = answerFor(answers, request.url ?? "");
 
           if (answer === undefined) {
             response.writeHead(418).end();
