@@ -18,3 +18,5 @@ peal_backup_copy_refresh_days: 21
 # it is trusted, so the copy reuses nothing of a run written while the
 # server was held. Empty: every run is judged by its times alone.
 peal_backup_copy_trust_after: ""
+# The group that may read the backups' lock, which the copy's run joins.
+peal_backup_lock_group: peal-backup-lock

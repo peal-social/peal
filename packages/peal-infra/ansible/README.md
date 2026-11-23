@@ -1134,11 +1134,13 @@ log.
 `peal-backup-copy` (`roles/peal_backup/files/backup_copy.py`, Python's
 standard library alone) runs after each backup that succeeded (the backup
 unit's `OnSuccess`) and from a daily timer at 06:45 UTC, under the backups'
-lock (`/run/peal-backup.lock`, which tmpfiles.d makes at boot readable by
-all, `/etc/tmpfiles.d/peal-backup.conf`), as a user systemd makes for each
+lock (`/run/peal-backup.lock`, which tmpfiles.d makes at boot, 0640, for
+the `peal-backup-lock` group the copy's run joins,
+`/etc/tmpfiles.d/peal-backup.conf`; each side waits for it 6 or 12 hours at
+most, then fails and reports it), as a user systemd makes for each
 run, to which it hands `credentials.env` (`LoadCredential`), in a sandbox
 (no home, a read-only system, no devices or capabilities, the internet and
-the collector alone), for 12 hours at most: at 20 MB/s or more, a first run
+the collector alone, 1 GB of memory), for 12 hours at most: at 20 MB/s or more, a first run
 copies a repository of 800 GB at least, and a larger one needs a longer
 limit (`TimeoutStartSec` and `PEAL_BACKUP_COPY_MAX_RUN_HOURS` together).
 While it runs, a backup waits for it. Each run writes under a prefix of its
@@ -1173,9 +1175,18 @@ rebuild also refuses an index that names a copy the store wrote after it,
 and anything the store wrote at or after the time the incident began. An
 index that does not read as one the copy writes is skipped (`NOT READABLE`
 in `runs`), and the next run falls back on the run before it: nothing the
-copy bucket holds stops a command. A run checks, last, that the store
-dates its index as its name says, and fails on a host clock too far from
-the store's. The files are those pgBackRest encrypted on the
+copy bucket holds stops a command. A run checks first that this host's
+clock is the store's, to 5 minutes, and last that the store dates its
+index as its name says.
+
+Its limits, accepted: an index holds some 400 000 files of the repository
+(128 MiB, about 300 bytes each), past which a run fails rather than write
+one no run reads; pgBackRest's bundles keep the repository far below that.
+Memory never grows with what the copy bucket holds, but time does: whoever
+holds the copy's key may plant objects by the million, which every
+listing reads, so `copy` and `runs` slow down with them. `runs --run` and
+`rebuild` read a run's own keys alone, and work whatever the bucket holds;
+the way out of a flooded bucket is a new one. The files are those pgBackRest encrypted on the
 server: the copy is no use without the backup passphrase, kept off the
 server as [Credentials](#credentials) says.
 
@@ -1204,11 +1215,11 @@ Turn it on, for the sandbox first, once the owner approved the bucket:
    and `site.yml` the flag without the key.
 4. Check it as it runs after a boot, its usual order: reboot the server
    (`sudo systemctl reboot`), then, before any backup, start the copy by
-   hand and check the lock's file is readable by all:
+   hand and check the lock's file is its group's to read:
 
    ```sh
    sudo systemctl start peal-backup-copy
-   sudo stat -c %a /run/peal-backup.lock    # 644
+   sudo stat -c '%a %G' /run/peal-backup.lock    # 640 peal-backup-lock
    sudo journalctl --unit peal-backup-copy  # copied run …
    ```
 

@@ -241,7 +241,9 @@ def test_one_backup_runs_at_a_time() -> None:
     failure alert fire for nothing. The second waits for the first."""
     service = _unit("peal-backup@.service")["Service"]
 
-    assert service["ExecStart"] == "/usr/bin/flock /run/peal-backup.lock /usr/local/sbin/peal-backup %i"
+    assert service["ExecStart"] == "/usr/bin/flock --wait 43200 /run/peal-backup.lock /usr/local/sbin/peal-backup %i"
+    # A lock held too long ends in a reported failure, within the stop limit.
+    assert service["TimeoutStopSec"] == "3min"
 
 
 def _rule(uid: str) -> dict[str, Any]:
