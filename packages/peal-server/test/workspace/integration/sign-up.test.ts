@@ -4,7 +4,14 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
-import { commandLineTokens, withCookies } from "#test/workspace/support.ts";
+import {
+  codeOf,
+  commandLineTokens,
+  enrolled,
+  passwordStep,
+  secondStep,
+  withCookies,
+} from "#test/workspace/support.ts";
 
 import {
   confirmFrom,
@@ -445,6 +452,113 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.include(JSON.stringify(tokens.body), "invalid_target");
           assert.notInclude(JSON.stringify(tokens.body), "access_token");
         })
+    );
+
+    it.effect(
+      "answers a raced sign-in on a two-step account with a refusal, never a second step",
+      () =>
+        Effect.gen(function* racedTwoStep() {
+          const sql = yield* SqlClient.SqlClient;
+          const person = yield* signedUp("raced-two-step");
+
+          yield* enrolled(person);
+
+          // A reset that commits after the password was checked, before the
+          // session lands.
+          const name = `raced2_${person.id.replaceAll("-", "")}`;
+
+          yield* sql
+            .unsafe(
+              `CREATE FUNCTION auth.${name}() RETURNS trigger AS $$
+              BEGIN
+                UPDATE auth.account SET password = 'synthetic-changed-hash'
+                WHERE user_id = NEW.user_id AND provider_id = 'credential';
+                RETURN NEW;
+              END $$ LANGUAGE plpgsql`
+            )
+            .pipe(Effect.orDie);
+          yield* sql
+            .unsafe(
+              `CREATE TRIGGER ${name} AFTER INSERT ON auth.session
+              FOR EACH ROW WHEN (NEW.user_id = '${person.id}')
+              EXECUTE FUNCTION auth.${name}()`
+            )
+            .pipe(Effect.orDie);
+
+          const signingIn = yield* passwordStep(person.email).pipe(
+            Effect.ensuring(
+              sql
+                .unsafe(`DROP TRIGGER ${name} ON auth.session`)
+                .pipe(
+                  Effect.andThen(sql.unsafe(`DROP FUNCTION auth.${name}()`)),
+                  Effect.orDie
+                )
+            )
+          );
+
+          assert.strictEqual(signingIn.status, 401);
+          assert.notInclude(
+            JSON.stringify(signingIn.body),
+            "twoFactorRedirect"
+          );
+          // No challenge's cookie leaves either.
+          assert.isFalse(
+            signingIn.headers
+              .getSetCookie()
+              .some((cookie) => /^peal\.two_factor=[^;]+/u.test(cookie))
+          );
+        })
+    );
+
+    it.effect("lets no second step begun before a reset finish after it", () =>
+      Effect.gen(function* stepAcrossReset() {
+        const sql = yield* SqlClient.SqlClient;
+        const person = yield* signedUp("step-across-reset");
+        const { key } = yield* enrolled(person);
+
+        // The password step, with the old password: a challenge.
+        const first = yield* passwordStep(person.email);
+
+        assert.include(JSON.stringify(first.body), "twoFactorRedirect");
+
+        const challenge = withCookies("", first);
+
+        yield* resetFor(person.email, "the owner's chosen passphrase");
+
+        const code = yield* Effect.promise(async () => await codeOf(key));
+
+        const finished = yield* secondStep(challenge, {
+          code,
+          route: "verify-totp",
+        });
+
+        assert.strictEqual(finished.status, 401);
+        assert.isFalse(setsSession(finished));
+
+        // The old password starts no new one.
+        assert.strictEqual((yield* passwordStep(person.email)).status, 401);
+
+        // A challenge that outlived the sweep is refused too: its
+        // account's instant came after it began.
+        const other = yield* signedUp("step-before-instant");
+        const enrolment = yield* enrolled(other);
+        const begun = withCookies("", yield* passwordStep(other.email));
+
+        yield* sql`
+            INSERT INTO auth.verification (id, identifier, value, expires_at, created_at, updated_at)
+            VALUES (gen_random_uuid(), ${`tokens-not-before:${other.id}`},
+              ${String(Date.now())}, now() + interval '1 hour', now(), now())`.pipe(
+          Effect.orDie
+        );
+
+        const late = yield* secondStep(begun, {
+          code: yield* Effect.promise(async () => await codeOf(enrolment.key)),
+          route: "verify-totp",
+        });
+
+        assert.strictEqual(late.status, 401);
+        assert.isFalse(setsSession(late));
+      })
     );
 
     it.effect("refuses a token that is not one of Peal's", () =>

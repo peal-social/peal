@@ -112,6 +112,8 @@ La référence de chaque point d’accès nomme la permission qu’il demande. U
 | `workspace:publish` | Tout ce qui demande `post:schedule`                                                                                                                                   |
 | `workspace:ads`     | Ce qui atteint un réseau publicitaire : avec `workspace:write` pour `ads:manage`, avec `workspace:publish` pour `ads:spend` ([Publicités](/guides/engage/ads#access)) |
 
+Chaque autorisation nomme la ressource à laquelle elle est destinée, l’API ou le point de terminaison MCP. Une autorisation sans ressource n’obtient aucun jeton (`invalid_target`) : Peal n’est pas un fournisseur d’identité pour d’autres applications.
+
 Quand l’identifiant ne passe pas, vous recevez l’un de ces codes :
 
 | Statut | Code              | Quand                                                                                                                            |

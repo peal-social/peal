@@ -90,6 +90,10 @@ export const refuseStaleSignIn = async (
 
   await ctx.context.internalAdapter.deleteSession(created.session.token);
   deleteSessionCookie(ctx);
+  // Plugins' after hooks run after this one, the two-factor plugin's
+  // included: with no new session, it issues no challenge and no cookie,
+  // and the refusal stands.
+  ctx.context.setNewSession(null);
 
   throw APIError.from("UNAUTHORIZED", {
     code: "INVALID_EMAIL_OR_PASSWORD",

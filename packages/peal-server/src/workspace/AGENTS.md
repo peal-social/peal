@@ -118,7 +118,13 @@ The staff context follows these rules too. What the law has a host keep is in
   (`auth/sign-in-credential.ts`): the before hook notes the credential's
   hash, the after hook reads it again once the session is written, and a
   credential gone or changed meanwhile deletes that session, expires its
-  cookie and answers `INVALID_EMAIL_OR_PASSWORD`. A release, a takeover
+  cookie, clears the new session (`setNewSession(null)`, so the two-factor
+  plugin's after hook issues no challenge) and answers
+  `INVALID_EMAIL_OR_PASSWORD`. A second step begun with an old password
+  never finishes: a reset deletes the account's `2fa-` challenges, and
+  `/two-factor/verify-*` without a session refuses a challenge created
+  before the account's instant plus 5 seconds
+  (`refuseStaleTwoStepChallenge`). A release, a takeover
   and a reset also end the account's sessions once more after their
   transaction commits.
 - `/oauth2/token` refuses (`invalid_target`) any grant that would issue an

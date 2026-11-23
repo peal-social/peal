@@ -1,6 +1,6 @@
 import { getCurrentAuthEndpointContext } from "@better-auth/core/context";
 import type { GenericEndpointContext, User } from "better-auth";
-import { APIError } from "better-auth/api";
+import { APIError, getSessionFromCtx } from "better-auth/api";
 import { Option, Result, Schema } from "effect";
 import { Base64Url } from "effect/encoding";
 
@@ -173,5 +173,65 @@ export const refuseRenewalAcrossReset = async (
   throw new APIError("BAD_REQUEST", {
     error: "invalid_grant",
     error_description: "invalid refresh token",
+  });
+};
+
+// The second step of a password sign-in: Better Auth's two-factor plugin
+// keeps the challenge in `auth.verification` under the signed `two_factor`
+// cookie's identifier, valued with the user's id.
+const twoStepChallengeCookie = "two_factor";
+
+/**
+ * Part of Better Auth's before hook, on `/two-factor/verify-*` without a
+ * session: a challenge the password step created before the account's
+ * instant, or within the margin after it, began with a password a reset or
+ * a release has since ended. It is deleted, and the step refused as an
+ * unknown challenge is, so it never makes a session after the reset.
+ */
+export const refuseStaleTwoStepChallenge = async (
+  ctx: GenericEndpointContext
+): Promise<void> => {
+  if (!ctx.path?.startsWith("/two-factor/verify-")) {
+    return;
+  }
+
+  const cookie = ctx.context.createAuthCookie(twoStepChallengeCookie);
+  const identifier = await ctx.getSignedCookie(cookie.name, ctx.context.secret);
+
+  if (
+    identifier === null ||
+    identifier === false ||
+    identifier === "" ||
+    (await getSessionFromCtx(ctx, { disableRefresh: true })) !== null
+  ) {
+    return;
+  }
+
+  const challenge =
+    await ctx.context.internalAdapter.findVerificationValue(identifier);
+
+  if (challenge === null) {
+    return;
+  }
+
+  const notBefore = await tokensNotBefore(
+    ctx.context.internalAdapter,
+    challenge.value
+  );
+
+  if (
+    !Option.exists(
+      notBefore,
+      (instant) => challenge.createdAt.getTime() < instant + inFlight
+    )
+  ) {
+    return;
+  }
+
+  await ctx.context.internalAdapter.deleteVerificationByIdentifier(identifier);
+
+  throw APIError.from("UNAUTHORIZED", {
+    code: "INVALID_TWO_FACTOR_COOKIE",
+    message: "Sign in again: this second step began before a password change",
   });
 };

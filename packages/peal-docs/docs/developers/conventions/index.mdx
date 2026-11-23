@@ -108,6 +108,8 @@ Each endpoint's reference names the permission it needs. An OAuth token also nee
 | `workspace:publish` | Whatever needs `post:schedule`                                                                                                                       |
 | `workspace:ads`     | What reaches an ad network: beside `workspace:write` for `ads:manage`, beside `workspace:publish` for `ads:spend` ([Ads](/guides/engage/ads#access)) |
 
+Every authorization names the resource it is for, the API or the MCP endpoint. A grant without one gets no token (`invalid_target`): Peal isn't an identity provider for other applications.
+
 When the credential doesn't get through, you'll see one of these:
 
 | Status | Code              | When                                                                                                                        |
