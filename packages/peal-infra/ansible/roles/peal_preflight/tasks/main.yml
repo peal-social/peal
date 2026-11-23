@@ -130,6 +130,20 @@
       scripts/cloudflare_from_pulumi.py.
     quiet: true
 
+# The backup copy's trust start (the restore runbook, "The backup copy"):
+# empty, or a UTC instant written as a quoted string, which YAML would
+# otherwise read as a date of its own.
+- name: Refuse a backup copy's trust start that is no quoted UTC instant
+  ansible.builtin.assert:
+    that: >-
+      peal_backup_copy_trust_after | default('') is string
+      and (peal_backup_copy_trust_after | default('') == ''
+           or peal_backup_copy_trust_after is match('^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$'))
+    fail_msg: >-
+      peal_backup_copy_trust_after is empty, or a UTC instant in quotes,
+      such as "2026-11-24T12:00:00Z".
+    quiet: true
+
 # The measurement of the site, the docs and the blog (peal_site_measurement):
 # release.yml builds the site and the docs with PostHog's project token on
 # the machine running Ansible, so the token comes from the vault

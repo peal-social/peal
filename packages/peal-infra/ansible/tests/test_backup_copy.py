@@ -23,6 +23,7 @@ import shutil
 import subprocess
 import sys
 import threading
+import tracemalloc
 import time
 from collections.abc import Callable, Iterator
 from pathlib import Path
@@ -69,12 +70,14 @@ def _run(command: list[str]) -> subprocess.CompletedProcess[str]:
 def endpoint() -> Iterator[str]:
     """SeaweedFS's S3 gateway, on a port of the host Docker picks."""
     name = f"peal-infra-test-{secrets.token_hex(4)}-seaweedfs"
+    # Its data in memory, whatever Docker's disk has left, in small
+    # volumes and enough of them for each of the tests' buckets: it sizes
+    # their number by the free space otherwise.
     _run(["docker", "run", "--detach", "--name", name, "--publish", "127.0.0.1::8333",
+          "--tmpfs", "/data:size=1g",
           "--env", f"AWS_ACCESS_KEY_ID={ACCESS_KEY}", "--env", f"AWS_SECRET_ACCESS_KEY={SECRET_KEY}",
           SEAWEEDFS, "mini", "-dir=/data", "-bucket=peal-test", "-webdav=false", "-admin.ui=false",
-          "-s3.port.iceberg=0", "-s3.port.lance=0",
-          # Small volumes, so its disk holds one for each of the tests' buckets.
-          "-master.volumeSizeLimitMB=16"]).check_returncode()
+          "-s3.port.iceberg=0", "-s3.port.lance=0", "-master.volumeSizeLimitMB=8", "-volume.max=200"]).check_returncode()
     try:
         port = _run(["docker", "port", name, "8333/tcp"]).stdout.split(":")[-1].strip()
         url = f"http://127.0.0.1:{port}"
@@ -269,6 +272,21 @@ class TestTheCopy:
         assert backup_copy.copy(_settings(source, copy_bucket), _later()) == (None, 0)
         assert honest
 
+    def test_keys_with_control_characters_stop_nothing(self, stack: tuple[Any, Any]) -> None:
+        """Listed URL-encoded, a key's control characters never reach the
+        XML parser; a key that is an index but for a trailing newline, or
+        names a year out of range, is no trusted run."""
+        source, copy_bucket = stack
+        honest, _ = backup_copy.copy(_settings(source, copy_bucket), _later())
+        for key in ["2026-11-01T000000Z/index.json\n", "2026-11-01T000000Z/\x01\x1b[2J", "0001-01-01T000000Z/index.json"]:
+            _put(copy_bucket, key, b"x")
+
+        assert backup_copy.copy(_settings(source, copy_bucket), _later()) == (None, 0)
+        lines = list(backup_copy.describe_runs(_settings(source, copy_bucket)))
+        assert [line.split()[0] for line in lines] == ["0001-01-01T000000Z", honest]
+        assert "out of range" in lines[0]
+        assert backup_copy.rebuild(_settings(source, copy_bucket), honest, "rebuilt", SOON) == []
+
     def test_the_command_reads_its_keys_from_the_file_and_reports(
         self, stack: tuple[Any, Any], tmp_path: Path, endpoint: str
     ) -> None:
@@ -349,16 +367,30 @@ class FakeStore:
         self.clock = clock
         self.lock = datetime.timedelta(days=lock_days)
         self.objects: dict[str, tuple[bytes, datetime.datetime]] = {}
+        self.listings = 0
+        self.gets = 0
 
-    def list(self, prefix: str = "") -> Iterator[tuple[str, Any]]:
-        for key, (data, modified) in sorted(self.objects.items()):
-            if key.startswith(prefix):
-                etag = hashlib.md5(data, usedforsecurity=False).hexdigest()
-                yield key, backup_copy.Stored(len(data), etag, modified)
+    def list(self, prefix: str = "", limit: int | None = None) -> Iterator[tuple[str, Any]]:
+        self.listings += 1
+        for count, key in enumerate(key for key in sorted(self.objects) if key.startswith(prefix)):
+            if limit is not None and count >= limit:
+                return
+            yield key, self._stored(key)
+
+    def _stored(self, key: str) -> Any:
+        data, modified = self.objects[key]
+        return backup_copy.Stored(len(data), hashlib.md5(data, usedforsecurity=False).hexdigest(), modified)
+
+    def stat(self, key: str) -> Any:
+        return self._stored(key) if key in self.objects else None
+
+    def now(self) -> datetime.datetime:
+        return self.clock[0]
 
     def get(self, key: str) -> bytes:
+        self.gets += 1
         if key not in self.objects:
-            raise backup_copy.CopyError(f"no {key}")
+            raise backup_copy.StoreError(f"no {key}", 404)
         return self.objects[key][0]
 
     def open(self, key: str) -> tuple[int, str, Any]:
@@ -406,8 +438,8 @@ def _fake_settings(source: Any, copy_bucket: Any) -> Any:
 def _latest_index(copy_bucket: Any, now: datetime.datetime) -> tuple[Any, dict[str, Any]]:
     """The newest run the copy trusts, and the files its index names."""
     settings = _fake_settings(copy_bucket, copy_bucket)
-    runs = [run for run in backup_copy._runs(settings, dict(copy_bucket.list()), now) if run.trusted]
-    return runs[-1], json.loads(copy_bucket.get(f"{runs[-1].name}/index.json"))["objects"]
+    newest = backup_copy.newest_trusted(backup_copy.runs(settings, now))[0]
+    return newest, json.loads(copy_bucket.get(f"{newest.name}/index.json"))["objects"]
 
 
 def test_the_newest_index_is_always_locked_over_two_months() -> None:
@@ -500,7 +532,7 @@ def test_a_run_named_in_the_future_or_long_after_is_ignored() -> None:
     late = f"{clock[0] - 2 * DAY:%Y-%m-%dT%H%M%S}Z"
     copy_bucket.put_new(f"{late}/index.json", b'{"objects": {}}', 15, PART)
 
-    runs = backup_copy._runs(_fake_settings(source, copy_bucket), dict(copy_bucket.list()), clock[0])
+    runs = list(backup_copy.runs(_fake_settings(source, copy_bucket), clock[0]))
 
     assert {run.name: run.trusted for run in runs} == {
         honest: True, forged: False, late: False,
@@ -601,7 +633,9 @@ def test_the_unit_reports_a_run_that_did_not_succeed(result: str, reported: bool
 # Whatever the copy bucket holds, written by whoever holds its key, stops
 # no command: a run it cannot read is a run it does not trust.
 
-PLANTED = ["2026-99-99T999999Z", "2026-02-30T250000Z", "0000-00-00T000000Z-ff"]
+PLANTED = ["2026-99-99T999999Z", "2026-02-30T250000Z", "0000-00-00T000000Z-ff",
+           # Times, but out of range: arithmetic on them would overflow.
+           "0001-01-01T000000Z", "9999-12-31T235959Z", "2019-12-31T235959Z-0a"]
 
 
 def test_a_planted_name_that_is_no_time_stops_nothing() -> None:
@@ -616,7 +650,8 @@ def test_a_planted_name_that_is_no_time_stops_nothing() -> None:
     lines = list(backup_copy.describe_runs(_fake_settings(source, copy_bucket), clock[0]))
 
     assert later is not None and written == 2
-    assert sum("NOT TRUSTED: its name is no time" in line for line in lines) == len(PLANTED)
+    assert sum("NOT TRUSTED: its name is no time" in line or "NOT TRUSTED: its name is out of range" in line
+               for line in lines) == len(PLANTED)
     assert backup_copy.rebuild(_fake_settings(source, copy_bucket), honest, "rebuilt", clock[0]) == []
 
 
@@ -651,10 +686,16 @@ def test_runs_says_which_runs_rebuild_would_take() -> None:
     source.write("production/backup/peal/backup.info", b"after")
     second, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
 
+    gets = copy_bucket.gets
     lines = list(backup_copy.describe_runs(_fake_settings(source, copy_bucket), clock[0], before=incident))
 
-    assert lines[0].startswith(f"{first} ") and lines[0].endswith("REBUILD WOULD TAKE IT")
-    assert lines[1].startswith(f"{second} ") and "REBUILD REFUSES IT" in lines[1]
+    # The run stored after --before is not read; the one before is.
+    assert copy_bucket.gets - gets == 1
+    assert lines[0] == f"{second}  index stored {clock[0]:%Y-%m-%dT%H:%M:%SZ}  STORED AT OR AFTER --before: not read"
+    assert lines[1].startswith(f"{first} ") and "a candidate" in lines[1]
+    one = backup_copy.describe_run(_fake_settings(source, copy_bucket), first, clock[0], incident)
+    assert one.endswith("REBUILD WOULD TAKE IT")
+    assert "REBUILD REFUSES IT" in backup_copy.describe_run(_fake_settings(source, copy_bucket), second, clock[0], incident)
 
 
 def test_no_run_stored_before_the_trust_begins_is_reused() -> None:
@@ -678,14 +719,140 @@ def test_no_run_stored_before_the_trust_begins_is_reused() -> None:
     assert any("PEAL_BACKUP_COPY_TRUST_AFTER" in line for line in backup_copy.describe_runs(settings, clock[0]))
 
 
-def test_a_host_clock_far_from_the_store_s_fails_the_run() -> None:
-    """A run named a day ahead of the store's clock writes an index no
-    later run trusts: it fails, rather than report a copy it does not
-    hold."""
+@pytest.mark.parametrize("off", [-DAY, DAY, datetime.timedelta(minutes=6)])
+def test_a_host_clock_far_from_the_store_s_fails_the_run_first(off: datetime.timedelta) -> None:
+    """A host clock that is not the store's would write runs no later run
+    trusts: the run stops before it copies anything."""
     source, copy_bucket, clock = _fake()
 
     with pytest.raises(backup_copy.CopyError, match="clock"):
-        backup_copy.copy(_fake_settings(source, copy_bucket), clock[0] - DAY)
+        backup_copy.copy(_fake_settings(source, copy_bucket), clock[0] + off)
+    assert copy_bucket.objects == {}
+
+
+def test_keys_that_are_not_a_run_s_index_are_none() -> None:
+    """A trailing newline, a control character: no run's index."""
+    for key in ["2027-01-03T021500Z/index.json\n", "2027-01-03T021500Z/index.json\x00", "2027-01-03T021500Z\n/index.json",
+                "2027-01-03T021500Z/\x01/index.json"]:
+        assert backup_copy._index_name(key) is None
+    assert backup_copy._index_name("2027-01-03T021500Z-ab12/index.json") == "2027-01-03T021500Z-ab12"
+
+
+def test_an_unjudgeable_run_is_untrusted_never_an_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Whatever error judging a run raises, a kind nobody thought of
+    included, makes that run untrusted, and the command goes on."""
+    source, copy_bucket, clock = _fake()
+
+    def broken(_: str) -> datetime.datetime:
+        raise ArithmeticError("synthetic")
+
+    monkeypatch.setattr(backup_copy, "run_time", broken)
+    found = backup_copy.judge(_fake_settings(source, copy_bucket), "2027-01-03T021500Z",
+                              backup_copy.Stored(1, "", clock[0]), clock[0])
+
+    assert (found.trusted, found.why) == (False, "not judged: ArithmeticError")
+
+
+class Flooded(FakeStore):
+    """A copy bucket that also lists a million empty objects someone
+    planted, made as they are listed and never kept, half of them indexes
+    no run would trust."""
+
+    planted = 1_000_000
+
+    def list(self, prefix: str = "", limit: int | None = None) -> Iterator[tuple[str, Any]]:
+        if prefix:
+            yield from super().list(prefix, limit)
+            return
+        self.listings += 1
+        stored = backup_copy.Stored(0, "", self.clock[0])
+        for number in range(self.planted):
+            yield (f"1999-01-01T000000Z-{number:x}/index.json" if number % 2 else f"junk/{number}"), stored
+        yield from super().list(prefix, limit)
+
+
+def test_a_flood_of_planted_keys_costs_time_never_memory() -> None:
+    """copy and runs stream the listing and keep run indexes alone, the
+    newest trusted ones at most; rebuild reads the run's own keys and
+    lists nothing. Python's allocations stay far below what a million
+    retained keys take."""
+    clock = [START]
+    source, copy_bucket = FakeStore("backups", clock), Flooded("copy", clock, LOCK_DAYS)
+    for key, data in REPOSITORY.items():
+        source.write(f"production/{key}", data)
+    honest, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    clock[0] += DAY
+    source.write("production/backup/peal/backup.info", b"next day")
+
+    tracemalloc.start()
+    try:
+        later, written = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+        lines = sum(1 for _ in backup_copy.describe_runs(_fake_settings(source, copy_bucket), clock[0]))
+        _, peak = tracemalloc.get_traced_memory()
+    finally:
+        tracemalloc.stop()
+
+    assert later is not None and written == 2
+    assert lines == Flooded.planted // 2 + 2
+    # A million keys kept would take some 300 MB.
+    assert peak < 32 * 1024 * 1024
+    listings = copy_bucket.listings
+    assert backup_copy.rebuild(_fake_settings(source, copy_bucket), honest, "rebuilt", clock[0]) == []
+    assert copy_bucket.listings == listings
+    assert backup_copy.describe_run(_fake_settings(source, copy_bucket), honest, clock[0], None).startswith(f"{honest}  ")
+    assert copy_bucket.listings == listings
+
+
+class Unanswering(FakeStore):
+    """A store that answers 503 for every index it is asked for."""
+
+    def get(self, key: str) -> bytes:
+        if key.endswith("/index.json"):
+            raise backup_copy.StoreError("synthetic", 503)
+        return super().get(key)
+
+
+def test_an_index_the_store_does_not_give_fails_the_run_rather_than_copy_again() -> None:
+    clock = [START]
+    source, copy_bucket = FakeStore("backups", clock), FakeStore("copy", clock, LOCK_DAYS)
+    for key, data in REPOSITORY.items():
+        source.write(f"production/{key}", data)
+    run, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    clock[0] += DAY
+    flaky = Unanswering("copy", clock, LOCK_DAYS)
+    flaky.objects = copy_bucket.objects
+    before = set(flaky.objects)
+
+    with pytest.raises(backup_copy.Unreachable):
+        backup_copy.copy(_fake_settings(source, flaky), clock[0])
+    assert set(flaky.objects) == before
+    assert [line for line in backup_copy.describe_runs(_fake_settings(source, flaky), clock[0]) if "UNREACHABLE" in line]
+    assert "UNREACHABLE" in backup_copy.describe_run(_fake_settings(source, flaky), run, clock[0], None)
+
+
+def test_a_rebuild_from_before_an_incident_ignores_the_trust_s_start() -> None:
+    """After the runbook's last step sets PEAL_BACKUP_COPY_TRUST_AFTER to
+    an incident's end, an honest run of before the incident still
+    rebuilds, given --before at the incident's start."""
+    source, copy_bucket, clock = _fake()
+    honest, _ = backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    incident = clock[0] + DAY
+    clock[0] += 3 * DAY
+    settings = dataclasses.replace(_fake_settings(source, copy_bucket), trust_after=clock[0])
+
+    assert backup_copy.rebuild(settings, honest, "rebuilt", incident) == []
+    assert backup_copy.describe_run(settings, honest, clock[0], incident).endswith("REBUILD WOULD TAKE IT")
+    # Without --before before it, the trust's start holds.
+    assert "PEAL_BACKUP_COPY_TRUST_AFTER" in backup_copy.describe_run(settings, honest, clock[0], None)
+
+
+def test_a_run_whose_index_would_be_too_large_fails(monkeypatch: pytest.MonkeyPatch) -> None:
+    source, copy_bucket, clock = _fake()
+    monkeypatch.setattr(backup_copy, "INDEX_LIMIT", 1000)
+
+    with pytest.raises(backup_copy.CopyError, match="too many files"):
+        backup_copy.copy(_fake_settings(source, copy_bucket), clock[0])
+    assert copy_bucket.objects == {}
 
 
 def test_the_bucket_never_shows_its_keys() -> None:
@@ -754,7 +921,7 @@ def test_the_copy_runs_after_each_backup_and_daily(rendered_copy: Path, environm
     assert environ["PEAL_BACKUP_COPY_LOCK_DAYS"] == "35"
     # Under the backups' lock, so never while pgBackRest rewrites its files,
     # and no longer than an index's time is trusted after its name.
-    assert "ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy" in service
+    assert "ExecStart=/usr/bin/flock --wait 21600 /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy" in service
     assert "TimeoutStartSec=12h" in service.splitlines()
     assert environ["PEAL_BACKUP_COPY_MAX_RUN_HOURS"] == "12"
     assert "PEAL_BACKUP_COPY_TRUST_AFTER" not in environ
@@ -762,10 +929,14 @@ def test_the_copy_runs_after_each_backup_and_daily(rendered_copy: Path, environm
     # run that ends otherwise than in success reports it.
     lines = service.splitlines()
     assert lines.index("ExecStartPre=+/usr/bin/touch /run/peal-backup.lock") < lines.index(
-        "ExecStartPre=+/usr/bin/chmod 0644 /run/peal-backup.lock") < lines.index(
-        "ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy")
-    assert "ExecStopPost=/usr/bin/python3 -I /usr/local/sbin/peal-backup-copy failed" in lines
-    assert (folder / "peal-backup.tmpfiles").read_text().splitlines()[-1] == "f /run/peal-backup.lock 0644 root root -"
+        "ExecStartPre=+/usr/bin/chgrp peal-backup-lock /run/peal-backup.lock") < lines.index(
+        "ExecStartPre=+/usr/bin/chmod 0640 /run/peal-backup.lock") < lines.index(
+        "ExecStart=/usr/bin/flock --wait 21600 /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy")
+    assert "SupplementaryGroups=peal-backup-lock" in lines
+    # The failure's report fits in the stop limit.
+    assert "ExecStopPost=/usr/bin/env PEAL_BACKUP_COPY_REPORT_RETRIES=2 /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy failed" in lines
+    assert "TimeoutStopSec=2min" in lines
+    assert (folder / "peal-backup.tmpfiles").read_text().splitlines()[-1] == "f /run/peal-backup.lock 0640 root peal-backup-lock -"
     for line in ["ProtectSystem=strict", "ProtectHome=true", "PrivateDevices=true", "NoNewPrivileges=true",
                  "CapabilityBoundingSet=", "RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX"]:
         assert line in service.splitlines()
@@ -807,6 +978,22 @@ def test_the_preflight_refuses_the_flag_without_the_bucket() -> None:
     assert ansible_render("{{ " + holds + " }}", **production) is True
     assert ansible_render("{{ " + holds + " }}", **{**production, **COPY}) is True
     assert ansible_render("{{ " + holds + " }}", **{**production, "peal_backup_copy": True}) is False
+
+
+@pytest.mark.parametrize(("value", "holds"), [
+    ("", True), ("2026-11-24T12:00:00Z", True),
+    # YAML reads an unquoted instant as a date of its own.
+    (datetime.datetime(2026, 11, 24, 12, tzinfo=datetime.UTC), False),
+    ("2026-11-24T12:00:00", False), ("2026-11-24T12:00:00+01:00", False), ("tomorrow", False),
+])
+def test_the_preflight_takes_a_quoted_utc_instant_for_the_trust_s_start(value: Any, holds: bool) -> None:
+    found = next(
+        item for item in yaml.safe_load((INFRA / "roles" / "peal_preflight" / "tasks" / "main.yml").read_text())
+        if item["name"] == "Refuse a backup copy's trust start that is no quoted UTC instant"
+    )
+
+    assert ansible_render("{{ " + found["ansible.builtin.assert"]["that"] + " }}",
+                          peal_backup_copy_trust_after=value) is holds
 
 
 def test_the_lock_and_the_refresh_agree_with_the_bucket_s_rules() -> None:

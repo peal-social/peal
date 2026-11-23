@@ -65,6 +65,11 @@
         # Read by the run's own user (DynamicUser); it holds no secret.
         mode: "0755"
 
+    - name: Create the group that may read the backups' lock
+      ansible.builtin.group:
+        name: "{{ peal_backup_lock_group }}"
+        system: true
+
     # The backups' lock's file, readable by the copy's own user: made at
     # each boot, and now.
     - name: Make the backups' lock readable by the copy
@@ -114,3 +119,8 @@
         - /etc/systemd/system/peal-backup-copy.timer
         - /etc/tmpfiles.d/peal-backup.conf
       notify: Reload systemd
+
+    - name: Remove the group that may read the backups' lock
+      ansible.builtin.group:
+        name: "{{ peal_backup_lock_group }}"
+        state: absent

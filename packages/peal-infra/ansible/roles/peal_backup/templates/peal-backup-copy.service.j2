@@ -13,6 +13,8 @@ Wants=network-online.target
 [Service]
 Type=oneshot
 DynamicUser=true
+# The group that may read the backups' lock (peal-backup.tmpfiles).
+SupplementaryGroups={{ peal_backup_lock_group }}
 LoadCredential=credentials:{{ peal_root }}/credentials.env
 # Plain settings; the keys are read by name from the credentials.
 Environment=PEAL_BACKUP_COPY_ENDPOINT=https://{{ peal_backup_endpoint }}
@@ -33,15 +35,19 @@ Environment=PEAL_BACKUP_COPY_OTLP_URL=http://127.0.0.1:{{ peal_ports.otlp_http }
 Environment=PEAL_BACKUP_COPY_REPORT_RETRIES={{ peal_backup_report_retries }}
 Environment=PEAL_BACKUP_COPY_REPORT_RETRY_DELAY={{ peal_backup_report_retry_delay }}
 # The backups' lock: pgBackRest rewrites backup.info as a backup ends.
-# tmpfiles.d makes its file at boot (peal-backup.conf, 0644); root makes it
-# again here, readable by all whatever the umask, and the run's user opens
-# it to read alone.
+# tmpfiles.d makes its file at boot (peal-backup.conf, 0640, the lock's
+# group); root sets them again here whatever the umask, and the run's user,
+# in that group, opens it to read alone. A backup holding the lock longer
+# than 6 hours ends the run in a reported failure.
 ExecStartPre=+/usr/bin/touch /run/peal-backup.lock
-ExecStartPre=+/usr/bin/chmod 0644 /run/peal-backup.lock
-ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy
+ExecStartPre=+/usr/bin/chgrp {{ peal_backup_lock_group }} /run/peal-backup.lock
+ExecStartPre=+/usr/bin/chmod 0640 /run/peal-backup.lock
+ExecStart=/usr/bin/flock --wait 21600 /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy
 # A run that ends otherwise than in success, in Python or not (flock, the
-# memory or the time limit), reports its failure.
-ExecStopPost=/usr/bin/python3 -I /usr/local/sbin/peal-backup-copy failed
+# memory or the time limit), reports its failure, within the stop limit:
+# two retries of 10 seconds at most each, and the post's own 10.
+ExecStopPost=/usr/bin/env PEAL_BACKUP_COPY_REPORT_RETRIES=2 /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy failed
+TimeoutStopSec=2min
 # The index's time is trusted up to this long after the run's name
 # (PEAL_BACKUP_COPY_MAX_RUN_HOURS): a run copies at 20 MB/s or more, so 12
 # hours take a repository of 800 GB from nothing at least; a larger one
@@ -49,7 +55,7 @@ ExecStopPost=/usr/bin/python3 -I /usr/local/sbin/peal-backup-copy failed
 TimeoutStartSec=12h
 Nice=10
 IOSchedulingClass=idle
-MemoryMax=512M
+MemoryMax=1G
 UMask=0077
 NoNewPrivileges=true
 CapabilityBoundingSet=
