@@ -103,7 +103,7 @@ describe(AgentMarkdown, () => {
       html.includes("&lt;b&gt;x&lt;/b&gt;"),
       html.includes('data-app-link="" href="/s/posts/p1"'),
       // An address out of Peal stays its words: no link to follow.
-      html.includes("docs.example.com"),
+      /docs\.example\.com/u.test(html),
       html.includes("<li>Docs</li>"),
     ]).toStrictEqual([true, true, true, false, true]);
   });
@@ -358,7 +358,7 @@ describe(ApprovalCardView, () => {
       html.includes("Poll, open 1 day, several answers allowed"),
       html.includes("Not yet"),
       html.includes("1st part after the post, 2 minutes after the one before"),
-      html.includes("https://shop.example.com/spring"),
+      /https:\/\/shop\.example\.com\/spring/u.test(html),
       html.includes("Settings on Client A (@client)"),
       html.includes("collaborators"),
       html.includes("synthetic.partner"),
