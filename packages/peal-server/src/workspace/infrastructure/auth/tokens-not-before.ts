@@ -202,7 +202,12 @@ export const refuseStaleTwoStepChallenge = async (
     identifier === null ||
     identifier === false ||
     identifier === "" ||
-    (await getSessionFromCtx(ctx, { disableRefresh: true })) !== null
+    // The database's session, never the cookie's five-minute copy, which
+    // a reset that ended the session does not reach.
+    (await getSessionFromCtx(ctx, {
+      disableCookieCache: true,
+      disableRefresh: true,
+    })) !== null
   ) {
     return;
   }

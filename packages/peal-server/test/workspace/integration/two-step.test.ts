@@ -23,6 +23,7 @@ import {
   bodyOf,
   emailTo,
   inProcessHttpClient,
+  linkIn,
   MigratedSqlLive,
   origin,
   password,
@@ -582,6 +583,70 @@ layer(TwoStepLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Turned on again, the browser trusted before is asked a code.
           yield* enrolled({ ...person, cookies: withCookies(other, off) });
 
+          const signIn = yield* passwordStep(person.email, {
+            cookies: trusted,
+          });
+
+          yield* bodyOf(ChallengeSchema, signIn);
+        })
+    );
+
+    it.effect(
+      "forgets every browser it trusted once the password is reset",
+      () =>
+        Effect.gen(function* afterReset() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const person = yield* signedUp("reset-trusted");
+          const { key } = yield* enrolled(person);
+
+          yield* signedOut(person);
+
+          const browser = withCookies("", yield* passwordStep(person.email));
+
+          const verified = yield* secondStep(browser, {
+            code: yield* now(key),
+            route: "verify-totp",
+            trustDevice: true,
+          });
+
+          const trusted = withCookies(browser, verified);
+
+          // The reset, from its email's link: the same password, so the
+          // trusted browser has it.
+          const requested = yield* app.request(
+            "/api/auth/request-password-reset",
+            { body: { email: person.email, redirectTo: "/reset-password" } }
+          );
+
+          assert.strictEqual(requested.status, 200);
+
+          const link = linkIn(
+            yield* emailTo(person.email, /^Reset your Peal password/u)
+          );
+
+          const opened = yield* app.request(`${link.pathname}${link.search}`);
+
+          const token =
+            new URL(
+              opened.headers.get("location") ?? "",
+              origin
+            ).searchParams.get("token") ?? "";
+
+          const reset = yield* app.request("/api/auth/reset-password", {
+            body: { newPassword: password, token },
+          });
+
+          assert.strictEqual(reset.status, 200, JSON.stringify(reset.body));
+
+          const records =
+            yield* sql`SELECT identifier FROM auth.verification WHERE value = ${person.id} AND identifier LIKE 'trust-device-%'`.pipe(
+              Effect.orDie
+            );
+
+          assert.lengthOf(records, 0);
+
+          // The browser trusted before is asked a code again.
           const signIn = yield* passwordStep(person.email, {
             cookies: trusted,
           });
