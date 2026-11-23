@@ -55,7 +55,10 @@ TimeoutStopSec=2min
 TimeoutStartSec=12h
 Nice=10
 IOSchedulingClass=idle
-MemoryMax=1G
+# An index is read only in ASCII, within its size cap and no denser than
+# its entries (read_index): the worst such document measured took 1.9 GiB
+# to parse, which this leaves room for.
+MemoryMax=3G
 UMask=0077
 NoNewPrivileges=true
 CapabilityBoundingSet=

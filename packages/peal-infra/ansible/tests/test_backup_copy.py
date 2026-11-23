@@ -659,7 +659,9 @@ def test_a_planted_name_that_is_no_time_stops_nothing() -> None:
                                      b'{"objects": {"a": {"copy": "2027-01-03T021500Z/a", "size": -1, "sha256": "", "source_etag": ""}}}',
                                      b"[" * 100_000,
                                      # Empty values by the thousand: many times its size once parsed.
-                                     b'{"objects": [' + b"{}," * 50_000 + b"{}]}"])
+                                     b'{"objects": [' + b"{}," * 50_000 + b"{}]}",
+                                     # A character past ASCII, which the copy never writes.
+                                     '{"objects": {}, "run": "\U0001f600"}'.encode()])
 def test_a_trusted_index_that_is_none_stops_nothing(content: bytes) -> None:
     """An index the store's times make trusted, but that is not one the
     copy writes: the next run falls back on the run before, `runs` says so

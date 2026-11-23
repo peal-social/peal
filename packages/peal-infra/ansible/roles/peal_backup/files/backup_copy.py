@@ -554,7 +554,9 @@ def read_index(store: Store, run: Run) -> dict[str, Entry] | None:
         if _transient(error):
             raise Unreachable(f"the store did not give {run.name}'s index") from error
         return None
-    if _dense(data):
+    # The copy writes its index in ASCII alone (json.dumps escapes the rest):
+    # another character would make the decoded text four times its size.
+    if not data.isascii() or _dense(data):
         return None
     try:
         document = json.loads(data)
