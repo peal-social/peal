@@ -431,7 +431,12 @@ export const workspaceOf = Effect.fn("workspaceOf")(function* workspaceOf(
 });
 
 const ApiKeyCreatedSchema = Schema.Struct({
-  apiKey: Schema.Struct({ id: Schema.String }),
+  apiKey: Schema.Struct({
+    createdBy: Schema.NullOr(
+      Schema.Struct({ id: Schema.String, name: Schema.String })
+    ),
+    id: Schema.String,
+  }),
   key: Schema.String,
 });
 

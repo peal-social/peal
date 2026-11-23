@@ -37,27 +37,288 @@ func (l *ListMembersRequest) SetWorkspaceID(workspaceID string) {
 }
 
 var (
-	workspaceMemberFieldEmail          = big.NewInt(1 << 0)
-	workspaceMemberFieldJoinedAt       = big.NewInt(1 << 1)
-	workspaceMemberFieldName           = big.NewInt(1 << 2)
-	workspaceMemberFieldRole           = big.NewInt(1 << 3)
-	workspaceMemberFieldTwoStepEnabled = big.NewInt(1 << 4)
-	workspaceMemberFieldUserID         = big.NewInt(1 << 5)
+	aPIKeysAtStakeFieldRemoval = big.NewInt(1 << 0)
+	aPIKeysAtStakeFieldRoles   = big.NewInt(1 << 1)
 )
 
-type WorkspaceMember struct {
-	Email          string `json:"email" url:"email"`
-	JoinedAt       string `json:"joinedAt" url:"joinedAt"`
-	Name           string `json:"name" url:"name"`
-	Role           string `json:"role" url:"role"`
-	TwoStepEnabled *bool  `json:"twoStepEnabled,omitempty" url:"twoStepEnabled,omitempty"`
-	UserID         string `json:"userId" url:"userId"`
+type APIKeysAtStake struct {
+	Removal int                  `json:"removal" url:"removal"`
+	Roles   *APIKeysAtStakeRoles `json:"roles" url:"roles"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
 
 	extraProperties map[string]interface{}
 	rawJSON         json.RawMessage
+}
+
+func (a *APIKeysAtStake) GetRemoval() int {
+	if a == nil {
+		return 0
+	}
+	return a.Removal
+}
+
+func (a *APIKeysAtStake) GetRoles() *APIKeysAtStakeRoles {
+	if a == nil {
+		return nil
+	}
+	return a.Roles
+}
+
+func (a *APIKeysAtStake) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *APIKeysAtStake) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetRemoval sets the Removal field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeysAtStake) SetRemoval(removal int) {
+	a.Removal = removal
+	a.require(aPIKeysAtStakeFieldRemoval)
+}
+
+// SetRoles sets the Roles field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeysAtStake) SetRoles(roles *APIKeysAtStakeRoles) {
+	a.Roles = roles
+	a.require(aPIKeysAtStakeFieldRoles)
+}
+
+func (a *APIKeysAtStake) UnmarshalJSON(data []byte) error {
+	type unmarshaler APIKeysAtStake
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = APIKeysAtStake(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *APIKeysAtStake) MarshalJSON() ([]byte, error) {
+	type embed APIKeysAtStake
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *APIKeysAtStake) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	aPIKeysAtStakeRolesFieldAdmin       = big.NewInt(1 << 0)
+	aPIKeysAtStakeRolesFieldContributor = big.NewInt(1 << 1)
+	aPIKeysAtStakeRolesFieldEditor      = big.NewInt(1 << 2)
+	aPIKeysAtStakeRolesFieldOwner       = big.NewInt(1 << 3)
+	aPIKeysAtStakeRolesFieldViewer      = big.NewInt(1 << 4)
+)
+
+type APIKeysAtStakeRoles struct {
+	Admin       int `json:"admin" url:"admin"`
+	Contributor int `json:"contributor" url:"contributor"`
+	Editor      int `json:"editor" url:"editor"`
+	Owner       int `json:"owner" url:"owner"`
+	Viewer      int `json:"viewer" url:"viewer"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *APIKeysAtStakeRoles) GetAdmin() int {
+	if a == nil {
+		return 0
+	}
+	return a.Admin
+}
+
+func (a *APIKeysAtStakeRoles) GetContributor() int {
+	if a == nil {
+		return 0
+	}
+	return a.Contributor
+}
+
+func (a *APIKeysAtStakeRoles) GetEditor() int {
+	if a == nil {
+		return 0
+	}
+	return a.Editor
+}
+
+func (a *APIKeysAtStakeRoles) GetOwner() int {
+	if a == nil {
+		return 0
+	}
+	return a.Owner
+}
+
+func (a *APIKeysAtStakeRoles) GetViewer() int {
+	if a == nil {
+		return 0
+	}
+	return a.Viewer
+}
+
+func (a *APIKeysAtStakeRoles) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *APIKeysAtStakeRoles) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetAdmin sets the Admin field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeysAtStakeRoles) SetAdmin(admin int) {
+	a.Admin = admin
+	a.require(aPIKeysAtStakeRolesFieldAdmin)
+}
+
+// SetContributor sets the Contributor field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeysAtStakeRoles) SetContributor(contributor int) {
+	a.Contributor = contributor
+	a.require(aPIKeysAtStakeRolesFieldContributor)
+}
+
+// SetEditor sets the Editor field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeysAtStakeRoles) SetEditor(editor int) {
+	a.Editor = editor
+	a.require(aPIKeysAtStakeRolesFieldEditor)
+}
+
+// SetOwner sets the Owner field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeysAtStakeRoles) SetOwner(owner int) {
+	a.Owner = owner
+	a.require(aPIKeysAtStakeRolesFieldOwner)
+}
+
+// SetViewer sets the Viewer field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeysAtStakeRoles) SetViewer(viewer int) {
+	a.Viewer = viewer
+	a.require(aPIKeysAtStakeRolesFieldViewer)
+}
+
+func (a *APIKeysAtStakeRoles) UnmarshalJSON(data []byte) error {
+	type unmarshaler APIKeysAtStakeRoles
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = APIKeysAtStakeRoles(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *APIKeysAtStakeRoles) MarshalJSON() ([]byte, error) {
+	type embed APIKeysAtStakeRoles
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *APIKeysAtStakeRoles) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	workspaceMemberFieldAPIKeysAtStake = big.NewInt(1 << 0)
+	workspaceMemberFieldEmail          = big.NewInt(1 << 1)
+	workspaceMemberFieldJoinedAt       = big.NewInt(1 << 2)
+	workspaceMemberFieldName           = big.NewInt(1 << 3)
+	workspaceMemberFieldRole           = big.NewInt(1 << 4)
+	workspaceMemberFieldTwoStepEnabled = big.NewInt(1 << 5)
+	workspaceMemberFieldUserID         = big.NewInt(1 << 6)
+)
+
+type WorkspaceMember struct {
+	APIKeysAtStake *APIKeysAtStake `json:"apiKeysAtStake,omitempty" url:"apiKeysAtStake,omitempty"`
+	Email          string          `json:"email" url:"email"`
+	JoinedAt       string          `json:"joinedAt" url:"joinedAt"`
+	Name           string          `json:"name" url:"name"`
+	Role           string          `json:"role" url:"role"`
+	TwoStepEnabled *bool           `json:"twoStepEnabled,omitempty" url:"twoStepEnabled,omitempty"`
+	UserID         string          `json:"userId" url:"userId"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (w *WorkspaceMember) GetAPIKeysAtStake() *APIKeysAtStake {
+	if w == nil {
+		return nil
+	}
+	return w.APIKeysAtStake
 }
 
 func (w *WorkspaceMember) GetEmail() string {
@@ -116,6 +377,13 @@ func (w *WorkspaceMember) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	w.explicitFields = next
+}
+
+// SetAPIKeysAtStake sets the APIKeysAtStake field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (w *WorkspaceMember) SetAPIKeysAtStake(apiKeysAtStake *APIKeysAtStake) {
+	w.APIKeysAtStake = apiKeysAtStake
+	w.require(workspaceMemberFieldAPIKeysAtStake)
 }
 
 // SetEmail sets the Email field and marks it as non-optional;

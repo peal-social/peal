@@ -3,7 +3,10 @@ import { NextIntlClientProvider } from "next-intl";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { MembersView } from "#components/settings/members-list.tsx";
+import {
+  KeysAtStakeNote,
+  MembersView,
+} from "#components/settings/members-list.tsx";
 import { loadMessages } from "#i18n/messages.ts";
 
 const render = async (locale: "en" | "fr", view: ReactNode) =>
@@ -81,5 +84,28 @@ describe(MembersView, () => {
     expect(html).toContain("Propriétaire");
     expect(html).toContain("Éditeur");
     expect(html).not.toContain("Retirer");
+  });
+});
+
+describe(KeysAtStakeNote, () => {
+  it("says how many keys a removal revokes", async () => {
+    await expect(
+      render("en", <KeysAtStakeNote count={2} />)
+    ).resolves.toContain("The 2 API keys they made stop working too.");
+    await expect(
+      render("en", <KeysAtStakeNote count={1} />)
+    ).resolves.toContain("The API key they made stops working too.");
+  });
+
+  it("says how many keys a role change revokes, in French", async () => {
+    await expect(
+      render("fr", <KeysAtStakeNote count={3} role="Éditeur" />)
+    ).resolves.toContain(
+      "3 clés d’API créées par ce membre permettent ce que le rôle Éditeur ne permet pas, et cessent de fonctionner."
+    );
+  });
+
+  it("says nothing when no key would go", async () => {
+    await expect(render("en", <KeysAtStakeNote count={0} />)).resolves.toBe("");
   });
 });

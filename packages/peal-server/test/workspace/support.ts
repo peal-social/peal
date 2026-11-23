@@ -244,6 +244,7 @@ export const authWithoutDatabase = (
       invitationEmail: async () => await Promise.resolve(true),
       log: ignore,
       memberAllowance: async () => await Promise.resolve(Option.none()),
+      memberKeys: async () => await Promise.resolve([]),
       memberLeft: async () => {
         await Promise.resolve();
       },

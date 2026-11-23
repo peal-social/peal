@@ -1,9 +1,88 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Option, Result } from "effect";
+import { DateTime, Option, Result } from "effect";
 
 import { Actor } from "#shared/domain/access.ts";
+import type { Permission } from "#shared/domain/access.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
-import { grantableBy } from "#workspace/domain/api-key.ts";
+import type { UserId } from "#shared/domain/ids.ts";
+import {
+  ApiKey,
+  grantableBy,
+  keysAtStake,
+  keysBeyond,
+} from "#workspace/domain/api-key.ts";
+
+const maker = UserIdSchema.make("0b6f3c1e-2a4d-4e8f-9b7a-1c2d3e4f5a6b");
+
+const colleague = UserIdSchema.make("9d8c7b6a-5f4e-4d3c-8b2a-1f0e9d8c7b6a");
+
+const keyOf = (
+  id: string,
+  createdBy: Option.Option<UserId>,
+  permissions: readonly Permission[]
+) =>
+  new ApiKey({
+    createdAt: DateTime.makeUnsafe("2026-11-20T09:00:00Z"),
+    createdBy,
+    expiresAt: Option.none(),
+    id,
+    name: id,
+    permissions,
+    start: Option.none(),
+    workspaceId: WorkspaceIdSchema.make("5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60"),
+  });
+
+const keys = [
+  keyOf("billing", Option.some(maker), ["billing:manage", "post:read"]),
+  keyOf("drafts", Option.some(maker), ["post:create", "post:read"]),
+  keyOf("reader", Option.some(maker), ["post:read"]),
+  keyOf("messages", Option.some(maker), ["engagement:readMessages"]),
+  keyOf("theirs", Option.some(colleague), ["billing:manage"]),
+  keyOf("unrecorded", Option.none(), ["billing:manage"]),
+];
+
+const idsOf = (listed: readonly ApiKey[]) => listed.map(({ id }) => id);
+
+describe(keysBeyond, () => {
+  it("takes every key the member made once they are no longer a member, and no other", () => {
+    assert.deepStrictEqual(idsOf(keysBeyond(keys, maker, Option.none())), [
+      "billing",
+      "drafts",
+      "reader",
+      "messages",
+    ]);
+  });
+
+  it("takes the keys the new role could not give, and keeps those within it", () => {
+    assert.deepStrictEqual(
+      idsOf(keysBeyond(keys, maker, Option.some("editor"))),
+      ["billing", "messages"]
+    );
+    assert.deepStrictEqual(
+      idsOf(keysBeyond(keys, maker, Option.some("viewer"))),
+      ["billing", "drafts", "messages"]
+    );
+  });
+
+  it("takes the direct messages' keys from an owner who becomes an admin", () => {
+    assert.deepStrictEqual(
+      idsOf(keysBeyond(keys, maker, Option.some("owner"))),
+      []
+    );
+    assert.deepStrictEqual(
+      idsOf(keysBeyond(keys, maker, Option.some("admin"))),
+      ["messages"]
+    );
+  });
+
+  it("counts what each change would revoke", () => {
+    assert.deepStrictEqual(keysAtStake(keys, maker), {
+      removal: 4,
+      roles: { admin: 1, contributor: 2, editor: 2, owner: 0, viewer: 3 },
+    });
+    assert.deepStrictEqual(keysAtStake(keys, colleague).removal, 1);
+  });
+});
 
 const actor = new Actor({
   permissions: ["apiKey:create", "media:read", "post:read"],

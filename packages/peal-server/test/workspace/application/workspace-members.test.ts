@@ -5,10 +5,12 @@ import { Actor } from "#shared/domain/access.ts";
 import type { ActorSubject } from "#shared/domain/access.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
+import { WorkspaceApiKeys } from "#workspace/application/workspace-api-keys.ts";
 import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
 import type { NewInvitation } from "#workspace/application/workspace-members.ts";
 import { WorkspacePeople } from "#workspace/application/workspace-people.ts";
 import type { InvitationRequest } from "#workspace/application/workspace-people.ts";
+import { ApiKey } from "#workspace/domain/api-key.ts";
 import { Invitation } from "#workspace/domain/invitation.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
@@ -138,10 +140,42 @@ const run = <A, E>(
       })
     );
 
+    // A key the colleague made with billing:manage, which an editor holds
+    // not, and one no maker is recorded for.
+    const apiKeys = Layer.succeed(
+      WorkspaceApiKeys,
+      WorkspaceApiKeys.of({
+        list: () =>
+          Effect.succeed([
+            new ApiKey({
+              createdAt: at,
+              createdBy: Option.some(colleagueId),
+              expiresAt: Option.none(),
+              id: "billing",
+              name: "billing",
+              permissions: ["billing:manage"],
+              start: Option.none(),
+              workspaceId,
+            }),
+            new ApiKey({
+              createdAt: at,
+              createdBy: Option.none(),
+              expiresAt: Option.none(),
+              id: "older",
+              name: "older",
+              permissions: ["billing:manage"],
+              start: Option.none(),
+              workspaceId,
+            }),
+          ]),
+        revoke: () => Effect.die("nothing is revoked here"),
+      })
+    );
+
     return yield* test(asked).pipe(
       Effect.provide(
         WorkspaceMembers.layer.pipe(
-          Layer.provide(Layer.mergeAll(people, directory))
+          Layer.provide(Layer.mergeAll(people, directory, apiKeys))
         )
       )
     );
@@ -354,16 +388,31 @@ describe(WorkspaceMembers, () => {
       );
 
       assert.strictEqual(refused, "UserRequired");
-      // Whether each has two-step verification on, only to who manages
-      // members.
+      // Whether each has two-step verification on, and what changing them
+      // would revoke of their keys, only to who manages members.
       assert.deepStrictEqual(
         listed,
-        seated.map((seat) => ({ ...seat, twoStepEnabled: Option.none() }))
+        seated.map((seat) => ({
+          ...seat,
+          apiKeysAtStake: Option.none(),
+          twoStepEnabled: Option.none(),
+        }))
       );
+
+      const none = { admin: 0, contributor: 0, editor: 0, owner: 0, viewer: 0 };
+
       assert.deepStrictEqual(
         managed,
         seated.map((seat) => ({
           ...seat,
+          apiKeysAtStake: Option.some(
+            seat.userId === colleagueId
+              ? {
+                  removal: 1,
+                  roles: { ...none, contributor: 1, editor: 1, viewer: 1 },
+                }
+              : { removal: 0, roles: none }
+          ),
           twoStepEnabled: Option.some(seat.twoStepEnabled),
         }))
       );

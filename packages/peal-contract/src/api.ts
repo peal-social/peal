@@ -494,9 +494,13 @@ export type { Invitation, NewInvitation } from "./invitations.ts";
 
 export { InvitationNotFound } from "./invitation-not-found.ts";
 
-export { MembersApi, WorkspaceMemberSchema } from "./members.ts";
+export {
+  ApiKeysAtStakeSchema,
+  MembersApi,
+  WorkspaceMemberSchema,
+} from "./members.ts";
 
-export type { WorkspaceMember } from "./members.ts";
+export type { ApiKeysAtStake, WorkspaceMember } from "./members.ts";
 
 export { RoleSchema } from "./role.ts";
 
@@ -645,12 +649,13 @@ export type {
 export { ApiKeyNotFound } from "./api-key-not-found.ts";
 
 export {
+  ApiKeyMakerSchema,
   ApiKeySchema,
   CreatedApiKeySchema,
   NewApiKeySchema,
 } from "./api-keys.ts";
 
-export type { ApiKey, NewApiKey } from "./api-keys.ts";
+export type { ApiKey, ApiKeyMaker, NewApiKey } from "./api-keys.ts";
 
 export {
   AssistantActionSchema,

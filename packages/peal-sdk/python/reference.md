@@ -330,7 +330,7 @@ client.credential.get()
 <dl>
 <dd>
 
-Lists the workspace's API keys. Needs apiKey:read.
+Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
 </dd>
 </dl>
 </dd>
@@ -403,7 +403,7 @@ client.api_keys.list(
 <dl>
 <dd>
 
-Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.
+Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
 </dd>
 </dl>
 </dd>
@@ -7882,7 +7882,7 @@ client.assistant.test_text_provider(
 <dl>
 <dd>
 
-Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
+Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a member who may manage members (member:update), whether each one's account has two-step verification on and how many of the API keys they made would stop working if they were removed or given another role. Every member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to read.
 </dd>
 </dl>
 </dd>

@@ -24,6 +24,7 @@ import { AccountData } from "#workspace/application/account-data.ts";
 import { AccountStanding } from "#workspace/application/account-standing.ts";
 import { Accounts } from "#workspace/application/accounts.ts";
 import { ActorsNow } from "#workspace/application/actors-now.ts";
+import { ApiKeyMakers } from "#workspace/application/api-key-makers.ts";
 import { ApiKeys } from "#workspace/application/api-keys.ts";
 import { Authenticate } from "#workspace/application/authenticate.ts";
 import { BrowserAnalyticsChoice } from "#workspace/application/browser-analytics-choice.ts";
@@ -84,6 +85,7 @@ import { MemberDirectoryLive } from "#workspace/infrastructure/drizzle-member-di
 import { DrizzlePartnerStore } from "#workspace/infrastructure/drizzle-partner-store.ts";
 import { SecurityPoliciesLive } from "#workspace/infrastructure/drizzle-security-policies.ts";
 import { DrizzleSignUpStore } from "#workspace/infrastructure/drizzle-sign-up-store.ts";
+import { DrizzleWorkspaceApiKeys } from "#workspace/infrastructure/drizzle-workspace-api-keys.ts";
 import { WorkspaceRosterLive } from "#workspace/infrastructure/drizzle-workspace-roster.ts";
 import { EmailedAccountMail } from "#workspace/infrastructure/emailed-account-mail.ts";
 import { LoggedActivityJournal } from "#workspace/infrastructure/logged-activity-journal.ts";
@@ -214,6 +216,11 @@ export const WorkspaceLive = Layer.mergeAll(
   Layer.provideMerge(PartnerOwnershipLive),
   Layer.provideMerge(StaffToolsLive),
   Layer.provideMerge(BetterAuthLive),
+  // What follows a member's standing to the keys they made: Better
+  // Auth's hooks, the members' removal and their list reach it.
+  Layer.provideMerge(
+    ApiKeyMakers.layer.pipe(Layer.provideMerge(DrizzleWorkspaceApiKeys))
+  ),
   // What Better Auth's hooks close an account nobody claimed through,
   // which WorkspaceSettingsLive serves with CloseAccount.
   Layer.provideMerge(UnclaimedAccounts.layer),

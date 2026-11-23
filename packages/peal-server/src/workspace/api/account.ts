@@ -117,6 +117,11 @@ const viewOf = Effect.fn("AccountExport.view")(function* viewOf(
       analytics: workspace.analytics,
       apiKeys: workspace.apiKeys.map((apiKey) => ({
         createdAt: apiKey.createdAt,
+        // The workspace has no other member: the keys it records a maker
+        // for are the account's own.
+        createdBy: Option.contains(apiKey.createdBy, account.user.id)
+          ? { id: account.user.id, name: account.user.name }
+          : null,
         expiresAt: Option.getOrNull(apiKey.expiresAt),
         id: apiKey.id,
         name: apiKey.name,

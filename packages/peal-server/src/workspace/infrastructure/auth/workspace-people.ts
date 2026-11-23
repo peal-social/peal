@@ -19,6 +19,7 @@ import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { defaultLocale, LocaleSchema } from "#shared/domain/locale.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 import { AlreadyMember } from "#workspace/application/already-member.ts";
+import { ApiKeyMakers } from "#workspace/application/api-key-makers.ts";
 import { AuthUnavailable } from "#workspace/application/auth-unavailable.ts";
 import { DirectoryUnavailable } from "#workspace/application/directory-unavailable.ts";
 import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
@@ -81,6 +82,7 @@ export const WorkspacePeopleLive = Layer.effect(
     const emails = yield* SendAuthEmail;
     const { publicUrl } = yield* AuthSettings;
     const agentRecords = yield* AgentRecords;
+    const makers = yield* ApiKeyMakers;
     const invitationEmails = yield* InvitationEmails;
 
     // Requests never wait for their emails. Those still on their way get
@@ -364,13 +366,21 @@ export const WorkspacePeopleLive = Layer.effect(
           .returning({ id: member.id, userId: member.userId })
           .pipe(unavailable);
 
-        // What was theirs alone there goes with their membership: their
-        // chats with the agent.
+        const leaving = removed.flatMap(({ userId }) =>
+          Option.toArray(decodeUserIdOption(userId))
+        );
+
+        // What was theirs alone there goes with their membership: the API
+        // keys they made, in the caller's transaction, and their chats with
+        // the agent.
         yield* Effect.forEach(
-          removed.flatMap(({ userId }) =>
-            Option.toArray(decodeUserIdOption(userId))
-          ),
-          (userId) => agentRecords.eraseMember(workspaceId, userId),
+          leaving,
+          (userId) =>
+            makers
+              .settle(workspaceId, userId, Option.none())
+              .pipe(
+                Effect.andThen(agentRecords.eraseMember(workspaceId, userId))
+              ),
           { discard: true }
         ).pipe(Effect.mapError((cause) => new DirectoryUnavailable({ cause })));
 

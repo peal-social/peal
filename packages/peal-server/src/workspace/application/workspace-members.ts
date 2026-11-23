@@ -6,6 +6,8 @@ import { UserIdSchema } from "#shared/domain/ids.ts";
 import type { UserId } from "#shared/domain/ids.ts";
 import { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
+import { keysAtStake } from "#workspace/domain/api-key.ts";
+import type { KeysAtStake } from "#workspace/domain/api-key.ts";
 import type { Invitation } from "#workspace/domain/invitation.ts";
 import {
   invitableRoles,
@@ -20,11 +22,12 @@ import { UserRequired } from "#workspace/domain/user-required.ts";
 
 import type { AlreadyMember } from "./already-member.ts";
 import type { AuthUnavailable } from "./auth-unavailable.ts";
-import type { DirectoryUnavailable } from "./directory-unavailable.ts";
+import { DirectoryUnavailable } from "./directory-unavailable.ts";
 import type { InvalidEmailAddress } from "./invalid-email-address.ts";
 import { InvitationNotFound } from "./invitation-not-found.ts";
 import { MemberDirectory } from "./member-directory.ts";
 import type { TooManyInvitations } from "./too-many-invitations.ts";
+import { WorkspaceApiKeys } from "./workspace-api-keys.ts";
 import { WorkspacePeople } from "./workspace-people.ts";
 import type { PersonInWorkspace } from "./workspace-people.ts";
 
@@ -46,6 +49,11 @@ export interface ListedMember extends Omit<
   PersonInWorkspace,
   "twoStepEnabled"
 > {
+  /**
+   * How many of the API keys they made would stop working, were they
+   * removed or given each role: to a reader who may manage members.
+   */
+  readonly apiKeysAtStake: Option.Option<KeysAtStake>;
   readonly twoStepEnabled: Option.Option<boolean>;
 }
 
@@ -156,6 +164,7 @@ export class WorkspaceMembers extends Context.Service<
     Effect.gen(function* WorkspaceMembersLive() {
       const people = yield* WorkspacePeople;
       const directory = yield* MemberDirectory;
+      const apiKeys = yield* WorkspaceApiKeys;
 
       // The role the user holds in the actor's workspace, read again: what
       // they may see and give depends on it.
@@ -177,9 +186,24 @@ export class WorkspaceMembers extends Context.Service<
 
         const manages = actor.permissions.includes("member:update");
 
+        // What removing each member, or changing their role, would revoke
+        // of the keys they made: for who may manage members alone.
+        const keys = manages
+          ? yield* apiKeys
+              .list(actor.workspaceId)
+              .pipe(
+                Effect.mapError(
+                  ({ cause }) => new DirectoryUnavailable({ cause })
+                )
+              )
+          : [];
+
         return (yield* people.members(actor.workspaceId)).map(
-          ({ twoStepEnabled, ...listed }) => ({
+          ({ twoStepEnabled, ...listed }): ListedMember => ({
             ...listed,
+            apiKeysAtStake: manages
+              ? Option.some(keysAtStake(keys, listed.userId))
+              : Option.none(),
             twoStepEnabled: manages
               ? Option.some(twoStepEnabled)
               : Option.none(),

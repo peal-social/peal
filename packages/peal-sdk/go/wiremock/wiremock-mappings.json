@@ -164,7 +164,7 @@
       },
       "response": {
         "status": 200,
-        "body": "[\n  {\n    \"createdAt\": \"createdAt\",\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"start\": \"start\"\n  }\n]",
+        "body": "[\n  {\n    \"createdAt\": \"createdAt\",\n    \"createdBy\": {\n      \"id\": \"id\",\n      \"name\": \"name\"\n    },\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"start\": \"start\"\n  }\n]",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -200,7 +200,7 @@
       },
       "response": {
         "status": 201,
-        "body": "{\n  \"apiKey\": {\n    \"createdAt\": \"createdAt\",\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"start\": \"start\"\n  },\n  \"key\": \"key\"\n}",
+        "body": "{\n  \"apiKey\": {\n    \"createdAt\": \"createdAt\",\n    \"createdBy\": {\n      \"id\": \"id\",\n      \"name\": \"name\"\n    },\n    \"expiresAt\": \"expiresAt\",\n    \"id\": \"id\",\n    \"name\": \"name\",\n    \"permissions\": [\n      \"activity:read\"\n    ],\n    \"start\": \"start\"\n  },\n  \"key\": \"key\"\n}",
         "headers": {
           "Content-Type": "application/json"
         }
@@ -3211,7 +3211,7 @@
       },
       "response": {
         "status": 200,
-        "body": "[\n  {\n    \"email\": \"email\",\n    \"joinedAt\": \"joinedAt\",\n    \"name\": \"name\",\n    \"role\": \"role\",\n    \"twoStepEnabled\": true,\n    \"userId\": \"userId\"\n  }\n]",
+        "body": "[\n  {\n    \"apiKeysAtStake\": {\n      \"removal\": 1,\n      \"roles\": {\n        \"admin\": 1,\n        \"contributor\": 1,\n        \"editor\": 1,\n        \"owner\": 1,\n        \"viewer\": 1\n      }\n    },\n    \"email\": \"email\",\n    \"joinedAt\": \"joinedAt\",\n    \"name\": \"name\",\n    \"role\": \"role\",\n    \"twoStepEnabled\": true,\n    \"userId\": \"userId\"\n  }\n]",
         "headers": {
           "Content-Type": "application/json"
         }

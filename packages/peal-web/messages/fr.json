@@ -3088,7 +3088,11 @@
       "removeMember": "Retirer {name}",
       "removeTitle": "Retirer {name} de l’espace de travail ?",
       "removeDescription": "{email} perd l’accès aussitôt. Vous pourrez l’inviter à nouveau.",
-      "removed": "{name} n’est plus membre."
+      "keysOnRemoval": "{count, plural, one {La clé d’API créée par ce membre cesse aussi de fonctionner.} other {Les # clés d’API créées par ce membre cessent aussi de fonctionner.}}",
+      "removed": "{name} n’est plus membre.",
+      "roleTitle": "Donner le rôle {role} à {name} ?",
+      "roleKeys": "{count, plural, one {Une clé d’API créée par ce membre permet ce que le rôle {role} ne permet pas, et cesse de fonctionner.} other {# clés d’API créées par ce membre permettent ce que le rôle {role} ne permet pas, et cessent de fonctionner.}}",
+      "changeRole": "Changer le rôle"
     },
     "invitations": {
       "title": "Inviter une personne",
@@ -3119,10 +3123,12 @@
       "linkNote": "Un lien copié est celui de l’e-mail : seule la personne invitée peut l’accepter, connectée avec l’adresse invitée une fois celle-ci vérifiée, jusqu’à l’expiration de l’invitation, 7 jours après son dernier envoi."
     },
     "apiKeys": {
-      "description": "Les clés permettent à des scripts et des intégrations d’utiliser l’espace de travail par l’API. Une clé ne fait que ce que vous avez choisi, jamais plus que vous ne le pouvez vous-même.",
+      "description": "Les clés permettent à des scripts et des intégrations d’utiliser l’espace de travail par l’API. Une clé ne fait que ce que vous avez choisi, jamais plus que vous ne le pouvez vous-même. Elle cesse de fonctionner dès que vous quittez l’espace de travail, ou que votre rôle ne permet plus ce qu’elle fait.",
       "listTitle": "Clés",
       "empty": "L’espace de travail n’a aucune clé d’API.",
       "startsWith": "Commence par {start}",
+      "madeBy": "Créée par {name}",
+      "makerUnknown": "Créée avant que les clés n’enregistrent qui les crée",
       "publishing": "{allowed, select, yes {Peut programmer et publier des publications} other {Ne peut ni programmer ni publier de publications}}",
       "dates": "Créée le {created} · {expires, select, never {n’expire jamais} other {expire le {expires}}}",
       "revoke": "Révoquer",

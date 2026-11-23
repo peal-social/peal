@@ -27,6 +27,7 @@ import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { AccountMail } from "#workspace/application/account-mail.ts";
 import type { TwoStepChange } from "#workspace/application/account-mail.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
+import { ApiKeyMakers } from "#workspace/application/api-key-makers.ts";
 import { ImpersonationGuard } from "#workspace/application/impersonation-guard.ts";
 import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
@@ -305,6 +306,7 @@ export const BetterAuthLive = Layer.effect(
     const agentRecords = yield* AgentRecords;
     const unclaimed = yield* UnclaimedAccounts;
     const invitationEmails = yield* InvitationEmails;
+    const makers = yield* ApiKeyMakers;
 
     // The instance, once made: the email of a recovery code used says how
     // many are left, which only the instance reads.
@@ -389,6 +391,27 @@ export const BetterAuthLive = Layer.effect(
           upgrades
             .from(workspaceId, "members", needed)
             .pipe(Effect.map(upgradeOf))
+        ),
+      // Awaited before a member's standing changes: the keys they made
+      // that it no longer covers go. Ids Better Auth did not issue name
+      // no member's keys. A failure refuses the change.
+      memberKeys: async ({ role, userId, workspaceId }) =>
+        await runPromise(
+          Effect.all({
+            user: Effect.option(decodeUserId(userId)),
+            workspace: Effect.option(decodeWorkspaceIdEffect(workspaceId)),
+          }).pipe(
+            Effect.flatMap(({ user, workspace }) =>
+              Option.isSome(user) && Option.isSome(workspace)
+                ? makers.settle(
+                    workspace.value,
+                    user.value,
+                    Option.fromNullOr(role)
+                  )
+                : Effect.succeed([])
+            ),
+            Effect.withSpan("BetterAuth.memberKeys")
+          )
         ),
       // Awaited once a member left or was removed: their chats with the
       // agent there go. A failure is logged: the retention ends them.

@@ -152,5 +152,10 @@
     "change": "POST /api/partner/workspaces and PATCH /api/partner/workspaces/{workspaceId} answer 422 InvalidWorkspaceDetails (field name) for a name holding `://` or `www.`, and keep a name on one line, without the marks that reorder it",
     "kind": "behaviour",
     "reason": "A workspace's name goes into the emails Peal sends from its own domain; it is now kept as Better Auth's routes keep a member's workspace's name. Names saved before keep what they hold, and emails leave out any name that reads as a web or email address."
+  },
+  {
+    "change": "An API key made from now on stops working (401) once the member who made it leaves the workspace, is removed from it or closes their account, and once their role is changed to one that could not give one of the key's permissions; keys made before stay",
+    "kind": "behaviour",
+    "reason": "A key outlived the member who made it, with everything they held, and with no expiry: a member about to be removed or demoted could keep their access through a key. A key now records its maker (ApiKey.createdBy), and follows their standing in the workspace."
   }
 ]

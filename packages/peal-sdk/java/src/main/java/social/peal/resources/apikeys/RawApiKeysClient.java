@@ -43,28 +43,28 @@ public class RawApiKeysClient {
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public PealClientHttpResponse<List<ApiKey>> list(String workspaceId) {
         return list(workspaceId, ListApiKeysRequest.builder().build());
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public PealClientHttpResponse<List<ApiKey>> list(String workspaceId, RequestOptions requestOptions) {
         return list(workspaceId, ListApiKeysRequest.builder().build(), requestOptions);
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public PealClientHttpResponse<List<ApiKey>> list(String workspaceId, ListApiKeysRequest request) {
         return list(workspaceId, request, null);
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public PealClientHttpResponse<List<ApiKey>> list(
             String workspaceId, ListApiKeysRequest request, RequestOptions requestOptions) {
@@ -135,14 +135,14 @@ public class RawApiKeysClient {
     }
 
     /**
-     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.
+     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
     public PealClientHttpResponse<CreatedApiKey> create(String workspaceId, NewApiKey request) {
         return create(workspaceId, request, null);
     }
 
     /**
-     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.
+     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
     public PealClientHttpResponse<CreatedApiKey> create(
             String workspaceId, NewApiKey request, RequestOptions requestOptions) {

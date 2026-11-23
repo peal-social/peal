@@ -5,6 +5,8 @@ require_relative "../../peal"
 module Peal
   module Types
     class WorkspaceMember < Internal::Types::Model
+      field :api_keys_at_stake, -> { Peal::Types::APIKeysAtStake }, optional: true, nullable: false, api_name: "apiKeysAtStake"
+
       field :email, -> { String }, optional: false, nullable: false
 
       field :joined_at, -> { String }, optional: false, nullable: false, api_name: "joinedAt"

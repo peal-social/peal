@@ -15,6 +15,12 @@ class ApiKey extends JsonSerializableType
     public string $createdAt;
 
     /**
+     * @var ?ApiKeyMaker $createdBy
+     */
+    #[JsonProperty('createdBy')]
+    public ?ApiKeyMaker $createdBy;
+
+    /**
      * @var ?string $expiresAt
      */
     #[JsonProperty('expiresAt')]
@@ -50,6 +56,7 @@ class ApiKey extends JsonSerializableType
      *   id: string,
      *   name: string,
      *   permissions: array<value-of<Permission>>,
+     *   createdBy?: ?ApiKeyMaker,
      *   expiresAt?: ?string,
      *   start?: ?string,
      * } $values
@@ -58,6 +65,7 @@ class ApiKey extends JsonSerializableType
         array $values,
     ) {
         $this->createdAt = $values['createdAt'];
+        $this->createdBy = $values['createdBy'] ?? null;
         $this->expiresAt = $values['expiresAt'] ?? null;
         $this->id = $values['id'];
         $this->name = $values['name'];

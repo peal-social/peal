@@ -63,6 +63,7 @@ const workspaceKey = (
 ) =>
   new ApiKey({
     createdAt: now,
+    createdBy: Option.none(),
     expiresAt,
     id: apiKeyId,
     name: "Synthetic key",
