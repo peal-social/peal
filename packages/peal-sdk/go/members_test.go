@@ -54,7 +54,477 @@ func TestSettersMarkExplicitListMembersRequest(t *testing.T) {
 
 }
 
+func TestSettersAPIKeysAtStake(t *testing.T) {
+	t.Run("SetRemoval", func(t *testing.T) {
+		obj := &APIKeysAtStake{}
+		var fernTestValueRemoval int
+		obj.SetRemoval(fernTestValueRemoval)
+		assert.Equal(t, fernTestValueRemoval, obj.Removal)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetRoles", func(t *testing.T) {
+		obj := &APIKeysAtStake{}
+		var fernTestValueRoles *APIKeysAtStakeRoles
+		obj.SetRoles(fernTestValueRoles)
+		assert.Equal(t, fernTestValueRoles, obj.Roles)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersAPIKeysAtStake(t *testing.T) {
+	t.Run("GetRemoval", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStake{}
+		var expected int
+		obj.Removal = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetRemoval(), "getter should return the property value")
+	})
+
+	t.Run("GetRemoval_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStake
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetRemoval() // Should return zero value
+	})
+
+	t.Run("GetRoles", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStake{}
+		var expected *APIKeysAtStakeRoles
+		obj.Roles = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetRoles(), "getter should return the property value")
+	})
+
+	t.Run("GetRoles_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStake{}
+		obj.Roles = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetRoles(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetRoles_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStake
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetRoles() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitAPIKeysAtStake(t *testing.T) {
+	t.Run("SetRemoval_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStake{}
+		var fernTestValueRemoval int
+
+		// Act
+		obj.SetRemoval(fernTestValueRemoval)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetRoles_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStake{}
+		var fernTestValueRoles *APIKeysAtStakeRoles
+
+		// Act
+		obj.SetRoles(fernTestValueRoles)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
+func TestSettersAPIKeysAtStakeRoles(t *testing.T) {
+	t.Run("SetAdmin", func(t *testing.T) {
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueAdmin int
+		obj.SetAdmin(fernTestValueAdmin)
+		assert.Equal(t, fernTestValueAdmin, obj.Admin)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetContributor", func(t *testing.T) {
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueContributor int
+		obj.SetContributor(fernTestValueContributor)
+		assert.Equal(t, fernTestValueContributor, obj.Contributor)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetEditor", func(t *testing.T) {
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueEditor int
+		obj.SetEditor(fernTestValueEditor)
+		assert.Equal(t, fernTestValueEditor, obj.Editor)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetOwner", func(t *testing.T) {
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueOwner int
+		obj.SetOwner(fernTestValueOwner)
+		assert.Equal(t, fernTestValueOwner, obj.Owner)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+	t.Run("SetViewer", func(t *testing.T) {
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueViewer int
+		obj.SetViewer(fernTestValueViewer)
+		assert.Equal(t, fernTestValueViewer, obj.Viewer)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
+}
+
+func TestGettersAPIKeysAtStakeRoles(t *testing.T) {
+	t.Run("GetAdmin", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var expected int
+		obj.Admin = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetAdmin(), "getter should return the property value")
+	})
+
+	t.Run("GetAdmin_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStakeRoles
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetAdmin() // Should return zero value
+	})
+
+	t.Run("GetContributor", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var expected int
+		obj.Contributor = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetContributor(), "getter should return the property value")
+	})
+
+	t.Run("GetContributor_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStakeRoles
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetContributor() // Should return zero value
+	})
+
+	t.Run("GetEditor", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var expected int
+		obj.Editor = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetEditor(), "getter should return the property value")
+	})
+
+	t.Run("GetEditor_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStakeRoles
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetEditor() // Should return zero value
+	})
+
+	t.Run("GetOwner", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var expected int
+		obj.Owner = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetOwner(), "getter should return the property value")
+	})
+
+	t.Run("GetOwner_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStakeRoles
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetOwner() // Should return zero value
+	})
+
+	t.Run("GetViewer", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var expected int
+		obj.Viewer = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetViewer(), "getter should return the property value")
+	})
+
+	t.Run("GetViewer_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStakeRoles
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetViewer() // Should return zero value
+	})
+
+}
+
+func TestSettersMarkExplicitAPIKeysAtStakeRoles(t *testing.T) {
+	t.Run("SetAdmin_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueAdmin int
+
+		// Act
+		obj.SetAdmin(fernTestValueAdmin)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetContributor_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueContributor int
+
+		// Act
+		obj.SetContributor(fernTestValueContributor)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetEditor_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueEditor int
+
+		// Act
+		obj.SetEditor(fernTestValueEditor)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetOwner_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueOwner int
+
+		// Act
+		obj.SetOwner(fernTestValueOwner)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+	t.Run("SetViewer_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+		var fernTestValueViewer int
+
+		// Act
+		obj.SetViewer(fernTestValueViewer)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
+}
+
 func TestSettersWorkspaceMember(t *testing.T) {
+	t.Run("SetAPIKeysAtStake", func(t *testing.T) {
+		obj := &WorkspaceMember{}
+		var fernTestValueAPIKeysAtStake *APIKeysAtStake
+		obj.SetAPIKeysAtStake(fernTestValueAPIKeysAtStake)
+		assert.Equal(t, fernTestValueAPIKeysAtStake, obj.APIKeysAtStake)
+		assert.NotNil(t, obj.explicitFields)
+	})
+
 	t.Run("SetEmail", func(t *testing.T) {
 		obj := &WorkspaceMember{}
 		var fernTestValueEmail string
@@ -106,6 +576,39 @@ func TestSettersWorkspaceMember(t *testing.T) {
 }
 
 func TestGettersWorkspaceMember(t *testing.T) {
+	t.Run("GetAPIKeysAtStake", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceMember{}
+		var expected *APIKeysAtStake
+		obj.APIKeysAtStake = expected
+
+		// Act & Assert
+		assert.Equal(t, expected, obj.GetAPIKeysAtStake(), "getter should return the property value")
+	})
+
+	t.Run("GetAPIKeysAtStake_NilValue", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceMember{}
+		obj.APIKeysAtStake = nil
+
+		// Act & Assert
+		assert.Nil(t, obj.GetAPIKeysAtStake(), "getter should return nil when property is nil")
+	})
+
+	t.Run("GetAPIKeysAtStake_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *WorkspaceMember
+		// Should not panic - getters should handle nil receiver gracefully
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("Getter panicked on nil receiver: %v", r)
+			}
+		}()
+		_ = obj.GetAPIKeysAtStake() // Should return zero value
+	})
+
 	t.Run("GetEmail", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -257,6 +760,37 @@ func TestGettersWorkspaceMember(t *testing.T) {
 }
 
 func TestSettersMarkExplicitWorkspaceMember(t *testing.T) {
+	t.Run("SetAPIKeysAtStake_MarksExplicit", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &WorkspaceMember{}
+		var fernTestValueAPIKeysAtStake *APIKeysAtStake
+
+		// Act
+		obj.SetAPIKeysAtStake(fernTestValueAPIKeysAtStake)
+
+		// Assert - object with explicitly set field can be marshaled/unmarshaled
+		bytes, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed for test setup")
+
+		// This test ensures JSON marshaling and unmarshaling succeed when the field has a zero/nil value
+		// Detect if marshaled JSON is an object or primitive to use correct unmarshal target
+		if len(bytes) > 0 && bytes[0] == '{' {
+			// JSON object - unmarshal into map
+			var unmarshaled map[string]interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		} else {
+			// JSON primitive (string, number, boolean, null) - unmarshal into interface{}
+			var unmarshaled interface{}
+			err = json.Unmarshal(bytes, &unmarshaled)
+			require.NoError(t, err, "unmarshaling should succeed for test verification")
+		}
+
+		// Note: This does not explicitly assert the presence of a specific JSON field
+		// It verifies that setting a field via setter allows successful JSON round-trip
+	})
+
 	t.Run("SetEmail_MarksExplicit", func(t *testing.T) {
 		t.Parallel()
 		// Arrange
@@ -445,6 +979,72 @@ func TestSettersMarkExplicitWorkspaceMember(t *testing.T) {
 
 }
 
+func TestJSONMarshalingAPIKeysAtStake(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStake{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled APIKeysAtStake
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj APIKeysAtStake
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj APIKeysAtStake
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
+func TestJSONMarshalingAPIKeysAtStakeRoles(t *testing.T) {
+	t.Run("MarshalUnmarshal", func(t *testing.T) {
+		t.Parallel()
+		// Arrange
+		obj := &APIKeysAtStakeRoles{}
+
+		// Act - Marshal to JSON
+		data, err := json.Marshal(obj)
+		require.NoError(t, err, "marshaling should succeed")
+		assert.NotNil(t, data, "marshaled data should not be nil")
+		assert.NotEmpty(t, data, "marshaled data should not be empty")
+
+		// Unmarshal back and verify round-trip
+		var unmarshaled APIKeysAtStakeRoles
+		err = json.Unmarshal(data, &unmarshaled)
+		assert.NoError(t, err, "round-trip unmarshal should succeed")
+	})
+
+	t.Run("UnmarshalInvalidJSON", func(t *testing.T) {
+		t.Parallel()
+		var obj APIKeysAtStakeRoles
+		err := json.Unmarshal([]byte(`{invalid json}`), &obj)
+		assert.Error(t, err, "unmarshaling invalid JSON should return an error")
+	})
+
+	t.Run("UnmarshalEmptyObject", func(t *testing.T) {
+		t.Parallel()
+		var obj APIKeysAtStakeRoles
+		err := json.Unmarshal([]byte(`{}`), &obj)
+		assert.NoError(t, err, "unmarshaling empty object should succeed")
+	})
+}
+
 func TestJSONMarshalingWorkspaceMember(t *testing.T) {
 	t.Run("MarshalUnmarshal", func(t *testing.T) {
 		t.Parallel()
@@ -478,6 +1078,38 @@ func TestJSONMarshalingWorkspaceMember(t *testing.T) {
 	})
 }
 
+func TestStringAPIKeysAtStake(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &APIKeysAtStake{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStake
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestStringAPIKeysAtStakeRoles(t *testing.T) {
+	t.Run("StringMethod", func(t *testing.T) {
+		t.Parallel()
+		obj := &APIKeysAtStakeRoles{}
+		result := obj.String()
+		assert.NotEmpty(t, result, "String() should return a non-empty representation")
+	})
+
+	t.Run("StringMethod_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStakeRoles
+		result := obj.String()
+		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
 func TestStringWorkspaceMember(t *testing.T) {
 	t.Run("StringMethod", func(t *testing.T) {
 		t.Parallel()
@@ -491,6 +1123,52 @@ func TestStringWorkspaceMember(t *testing.T) {
 		var obj *WorkspaceMember
 		result := obj.String()
 		assert.Equal(t, "<nil>", result, "String() should return <nil> for nil receiver")
+	})
+}
+
+func TestExtraPropertiesAPIKeysAtStake(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &APIKeysAtStake{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStake
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
+	})
+}
+
+func TestExtraPropertiesAPIKeysAtStakeRoles(t *testing.T) {
+	t.Run("GetExtraProperties", func(t *testing.T) {
+		t.Parallel()
+		obj := &APIKeysAtStakeRoles{}
+		// Should not panic when calling GetExtraProperties()
+		defer func() {
+			if r := recover(); r != nil {
+				t.Errorf("GetExtraProperties() panicked: %v", r)
+			}
+		}()
+		extraProps := obj.GetExtraProperties()
+		// Result can be nil or an empty/non-empty map
+		_ = extraProps
+	})
+
+	t.Run("GetExtraProperties_NilReceiver", func(t *testing.T) {
+		t.Parallel()
+		var obj *APIKeysAtStakeRoles
+		extraProps := obj.GetExtraProperties()
+		assert.Nil(t, extraProps, "nil receiver should return nil without panicking")
 	})
 }
 

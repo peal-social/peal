@@ -2,6 +2,9 @@ pub use crate::prelude::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq, Hash)]
 pub struct WorkspaceMember {
+    #[serde(rename = "apiKeysAtStake")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub api_keys_at_stake: Option<ApiKeysAtStake>,
     #[serde(default)]
     pub email: String,
     #[serde(rename = "joinedAt")]
@@ -28,6 +31,7 @@ impl WorkspaceMember {
 #[derive(Clone, PartialEq, Default, Debug)]
 #[non_exhaustive]
 pub struct WorkspaceMemberBuilder {
+    api_keys_at_stake: Option<ApiKeysAtStake>,
     email: Option<String>,
     joined_at: Option<String>,
     name: Option<String>,
@@ -37,6 +41,11 @@ pub struct WorkspaceMemberBuilder {
 }
 
 impl WorkspaceMemberBuilder {
+    pub fn api_keys_at_stake(mut self, value: ApiKeysAtStake) -> Self {
+        self.api_keys_at_stake = Some(value);
+        self
+    }
+
     pub fn email(mut self, value: impl Into<String>) -> Self {
         self.email = Some(value.into());
         self
@@ -76,6 +85,7 @@ impl WorkspaceMemberBuilder {
     /// - [`user_id`](WorkspaceMemberBuilder::user_id)
     pub fn build(self) -> Result<WorkspaceMember, BuildError> {
         Ok(WorkspaceMember {
+            api_keys_at_stake: self.api_keys_at_stake,
             email: self
                 .email
                 .ok_or_else(|| BuildError::missing_field("email"))?,

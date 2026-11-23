@@ -5,6 +5,9 @@ pub struct ApiKey {
     #[serde(rename = "createdAt")]
     #[serde(default)]
     pub created_at: String,
+    #[serde(rename = "createdBy")]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub created_by: Option<ApiKeyMaker>,
     #[serde(rename = "expiresAt")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<String>,
@@ -28,6 +31,7 @@ impl ApiKey {
 #[non_exhaustive]
 pub struct ApiKeyBuilder {
     created_at: Option<String>,
+    created_by: Option<ApiKeyMaker>,
     expires_at: Option<String>,
     id: Option<String>,
     name: Option<String>,
@@ -38,6 +42,11 @@ pub struct ApiKeyBuilder {
 impl ApiKeyBuilder {
     pub fn created_at(mut self, value: impl Into<String>) -> Self {
         self.created_at = Some(value.into());
+        self
+    }
+
+    pub fn created_by(mut self, value: ApiKeyMaker) -> Self {
+        self.created_by = Some(value);
         self
     }
 
@@ -77,6 +86,7 @@ impl ApiKeyBuilder {
             created_at: self
                 .created_at
                 .ok_or_else(|| BuildError::missing_field("created_at"))?,
+            created_by: self.created_by,
             expires_at: self.expires_at,
             id: self.id.ok_or_else(|| BuildError::missing_field("id"))?,
             name: self.name.ok_or_else(|| BuildError::missing_field("name"))?,

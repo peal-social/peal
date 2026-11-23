@@ -26,6 +26,10 @@ public class CreateTest : BaseMockServerTest
             {
               "apiKey": {
                 "createdAt": "createdAt",
+                "createdBy": {
+                  "id": "id",
+                  "name": "name"
+                },
                 "expiresAt": "expiresAt",
                 "id": "id",
                 "name": "name",
@@ -87,6 +91,10 @@ public class CreateTest : BaseMockServerTest
             {
               "apiKey": {
                 "createdAt": "createdAt",
+                "createdBy": {
+                  "id": "id",
+                  "name": "name"
+                },
                 "expiresAt": "expiresAt",
                 "id": "id",
                 "name": "name",

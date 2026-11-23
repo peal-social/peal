@@ -4,6 +4,7 @@ import * as Peal from "../index.js";
 
 export interface ApiKey {
     createdAt: string;
+    createdBy: Peal.ApiKeyMaker | null;
     expiresAt: string | null;
     id: string;
     name: string;

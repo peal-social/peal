@@ -92,7 +92,10 @@ if typing.TYPE_CHECKING:
     from .api_changelog import ApiChangelog
     from .api_changelog_entry import ApiChangelogEntry
     from .api_key import ApiKey
+    from .api_key_maker import ApiKeyMaker
     from .api_key_not_found_encoded import ApiKeyNotFoundEncoded
+    from .api_keys_at_stake import ApiKeysAtStake
+    from .api_keys_at_stake_roles import ApiKeysAtStakeRoles
     from .approval_changed_encoded import ApprovalChangedEncoded
     from .approval_not_pending_encoded import ApprovalNotPendingEncoded
     from .approval_origin import ApprovalOrigin
@@ -1269,7 +1272,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ApiChangelog": ".api_changelog",
     "ApiChangelogEntry": ".api_changelog_entry",
     "ApiKey": ".api_key",
+    "ApiKeyMaker": ".api_key_maker",
     "ApiKeyNotFoundEncoded": ".api_key_not_found_encoded",
+    "ApiKeysAtStake": ".api_keys_at_stake",
+    "ApiKeysAtStakeRoles": ".api_keys_at_stake_roles",
     "ApprovalChangedEncoded": ".approval_changed_encoded",
     "ApprovalNotPendingEncoded": ".approval_not_pending_encoded",
     "ApprovalOrigin": ".approval_origin",
@@ -2447,7 +2453,10 @@ __all__ = [
     "ApiChangelog",
     "ApiChangelogEntry",
     "ApiKey",
+    "ApiKeyMaker",
     "ApiKeyNotFoundEncoded",
+    "ApiKeysAtStake",
+    "ApiKeysAtStakeRoles",
     "ApprovalChangedEncoded",
     "ApprovalNotPendingEncoded",
     "ApprovalOrigin",

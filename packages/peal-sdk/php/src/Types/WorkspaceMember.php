@@ -8,6 +8,12 @@ use Peal\Core\Json\JsonProperty;
 class WorkspaceMember extends JsonSerializableType
 {
     /**
+     * @var ?ApiKeysAtStake $apiKeysAtStake
+     */
+    #[JsonProperty('apiKeysAtStake')]
+    public ?ApiKeysAtStake $apiKeysAtStake;
+
+    /**
      * @var string $email
      */
     #[JsonProperty('email')]
@@ -50,12 +56,14 @@ class WorkspaceMember extends JsonSerializableType
      *   name: string,
      *   role: string,
      *   userId: string,
+     *   apiKeysAtStake?: ?ApiKeysAtStake,
      *   twoStepEnabled?: ?bool,
      * } $values
      */
     public function __construct(
         array $values,
     ) {
+        $this->apiKeysAtStake = $values['apiKeysAtStake'] ?? null;
         $this->email = $values['email'];
         $this->joinedAt = $values['joinedAt'];
         $this->name = $values['name'];

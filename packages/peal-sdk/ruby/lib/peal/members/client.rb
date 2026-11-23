@@ -11,9 +11,10 @@ module Peal
       end
 
       # Lists the workspace's members, in the order they joined, with their name, email address and role, and, to a
-      # member who may manage members (member:update), whether each one's account has two-step verification on. Every
-      # member may see them, as the workspace's settings show them; an API key may not, as members' addresses are not a
-      # script's to read.
+      # member who may manage members (member:update), whether each one's account has two-step verification on and how
+      # many of the API keys they made would stop working if they were removed or given another role. Every member may
+      # see them, as the workspace's settings show them; an API key may not, as members' addresses are not a script's to
+      # read.
       #
       # @param request_options [Hash]
       # @param params [Hash]

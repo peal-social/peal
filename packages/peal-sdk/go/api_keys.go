@@ -149,21 +149,24 @@ func (r *RevokeAPIKeysRequest) SetAPIKeyID(apiKeyID string) {
 
 var (
 	aPIKeyFieldCreatedAt   = big.NewInt(1 << 0)
-	aPIKeyFieldExpiresAt   = big.NewInt(1 << 1)
-	aPIKeyFieldID          = big.NewInt(1 << 2)
-	aPIKeyFieldName        = big.NewInt(1 << 3)
-	aPIKeyFieldPermissions = big.NewInt(1 << 4)
-	aPIKeyFieldStart       = big.NewInt(1 << 5)
+	aPIKeyFieldCreatedBy   = big.NewInt(1 << 1)
+	aPIKeyFieldExpiresAt   = big.NewInt(1 << 2)
+	aPIKeyFieldID          = big.NewInt(1 << 3)
+	aPIKeyFieldName        = big.NewInt(1 << 4)
+	aPIKeyFieldPermissions = big.NewInt(1 << 5)
+	aPIKeyFieldStart       = big.NewInt(1 << 6)
 )
 
 // aPIKeyNullableFields maps the wire names of APIKey's nullable fields (required or optional) to their field bits.
 var aPIKeyNullableFields = map[string]*big.Int{
+	"createdBy": aPIKeyFieldCreatedBy,
 	"expiresAt": aPIKeyFieldExpiresAt,
 	"start":     aPIKeyFieldStart,
 }
 
 type APIKey struct {
 	CreatedAt   string       `json:"createdAt" url:"createdAt"`
+	CreatedBy   *APIKeyMaker `json:"createdBy,omitempty" url:"createdBy,omitempty"`
 	ExpiresAt   *string      `json:"expiresAt,omitempty" url:"expiresAt,omitempty"`
 	ID          string       `json:"id" url:"id"`
 	Name        string       `json:"name" url:"name"`
@@ -182,6 +185,13 @@ func (a *APIKey) GetCreatedAt() string {
 		return ""
 	}
 	return a.CreatedAt
+}
+
+func (a *APIKey) GetCreatedBy() *APIKeyMaker {
+	if a == nil {
+		return nil
+	}
+	return a.CreatedBy
 }
 
 func (a *APIKey) GetExpiresAt() *string {
@@ -240,6 +250,13 @@ func (a *APIKey) require(field *big.Int) {
 func (a *APIKey) SetCreatedAt(createdAt string) {
 	a.CreatedAt = createdAt
 	a.require(aPIKeyFieldCreatedAt)
+}
+
+// SetCreatedBy sets the CreatedBy field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKey) SetCreatedBy(createdBy *APIKeyMaker) {
+	a.CreatedBy = createdBy
+	a.require(aPIKeyFieldCreatedBy)
 }
 
 // SetExpiresAt sets the ExpiresAt field and marks it as non-optional;
@@ -312,6 +329,108 @@ func (a *APIKey) MarshalJSON() ([]byte, error) {
 }
 
 func (a *APIKey) String() string {
+	if a == nil {
+		return "<nil>"
+	}
+	if len(a.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(a.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(a); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", a)
+}
+
+var (
+	aPIKeyMakerFieldID   = big.NewInt(1 << 0)
+	aPIKeyMakerFieldName = big.NewInt(1 << 1)
+)
+
+type APIKeyMaker struct {
+	ID   string `json:"id" url:"id"`
+	Name string `json:"name" url:"name"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (a *APIKeyMaker) GetID() string {
+	if a == nil {
+		return ""
+	}
+	return a.ID
+}
+
+func (a *APIKeyMaker) GetName() string {
+	if a == nil {
+		return ""
+	}
+	return a.Name
+}
+
+func (a *APIKeyMaker) GetExtraProperties() map[string]interface{} {
+	if a == nil {
+		return nil
+	}
+	return a.extraProperties
+}
+
+func (a *APIKeyMaker) require(field *big.Int) {
+	next := new(big.Int)
+	if a.explicitFields != nil {
+		next.Set(a.explicitFields)
+	}
+	next.Or(next, field)
+	a.explicitFields = next
+}
+
+// SetID sets the ID field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeyMaker) SetID(id string) {
+	a.ID = id
+	a.require(aPIKeyMakerFieldID)
+}
+
+// SetName sets the Name field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKeyMaker) SetName(name string) {
+	a.Name = name
+	a.require(aPIKeyMakerFieldName)
+}
+
+func (a *APIKeyMaker) UnmarshalJSON(data []byte) error {
+	type unmarshaler APIKeyMaker
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*a = APIKeyMaker(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *a)
+	if err != nil {
+		return err
+	}
+	a.extraProperties = extraProperties
+	a.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (a *APIKeyMaker) MarshalJSON() ([]byte, error) {
+	type embed APIKeyMaker
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*a),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (a *APIKeyMaker) String() string {
 	if a == nil {
 		return "<nil>"
 	}

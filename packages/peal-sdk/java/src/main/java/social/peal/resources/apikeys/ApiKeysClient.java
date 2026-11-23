@@ -30,42 +30,42 @@ public class ApiKeysClient {
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public List<ApiKey> list(String workspaceId) {
         return this.rawClient.list(workspaceId).body();
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public List<ApiKey> list(String workspaceId, RequestOptions requestOptions) {
         return this.rawClient.list(workspaceId, requestOptions).body();
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public List<ApiKey> list(String workspaceId, ListApiKeysRequest request) {
         return this.rawClient.list(workspaceId, request).body();
     }
 
     /**
-     * Lists the workspace's API keys. Needs apiKey:read.
+     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
     public List<ApiKey> list(String workspaceId, ListApiKeysRequest request, RequestOptions requestOptions) {
         return this.rawClient.list(workspaceId, request, requestOptions).body();
     }
 
     /**
-     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.
+     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
     public CreatedApiKey create(String workspaceId, NewApiKey request) {
         return this.rawClient.create(workspaceId, request).body();
     }
 
     /**
-     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.
+     * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
     public CreatedApiKey create(String workspaceId, NewApiKey request, RequestOptions requestOptions) {
         return this.rawClient.create(workspaceId, request, requestOptions).body();

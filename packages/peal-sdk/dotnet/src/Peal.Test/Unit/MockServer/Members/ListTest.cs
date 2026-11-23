@@ -15,6 +15,16 @@ public class ListTest : BaseMockServerTest
         const string mockResponse = """
             [
               {
+                "apiKeysAtStake": {
+                  "removal": 1,
+                  "roles": {
+                    "admin": 1,
+                    "contributor": 1,
+                    "editor": 1,
+                    "owner": 1,
+                    "viewer": 1
+                  }
+                },
                 "email": "email",
                 "joinedAt": "joinedAt",
                 "name": "name",
@@ -23,6 +33,16 @@ public class ListTest : BaseMockServerTest
                 "userId": "userId"
               },
               {
+                "apiKeysAtStake": {
+                  "removal": 1,
+                  "roles": {
+                    "admin": 1,
+                    "contributor": 1,
+                    "editor": 1,
+                    "owner": 1,
+                    "viewer": 1
+                  }
+                },
                 "email": "email",
                 "joinedAt": "joinedAt",
                 "name": "name",
@@ -59,6 +79,16 @@ public class ListTest : BaseMockServerTest
         const string mockResponse = """
             [
               {
+                "apiKeysAtStake": {
+                  "removal": 1,
+                  "roles": {
+                    "admin": 1,
+                    "contributor": 1,
+                    "editor": 1,
+                    "owner": 1,
+                    "viewer": 1
+                  }
+                },
                 "email": "email",
                 "joinedAt": "joinedAt",
                 "name": "name",
