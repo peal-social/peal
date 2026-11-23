@@ -14,6 +14,7 @@ import { newId } from "#shared/application/ids.ts";
 import type { Ids } from "#shared/application/ids.ts";
 import type { Actor, Permission } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
+import type { UserId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import { PartnerKeyIdSchema } from "#workspace/domain/partner-id.ts";
 import { PartnerKeyPrincipal } from "#workspace/domain/partner-key-principal.ts";
@@ -21,6 +22,7 @@ import {
   distinctScopes,
   grantableToPartnerKey,
   PartnerKey,
+  partnerKeyBeyondMaker,
   partnerKeyPrefix,
 } from "#workspace/domain/partner-key.ts";
 import type { PartnerScope } from "#workspace/domain/partner-key.ts";
@@ -28,10 +30,13 @@ import type { PermissionNotGrantable } from "#workspace/domain/permission-not-gr
 import { inPerson } from "#workspace/domain/person-required.ts";
 import type { PersonRequired } from "#workspace/domain/person-required.ts";
 
+import type { KeyMaker } from "./api-keys.ts";
+import type { DirectoryUnavailable } from "./directory-unavailable.ts";
 import { PartnerKeyNotFound } from "./partner-key-not-found.ts";
 import { PartnerKeyTokens } from "./partner-key-tokens.ts";
 import { PartnerNotFound } from "./partner-not-found.ts";
 import { PartnerStore } from "./partner-store.ts";
+import { WorkspacePeople } from "./workspace-people.ts";
 
 const decodeKeyId = Schema.decodeUnknownOption(PartnerKeyIdSchema);
 
@@ -43,10 +48,18 @@ export interface NewPartnerKey {
   readonly scopes: readonly PartnerScope[];
 }
 
-/** A new key: shown once, here. */
-export interface CreatedPartnerKey {
-  readonly key: Redacted.Redacted;
+/**
+ * A key as the list shows it: with its maker while they are a member of
+ * the home workspace.
+ */
+export interface ListedPartnerKey {
+  readonly maker: Option.Option<KeyMaker>;
   readonly partnerKey: PartnerKey;
+}
+
+/** A new key: shown once, here. */
+export interface CreatedPartnerKey extends ListedPartnerKey {
+  readonly key: Redacted.Redacted;
 }
 
 /**
@@ -70,8 +83,8 @@ export class PartnerKeys extends Context.Service<
     readonly list: (
       actor: Actor
     ) => Effect.Effect<
-      readonly PartnerKey[],
-      DatabaseError | MissingPermission | PartnerNotFound
+      readonly ListedPartnerKey[],
+      DatabaseError | DirectoryUnavailable | MissingPermission | PartnerNotFound
     >;
     readonly create: (
       actor: Actor,
@@ -79,6 +92,7 @@ export class PartnerKeys extends Context.Service<
     ) => Effect.Effect<
       CreatedPartnerKey,
       | DatabaseError
+      | DirectoryUnavailable
       | MissingPermission
       | PartnerNotFound
       | PermissionNotGrantable
@@ -106,6 +120,31 @@ export class PartnerKeys extends Context.Service<
       const partners = yield* PartnerStore;
       const tokens = yield* PartnerKeyTokens;
       const ports = yield* Effect.context<Ids>();
+      const people = yield* WorkspacePeople;
+
+      // Each key's maker, named as the home workspace's members are: none
+      // once they are no longer one.
+      const makersIn = (actor: Actor, keys: readonly PartnerKey[]) =>
+        Effect.gen(function* makers() {
+          const names = keys.every(({ createdBy }) => Option.isNone(createdBy))
+            ? new Map<UserId, string>()
+            : new Map(
+                (yield* people.members(actor.workspaceId)).map(
+                  ({ name, userId }) => [userId, name] as const
+                )
+              );
+
+          return keys.map((partnerKey): ListedPartnerKey => ({
+            maker: partnerKey.createdBy.pipe(
+              Option.flatMap((id) =>
+                Option.fromUndefinedOr(names.get(id)).pipe(
+                  Option.map((name) => ({ id, name }))
+                )
+              )
+            ),
+            partnerKey,
+          }));
+        });
 
       const partnerOf = (actor: Actor) =>
         partners.ofWorkspace(actor.workspaceId).pipe(
@@ -122,7 +161,7 @@ export class PartnerKeys extends Context.Service<
 
         const partner = yield* partnerOf(actor);
 
-        return yield* partners.keys(partner.id);
+        return yield* makersIn(actor, yield* partners.keys(partner.id));
       });
 
       const create = Effect.fn("PartnerKeys.create")(function* create(
@@ -142,6 +181,7 @@ export class PartnerKeys extends Context.Service<
 
         const partnerKey = new PartnerKey({
           createdAt: now,
+          createdBy: Option.some(userId),
           expiresAt: key.expiresInDays.pipe(
             Option.map((days) => DateTime.addDuration(now, Duration.days(days)))
           ),
@@ -155,7 +195,13 @@ export class PartnerKeys extends Context.Service<
 
         yield* partners.addKey(partnerKey, issued.digest, userId);
 
-        const created: CreatedPartnerKey = { key: issued.token, partnerKey };
+        const [listed] = yield* makersIn(actor, [partnerKey]);
+
+        const created: CreatedPartnerKey = {
+          key: issued.token,
+          maker: listed?.maker ?? Option.none(),
+          partnerKey,
+        };
 
         return created;
       }, Effect.provideContext(ports));
@@ -185,10 +231,41 @@ export class PartnerKeys extends Context.Service<
           return Option.none<PartnerKeyPrincipal>();
         }
 
-        const key = yield* partners.keyByDigest(yield* tokens.digestOf(token));
+        const found = yield* partners.keyByDigest(
+          yield* tokens.digestOf(token)
+        );
+
         const now = yield* DateTime.now;
 
-        return key.pipe(
+        // A key past its maker's standing in the home workspace, as one
+        // made while that standing changed may be: refused, and revoked
+        // as far as it goes. A key with no recorded maker is not asked.
+        const outgrown = found.pipe(
+          Option.filter(
+            ({ key, makerRole }) =>
+              Option.isSome(key.createdBy) && partnerKeyBeyondMaker(makerRole)
+          )
+        );
+
+        if (Option.isSome(outgrown)) {
+          const { key } = outgrown.value;
+
+          yield* partners
+            .removeKey(key.partnerId, key.id)
+            .pipe(
+              Effect.catchCause((cause) =>
+                Effect.logWarning(
+                  "Revoking a partner key past its maker's standing failed",
+                  cause
+                )
+              )
+            );
+
+          return Option.none<PartnerKeyPrincipal>();
+        }
+
+        return found.pipe(
+          Option.map(({ key }) => key),
           Option.filter(({ expiresAt }) =>
             Option.match(expiresAt, {
               onNone: () => true,

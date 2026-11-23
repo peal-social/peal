@@ -12,7 +12,16 @@ import { CaptchaSchema, signUpInvitationHeader } from "peal-contract";
 
 import { appWithOidc } from "#test/workspace/fakes/fake-oidc.ts";
 
-import { MigratedSqlLive, newEmail, password, TestApp } from "./harness.ts";
+import {
+  confirmFrom,
+  cookiesOf,
+  emailTo,
+  linkIn,
+  MigratedSqlLive,
+  newEmail,
+  password,
+  TestApp,
+} from "./harness.ts";
 import type { Reply } from "./harness.ts";
 import {
   accountOf,
@@ -188,6 +197,37 @@ layer(
         email.toLowerCase()
       );
     })
+  );
+
+  it.effect(
+    "signs the invited person in from their confirmation, and lets them join",
+    () =>
+      Effect.gen(function* joins() {
+        const app = yield* TestApp;
+        const email = newEmail("invited-joins");
+        const invitationId = yield* invite(email);
+
+        const created = yield* signUp(email, invitationId);
+
+        assert.strictEqual(created.status, 200);
+
+        const link = linkIn(yield* emailTo(email, /^Confirm your email/u));
+
+        // In the browser that signed up, as the invitation's page sent it.
+        const confirmed = yield* confirmFrom(link, cookiesOf(created));
+
+        assert.isTrue(setsSession(confirmed));
+
+        const accepted = yield* app.request(
+          "/api/auth/organization/accept-invitation",
+          {
+            body: { invitationId },
+            headers: { cookie: cookiesOf(confirmed) },
+          }
+        );
+
+        assert.strictEqual(accepted.status, 200, JSON.stringify(accepted.body));
+      })
   );
 
   it.effect("refuses an invitation cancelled, answered or expired", () =>

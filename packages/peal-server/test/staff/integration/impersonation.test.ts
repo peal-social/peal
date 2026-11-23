@@ -530,5 +530,36 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(used.status, 200);
         })
     );
+
+    it.effect(
+      "lists none of the member's sessions, whose tokens sign in as them",
+      () =>
+        Effect.gen(function* sessions() {
+          const app = yield* TestApp;
+          const { actingAs, member } = yield* impersonation("sessions");
+
+          const asStaff = yield* app.request("/api/auth/list-sessions", {
+            headers: { cookie: actingAs },
+          });
+
+          assert.strictEqual(asStaff.status, 403);
+          assert.notInclude(JSON.stringify(asStaff.body), "token");
+
+          // The member, in their own session, still lists theirs.
+          const own = yield* app.request("/api/auth/list-sessions", {
+            headers: { cookie: member.cookies },
+          });
+
+          assert.strictEqual(own.status, 200);
+
+          // The impersonation's own session stays readable: the web app
+          // runs on it.
+          const current = yield* app.request("/api/auth/get-session", {
+            headers: { cookie: actingAs },
+          });
+
+          assert.strictEqual(current.status, 200);
+        })
+    );
   }
 );

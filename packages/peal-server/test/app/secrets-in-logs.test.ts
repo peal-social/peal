@@ -44,7 +44,9 @@ import { instagramUnifiedAuthorizer } from "#channels/infrastructure/platforms/m
 import { siteVerifiersLive } from "#channels/infrastructure/platforms/site-verifiers.ts";
 import { slackAuthorizer } from "#channels/infrastructure/platforms/slack/slack-authorizer.ts";
 import { wordpressComAuthorizer } from "#channels/infrastructure/platforms/wordpress-com/wordpress-com-authorizer.ts";
+import { RemoteMedia } from "#media/application/ports/remote-media.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
+import { HttpRemoteMedia } from "#media/infrastructure/http-remote-media.ts";
 import { S3MediaStorageLive } from "#media/infrastructure/s3-media-storage.ts";
 import { FacebookOptions } from "#publishing/domain/facebook-options.ts";
 import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.ts";
@@ -137,6 +139,7 @@ import { appWithOidc, FakeOidc } from "#test/workspace/fakes/fake-oidc.ts";
 import {
   bodyOf,
   MigratedSqlLive,
+  origin,
   password,
   signedUp,
   TestApp,
@@ -343,6 +346,58 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             ["a review link's token", reviewToken],
             ["a contract request's token", requestToken],
             ["a website's application password", sitePassword],
+          ] as const) {
+            assert.notInclude(all, secret, name);
+          }
+        })
+    );
+
+    it.effect(
+      "holds no token a link carries in its path or its query: the digest's unsubscribe, a password reset, an address's confirmation",
+      () =>
+        Effect.gen(function* searched() {
+          const app = yield* TestApp;
+
+          const unsubscribe = "synthetic-unsubscribe-token-that-stops-nothing";
+          const reset = "synthetic-reset-token-that-resets-nothing";
+
+          const confirmation =
+            "synthetic-confirmation-token-that-confirms-nothing";
+
+          // As a mail client and a browser open them.
+          yield* app.request(
+            `/api/notifications/weekly-digest/unsubscribe/${unsubscribe}`,
+            { form: { "List-Unsubscribe": "One-Click" } }
+          );
+          yield* app.request(
+            `/api/notifications/weekly-digest/unsubscribe/${unsubscribe}`
+          );
+          yield* app.request(
+            `/api/auth/reset-password/${reset}?callbackURL=${encodeURIComponent(`${origin}/reset-password`)}`
+          );
+          // The confirmation page posts its token; the device page names
+          // the code the person typed in its address.
+          yield* app.request("/api/auth/confirm-email", {
+            body: { token: confirmation },
+          });
+
+          const userCode = "SYNTHUSERCODE";
+
+          yield* app.request(`/api/auth/device?user_code=${userCode}`);
+
+          const all = written();
+
+          // The requests were written about, their tokens left out.
+          assert.include(all, "/api/notifications/weekly-digest/unsubscribe/");
+          assert.include(all, "/api/auth/reset-password/");
+          assert.include(all, "/api/auth/confirm-email");
+          assert.include(all, "/api/auth/device");
+
+          for (const [name, secret] of [
+            ["the digest's unsubscribe token", unsubscribe],
+            ["a password reset's token", reset],
+            ["an address's confirmation token", confirmation],
+            ["a device sign-in's code", userCode],
           ] as const) {
             assert.notInclude(all, secret, name);
           }
@@ -623,6 +678,42 @@ layer(
         assert.notInclude(written(), onTheWire);
         assert.notInclude(written(), onTheWire.replaceAll(" ", ""));
       }).pipe(Effect.scoped)
+  );
+});
+
+// A media import from an address that holds a token, to a fake host on
+// loopback with the guard open: what is written about the request holds
+// the address nowhere, as a client's span would keep it in `url.full`.
+layer(
+  Layer.mergeAll(
+    capture,
+    Layer.succeed(Tracer.Tracer, tracer),
+    HttpRemoteMedia.pipe(
+      Layer.provide(Layer.mergeAll(FetchHttpClient.layer, OpenOutboundGuard))
+    )
+  ),
+  { excludeTestServices: true, timeout: "60 seconds" }
+)("what the server writes about importing a file", (it) => {
+  it.effect("holds no address of the file, nor the token in it", () =>
+    Effect.gen(function* searched() {
+      const secret = "synthetic-signed-address-token-that-opens-nothing";
+      const host = yield* fakeHttpServer(() => jsonAnswer({ file: "none" }));
+
+      const opened = yield* RemoteMedia.use((media) =>
+        media.open(`${host.url}/files/picture.png?token=${secret}`)
+      ).pipe(Effect.withSpan("test.import"));
+
+      assert.include(opened.address, "/files/picture.png");
+      // It went on the wire.
+      assert.deepStrictEqual(
+        host.requests().map(({ query }) => query.get("token")),
+        [secret]
+      );
+      // The import was written about, its address left out.
+      assert.include(written(), "test.import");
+      assert.notInclude(written(), secret);
+      assert.notInclude(written(), "/files/picture.png");
+    }).pipe(Effect.scoped)
   );
 });
 

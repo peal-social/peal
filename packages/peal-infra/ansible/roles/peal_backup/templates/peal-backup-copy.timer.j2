@@ -1,0 +1,14 @@
+# Managed by Ansible (peal-infra). The backup copy once a day too, after the
+# backup's hour: it takes the write-ahead log archived since, and a day the
+# backup missed.
+[Unit]
+Description=Copy of the Peal database's backups, daily
+
+[Timer]
+OnCalendar=*-*-* 06:45:00 UTC
+RandomizedDelaySec=10m
+Persistent=true
+Unit=peal-backup-copy.service
+
+[Install]
+WantedBy=timers.target

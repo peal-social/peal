@@ -148,7 +148,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   New channel's order, LinkedIn's profile and pages apart, no website or
   chat, none of `PEAL_SETUP_HIDDEN_PLATFORMS`, read per request), and a
   tab of the run's own (`openSignInTab`, opened from the click, as
-  browsers open one only then) runs their sign-ins one after the other
+  browsers open one only then, its `opener` cut while it is blank, as it
+  goes to other sites' pages; one of that name it cannot cut off, left
+  on another site, is closed and opened again blank, and only where that
+  fails too does the step's own tab leave instead) runs their sign-ins one after the other
   while the step stays open in the first tab: the run lives in
   `localStorage` (`#channels/connect-run.ts`), which every tab reads and
   whose storage events keep the step current; `useRunStep` starts its
@@ -329,7 +332,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   Invitations go through `invite` (`#settings/invite.ts`): Better Auth's
   client types roles from its own defaults. Sign-in opens `next` in the
   language the account keeps (`landingLocale`), which account settings save
-  with `updateUser`.
+  with `updateUser`. `next` is a page of the app or nothing (`nextPathOf`,
+  `#auth/next-path.ts`, tested): never a path the server answers (`/api`,
+  where a short link redirects anywhere, `/.well-known`), a route handler
+  of the app (`/pulse`, `/emoji-data`), a path with a dot, a `%`, a
+  backslash, `//` or a control character, after a language or not, in any
+  case; nor a path naming more than one language (`/en/en/api/…`, which
+  next-intl's redirects shorten to `/api/…`). A new route handler at the root joins its `notPages`.
 - Client components call Better Auth through `authClient` (`#auth/client.ts`).
   During an OAuth authorization it sends the page's signed query with every
   POST, and Better Auth resumes the authorization after any call that sets
@@ -355,7 +364,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   workspace layout puts `SupportLauncher` in the bottom bar, which makes
   peal-ui's `<peal-support>` (placement `menu`: nothing shows) with the
   person's email, name, id and workspace and the page's language, never
-  while staff act as someone; the account menu's **Support**
+  while staff act as someone, and the email's signature where `GET
+  /api/me` gives one (`supportChat.emailSignature`: the server's, under
+  `PEAL_CRISP_IDENTITY_SECRET`, which Crisp verifies; the app never signs
+  anything itself); the account menu's **Support**
   (`supportChat`) opens the chat through `openSupportChat` and shows the
   replies waiting (`listenToSupportUnread`). Every sign-out calls
   `forgetConversation`, so the next person in the browser starts their own.
@@ -799,9 +811,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   are kept while the tab lives, so the page and the panel show the same
   chat and a run goes on when either closes. The agent's answer is the
   markdown `#agent/markdown.ts` reads (paragraphs, lists, bold,
-  italics, inline code, links to this origin's paths or http(s)),
+  italics, inline code, links to this origin's paths only: an address
+  out of Peal, or a path a browser could read as one, keeps its words,
+  as text a tool answered could have the model write a link that
+  carries what it read),
   rendered as elements by `AgentMarkdown`, never as HTML. Cards and
-  approvals show what the server sent, never the agent's words; a step
+  approvals show what the server sent, never the agent's words, and an
+  approval all of it (`ApprovalCardView`: the post whole, its media
+  through `renderMedia`, `ApprovalMedia`; each channel's settings and
+  waits through `#agent/approval-details.ts`, tested); a change past
+  `agentApprovalLifetimeHours` reads as expired (`lapsedAt`); a step
   and a change are named from their tool (`#agent/steps.ts`), with a
   word of their own for a tool the list does not know. The panel's tabs
   and the chat shown are the browser's (`#agent/panel-state.ts`, in
@@ -981,6 +1000,26 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   hides its link to sign up (`offersSignUp`). The server answers `open`
   while it has no account, so the first one can be made. The server decides: its
   `SIGN_UP_BY_INVITATION` reads from `Auth.errors`.
+- The confirmation email's link opens `verify-email?token=`, which
+  confirms nothing by itself: `ConfirmEmail`
+  (`components/auth/confirm-email.tsx`) takes the token out of the
+  address bar, posts it once to `/api/auth/confirm-email` on its own
+  (`intent: "auto"`, which confirms only from the browser that made the
+  account), and says what the server answered (`confirmationResultOf`,
+  `#auth/email-confirmation.ts`, tested): signed in; from another
+  browser, what confirming there does, with **Confirm my address**
+  (`confirm`), after which the person chooses a password; an account in
+  use, to sign in on this browser and open the link again, or **This
+  account isn't mine**, which asks again before **Delete it so I can sign
+  up** (`erase`), the one way a page deletes an account; deleted, so sign
+  up again; not deletable, so ask the operator; already confirmed, so sign
+  in or choose a new password; a link that no longer works, with the
+  resend form. A reset of an account someone used before its address was
+  confirmed (`usedBeforeConfirmation`) always warns, with the keys and
+  invitations removed, zero included, and what to check: members,
+  invitations, webhooks, keys, connected channels (`ResetPasswordForm`). The page sends no Referer and is
+  never cached nor indexed (`next.config.ts`, `metadata.referrer`), and
+  loads no measurement nor support chat (both live under `(app)`).
 - The sign-in pages (sign-in, sign-up, forgot and reset password,
   verify email) have a frame of their own (`frameOf` answers `signIn`:
   no header, the contract functions alone at the foot, no language
@@ -1021,9 +1060,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - `src/proxy.ts` rewrites `/api/*` and `/.well-known/oauth-*` to
   `PEAL_API_URL`, read per request. Keep it there, not in `next.config.ts`:
   Next resolves config rewrites at build time and writes the URL into the
-  build. It answers 400 to a page path with an encoded slash or backslash
-  (`isRefusedPath`, `peal-contract/path-spelling`), and its matcher has an
-  entry for them, as the one for pages leaves out paths with a dot:
+  build. It answers 400 to a page path with an encoded slash or backslash,
+  or a semicolon (`isRefusedPath`, `peal-contract/path-spelling`), and its
+  matcher has an entry for them, as the one for pages leaves out paths with
+  a dot (cloudflared drops what follows a `;` in a segment, so `..;` is a
+  dot segment to it):
   cloudflared decodes such a path and resolves its dot segments before it
   picks the rule that says whether Access guards it, so
   `/en/admin/users/x%2F..%2Fy` was open to it and the staff console to

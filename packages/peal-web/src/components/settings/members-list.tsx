@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomValue } from "@effect/atom-react";
 import { Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import type { ApiKeysAtStake } from "peal-contract";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,7 +26,7 @@ import {
   SelectValue,
 } from "peal-ui/components/select";
 import { toast } from "peal-ui/components/toast";
-import { useId, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 
 import { authClient } from "#auth/client.ts";
 import { membersOf } from "#billing/members.ts";
@@ -39,13 +40,18 @@ import {
   RoleSchema,
   rolesFor,
 } from "#settings/member-rules.ts";
-import type { Manager } from "#settings/member-rules.ts";
+import type { Manager, Role } from "#settings/member-rules.ts";
 
 import { SettingsLoadFailed, SettingsLoading } from "./settings-status.tsx";
 
 const isRole = Schema.is(RoleSchema);
 
 interface MemberRowProps {
+  /**
+   * What removing them, or changing their role, would revoke of the API
+   * keys they made, to a manager; null when not known.
+   */
+  readonly apiKeysAtStake: ApiKeysAtStake | null;
   readonly manager: Manager;
   readonly member: WorkspaceMember;
   readonly onChanged: () => void;
@@ -55,9 +61,38 @@ interface MemberRowProps {
   readonly workspaceId: string;
 }
 
+/**
+ * What removing the member (`role` undefined) or giving them `role` (its
+ * label) would revoke of the API keys they made, as the server counted
+ * it, said before confirming; nothing when none would go.
+ */
+export const KeysAtStakeNote = ({
+  count,
+  role,
+}: {
+  readonly count: number;
+  readonly role?: string;
+}) => {
+  const t = useTranslations("WorkspaceSettings.members");
+
+  if (count === 0) {
+    return null;
+  }
+
+  return (
+    <span className="mt-2 block font-medium">
+      {role === undefined
+        ? t("keysOnRemoval", { count })
+        : t("roleKeys", { count, role })}
+    </span>
+  );
+};
+
 // One member: who they are, their role, which the manager may change, and
-// removing them, once confirmed.
+// removing them, once confirmed. A role that would revoke API keys they
+// made is confirmed first.
 const MemberRow = ({
+  apiKeysAtStake,
   manager,
   member,
   onChanged,
@@ -73,15 +108,12 @@ const MemberRow = ({
   const roleId = useId();
   const [isChanging, startChange] = useTransition();
   const [isRemoving, startRemove] = useTransition();
+  const [pendingRole, setPendingRole] = useState<Role | null>(null);
   const roles = rolesFor(manager, member, owners);
   const removable = mayRemove(manager, member, owners);
   const { email, name } = member.user;
 
-  const handleRole = (role: string | null) => {
-    if (role === null || !isRole(role) || role === member.role) {
-      return;
-    }
-
+  const changeRole = (role: Role) => {
     startChange(async () => {
       const result = await authClient.organization.updateMemberRole({
         memberId: member.id,
@@ -98,6 +130,33 @@ const MemberRow = ({
         toast.error(errors(settingsErrorKey(result.error)));
       }
     });
+  };
+
+  // A role that would revoke keys waits for the manager's confirmation.
+  const handleRole = (role: string | null) => {
+    if (role === null || !isRole(role) || role === member.role) {
+      return;
+    }
+
+    if ((apiKeysAtStake?.roles[role] ?? 0) > 0) {
+      setPendingRole(role);
+    } else {
+      changeRole(role);
+    }
+  };
+
+  const handleConfirmRole = () => {
+    if (pendingRole !== null) {
+      changeRole(pendingRole);
+    }
+
+    setPendingRole(null);
+  };
+
+  const handleRoleDialog = (open: boolean) => {
+    if (!open) {
+      setPendingRole(null);
+    }
   };
 
   const handleRemove = () => {
@@ -159,6 +218,40 @@ const MemberRow = ({
               ))}
             </SelectContent>
           </Select>
+          <AlertDialog
+            open={pendingRole !== null}
+            onOpenChange={handleRoleDialog}
+          >
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {pendingRole === null
+                    ? null
+                    : t("roleTitle", {
+                        name,
+                        role: roleLabel("role", { role: pendingRole }),
+                      })}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {pendingRole === null ? null : (
+                    <KeysAtStakeNote
+                      count={apiKeysAtStake?.roles[pendingRole] ?? 0}
+                      role={roleLabel("role", { role: pendingRole })}
+                    />
+                  )}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>{settings("cancel")}</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={handleConfirmRole}
+                >
+                  {t("changeRole")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       )}
       {removable ? (
@@ -183,6 +276,7 @@ const MemberRow = ({
               <AlertDialogTitle>{t("removeTitle", { name })}</AlertDialogTitle>
               <AlertDialogDescription>
                 {t("removeDescription", { email })}
+                <KeysAtStakeNote count={apiKeysAtStake?.removal ?? 0} />
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -201,15 +295,18 @@ const MemberRow = ({
 /**
  * The members, as the list shows them once loaded, and, to a reader who
  * manages members, whether each one's account has two-step verification
- * on (`twoStep`, by user id; null for anyone else).
+ * on (`twoStep`, by user id; null for anyone else) and what removing them
+ * or changing their role would revoke of their API keys (`keysAtStake`).
  */
 export const MembersView = ({
+  keysAtStake = null,
   manager,
   members,
   onChanged,
   twoStep = null,
   workspaceId,
 }: {
+  readonly keysAtStake?: ReadonlyMap<string, ApiKeysAtStake> | null;
   readonly manager: Manager;
   readonly members: readonly WorkspaceMember[];
   readonly onChanged: () => void;
@@ -228,6 +325,7 @@ export const MembersView = ({
         {members.map((member) => (
           <MemberRow
             key={member.id}
+            apiKeysAtStake={keysAtStake?.get(member.userId) ?? null}
             manager={manager}
             member={member}
             owners={owners}
@@ -252,29 +350,51 @@ const LoadedMembers = ({
 }) => {
   const atom = workspaceMembers(workspaceId);
   const result = useAtomValue(atom);
-  const reload = useAtomRefresh(atom);
-  // Peal's own list says who has two-step verification on, to who may
-  // manage members alone.
-  const listed = useAtomValue(membersOf(workspaceId));
+  const reloadMembers = useAtomRefresh(atom);
+  // Peal's own list says who has two-step verification on, and what each
+  // change would revoke of the keys they made, to who may manage members
+  // alone.
+  const peal = membersOf(workspaceId);
+  const listed = useAtomValue(peal);
+  const reloadListed = useAtomRefresh(peal);
 
-  const twoStep = manager.mayUpdate
+  const reload = () => {
+    reloadMembers();
+    reloadListed();
+  };
+
+  const managed = manager.mayUpdate
     ? AsyncResult.match(listed, {
         onFailure: () => null,
         onInitial: () => null,
-        onSuccess: ({ value }) =>
-          new Map(
-            value.flatMap(({ twoStepEnabled, userId }) =>
-              twoStepEnabled === undefined ? [] : [[userId, twoStepEnabled]]
-            )
-          ),
+        onSuccess: ({ value }) => value,
       })
     : null;
+
+  const twoStep =
+    managed === null
+      ? null
+      : new Map(
+          managed.flatMap(({ twoStepEnabled, userId }) =>
+            twoStepEnabled === undefined ? [] : [[userId, twoStepEnabled]]
+          )
+        );
+
+  const keysAtStake =
+    managed === null
+      ? null
+      : new Map(
+          managed.flatMap(({ apiKeysAtStake, userId }) =>
+            apiKeysAtStake === undefined ? [] : [[userId, apiKeysAtStake]]
+          )
+        );
 
   return AsyncResult.match(result, {
     onFailure: () => <SettingsLoadFailed onRetry={reload} />,
     onInitial: () => <SettingsLoading />,
     onSuccess: ({ value }) => (
       <MembersView
+        keysAtStake={keysAtStake}
         manager={manager}
         members={value.members}
         twoStep={twoStep}

@@ -66,6 +66,7 @@ export const AgentApprovalStateSchema = Schema.Literals([
   "approved",
   "declined",
   "expired",
+  "changed",
 ]);
 
 export type AgentApprovalState = typeof AgentApprovalStateSchema.Type;
@@ -78,19 +79,109 @@ export const InReplyToSchema = Schema.Struct({
 
 export type InReplyTo = typeof InReplyToSchema.Type;
 
-/** A change that waits for the person, from the call's own parameters. */
+/** A file of the workspace's media a part shows, with its alt text. */
+export const ApprovalMediaSchema = Schema.Struct({
+  altText: Schema.String,
+  mediaId: Schema.String,
+});
+
+/**
+ * What a part has instead on one channel: its text, and the media it shows
+ * there instead of the part's (null: the part's own).
+ */
+export const ApprovalOverrideSchema = Schema.Struct({
+  channelId: Schema.String,
+  media: Schema.NullOr(Schema.Array(ApprovalMediaSchema)),
+  text: Schema.String,
+});
+
+/** A part after the post's first, and how long it waits after the one before. */
+export const ApprovalPartSchema = Schema.Struct({
+  delaySeconds: Schema.Int,
+  media: Schema.Array(ApprovalMediaSchema),
+  overrides: Schema.Array(ApprovalOverrideSchema),
+  text: Schema.String,
+});
+
+/** A poll asked with the post's first part. */
+export const ApprovalPollSchema = Schema.Struct({
+  choices: Schema.Array(Schema.String),
+  durationMinutes: Schema.Int,
+  multipleChoice: Schema.Boolean,
+});
+
+/** A channel the post goes to, with what it sets on that platform. */
+export const ApprovalTargetSchema = Schema.Struct({
+  channelId: Schema.String,
+  options: Schema.NullOr(Schema.Record(Schema.String, Schema.Json)),
+});
+
+/**
+ * The post a change acts on, as the workspace holds it: all that goes out
+ * of it on the change's channels.
+ */
+export const ApprovalPostSchema = Schema.Struct({
+  followUps: Schema.Array(ApprovalPartSchema),
+  media: Schema.Array(ApprovalMediaSchema),
+  overrides: Schema.Array(ApprovalOverrideSchema),
+  poll: Schema.NullOr(ApprovalPollSchema),
+  shortenLinks: Schema.Boolean,
+  targets: Schema.Array(ApprovalTargetSchema),
+  text: Schema.String,
+});
+
+export type ApprovalPost = typeof ApprovalPostSchema.Type;
+
+/** What a comment's moderation does, as moderate_comment takes it. */
+export const ApprovalModerationSchema = Schema.Literals([
+  "hide",
+  "unhide",
+  "like",
+  "unlike",
+  "delete",
+]);
+
+/** A tag a change makes, or files a post under. */
+export const ApprovalTagSchema = Schema.Struct({
+  colour: Schema.String,
+  name: Schema.String,
+});
+
+// A field an approval kept before it was shown reads as none.
+const orNone = <S extends Schema.Top>(schema: S) =>
+  Schema.NullOr(schema).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed(null))
+  );
+
+/**
+ * A change that waits for the person: all of what the call does, from its
+ * parameters and what it names, as the workspace holds it. `digest` is
+ * the SHA-256 of what the person was shown (`shownOf`), kept to tell,
+ * when they approve, whether it still holds; never answered.
+ */
 export const AgentApprovalSchema = Schema.Struct({
+  answered: orNone(Schema.Boolean),
   at: Schema.NullOr(Schema.DateTimeUtc),
   callId: Schema.String,
   channelIds: Schema.Array(Schema.String),
+  comment: orNone(Schema.String),
+  digest: Schema.String.pipe(Schema.withDecodingDefaultKey(Effect.succeed(""))),
   // The comment or review the change answers or acts on, as the workspace
-  // holds it; null for none. An approval kept before it was read decodes
-  // with none.
-  inReplyTo: Schema.NullOr(InReplyToSchema).pipe(
-    Schema.withDecodingDefaultKey(Effect.succeed(null))
-  ),
+  // holds it; null for none.
+  inReplyTo: orNone(InReplyToSchema),
+  moderation: orNone(ApprovalModerationSchema),
+  part: orNone(Schema.Int),
+  post: orNone(ApprovalPostSchema),
   postId: Schema.NullOr(Schema.String),
+  queue: orNone(Schema.String),
+  // The queue's next free slot when the change was asked, as an
+  // indication: the slot is taken when the change runs, and may have
+  // moved. Never part of `digest`.
+  queueAt: orNone(Schema.DateTimeUtc),
   state: AgentApprovalStateSchema,
+  tags: Schema.Array(ApprovalTagSchema).pipe(
+    Schema.withDecodingDefaultKey(Effect.succeed([]))
+  ),
   text: Schema.NullOr(Schema.String),
   threadId: Schema.NullOr(Schema.String),
   tool: Schema.String,

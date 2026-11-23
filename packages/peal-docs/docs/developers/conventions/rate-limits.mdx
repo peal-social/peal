@@ -90,7 +90,7 @@ Some features have a limit of their own, on top of this one:
 | Limit                                                  | Error                      | See                                                            |
 | ------------------------------------------------------ | -------------------------- | -------------------------------------------------------------- |
 | The writing assistant's requests per workspace and day | `assistant_quota_exceeded` | [Ask the writing assistant](/guides/posts/assistant#assistant) |
-| Imports running at once                                | `media_import_busy`        | [Media](/guides/media)                                         |
+| Imports, and reads of uploaded files, running at once  | `media_import_busy`        | [Media](/guides/media)                                         |
 | Test events and resends of webhooks per hour           | `too_many_webhook_sends`   | [The delivery log](/developers/webhooks/delivery#log)          |
-| Pending invitations of a workspace                     | `too_many_invitations`     | [Invitations](/guides/workspace#invitations)                   |
+| Pending invitations, and invitation emails a day       | `too_many_invitations`     | [Invitations](/guides/workspace#invitations)                   |
 | What a plan allows, on a server that bills             | `plan_limit_reached`       | [Plans and billing](/guides/workspace/billing#limits)          |

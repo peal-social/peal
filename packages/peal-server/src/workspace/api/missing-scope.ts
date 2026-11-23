@@ -1,12 +1,16 @@
 import { Option } from "effect";
 import type { Member, Permission } from "peal-contract";
 
-import { scopesFor } from "#workspace/domain/oauth-grant.ts";
+import {
+  scopesFor,
+  withheldWhateverScopes,
+} from "#workspace/domain/oauth-grant.ts";
 import type { WorkspaceScope } from "#workspace/domain/oauth-grant.ts";
 
 /**
  * The scope an OAuth client lacks for a permission its member was refused:
- * none when the user agreed to it, so that their role is what refuses, and
+ * none when the user agreed to it, so that their role is what refuses, none
+ * when no scope would give it to this client (`withheldWhateverScopes`), and
  * none for a session or an API key, which carry no scope.
  */
 export const missingScope = (
@@ -19,7 +23,16 @@ export const missingScope = (
     return Option.none();
   }
 
-  const { scopes } = principal.oauth;
+  const { clientId, scopes, workspaceId } = principal.oauth;
+
+  if (
+    withheldWhateverScopes(
+      { clientId, workspaceId: Option.fromNullOr(workspaceId) },
+      permission
+    )
+  ) {
+    return Option.none();
+  }
 
   // The first of the scopes the permission takes that the user left out.
   return Option.fromUndefinedOr(

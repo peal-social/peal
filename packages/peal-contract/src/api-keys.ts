@@ -12,9 +12,21 @@ import { Forbidden } from "./forbidden.ts";
 import { PermissionSchema } from "./permission.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
 
+/** The member who made an API key, by the name they go by. */
+export const ApiKeyMakerSchema = Schema.Struct({
+  id: Schema.String,
+  name: Schema.String,
+}).annotate({ identifier: "ApiKeyMaker" });
+
+export type ApiKeyMaker = typeof ApiKeyMakerSchema.Type;
+
 /** An API key as listed: never the key itself, which is shown once. */
 export const ApiKeySchema = Schema.Struct({
   createdAt: Schema.DateTimeUtc,
+  // The member who made it. Null for a key made before Peal recorded who
+  // made each key, or whose maker is no longer a member: a member's keys
+  // stop working once they leave the workspace.
+  createdBy: Schema.NullOr(ApiKeyMakerSchema),
   expiresAt: Schema.NullOr(Schema.DateTimeUtc),
   id: Schema.String,
   name: Schema.String,
@@ -56,7 +68,7 @@ export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
     }).annotateMerge(
       OpenApi.annotations({
         description:
-          "Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.",
+          "Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.",
         summary: "Create an API key",
       })
     ),
@@ -66,7 +78,8 @@ export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
       success: Schema.Array(ApiKeySchema),
     }).annotateMerge(
       OpenApi.annotations({
-        description: "Lists the workspace's API keys. Needs apiKey:read.",
+        description:
+          "Lists the workspace's API keys, with the member who made each. Needs apiKey:read.",
         summary: "List API keys",
       })
     ),

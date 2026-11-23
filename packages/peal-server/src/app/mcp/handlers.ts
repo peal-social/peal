@@ -261,14 +261,18 @@ const BasicToolsLive = BasicTools.toLayer(
             };
           }
 
+          // The workspace the connection acts in, alone: the user's others
+          // are not the client's to know, as they did not connect it there.
           return {
-            workspaces: current.value.workspaces.map(({ membership }) => ({
-              connected: membership.id === member.workspaceId,
-              id: membership.id,
-              name: membership.name,
-              role: membership.role,
-              slug: membership.slug,
-            })),
+            workspaces: current.value.workspaces
+              .filter(({ membership }) => membership.id === member.workspaceId)
+              .map(({ membership }) => ({
+                connected: true,
+                id: membership.id,
+                name: membership.name,
+                role: membership.role,
+                slug: membership.slug,
+              })),
           };
         }),
       rename_channel: ({ channelId, label }) =>

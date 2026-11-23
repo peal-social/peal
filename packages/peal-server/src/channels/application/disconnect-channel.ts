@@ -1,4 +1,4 @@
-import { Context, Duration, Effect, Layer, Option, Schema } from "effect";
+import { Context, Effect, Layer, Option, Schema } from "effect";
 
 import type { Channel } from "#channels/domain/channel.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
@@ -13,20 +13,11 @@ import { ChannelEvents } from "./channel-events.ts";
 import { ChannelNotFound } from "./channel-not-found.ts";
 import { ChannelRepository } from "./channel-repository.ts";
 import { decryptTokens } from "./channel-tokens.ts";
+import { revokeUnsharedGrant } from "./grant-revocation.ts";
 import { PlatformAuthorizers } from "./platform-authorizer.ts";
 import { TokenCipher } from "./token-cipher.ts";
 
 const decodeChannelId = Schema.decodeUnknownOption(ChannelIdSchema);
-
-// A platform that did not revoke a disconnected channel's tokens.
-const notRevoked = (cause: { readonly _tag: string }) =>
-  Effect.logWarning(
-    "The platform did not revoke a disconnected channel's tokens",
-    cause
-  );
-
-// The longest a disconnect waits on the platform to forget Peal's grant.
-const revokeTimeout = Duration.seconds(10);
 
 /**
  * Disconnects a channel of the actor's workspace: the channel and its tokens
@@ -77,31 +68,6 @@ export class DisconnectChannel extends Context.Service<
             )
         );
 
-      // Revokes what the removed channel held, if its platform takes it and
-      // no other channel shares the grant.
-      const revoke = Effect.fn("DisconnectChannel.revoke")(function* revoke(
-        channel: Channel,
-        credentials: ChannelCredentials
-      ) {
-        const revoking = authorizers
-          .for(channel.platform, channel.connection)
-          .pipe(Option.flatMapNullishOr((authorizer) => authorizer.revoke));
-
-        if (Option.isNone(revoking)) {
-          return;
-        }
-
-        if (yield* channels.accountInUse(channel.platform, channel.accountId)) {
-          return;
-        }
-
-        const tokens = yield* decryptTokens(credentials, channel.id).pipe(
-          Effect.provideService(TokenCipher, cipher)
-        );
-
-        yield* revoking.value(tokens);
-      });
-
       const disconnect = Effect.fn("DisconnectChannel.disconnect")(
         function* disconnect(actor: Actor, channelId: string) {
           yield* Effect.fromResult(authorize(actor, "channel:disconnect"));
@@ -132,13 +98,19 @@ export class DisconnectChannel extends Context.Service<
           // platform revokes its tokens, side by side, so the member waits
           // ten seconds at most. Neither fails: what is left is the
           // platform's to forget.
-          const departing = decryptTokens(
-            credentials.value,
-            channel.value.id
-          ).pipe(
+          return yield* decryptTokens(credentials.value, channel.value.id).pipe(
             Effect.provideService(TokenCipher, cipher),
             Effect.flatMap((tokens) =>
-              departures.departed(channel.value, tokens)
+              Effect.all(
+                [
+                  departures.departed(channel.value, tokens),
+                  revokeUnsharedGrant(channel.value, tokens).pipe(
+                    Effect.provideService(ChannelRepository, channels),
+                    Effect.provideService(PlatformAuthorizers, authorizers)
+                  ),
+                ],
+                { concurrency: 2, discard: true }
+              )
             ),
             Effect.catch(() =>
               Effect.logWarning(
@@ -146,20 +118,6 @@ export class DisconnectChannel extends Context.Service<
               ).pipe(Effect.annotateLogs({ channelId: channel.value.id }))
             )
           );
-
-          const revoked = revoke(channel.value, credentials.value).pipe(
-            Effect.timeout(revokeTimeout),
-            Effect.catch(notRevoked),
-            Effect.annotateLogs({
-              channelId: channel.value.id,
-              platform: channel.value.platform,
-            })
-          );
-
-          return yield* Effect.all([departing, revoked], {
-            concurrency: 2,
-            discard: true,
-          });
         }
       );
 

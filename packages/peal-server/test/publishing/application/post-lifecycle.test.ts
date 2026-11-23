@@ -1,5 +1,14 @@
 import { assert, describe, it } from "@effect/vitest";
-import { DateTime, Duration, Effect, Option, Result } from "effect";
+import {
+  DateTime,
+  Deferred,
+  Duration,
+  Effect,
+  Fiber,
+  Option,
+  Result,
+} from "effect";
+import { TestClock } from "effect/testing";
 
 import { PostDrafts } from "#publishing/application/post-drafts.ts";
 import { PostFollowUp } from "#publishing/application/post-follow-up.ts";
@@ -7,6 +16,8 @@ import { PostNotFound } from "#publishing/application/post-not-found.ts";
 import { PostQueries } from "#publishing/application/post-queries.ts";
 import { PostRepository } from "#publishing/application/post-repository.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
+import { QueueStore } from "#publishing/application/queue-store.ts";
+import { Queues } from "#publishing/application/queues.ts";
 import { InvalidPostTransition } from "#publishing/domain/invalid-post-transition.ts";
 import { InvalidTargetTransition } from "#publishing/domain/invalid-target-transition.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
@@ -14,11 +25,13 @@ import { repostTarget } from "#publishing/domain/post-target.ts";
 import { reopenPost } from "#publishing/domain/post.ts";
 import { FakePlatform } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { newId } from "#shared/application/ids.ts";
+import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
 import { MissingPermission } from "#shared/domain/missing-permission.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
+import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import {
   callsOn,
   eventually,
@@ -93,6 +106,166 @@ const targetOn = (postId: PostId, channelId: ChannelId) =>
       )
     )
   );
+
+describe("PostScheduling.holding", () => {
+  it.effect(
+    "holds the post while its effect runs: a change of it waits, and one through it joins",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* holds() {
+          const workspaceId = yield* freshWorkspace;
+          const actor = actorAs(yield* freshUser, workspaceId);
+          const channelId = yield* connect(workspaceId, "mastodon");
+          const draft = yield* draftOf(workspaceId, actor, [channelId]);
+          const held = yield* Deferred.make<boolean>();
+          const release = yield* Deferred.make<boolean>();
+
+          const holding = yield* PostScheduling.use((scheduling) =>
+            scheduling.holding(
+              actor,
+              draft.id
+            )(
+              Deferred.succeed(held, true).pipe(
+                Effect.andThen(Deferred.await(release)),
+                // A change through the use cases, in the held transaction,
+                // takes the lock it holds already.
+                Effect.andThen(
+                  PostScheduling.use((inner) =>
+                    inner.reschedule(
+                      actor,
+                      draft.id,
+                      scheduleIn("2026-06-16T08:00:00Z")
+                    )
+                  )
+                )
+              )
+            )
+          ).pipe(Effect.forkChild);
+
+          yield* Deferred.await(held);
+
+          const editing = yield* PostDrafts.use((drafts) =>
+            drafts.update(actor, draft.id, {
+              channelIds: [],
+              content: contentOf("Edited meanwhile."),
+            })
+          ).pipe(Effect.forkChild);
+
+          // The edit waits on the post's lock while it is held.
+          yield* TestClock.withLive(Effect.sleep("300 millis"));
+          assert.isUndefined(editing.pollUnsafe());
+
+          yield* Deferred.succeed(release, true);
+
+          const scheduled = yield* Fiber.join(holding);
+
+          // The edit waited for the change made under the hold: a draft
+          // no more, it is refused.
+          const edited = yield* Fiber.join(editing).pipe(Effect.flip);
+
+          assert.strictEqual(scheduled.post.status._tag, "scheduled");
+          assert.strictEqual(edited._tag, "InvalidPostTransition");
+
+          // Another workspace's post, or none, is not found; a member who
+          // may not read posts holds none.
+          const stranger = actorAs(yield* freshUser, yield* freshWorkspace);
+          const unread = actorAs(yield* freshUser, workspaceId, []);
+
+          const refusedFor = (who: typeof actor) =>
+            PostScheduling.use((scheduling) =>
+              scheduling.holding(who, draft.id)(Effect.void)
+            ).pipe(Effect.flip);
+
+          assert.strictEqual(
+            (yield* refusedFor(stranger))._tag,
+            "PostNotFound"
+          );
+          assert.deepStrictEqual(
+            yield* refusedFor(unread),
+            new MissingPermission({ permission: "post:read" })
+          );
+        })
+      ),
+    timeout
+  );
+});
+
+describe("PostScheduling.holding a queue", () => {
+  it.effect(
+    "locks the queue before the post, as placing a post on a queue does",
+    () =>
+      onPostsServerAt(
+        start,
+        Effect.gen(function* queueFirst() {
+          const workspaceId = yield* freshWorkspace;
+          const actor = actorAs(yield* freshUser, workspaceId);
+          const channelId = yield* connect(workspaceId, "mastodon");
+          const draft = yield* draftOf(workspaceId, actor, [channelId]);
+
+          const { queue } = yield* Queues.use((queues) =>
+            queues.create(actor, {
+              channelIds: [channelId],
+              channelSetId: Option.none(),
+              isDefault: false,
+              name: "Mornings",
+              slots: [{ day: "monday", time: { hour: 9, minute: 0 } }],
+              timeZone: TimeZoneIdSchema.make("Europe/Paris"),
+            })
+          );
+
+          const scheduling = yield* PostScheduling;
+          const postHeld = yield* Deferred.make<boolean>();
+          const postReleased = yield* Deferred.make<boolean>();
+
+          // Someone holds the post alone.
+          const first = yield* scheduling
+            .holding(
+              actor,
+              draft.id
+            )(
+              Deferred.succeed(postHeld, true).pipe(
+                Effect.andThen(Deferred.await(postReleased))
+              )
+            )
+            .pipe(Effect.forkChild);
+
+          yield* Deferred.await(postHeld);
+
+          // A hold with the queue takes the queue, then waits on the post.
+          const second = yield* scheduling
+            .holding(
+              actor,
+              draft.id,
+              Option.some(queue.id)
+            )(Effect.void)
+            .pipe(Effect.forkChild);
+
+          yield* TestClock.withLive(Effect.sleep("200 millis"));
+
+          // So the queue is taken already: locking it waits too.
+          const onQueue = yield* TransactionRunner.use((runner) =>
+            runner.transaction(
+              QueueStore.use((queues) => queues.lock(queue.id))
+            )
+          ).pipe(Effect.forkChild);
+
+          yield* TestClock.withLive(Effect.sleep("200 millis"));
+
+          assert.deepStrictEqual(
+            [second.pollUnsafe(), onQueue.pollUnsafe()],
+            [undefined, undefined]
+          );
+
+          yield* Deferred.succeed(postReleased, true);
+          yield* Fiber.join(first);
+          yield* Fiber.join(second);
+          yield* Fiber.join(onQueue);
+        })
+      ),
+    timeout
+  );
+});
 
 describe("PostQueries.listDrafts", () => {
   it.effect(

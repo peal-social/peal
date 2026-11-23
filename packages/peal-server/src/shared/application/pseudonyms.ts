@@ -13,6 +13,11 @@ export class Pseudonyms extends Context.Service<
   Pseudonyms,
   {
     readonly ofEmail: (email: string) => Effect.Effect<string>;
+    /**
+     * Whom or what a count is kept by, as `kind` and its id (`inviter` and
+     * a user's id, `workspace` and its id), apart from every other kind.
+     */
+    readonly ofCounted: (kind: string, id: string) => Effect.Effect<string>;
     /** A platform's member, by the identifier the platform gives them. */
     readonly ofPlatformMember: (
       platform: string,

@@ -16,7 +16,7 @@ import {
   FakeOidc,
 } from "#test/workspace/fakes/fake-oidc.ts";
 import type { FakeOidcProvider } from "#test/workspace/fakes/fake-oidc.ts";
-import { enrolled } from "#test/workspace/support.ts";
+import { enrolled, withCookies } from "#test/workspace/support.ts";
 
 import {
   emailTo,
@@ -199,24 +199,60 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), settings)(
     );
 
     it.effect(
-      "links nothing to an account that never confirmed its address",
+      "takes over an account that never confirmed its address, without its password",
       () =>
         Effect.gen(function* preRegistered() {
+          const app = yield* TestApp;
           const email = newEmail("pre-registered");
+          const theirs = "a passphrase someone else set";
 
-          yield* existingAccount(email, { confirmed: false });
+          // Someone signed up with the address, and never confirmed it.
+          const created = yield* app.request("/api/auth/sign-up/email", {
+            body: { email, locale: "en", name: "Someone", password: theirs },
+          });
+
+          assert.strictEqual(created.status, 200);
+
+          // A browser the account trusts to skip the second step, as the
+          // library keeps one.
+          const sql = yield* SqlClient.SqlClient;
+
+          yield* sql`
+            INSERT INTO auth.verification (identifier, value, expires_at, created_at, updated_at)
+            SELECT ${`trust-device-synthetic-${email}`}, id, now() + interval '30 days', now(), now()
+            FROM auth."user" WHERE email = ${email.toLowerCase()}`.pipe(
+            Effect.orDie
+          );
 
           const identity = verified(email);
           const finished = yield* providerSignIn(identity);
 
-          assert.strictEqual(finished.error, "account_not_linked");
-          assert.isFalse(setsSession(finished.reply));
-          assert.deepStrictEqual(yield* ownersOf(identity.sub), []);
+          // The provider vouches for the address: the account is the
+          // provider's person's now, confirmed, and its password is gone,
+          // with the browsers it trusted.
+          assert.isNull(finished.error);
+
+          const trusted =
+            yield* sql`SELECT identifier FROM auth.verification WHERE identifier = ${`trust-device-synthetic-${email}`}`.pipe(
+              Effect.orDie
+            );
+
+          assert.lengthOf(trusted, 0);
+          assert.isTrue(setsSession(finished.reply));
 
           const account = yield* accountOf(email);
 
-          assert.isFalse(account?.email_verified);
-          assert.strictEqual(account?.sessions, 0);
+          assert.isTrue(account?.email_verified);
+          assert.deepStrictEqual(yield* ownersOf(identity.sub), [
+            (yield* sessionUser(finished.cookies)).id,
+          ]);
+          assert.strictEqual(
+            (yield* app.request("/api/auth/sign-in/email", {
+              body: { email, password: theirs },
+            })).status,
+            401
+          );
+          assert.isFalse(yield* hasPasswordOf(finished.cookies));
         })
     );
 
@@ -871,3 +907,64 @@ layer(Layer.mergeAll(withFakePostHog(appWithOidc), MigratedSqlLive), {
     })
   );
 });
+
+// Where accounts work before their address is confirmed, an unconfirmed
+// account may be in use, by its own maker most of the time: a provider's
+// sign-in never joins nor erases it.
+layer(
+  Layer.mergeAll(
+    appWithOidc({ AUTH_REQUIRE_EMAIL_VERIFICATION: "false" }),
+    MigratedSqlLive
+  ),
+  settings
+)(
+  "signing in through a provider where addresses need no confirmation",
+  (it) => {
+    it.effect(
+      "refuses to take over an unconfirmed account in use, changing nothing",
+      () =>
+        Effect.gen(function* inUse() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const email = newEmail("in-use");
+
+          const made = yield* app.request("/api/auth/sign-up/email", {
+            body: { email, locale: "en", name: "Maker", password },
+          });
+
+          const cookie = withCookies("", made);
+          const maker = yield* sessionUser(cookie);
+
+          const workspaceId = yield* workspaceOf(
+            { cookies: cookie, email, id: maker.id },
+            "Maker notes"
+          );
+
+          const identity = verified(email);
+          const finished = yield* providerSignIn(identity);
+
+          assert.strictEqual(finished.error, "account_in_use");
+          assert.isFalse(setsSession(finished.reply));
+          assert.deepStrictEqual(yield* ownersOf(identity.sub), []);
+
+          const account = yield* accountOf(email);
+
+          assert.isFalse(account?.email_verified);
+          assert.strictEqual(account?.name, "Maker");
+
+          // Its maker still signs in with the password.
+          const signedIn = yield* app.request("/api/auth/sign-in/email", {
+            body: { email, password },
+          });
+
+          assert.strictEqual(signedIn.status, 200);
+
+          const [row] = yield* sql<{ readonly workspaces: number }>`
+          SELECT count(*)::int AS workspaces FROM auth.organization
+          WHERE id = ${workspaceId}`.pipe(Effect.orDie);
+
+          assert.strictEqual(row?.workspaces, 1);
+        })
+    );
+  }
+);

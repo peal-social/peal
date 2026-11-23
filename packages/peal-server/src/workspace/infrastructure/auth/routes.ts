@@ -5,6 +5,7 @@ import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { WorkspaceScopeSchema } from "#workspace/domain/oauth-grant.ts";
 
 import { BetterAuth } from "./better-auth.ts";
+import { boundedBody } from "./bounded-body.ts";
 import { apiResourceOf, issuerOf } from "./oauth.ts";
 import { authBasePath } from "./options.ts";
 import { AuthSettings } from "./settings.ts";
@@ -87,8 +88,9 @@ const decodeSession = Schema.decodeUnknownOption(
 /**
  * Better Auth's own routes, on the server's router beside the HTTP API:
  * everything under /api/auth goes to its handler as a web Request, body
- * untouched, and so do the discovery documents of its OAuth authorization
- * server and of the MCP endpoint. The HTTP API's own resource metadata,
+ * untouched but for one sent in chunks, which is read under the route's
+ * limit first (`boundedBody`), and so do the discovery documents of its
+ * OAuth authorization server and of the MCP endpoint. The HTTP API's own resource metadata,
  * which tells the command line what to ask a token for, is answered here.
  * The routes that add to what a plan limits run one at a time for each
  * workspace or account (`makeTurns`), so none passes a limit with another.
@@ -186,7 +188,7 @@ export const AuthRoutesLive = Layer.unwrap(
               Effect.promise(async () => await auth.handler(request))
             )
           );
-    }).pipe(Effect.withSpan("BetterAuth.handler"));
+    }).pipe(boundedBody, Effect.withSpan("BetterAuth.handler"));
 
     // RFC 9728 protected resource metadata for the HTTP API.
     const apiResource = HttpServerResponse.jsonUnsafe(

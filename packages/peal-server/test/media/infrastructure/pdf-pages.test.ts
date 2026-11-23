@@ -1,10 +1,13 @@
 import { assert, describe, expect, it } from "@effect/vitest";
-import { Effect, Option } from "effect";
+import { Effect, Option, Stream } from "effect";
 
 import {
   countPdfPages,
   isPdf,
   maxInflatedStream,
+  maxObjectStreamBytes,
+  readPdfArriving,
+  readPdfHolding,
 } from "#media/infrastructure/pdf-pages.ts";
 import {
   compressedPdf,
@@ -18,6 +21,62 @@ import {
 } from "#test/media/pdf.ts";
 
 const mib = 1024 * 1024;
+
+const encoder = new TextEncoder();
+
+const joined = (parts: readonly Uint8Array[]): Uint8Array => {
+  const whole = new Uint8Array(
+    parts.reduce((length, part) => length + part.length, 0)
+  );
+
+  let at = 0;
+
+  for (const part of parts) {
+    whole.set(part, at);
+    at += part.length;
+  }
+
+  return whole;
+};
+
+// The file in pieces of `size` bytes, as a store's answer arrives.
+const inPieces = (bytes: Uint8Array, size: number) =>
+  Stream.fromIterable(
+    Array.from({ length: Math.ceil(bytes.length / size) }, (_, index) =>
+      bytes.subarray(index * size, (index + 1) * size)
+    )
+  );
+
+const pagesArriving = (bytes: Uint8Array, size: number) =>
+  readPdfArriving(inPieces(bytes, size)).pipe(
+    Effect.map((read) => (read._tag === "pdf" ? read.pages : Option.none()))
+  );
+
+// A file of `pages` pages whose tree's root comes after `filler` bytes of
+// a picture's stream, as a document of large pictures is written.
+const pdfAfterPicture = (pages: number, filler: number) =>
+  joined([
+    encoder.encode(
+      `%PDF-1.4\n4 0 obj\n<< /Type /XObject /Subtype /Image /Length ${filler} >>\nstream\n`
+    ),
+    new Uint8Array(filler).fill(0x41),
+    encoder.encode(
+      `\nendstream\nendobj\n2 0 obj\n<< /Type /Pages /Count ${pages} /Kids [] >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n`
+    ),
+  ]);
+
+// An object stream one byte longer than what is held of one.
+const pdfWithLongObjectStream = () => {
+  const body = new Uint8Array(maxObjectStreamBytes + 1);
+
+  return joined([
+    encoder.encode(
+      `%PDF-1.7\n2 0 obj\n<< /Type /Pages /Count 3 /Kids [] >>\nendobj\n3 0 obj\n<< /Type /ObjStm /N 1 /First 0 /Filter /FlateDecode /Length ${body.length} >>\nstream\n`
+    ),
+    body,
+    encoder.encode("\nendstream\nendobj\n%%EOF\n"),
+  ]);
+};
 
 // How long reading `bytes` takes, in milliseconds, and how long the
 // longest stretch without letting other work run was: a timer that fires
@@ -40,6 +99,34 @@ const timed = async (bytes: Uint8Array) => {
   clearInterval(timer);
 
   return { longest, took: performance.now() - started };
+};
+
+// A picture's stream of 90 MiB whose bytes start with `endstream`, then
+// the page tree: its `/Length` is right (`kept`) or points past an
+// `endstream` that is not there (`broken`).
+const farStream = (lengthRight: boolean) => {
+  const filler = 90 * mib;
+
+  const head = encoder.encode(
+    `%PDF-1.4\n1 0 obj << /Length ${filler + (lengthRight ? 0 : 5)} >> stream\nendstream\n`
+  );
+
+  const tail = encoder.encode(
+    "\nendstream\nendobj\n2 0 obj\n<< /Type /Pages /Count 4 /Kids [] >>\nendobj\n%%EOF\n"
+  );
+
+  // Pieces made as they are read, so the test holds no 90 MiB either.
+  const pieces = function* pieces() {
+    yield head;
+
+    for (let sent = 10; sent < filler; sent += 64 * 1024) {
+      yield new Uint8Array(Math.min(64 * 1024, filler - sent));
+    }
+
+    yield tail;
+  };
+
+  return readPdfHolding(Stream.fromIterable(pieces()));
 };
 
 describe("a PDF's pages", () => {
@@ -140,6 +227,82 @@ describe("a PDF's pages", () => {
           Option.none()
         );
       })
+  );
+
+  it.effect.each([
+    ["in the clear", syntheticPdf(12), 12],
+    ["in an object stream", compressedPdf(7), 7],
+    ["in the last revision", incrementallyUpdatedPdf(200, 250), 250],
+    ["in a linearised file", linearisedPdf(40), 40],
+    ["inside object streams", objectStreamPdf(12, 5), 12],
+    ["named in text", pdfNamingPagesInText(), 1],
+  ] as const)(
+    "are counted the same however the file arrives: %s",
+    ([, bytes, pages]) =>
+      Effect.gen(function* arriving() {
+        for (const size of [1, 7, 4096, bytes.length]) {
+          assert.deepStrictEqual(
+            yield* pagesArriving(bytes, size),
+            Option.some(pages)
+          );
+        }
+      })
+  );
+
+  it.effect(
+    "are counted past a large picture's stream, let go as it passes",
+    () =>
+      Effect.gen(function* pictures() {
+        assert.deepStrictEqual(
+          yield* pagesArriving(pdfAfterPicture(9, 24 * mib), 64 * 1024),
+          Option.some(9)
+        );
+      })
+  );
+
+  it.effect(
+    "are not known when an object stream is longer than what is held of one",
+    () =>
+      Effect.gen(function* longStream() {
+        assert.deepStrictEqual(
+          yield* pagesArriving(pdfWithLongObjectStream(), 64 * 1024),
+          Option.none()
+        );
+      })
+  );
+
+  it.effect.each([
+    ["is right", true, Option.some(4)],
+    ["points past an end that is not there", false, Option.none()],
+  ] as const)(
+    "hold a few mebibytes of a stream that ends far past an early endstream, whose length %s",
+    ([, lengthRight, pages]) =>
+      Effect.gen(function* farLength() {
+        const { mostHeld, reading } = yield* farStream(lengthRight);
+
+        assert.deepStrictEqual(reading, { _tag: "pdf", pages });
+        assert.isBelow(mostHeld, 8 * mib);
+      })
+  );
+
+  it.effect("stop taking bytes of a file that does not start as a PDF", () =>
+    Effect.gen(function* notPdf() {
+      let taken = 0;
+
+      const read = yield* readPdfArriving(
+        inPieces(new Uint8Array(8 * mib).fill(0x3c), 4096).pipe(
+          Stream.tap(() =>
+            Effect.sync(() => {
+              taken += 1;
+            })
+          )
+        )
+      );
+
+      // Its first mebibyte, of eight, which the reading asks for at once.
+      assert.deepStrictEqual(read, { _tag: "notPdf" });
+      assert.isAtMost(taken * 4096, mib);
+    })
   );
 
   it("belong to a file that starts as a PDF does", () => {

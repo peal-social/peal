@@ -5,13 +5,13 @@ sidebar:
   icon: plug
 ---
 
-Peal serves the Model Context Protocol (MCP), so an AI assistant or any other MCP client can work in a workspace for you. It can read the workspace's posts, media, analytics, billing and members, and write drafts. It can schedule and publish posts when you allow it, follow up on posts that went out, and invite people.
+Peal serves the Model Context Protocol (MCP), so an AI assistant or any other MCP client can work in a workspace for you. It can read the workspace's posts, media, analytics, billing and members, and write drafts. It can schedule and publish posts when you allow it, and follow up on posts that went out.
 
 The client signs in as you, in a browser. It acts in the one workspace you pick, and never with more than your role allows. An agent that runs with nobody there to sign in connects with an [API key](#api-key) instead. [Posting from an AI agent](/developers/agents) walks through a whole post.
 
 ## The endpoint [#endpoint]
 
-The endpoint is `/api/mcp` at the address you open Peal at, such as `https://peal.example.com/api/mcp`. It speaks Streamable HTTP, in the protocol revisions 2026-07-28, 2025-11-25 and 2025-06-18.
+The endpoint is `/api/mcp` at the address you open Peal at, such as `https://peal.example.com/api/mcp`. It speaks Streamable HTTP, in the protocol revisions 2026-07-28, 2025-11-25 and 2025-06-18. In the two older ones, a session ends after an hour unused, and each person or key keeps 16 open at most: opening one more ends the one unused longest. A client told 404 for its session starts a new one, as those revisions ask.
 
 Run `peal mcp`, from the [command line](/developers/cli#mcp), and it prints the endpoint and a configuration that most MCP clients take:
 
@@ -115,7 +115,7 @@ A connection with a key works like this:
 
 - It acts in the key's workspace, with the key's permissions and no scope. A key without `post:schedule` writes drafts at most, so create a key with only what the agent needs.
 - `whoami` answers the key in `apiKey`, with its id and name, never the key itself. `user` and the workspace's `role` are `null`, since a key is nobody, and `permissions` lists what the key may do.
-- The tools that only a person uses refuse a key: `list_members`, `list_invitations`, `invite_member` and `revoke_invitation`.
+- The tool that only a person uses refuses a key: `list_members`.
 - What the key does shows in the workspace's [activity log](/guides/workspace#activity), under the key's id and name.
 - Revoking the key, under **API keys** in the workspace's settings, stops the agent at once.
 
@@ -138,6 +138,8 @@ The consent page lists what the client asks for:
 | Do what your role allows in the workspace, such as writing drafts and managing media, without scheduling or publishing anything | `workspace:write`   | Anything your [role](/guides/posts#roles) allows, reading included, except what puts posts out: nothing it does reaches a platform                                         |
 | Let it schedule and publish posts to your connected accounts, and answer comments there, where everyone can see them            | `workspace:publish` | What your role allows of what puts posts out, and reading: scheduling, moving, publishing and reposting a post, unscheduling it, cancelling it, and confirming how it went |
 
+Every authorization names the resource it is for, the MCP endpoint or the API, as MCP clients do. A client that asks for `openid`, `profile` and `email` alone, without a resource, gets no token: Peal isn't an identity provider for other applications.
+
 Publishing is a permission of its own. The consent page shows it on its own line, with a box that starts ticked. Untick it, and the client gets the rest of what it asked for, and no more. Without it, a client that may write still writes drafts, which you review and schedule yourself. One that may only read still reads.
 
 A client connected before publishing had its own permission holds the writing one alone. Until you connect it again and allow publishing, it publishes nothing, and it no longer unschedules, reposts or confirms. A connection keeps the permissions it was given until then.
@@ -150,6 +152,8 @@ A client connected before publishing had its own permission holds the writing on
   on an ad network, within the monthly ceiling an owner set. No client can turn
   spending on or change a ceiling.
 </Callout>
+
+No client invites people, cancels an invitation, or changes or removes a member, whatever you allow it: someone it invited would hold what you didn't allow it, and stay once you disconnect it. Only Peal's [command line](/developers/cli/workspace#members) does that, besides you in the web app.
 
 A client that has none of the three workspace permissions above can do nothing. Its access lasts 15 minutes at a time, and the client renews it on its own. Every request checks that you still belong to the workspace and aren't banned.
 

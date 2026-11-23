@@ -22,7 +22,13 @@ const NewSkillPage = async ({
     notFound();
   }
 
-  return <SkillScreen skillId={null} workspaceId={membership.id} />;
+  return (
+    <SkillScreen
+      mayShare={membership.permissions.includes("assistant:configure")}
+      skillId={null}
+      workspaceId={membership.id}
+    />
+  );
 };
 
 export const generateMetadata = workspacePageTitle("newSkill");

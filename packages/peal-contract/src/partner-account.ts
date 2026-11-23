@@ -7,6 +7,7 @@ import {
   OpenApi,
 } from "effect/http-api";
 
+import { ApiKeyMakerSchema } from "./api-keys.ts";
 import { Authentication } from "./authentication.ts";
 import { Forbidden } from "./forbidden.ts";
 import { PartnerAccountsClosed } from "./partner-accounts-closed.ts";
@@ -81,6 +82,11 @@ export const maxPartnerKeyNameLength = 80;
 /** A partner key as listed: never the key itself, which is shown once. */
 export const PartnerKeySchema = Schema.Struct({
   createdAt: Schema.DateTimeUtc,
+  // The member of the home workspace who made it. Null for a key whose
+  // maker closed their account, or is no longer a member: a partner key
+  // stops working once its maker leaves the home workspace or may no
+  // longer manage the partner account.
+  createdBy: Schema.NullOr(ApiKeyMakerSchema),
   expiresAt: Schema.NullOr(Schema.DateTimeUtc),
   id: Schema.String,
   name: Schema.String,
@@ -213,7 +219,7 @@ export class PartnerAccountApi extends HttpApiGroup.make("partnerAccount")
       success: CreatedPartnerKeySchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
       OpenApi.annotations({
-        description: `Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with \`permissions\` (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with \`scopes\`. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and ${inPerson}: keys cannot create keys.`,
+        description: `Creates a partner key, and answers with the key itself, which is not shown again. It acts in every workspace the partner owns, with \`permissions\` (what a product does for its customers: channels, media, posts, analytics, the writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes, which answer 422), and on those workspaces themselves with \`scopes\`. It never acts in the home workspace, nor in any workspace the partner does not own. Needs partner:manage, and ${inPerson}: keys cannot create keys. The key is the caller's: it stops working once they leave the home workspace, are removed or close their account, and once their role no longer holds partner:manage.`,
         summary: "Create a partner key",
       })
     ),

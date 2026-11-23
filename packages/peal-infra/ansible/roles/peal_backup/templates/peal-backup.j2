@@ -7,7 +7,7 @@
 # until a backup succeeds.
 set -eu
 
-type="${1:?usage: peal-backup full|diff|incr}"
+type="${1:?usage: peal-backup full|diff|incr [--failed]}"
 
 pgbackrest() {
   {{ peal_compose_bin }} exec -T --user postgres postgres pgbackrest "$@"
@@ -38,6 +38,13 @@ JSON
     http://127.0.0.1:{{ peal_ports.otlp_http }}/v1/metrics > /dev/null
 }
 
+# From the unit's ExecStopPost, when the run ended otherwise than in success.
+if [ "${2:-}" = --failed ]; then
+  report peal_backup_last_failure_timestamp "When the last database backup failed" ||
+    echo "peal-backup: the collector did not record the failure" >&2
+  exit 0
+fi
+
 # Creates the stanza the first time; afterwards, checks that it still matches
 # the database. A database started over no longer does (pgBackRest's error
 # 028): runbooks/restore-database.md says what to do then.
@@ -53,3 +60,10 @@ fi
 
 report peal_backup_last_success_timestamp "When the last database backup finished" ||
   echo "peal-backup: the backup is stored, but the collector did not record it" >&2
+{% if peal_backup_copy | default(false) %}
+# The backup copy follows each backup (peal-backup-copy): Grafana's
+# peal-backup-copy-behind compares this with the copy's own report, so a
+# copy that never succeeds alerts too.
+report peal_backup_copy_expected_timestamp "When a backup the backup copy must follow finished" ||
+  echo "peal-backup: the collector did not record that the copy is due" >&2
+{% endif %}

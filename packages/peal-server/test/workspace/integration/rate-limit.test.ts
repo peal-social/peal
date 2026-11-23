@@ -17,10 +17,13 @@ import { MigrationsLive } from "#shared/infrastructure/migrations.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import { AccountMail } from "#workspace/application/account-mail.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
+import { ApiKeyMakers } from "#workspace/application/api-key-makers.ts";
 import { ImpersonationGuard } from "#workspace/application/impersonation-guard.ts";
+import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
 import { SecurityPolicies } from "#workspace/application/security-policies.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
+import { UnclaimedAccounts } from "#workspace/application/unclaimed-accounts.ts";
 import {
   PartnerOwnershipLive,
   WorkspaceOwnersLive,
@@ -80,11 +83,15 @@ const authWith = (env: Record<string, string>) =>
     ),
     // Nor changes a workspace.
     Layer.provide(ActivityJournal.none),
+    Layer.provide(ApiKeyMakers.none),
+    Layer.provide(UnclaimedAccounts.layer),
     Layer.provide(AgentRecordsLive.pipe(Layer.provide(DatabaseLive))),
     Layer.provide(ProductAnalytics.none),
     Layer.provide(SiteMeasurement.none),
     Layer.provide(SecurityPolicies.none),
     Layer.provide(SignUpGate.anyone),
+    // Nor invites anyone.
+    Layer.provide(InvitationEmails.unlimited),
     // Nothing here changes two-step verification.
     Layer.provide(
       Layer.succeed(

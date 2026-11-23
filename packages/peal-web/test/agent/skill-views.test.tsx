@@ -235,6 +235,22 @@ describe(SkillListView, () => {
   });
 });
 
+// A new skill's form, for one who may share it with the workspace or not.
+const newSkillForm = async (mayShare: boolean) =>
+  await render(
+    <SkillFormView
+      busy={false}
+      cancel={null}
+      draft={emptySkillDraft}
+      editable
+      mayShare={mayShare}
+      problem={null}
+      tried={false}
+      onChange={nothing}
+      onSave={nothing}
+    />
+  );
+
 describe(SkillFormView, () => {
   it("says what is wrong once the person tried to save, and the refusal in words", async () => {
     const html = await render(
@@ -243,6 +259,7 @@ describe(SkillFormView, () => {
         cancel={null}
         draft={emptySkillDraft}
         editable
+        mayShare
         problem="nameTaken"
         tried
         onChange={nothing}
@@ -267,6 +284,7 @@ describe(SkillFormView, () => {
         cancel={null}
         draft={draftOf(shared)}
         editable={false}
+        mayShare={false}
         problem={null}
         tried={false}
         onChange={nothing}
@@ -279,5 +297,17 @@ describe(SkillFormView, () => {
       html.includes(">Save<"),
       html.includes('disabled=""'),
     ]).toStrictEqual([true, false, true]);
+  });
+
+  it("offers who can use it only to those who may share a skill with the workspace", async () => {
+    const shown = await newSkillForm(true);
+    const hidden = await newSkillForm(false);
+
+    expect([
+      shown.includes("Who can use it"),
+      hidden.includes("Who can use it"),
+      hidden.includes("Every member who may use the agent"),
+      hidden.includes(">Save<"),
+    ]).toStrictEqual([true, false, false, true]);
   });
 });

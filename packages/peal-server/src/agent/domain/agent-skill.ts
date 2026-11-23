@@ -3,6 +3,7 @@ import type { DateTime } from "effect";
 
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { UserId } from "#shared/domain/ids.ts";
+import { MissingPermission } from "#shared/domain/missing-permission.ts";
 import { storableLine, storableText } from "#shared/domain/platform-text.ts";
 
 import { AgentSkillIdSchema } from "./ids.ts";
@@ -75,12 +76,28 @@ export const usableBy = (skill: AgentSkill, userId: UserId): boolean =>
   skill.scope === "workspace" || isAuthor(skill, userId);
 
 /**
- * Whether the person may change or delete it: their own, or a workspace
- * skill they may manage.
+ * Whether the person may change or delete it: their own personal one, or
+ * a workspace skill when they may manage the workspace's. A workspace
+ * skill's author alone may not: what every member's agent is offered is
+ * the managers' to change.
  */
 export const editableBy = (skill: AgentSkill, reader: SkillReader): boolean =>
-  isAuthor(skill, reader.userId) ||
-  (skill.scope === "workspace" && reader.configures);
+  skill.scope === "workspace"
+    ? reader.configures
+    : isAuthor(skill, reader.userId);
+
+/**
+ * The scope a new skill takes, as the person may give it: a workspace
+ * skill, which every member's agent is offered, needs
+ * `assistant:configure`.
+ */
+export const scopeAllowed = (
+  scope: SkillScope,
+  reader: SkillReader
+): Result.Result<SkillScope, MissingPermission> =>
+  scope === "workspace" && !reader.configures
+    ? Result.fail(new MissingPermission({ permission: "assistant:configure" }))
+    : Result.succeed(scope);
 
 /** A skill's name as it is kept: one line, bounded. */
 export const skillName = (name: string): string =>
@@ -128,16 +145,17 @@ export const nameTaken = (
 
 /**
  * The skill as the person changes it at `now`: refused when they may not
- * change it, and when they move a workspace skill back to personal that
- * is not theirs (only its author may; it is theirs then). Moving their
- * own to the workspace needs nothing more.
+ * change it, when they move their own to the workspace without
+ * `assistant:configure`, and when they move a workspace skill back to
+ * personal that is not theirs (only its author may, while they manage the
+ * workspace's; it is theirs then).
  */
 export const changed = (
   skill: AgentSkill,
   change: SkillChange,
   reader: SkillReader,
   now: DateTime.Utc
-): Result.Result<AgentSkill, SkillRefused> => {
+): Result.Result<AgentSkill, MissingPermission | SkillRefused> => {
   const toPersonal = change.scope === "personal" && skill.scope === "workspace";
 
   if (
@@ -145,6 +163,14 @@ export const changed = (
     (toPersonal && !isAuthor(skill, reader.userId))
   ) {
     return Result.fail(new SkillRefused({ reason: "notEditable" }));
+  }
+
+  if (change.scope === "workspace" && skill.scope === "personal") {
+    const allowed = scopeAllowed(change.scope, reader);
+
+    if (Result.isFailure(allowed)) {
+      return Result.fail(allowed.failure);
+    }
   }
 
   return Result.succeed(

@@ -467,7 +467,7 @@ const userRows = {
     sql`SELECT count(*)::int AS count FROM staff.audit_events
       WHERE target_id = ${id}
         OR EXISTS (SELECT 1 FROM jsonb_each_text(object_ids) AS named(name, value) WHERE value = ${id})`,
-  // The partner keys they created stay their partner's, without them.
+  // The partner keys they created go with their account.
   "workspace.partner_keys": (sql, id) =>
     sql`SELECT count(*)::int AS count FROM workspace.partner_keys WHERE created_by = ${id}`,
 } satisfies Readonly<Record<string, Count>>;
@@ -520,6 +520,8 @@ const kept = {
     "where each sweep of the store stopped listing it: one storage key, which holds ids only",
   "notifications.sent_notices":
     "the keys of events already told, ids and instants only",
+  "workspace.invitation_emails":
+    "how many invitation emails a day sent, by a keyed digest (HMAC under the server's secret) of the member who invited, the workspace or the address invited, never one of them, so a row names nobody without that secret; kept two days",
   "publishing.quota_usage":
     "the units of a platform's daily quota the server spent, by day, a week: a bucket by LinkedIn member is a keyed digest of the member (HMAC under the server's secret), never their identifier, so a row names nobody without that secret",
 } satisfies Readonly<Record<string, string>>;

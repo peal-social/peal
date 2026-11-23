@@ -246,7 +246,8 @@ module Peal
       # writing assistant, webhooks, reading the plan's usage; never members, invitations, API keys or billing changes,
       # which answer 422), and on those workspaces themselves with `scopes`. It never acts in the home workspace, nor in
       # any workspace the partner does not own. Needs partner:manage, and a signed-in member rather than an API key or
-      # an OAuth client: keys cannot create keys.
+      # an OAuth client: keys cannot create keys. The key is the caller's: it stops working once they leave the home
+      # workspace, are removed or close their account, and once their role no longer holds partner:manage.
       #
       # @param request_options [Hash]
       # @param params [Peal::PartnerAccount::Types::NewPartnerKey]

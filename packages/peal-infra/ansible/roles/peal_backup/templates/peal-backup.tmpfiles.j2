@@ -1,0 +1,4 @@
+# Managed by Ansible (peal-infra). The backups' lock, which peal-backup and
+# peal-backup-copy take in turn: made at boot, readable by its group alone,
+# which the copy's own user joins.
+f /run/peal-backup.lock 0640 root {{ peal_backup_lock_group }} -

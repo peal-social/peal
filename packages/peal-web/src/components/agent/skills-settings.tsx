@@ -225,9 +225,11 @@ const SkillMenu = ({
 
 /** A skill's form, saved as a new skill or as changes to `skill`. */
 const SkillForm = ({
+  mayShare,
   skill,
   workspaceId,
 }: {
+  readonly mayShare: boolean;
   /** The skill to change; none for a new one. */
   readonly skill: AgentSkill | null;
   readonly workspaceId: string;
@@ -331,6 +333,7 @@ const SkillForm = ({
         busy={busy}
         draft={draft}
         editable={editable}
+        mayShare={mayShare}
         problem={problem}
         tried={tried}
         cancel={
@@ -358,11 +361,15 @@ const SkillForm = ({
 /**
  * A skill's page (`…/settings/agent/skills/<id>`, or `…/new` for a new
  * one): its form, and, for an existing one, its **…** in the header.
+ * Who can use it is offered to those who may share a skill with the
+ * workspace (`mayShare`, `assistant:configure`) only.
  */
 export const SkillScreen = ({
+  mayShare,
   skillId,
   workspaceId,
 }: {
+  readonly mayShare: boolean;
   /** The skill to open; null for a new one. */
   readonly skillId: string | null;
   readonly workspaceId: string;
@@ -372,7 +379,9 @@ export const SkillScreen = ({
   const { mounted, refresh, result } = useSkillList(workspaceId);
 
   if (skillId === null) {
-    return <SkillForm skill={null} workspaceId={workspaceId} />;
+    return (
+      <SkillForm mayShare={mayShare} skill={null} workspaceId={workspaceId} />
+    );
   }
 
   if (!mounted || AsyncResult.isInitial(result)) {
@@ -403,6 +412,7 @@ export const SkillScreen = ({
     <SkillForm
       // A skill changed elsewhere starts the form again from it.
       key={`${skill.id}:${String(DateTime.toEpochMillis(skill.updatedAt))}`}
+      mayShare={mayShare}
       skill={skill}
       workspaceId={workspaceId}
     />

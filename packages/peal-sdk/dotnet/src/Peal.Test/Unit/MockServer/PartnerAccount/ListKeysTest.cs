@@ -16,6 +16,10 @@ public class ListKeysTest : BaseMockServerTest
             [
               {
                 "createdAt": "createdAt",
+                "createdBy": {
+                  "id": "id",
+                  "name": "name"
+                },
                 "expiresAt": "expiresAt",
                 "id": "id",
                 "name": "name",
@@ -31,6 +35,10 @@ public class ListKeysTest : BaseMockServerTest
               },
               {
                 "createdAt": "createdAt",
+                "createdBy": {
+                  "id": "id",
+                  "name": "name"
+                },
                 "expiresAt": "expiresAt",
                 "id": "id",
                 "name": "name",
@@ -74,6 +82,10 @@ public class ListKeysTest : BaseMockServerTest
             [
               {
                 "createdAt": "createdAt",
+                "createdBy": {
+                  "id": "id",
+                  "name": "name"
+                },
                 "expiresAt": "expiresAt",
                 "id": "id",
                 "name": "name",

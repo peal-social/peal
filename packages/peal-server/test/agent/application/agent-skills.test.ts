@@ -1,6 +1,7 @@
 // The agent's skills: a person's own, or the workspace's, which every
-// member who may use the agent there uses; changed by their author, and
-// a workspace's by those who manage it too; picked in a message, or read
+// member who may use the agent there uses; a personal one changed by its
+// author, a workspace's made and changed only by those who manage it;
+// picked in a message, or read
 // by the agent when a request fits one; and kept with the workspace, or
 // gone with the person, when they leave.
 import { assert, layer } from "@effect/vitest";
@@ -77,6 +78,10 @@ const colleagueOf = (person: Person, role = "editor") =>
     )
   );
 
+// The same person, with the role of one who manages the workspace's skills.
+const asManager = (person: Person) =>
+  personIn(person.workspaceId, person.userId, permissionsFor("admin"));
+
 const sendAs = (person: Person, chatId: string, message: SentMessage) =>
   AgentDesk.use((agent) => agent.send(person.actor, chatId, message, asked));
 
@@ -123,14 +128,15 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
       Effect.gen(function* lists() {
         const person = yield* freshPerson;
         const colleague = yield* colleagueOf(person);
+        const admin = yield* colleagueOf(person, "admin");
 
         yield* create(person, personal("weekly plan"));
-        yield* create(person, shared("Answer reviews"));
+        yield* create(admin, shared("Answer reviews"));
         yield* create(colleague, personal("Colleague's own"));
-        yield* create(colleague, shared("Brand voice"));
+        yield* create(admin, shared("Brand voice"));
 
         assert.deepStrictEqual(yield* namesOf(person), [
-          ["Answer reviews", "workspace", true],
+          ["Answer reviews", "workspace", false],
           ["Brand voice", "workspace", false],
           ["weekly plan", "personal", true],
         ]);
@@ -197,12 +203,16 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
         const person = yield* freshPerson;
         const colleague = yield* colleagueOf(person);
 
+        const admin = yield* colleagueOf(person, "admin");
         const mine = yield* create(person, personal("Weekly plan"));
 
-        yield* create(colleague, shared("Brand voice"));
+        yield* create(admin, shared("Brand voice"));
 
         // Their own, and the workspace's, are both taken.
-        for (const skill of [shared("weekly PLAN"), personal("BRAND voice")]) {
+        for (const skill of [
+          personal("weekly PLAN"),
+          personal("BRAND voice"),
+        ]) {
           assert.deepInclude(yield* create(person, skill).pipe(Effect.flip), {
             _tag: "SkillRefused",
             reason: "nameTaken",
@@ -235,7 +245,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
     () =>
       Effect.gen(function* many() {
         const person = yield* freshPerson;
-        const colleague = yield* colleagueOf(person);
+        const colleague = yield* colleagueOf(person, "admin");
 
         // Half the workspace's, from a colleague, half their own.
         yield* Effect.forEach(
@@ -262,7 +272,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
   );
 
   it.effect(
-    "lets the author change and delete theirs, and the workspace's those who manage it",
+    "lets the author change and delete their own, and only those who manage the workspace's a workspace one",
     () =>
       Effect.gen(function* editable() {
         const person = yield* freshPerson;
@@ -270,7 +280,22 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
         const admin = yield* colleagueOf(person, "admin");
 
         const own = yield* create(person, personal("Mine"));
-        const theirs = yield* create(person, shared("Ours"));
+
+        // A member who does not manage the workspace's makes none: every
+        // member's agent is offered it.
+        assert.deepInclude(
+          yield* create(person, shared("Ours")).pipe(Effect.flip),
+          { _tag: "MissingPermission", permission: "assistant:configure" }
+        );
+
+        const theirs = yield* create(asManager(person), shared("Ours"));
+
+        // Its author, who does not manage them, may not change it.
+        assert.isFalse(
+          (yield* listed(person)).some(
+            ({ editable: canEdit, skill }) => skill.name === "Ours" && canEdit
+          )
+        );
 
         // Another's own is none of theirs, whatever they may manage.
         assert.deepInclude(
@@ -280,10 +305,13 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
           { _tag: "SkillNotFound", skillId: own.skill.id }
         );
 
-        // A workspace skill another member wrote is theirs to use only.
+        // A workspace skill is theirs to use only, whoever wrote it, for
+        // a member who does not manage the workspace's: its author too.
         for (const refused of [
           update(colleague, theirs.skill.id, { instructions: "Other." }),
           remove(colleague, theirs.skill.id),
+          update(person, theirs.skill.id, { instructions: "Other." }),
+          remove(person, theirs.skill.id),
         ]) {
           assert.deepInclude(yield* refused.pipe(Effect.flip), {
             _tag: "SkillRefused",
@@ -313,7 +341,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
   );
 
   it.effect(
-    "moves a person's own to the workspace, and back for its author only",
+    "moves a person's own to the workspace when they manage its skills, and back for its author only",
     () =>
       Effect.gen(function* moves() {
         const person = yield* freshPerson;
@@ -322,7 +350,16 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
 
         const own = yield* create(person, personal("Launch checklist"));
 
-        const shared_ = yield* update(person, own.skill.id, {
+        // Sharing it needs what managing the workspace's skills needs.
+        assert.deepInclude(
+          yield* update(person, own.skill.id, { scope: "workspace" }).pipe(
+            Effect.flip
+          ),
+          { _tag: "MissingPermission", permission: "assistant:configure" }
+        );
+        assert.deepStrictEqual(yield* namesOf(colleague), []);
+
+        const shared_ = yield* update(asManager(person), own.skill.id, {
           scope: "workspace",
         });
 
@@ -339,7 +376,15 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
           { _tag: "SkillRefused", reason: "notEditable" }
         );
 
-        const back = yield* update(person, own.skill.id, {
+        // Nor its author once they no longer manage them.
+        assert.deepInclude(
+          yield* update(person, own.skill.id, { scope: "personal" }).pipe(
+            Effect.flip
+          ),
+          { _tag: "SkillRefused", reason: "notEditable" }
+        );
+
+        const back = yield* update(asManager(person), own.skill.id, {
           scope: "personal",
         });
 
@@ -358,7 +403,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
 
         yield* create(person, personal("Mine"));
 
-        const ours = yield* create(person, shared("Ours"));
+        const ours = yield* create(asManager(person), shared("Ours"));
 
         const exported = yield* AgentRecords.use((records) =>
           records.exportSkills(person.userId)
@@ -394,7 +439,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
 
         // A closed account's go the same way; the workspace's, with it.
         yield* create(colleague, personal("Theirs"));
-        yield* create(colleague, shared("Team's"));
+        yield* create(asManager(colleague), shared("Team's"));
         yield* AgentRecords.use((records) =>
           records.eraseUser(colleague.userId)
         );
@@ -431,7 +476,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
         );
 
         const voice = yield* create(
-          colleague,
+          asManager(colleague),
           shared("Brand voice", "Write warmly, never with emoji.")
         );
 
@@ -538,7 +583,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the agent's skills", (it) => {
         const colleague = yield* colleagueOf(person);
 
         const voice = yield* create(
-          colleague,
+          asManager(colleague),
           shared("Brand voice", "Write warmly, never with emoji.")
         );
 

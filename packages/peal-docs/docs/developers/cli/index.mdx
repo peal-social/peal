@@ -30,7 +30,7 @@ packages/peal-cli/dist/peal --help
 
 ## Choose the instance [#instance]
 
-Point `peal` at the address you open Peal at, such as `https://peal.example.com`. Give it with `--api-url` or `PEAL_API_URL`, and the flag wins if you set both. Without either, `peal` uses `http://localhost:3000`, a server running from source.
+Point `peal` at the address you open Peal at, such as `https://peal.example.com`. Give it with `--api-url` or `PEAL_API_URL`, and the flag wins if you set both. Without either, `peal` uses `http://localhost:3000`, a server running from source. It never sends an API key there unless you name that address yourself ([Run it with an API key](#api-key)).
 
 ```sh
 export PEAL_API_URL=https://peal.example.com
@@ -167,6 +167,8 @@ peal drafts list --json
 
 `peal` reads the key from the environment only. There's no flag for it, because a flag lands in your shell's history and in the list of processes. `peal` never prints it. While `PEAL_API_KEY` is set, it wins over a saved sign-in, and a blank value counts as no key.
 
+With a key, `--api-url` or `PEAL_API_URL` must name the instance the key was made on. A key goes to no default address, so without either the command stops with `api_url_required` and sends nothing.
+
 With a key, `--workspace` or `PEAL_WORKSPACE` must give the workspace's id, not its slug. There's no default, because a key can't look workspaces up. `peal whoami` lists it when you're signed in as a person, as `GET /api/me` does. Without it, the command stops with `workspace_id_required`.
 
 The key does what its permissions allow, and no more. Without `post:schedule`, for example, it can write drafts but not schedule them. A refusal comes in the server's words, with the permission the key lacks.
@@ -199,17 +201,17 @@ ok  mcp            MCP clients connect to https://peal.example.com/api/mcp: peal
 
 It runs these checks, in this order:
 
-| Check           | What it looks at                                                                                                                                                                                          |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `api-url`       | The instance's address, and whether it came from `--api-url`, `PEAL_API_URL` or the default. It fails for plain HTTP beyond this machine, unless `--insecure-http` allows it.                             |
-| `health`        | That the server answers within 5 seconds.                                                                                                                                                                 |
-| `ready`         | That the server reaches its database.                                                                                                                                                                     |
-| `changelog`     | That it answers `GET /api/changelog` with the API's latest release ([Changelog](/developers/conventions/versioning#changelog)). A server that doesn't is older, or isn't a Peal server.                   |
-| `credential`    | Which credential a run uses: the key in `PEAL_API_KEY`, or the saved sign-in. It's never printed.                                                                                                         |
-| `access`        | That the credential works: who's signed in and where, or, for a key, that it can read the workspace's channels.                                                                                           |
-| `publish-scope` | Whether the sign-in can schedule and publish. It's skipped for a key, which has permissions rather than a scope. A sign-in without it is `ok`: it writes drafts, and that isn't something to work around. |
-| `workspace`     | Which workspace commands act in, and where that choice came from.                                                                                                                                         |
-| `mcp`           | The address MCP clients connect to.                                                                                                                                                                       |
+| Check           | What it looks at                                                                                                                                                                                                               |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `api-url`       | The instance's address, and whether it came from `--api-url`, `PEAL_API_URL` or the default. It fails for plain HTTP beyond this machine, unless `--insecure-http` allows it, and for the default while `PEAL_API_KEY` is set. |
+| `health`        | That the server answers within 5 seconds.                                                                                                                                                                                      |
+| `ready`         | That the server reaches its database.                                                                                                                                                                                          |
+| `changelog`     | That it answers `GET /api/changelog` with the API's latest release ([Changelog](/developers/conventions/versioning#changelog)). A server that doesn't is older, or isn't a Peal server.                                        |
+| `credential`    | Which credential a run uses: the key in `PEAL_API_KEY`, or the saved sign-in. It's never printed.                                                                                                                              |
+| `access`        | That the credential works: who's signed in and where, or, for a key, that it can read the workspace's channels.                                                                                                                |
+| `publish-scope` | Whether the sign-in can schedule and publish. It's skipped for a key, which has permissions rather than a scope. A sign-in without it is `ok`: it writes drafts, and that isn't something to work around.                      |
+| `workspace`     | Which workspace commands act in, and where that choice came from.                                                                                                                                                              |
+| `mcp`           | The address MCP clients connect to.                                                                                                                                                                                            |
 
 Each check is `ok`, `failing` or `skipped`. A check is skipped when it can't be made, for example when the server doesn't answer, or when it doesn't apply. A failing check tells you what to do, on a line that starts with `To do:`. If any check fails, `peal doctor` exits with 1.
 
@@ -287,6 +289,7 @@ The command line has codes of its own for what stops it before, or instead of, a
 | `sign_in_expired`         | The saved sign-in no longer works. Run `peal login` again.                                                  |
 | `api_key_refused`         | The instance refused the key in `PEAL_API_KEY`: it's revoked, expired, or another server's.                 |
 | `person_required`         | The command is for a person who's signed in, and `PEAL_API_KEY` is set.                                     |
+| `api_url_required`        | `PEAL_API_KEY` is set, and neither `--api-url` nor `PEAL_API_URL` names the instance.                       |
 | `workspace_id_required`   | With an API key, no workspace is named, or it's named by something other than its id.                       |
 | `workspace_required`      | You belong to several workspaces and named none.                                                            |
 | `workspace_unknown`       | You belong to no workspace with that slug or id.                                                            |

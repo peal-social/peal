@@ -1,4 +1,4 @@
-import { Effect, FileSystem, Option, Path } from "effect";
+import { Duration, Effect, FileSystem, Option, Path, Schedule } from "effect";
 import { HttpClient, HttpClientRequest } from "effect/http";
 import type { Media, MediaContentType, SignedRequest } from "peal-contract";
 
@@ -31,6 +31,15 @@ const contentTypes = {
 
 const contentTypeOf = (extension: string): MediaContentType | undefined =>
   Object.entries(contentTypes).find(([known]) => known === extension)?.[1];
+
+/**
+ * The waits before completing an upload again while the server checks as
+ * many files as it may: 2 seconds, doubling up to 16, five more tries.
+ */
+const completeRetrySchedule = Schedule.min([
+  Schedule.exponential(Duration.seconds(2)),
+  Schedule.spaced(Duration.seconds(16)),
+]).pipe(Schedule.jittered, Schedule.upTo({ times: 5 }));
 
 /** Whether `--media` names an address to import rather than a file. */
 export const isAddress = (source: string): boolean =>
@@ -207,9 +216,15 @@ export const uploadFile = (
       )
     );
 
-    return yield* client.media
-      .complete({ params: mediaParams })
-      .pipe(Effect.mapError(explain(url)));
+    // The server checks a few files at once: past them it answers busy,
+    // the file uploaded, and completing again checks it.
+    return yield* client.media.complete({ params: mediaParams }).pipe(
+      Effect.retry({
+        schedule: completeRetrySchedule,
+        while: (error) => error._tag === "MediaImportBusy",
+      }),
+      Effect.mapError(explain(url))
+    );
   });
 
 /** Has the server fetch a file from a public address, as media. */

@@ -90,7 +90,7 @@ Certaines fonctions ont leur propre limite, en plus de celle-ci :
 | Limite                                                                     | Erreur                     | Voir                                                                               |
 | -------------------------------------------------------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
 | Les demandes à l’assistant de rédaction, par espace de travail et par jour | `assistant_quota_exceeded` | [Demander de l’aide à l’assistant de rédaction](/guides/posts/assistant#assistant) |
-| Les imports en cours en même temps                                         | `media_import_busy`        | [Médias](/guides/media)                                                            |
+| Les imports, et les lectures de fichiers envoyés, en cours en même temps   | `media_import_busy`        | [Médias](/guides/media)                                                            |
 | Les événements de test et les renvois de webhooks, par heure               | `too_many_webhook_sends`   | [Le journal des livraisons](/developers/webhooks/delivery#log)                     |
-| Les invitations en attente d’un espace de travail                          | `too_many_invitations`     | [Invitations](/guides/workspace#invitations)                                       |
+| Les invitations en attente, et les e-mails d’invitation par jour           | `too_many_invitations`     | [Invitations](/guides/workspace#invitations)                                       |
 | Ce que permet un abonnement, sur un serveur qui facture                    | `plan_limit_reached`       | [Abonnements et facturation](/guides/workspace/billing#limits)                     |

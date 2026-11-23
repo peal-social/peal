@@ -20,7 +20,11 @@ import {
   normalizeContentType,
 } from "#media/domain/media-format.ts";
 import { MediaMetadata } from "#media/domain/media-metadata.ts";
-import { MultipartUploadIdSchema } from "#media/domain/media-status.ts";
+import {
+  isFinalProbe,
+  maxVideoReads,
+  MultipartUploadIdSchema,
+} from "#media/domain/media-status.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 
 const id = MediaAssetIdSchema.make("00000000-0000-7000-8000-000000000001");
@@ -264,6 +268,70 @@ describe(markUnprobed, () => {
       ).toBe("InvalidMediaTransition");
     }
   );
+
+  it("counts the probes in a row that found a video unreadable, until they are final", () => {
+    const video = Result.getOrThrow(
+      markUploaded(
+        startUpload(
+          {
+            accepted: {
+              byteSize: 4096,
+              contentType: "video/mp4",
+              kind: "video",
+            },
+            altText: Option.none(),
+            id,
+            upload: { _tag: "single" },
+            workspaceId,
+          },
+          createdAt
+        ),
+        now
+      )
+    );
+
+    const unreadable = (asset: MediaAsset) =>
+      Result.getOrThrow(markUnprobed(asset, "unreadable", now));
+
+    const once = unreadable(video);
+    const twice = unreadable(once);
+    const thrice = unreadable(twice);
+
+    expect(once.status).toStrictEqual({
+      _tag: "uploaded",
+      failedReads: 1,
+      probe: "unreadable",
+    });
+    expect(
+      [once, twice, thrice].map(({ kind, status }) =>
+        status._tag === "uploaded" ? isFinalProbe(status, kind) : undefined
+      )
+    ).toStrictEqual([false, false, true]);
+    expect(maxVideoReads).toBe(3);
+
+    // A probe that ended otherwise starts the count again.
+    const timedOut = Result.getOrThrow(markUnprobed(twice, "timedOut", now));
+
+    expect(unreadable(timedOut).status).toStrictEqual({
+      _tag: "uploaded",
+      failedReads: 1,
+      probe: "unreadable",
+    });
+  });
+
+  it("takes an image or a document found unreadable, too large or too long, as final", () => {
+    expect(
+      isFinalProbe({ probe: "unreadable" }, "image") &&
+        isFinalProbe({ probe: "unreadable" }, "document") &&
+        isFinalProbe({ probe: "tooLarge" }, "video") &&
+        isFinalProbe({ probe: "tooManyPages" }, "document")
+    ).toBeTruthy();
+    expect(
+      isFinalProbe({ probe: "timedOut" }, "image") ||
+        isFinalProbe({ probe: "toolFailed" }, "video") ||
+        isFinalProbe({ probe: "unavailable" }, "video")
+    ).toBeFalsy();
+  });
 });
 
 describe(markReady, () => {

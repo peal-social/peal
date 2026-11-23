@@ -11,6 +11,9 @@ public record WorkspaceMember : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
+    [JsonPropertyName("apiKeysAtStake")]
+    public ApiKeysAtStake? ApiKeysAtStake { get; set; }
+
     [JsonPropertyName("email")]
     public required string Email { get; set; }
 

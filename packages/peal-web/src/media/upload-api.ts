@@ -2,6 +2,7 @@ import { Effect } from "effect";
 import {
   AltTextTooLong,
   Forbidden,
+  MediaImportBusy,
   MediaStoreUnavailable,
   MediaTooLarge,
   PlanLimitReached,
@@ -31,6 +32,7 @@ const reasons: readonly (readonly [
   UploadFailureReason,
 ])[] = [
   [Forbidden, "forbidden"],
+  [MediaImportBusy, "busy"],
   [MediaStoreUnavailable, "storeUnavailable"],
   [Unauthenticated, "signedOut"],
   [UnsupportedMediaType, "unsupportedType"],

@@ -1,5 +1,6 @@
 import { Schema } from "effect";
 
+import type { MediaKind } from "./media-format.ts";
 import { PartSizeSchema } from "./upload-plan.ts";
 
 /** The store's id for a multipart upload in progress. */
@@ -64,6 +65,38 @@ export const ProbeStateSchema = Schema.Literals([
 export type ProbeState = typeof ProbeStateSchema.Type;
 
 /**
+ * The probe's refusals that probing again would only repeat: the stored
+ * file never changes (its key is written once), and these come from its
+ * bytes alone, never from the store, the time it took or the program that
+ * read it.
+ */
+export const finalProbeFailures: ReadonlySet<ProbeState> = new Set<ProbeState>([
+  "tooLarge",
+  "tooManyPages",
+]);
+
+/**
+ * How many probes in a row may find a video unreadable before it is
+ * probed no more: ffprobe reads it from the store itself, so a store that
+ * fails mid-read, a link that expires or ffprobe stopped reads as a
+ * damaged file too. An image or a document is read into memory first, so
+ * one finding is final.
+ */
+export const maxVideoReads = 3;
+
+/**
+ * Whether probing a file of `kind` again could find otherwise than its
+ * uploaded status says.
+ */
+export const isFinalProbe = (
+  status: { readonly failedReads?: number; readonly probe: ProbeState },
+  kind: MediaKind
+): boolean =>
+  finalProbeFailures.has(status.probe) ||
+  (status.probe === "unreadable" &&
+    (kind !== "video" || (status.failedReads ?? 0) >= maxVideoReads));
+
+/**
  * Where a file is in its life:
  *
  * | From     | To                                   |
@@ -80,7 +113,11 @@ export const MediaStatusSchema = Schema.Union([
   // Recorded, and waiting for the client to upload the file.
   Schema.TaggedStruct("pending", { upload: UploadMethodSchema }),
   // Stored with the declared size and content type, and not probed yet.
-  Schema.TaggedStruct("uploaded", { probe: ProbeStateSchema }),
+  // `failedReads`: how many probes in a row found a video unreadable.
+  Schema.TaggedStruct("uploaded", {
+    failedReads: Schema.optionalKey(Schema.Int),
+    probe: ProbeStateSchema,
+  }),
   // Probed, and usable in posts.
   Schema.TaggedStruct("ready", {}),
   Schema.TaggedStruct("rejected", { reason: RejectionReasonSchema }),

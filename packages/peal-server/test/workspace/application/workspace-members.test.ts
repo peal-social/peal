@@ -5,11 +5,20 @@ import { Actor } from "#shared/domain/access.ts";
 import type { ActorSubject } from "#shared/domain/access.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
+import { PartnerStore } from "#workspace/application/partner-store.ts";
+import { WorkspaceApiKeys } from "#workspace/application/workspace-api-keys.ts";
 import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
 import type { NewInvitation } from "#workspace/application/workspace-members.ts";
 import { WorkspacePeople } from "#workspace/application/workspace-people.ts";
 import type { InvitationRequest } from "#workspace/application/workspace-people.ts";
+import { ApiKey } from "#workspace/domain/api-key.ts";
 import { Invitation } from "#workspace/domain/invitation.ts";
+import {
+  PartnerIdSchema,
+  PartnerKeyIdSchema,
+} from "#workspace/domain/partner-id.ts";
+import { PartnerKey } from "#workspace/domain/partner-key.ts";
+import { Partner } from "#workspace/domain/partner.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 
 // An account without two-step verification, in a workspace that does not
@@ -38,6 +47,20 @@ const pending = (id: string, role: string) =>
   });
 
 const colleagueId = UserIdSchema.make("2d8a4b6c-5e3f-4a71-8cbd-3e4f5a6b7c8d");
+
+// A port method the test never reaches.
+const unused = () => Effect.die("not used in this test");
+
+const partner = new Partner({
+  accentColor: Option.none(),
+  createdAt: at,
+  id: PartnerIdSchema.make("0195d2c0-0000-7000-8000-0000000000aa"),
+  logoUrl: Option.none(),
+  name: "Synthetic partner",
+  returnOrigins: [],
+  updatedAt: at,
+  workspaceId,
+});
 
 const guestId = UserIdSchema.make("3e9b5c7d-6f4a-4b82-9dce-4f5a6b7c8d9e");
 
@@ -138,10 +161,82 @@ const run = <A, E>(
       })
     );
 
+    // A key the colleague made with billing:manage, which an editor holds
+    // not, and one no maker is recorded for.
+    const apiKeys = Layer.succeed(
+      WorkspaceApiKeys,
+      WorkspaceApiKeys.of({
+        list: () =>
+          Effect.succeed([
+            new ApiKey({
+              createdAt: at,
+              createdBy: Option.some(colleagueId),
+              expiresAt: Option.none(),
+              id: "billing",
+              name: "billing",
+              permissions: ["billing:manage"],
+              start: Option.none(),
+              workspaceId,
+            }),
+            new ApiKey({
+              createdAt: at,
+              createdBy: Option.none(),
+              expiresAt: Option.none(),
+              id: "older",
+              name: "older",
+              permissions: ["billing:manage"],
+              start: Option.none(),
+              workspaceId,
+            }),
+          ]),
+        revoke: () => Effect.die("nothing is revoked here"),
+      })
+    );
+
+    // The workspace is a partner's home, with a key the colleague made,
+    // which only a role that manages the partner account keeps.
+
+    const partners = Layer.succeed(
+      PartnerStore,
+      PartnerStore.of({
+        addKey: unused,
+        all: Effect.succeed([]),
+        closeOf: unused,
+        get: unused,
+        keyByDigest: unused,
+        keys: () =>
+          Effect.succeed([
+            new PartnerKey({
+              createdAt: at,
+              createdBy: Option.some(colleagueId),
+              expiresAt: Option.none(),
+              id: PartnerKeyIdSchema.make(
+                "0195d2c0-0000-7000-8000-000000000001"
+              ),
+              name: "partner",
+              partnerId: partner.id,
+              permissions: ["post:read"],
+              scopes: ["workspaces:read"],
+              start: "peal_partner_synt",
+            }),
+          ]),
+        ofWorkspace: () => Effect.succeed(Option.some(partner)),
+        ofWorkspaces: unused,
+        open: unused,
+        purgeUsageBefore: unused,
+        recordUsage: unused,
+        removeKey: unused,
+        removeKeysMadeBy: unused,
+        save: unused,
+        usage: unused,
+        usageBetween: unused,
+      })
+    );
+
     return yield* test(asked).pipe(
       Effect.provide(
         WorkspaceMembers.layer.pipe(
-          Layer.provide(Layer.mergeAll(people, directory))
+          Layer.provide(Layer.mergeAll(people, directory, apiKeys, partners))
         )
       )
     );
@@ -354,16 +449,32 @@ describe(WorkspaceMembers, () => {
       );
 
       assert.strictEqual(refused, "UserRequired");
-      // Whether each has two-step verification on, only to who manages
-      // members.
+      // Whether each has two-step verification on, and what changing them
+      // would revoke of their keys, only to who manages members.
       assert.deepStrictEqual(
         listed,
-        seated.map((seat) => ({ ...seat, twoStepEnabled: Option.none() }))
+        seated.map((seat) => ({
+          ...seat,
+          apiKeysAtStake: Option.none(),
+          twoStepEnabled: Option.none(),
+        }))
       );
+
+      const none = { admin: 0, contributor: 0, editor: 0, owner: 0, viewer: 0 };
+
       assert.deepStrictEqual(
         managed,
         seated.map((seat) => ({
           ...seat,
+          apiKeysAtStake: Option.some(
+            seat.userId === colleagueId
+              ? {
+                  // The API key and the partner key.
+                  removal: 2,
+                  roles: { ...none, contributor: 2, editor: 2, viewer: 2 },
+                }
+              : { removal: 0, roles: none }
+          ),
           twoStepEnabled: Option.some(seat.twoStepEnabled),
         }))
       );

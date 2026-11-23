@@ -1,3 +1,5 @@
+import { setTimeout as delay } from "node:timers/promises";
+
 import { assert, layer } from "@effect/vitest";
 import {
   ConfigProvider,
@@ -8,6 +10,7 @@ import {
   Latch,
   Layer,
   Option,
+  Ref,
   Stream,
 } from "effect";
 import { TestClock } from "effect/testing";
@@ -15,6 +18,7 @@ import sharp from "sharp";
 
 import { MediaAssets } from "#media/application/ports/media-assets.ts";
 import { MediaStorage } from "#media/application/ports/media-storage.ts";
+import { ProbeSlots } from "#media/application/ports/probe-slots.ts";
 import { StorageAllowance } from "#media/application/ports/storage-allowance.ts";
 import {
   CurrentUploadPolicy,
@@ -28,10 +32,12 @@ import {
 import { completeUpload } from "#media/application/use-cases/complete-upload.ts";
 import { createUpload } from "#media/application/use-cases/create-upload.ts";
 import type { PreparedUpload } from "#media/application/use-cases/create-upload.ts";
+import { finishUpload } from "#media/application/use-cases/finish-upload.ts";
 import { MediaLibrary } from "#media/container.ts";
 import { MediaAssetIdSchema } from "#media/domain/media-asset-id.ts";
 import { startUpload } from "#media/domain/media-asset.ts";
 import { MediaMetadata } from "#media/domain/media-metadata.ts";
+import { probeSlotWait } from "#media/domain/probe-limits.ts";
 import { storageKeyFor } from "#media/domain/storage-key.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { MediaProbeLive } from "#media/infrastructure/media-probe.ts";
@@ -79,6 +85,12 @@ const smallParts = {
   multipartThreshold: mebibytes(5),
   partSize: mebibytes(5),
 };
+
+// A server that does not bill: no storage limit.
+const unlimitedStorage = StorageAllowance.of({
+  bytes: () => Effect.succeed(Option.none()),
+  sharedWith: () => Effect.succeed([]),
+});
 
 const freshWorkspace: Effect.Effect<WorkspaceId, never, Ids> = Ids.use(
   (ids) => ids.next
@@ -766,6 +778,108 @@ layer(LibraryTest)("the media library", (it) => {
         probe: "unreadable",
       });
     })
+  );
+
+  it.effect(
+    "answers a file its probe refused for its bytes as it stands, probing it no more",
+    () =>
+      Effect.gen(function* refusedForGood() {
+        const workspaceId = yield* freshWorkspace;
+        const body = damagedPng(64);
+        const prepared = yield* prepare(workspaceId, "image/png", body.length);
+
+        const finish = () =>
+          MediaLibrary.use((library) =>
+            library.finishUpload(memberIn(workspaceId), prepared.asset.id)
+          );
+
+        yield* sendSigned(yield* singleRequest(prepared), body);
+
+        const { asset: first } = yield* finish();
+
+        // A probe would record its reason again, at the time it ran.
+        yield* TestClock.adjust(Duration.minutes(5));
+
+        const { asset: again } = yield* finish();
+
+        assert.deepStrictEqual(again.status, {
+          _tag: "uploaded",
+          probe: "unreadable",
+        });
+        assert.deepStrictEqual(again.updatedAt, first.updatedAt);
+      })
+  );
+
+  it.effect(
+    "waits for a probe's slot a while, then refuses, leaving the file uploaded",
+    () =>
+      Effect.gen(function* busy() {
+        const workspaceId = yield* freshWorkspace;
+        const body = yield* whitePng(16, 9);
+        const prepared = yield* prepare(workspaceId, "image/png", body.length);
+        const request = { assetId: prepared.asset.id, workspaceId };
+
+        yield* sendSigned(yield* singleRequest(prepared), body);
+
+        const free = yield* Ref.make(false);
+        const asked = yield* Ref.make(0);
+
+        const finish = finishUpload(request).pipe(
+          Effect.provideService(
+            ProbeSlots,
+            ProbeSlots.of({
+              take: () =>
+                Ref.update(asked, (count) => count + 1).pipe(
+                  Effect.andThen(Ref.get(free))
+                ),
+            })
+          ),
+          Effect.provideService(StorageAllowance, unlimitedStorage),
+          Effect.provide(MediaProbeLive)
+        );
+
+        // Until the call asks for a slot, on real time: the database and
+        // the store answer on their own clock.
+        const asking = Effect.gen(function* asking() {
+          const before = yield* Ref.get(asked);
+
+          for (let tries = 0; tries < 500; tries += 1) {
+            if ((yield* Ref.get(asked)) > before) {
+              return;
+            }
+
+            yield* Effect.promise(async () => {
+              await delay(10);
+            });
+          }
+        });
+
+        // No slot for the whole wait: refused, the file left uploaded.
+        const refused = yield* Effect.forkChild(Effect.flip(finish));
+
+        yield* asking;
+        yield* TestClock.adjust(probeSlotWait);
+
+        assert.include(yield* Fiber.join(refused), {
+          _tag: "MediaImportBusy",
+        });
+        assert.deepStrictEqual(
+          Option.getOrUndefined(yield* recorded(prepared))?.status,
+          { _tag: "uploaded", probe: "pending" }
+        );
+
+        // A slot frees itself during the wait: the call probes the file.
+        const waiting = yield* Effect.forkChild(finish);
+
+        yield* asking;
+        yield* TestClock.adjust(Duration.seconds(5));
+        yield* Ref.set(free, true);
+        yield* TestClock.adjust(Duration.seconds(1));
+
+        const { asset } = yield* Fiber.join(waiting);
+
+        assert.deepStrictEqual(asset.status, { _tag: "ready" });
+      })
   );
 
   it.effect("refuses what the actor's permissions do not allow", () =>

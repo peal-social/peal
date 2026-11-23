@@ -26,7 +26,24 @@ export type RefreshBehaviour =
   | "refuse"
   | "fail"
   | "directoryDown"
-  | "metadataDown";
+  | "metadataDown"
+  | HostileBehaviour;
+
+/**
+ * Answers a hostile server sends, to fill the validators' memory: a DID
+ * document of a megabyte of authentication entries, or of 10,000 empty
+ * services, an authorization server's metadata with 10,000 scopes, and a
+ * token answer as large.
+ */
+export type HostileBehaviour =
+  | "hugeDocument"
+  | "manyServices"
+  | "manyScopes"
+  | "hugeTokens";
+
+// A JSON array of `count` copies of `entry`.
+const many = <T>(entry: T, count: number): T[] =>
+  Array.from({ length: count }, () => entry);
 
 const unavailable = json({ error: "Service Unavailable" }, 503);
 
@@ -80,6 +97,16 @@ export const fakeAtproto = Effect.fnUntraced(function* fakeAtproto() {
   const token = (request: FakeRequest): FakeResponse => {
     const form = formOf(request);
 
+    if (behaviour === "hugeTokens") {
+      return json({
+        access_token: "access-huge",
+        authorization_details: many(0, 500_000),
+        scope,
+        sub: blueskyAccount.did,
+        token_type: "DPoP",
+      });
+    }
+
     if (form.get("grant_type") === "authorization_code") {
       const grant = codes.get(form.get("code") ?? "");
 
@@ -129,6 +156,17 @@ export const fakeAtproto = Effect.fnUntraced(function* fakeAtproto() {
           return unavailable;
         }
 
+        if (behaviour === "hugeDocument") {
+          return json({
+            authentication: many(0, 500_000),
+            id: blueskyAccount.did,
+          });
+        }
+
+        if (behaviour === "manyServices") {
+          return json({ id: blueskyAccount.did, service: many({}, 10_000) });
+        }
+
         return json({
           "@context": ["https://www.w3.org/ns/did/v1"],
           alsoKnownAs: [`at://${blueskyAccount.handle}`],
@@ -150,6 +188,15 @@ export const fakeAtproto = Effect.fnUntraced(function* fakeAtproto() {
       case "GET /.well-known/oauth-authorization-server": {
         if (behaviour === "metadataDown") {
           return unavailable;
+        }
+
+        if (behaviour === "manyScopes") {
+          return json({
+            authorization_endpoint: `${origin}/oauth/authorize`,
+            issuer: origin,
+            scopes_supported: many("atproto", 10_000),
+            token_endpoint: `${origin}/oauth/token`,
+          });
         }
 
         return json({

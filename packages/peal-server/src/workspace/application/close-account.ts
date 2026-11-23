@@ -5,12 +5,14 @@ import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { Ids } from "#shared/application/ids.ts";
 import { ProductAnalytics } from "#shared/application/product-analytics.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
+import type { UserId } from "#shared/domain/ids.ts";
 import { planClosure } from "#workspace/domain/account-closure.ts";
 import type { LastOwner } from "#workspace/domain/last-owner.ts";
 import { ownSession } from "#workspace/domain/own-session.ts";
 import type { SessionRequired } from "#workspace/domain/session-required.ts";
 import type { UserPrincipal } from "#workspace/domain/user-principal.ts";
 
+import { AccountClaimed } from "./account-claimed.ts";
 import { AccountMail } from "./account-mail.ts";
 import { AccountStore } from "./account-store.ts";
 import type { AuthUnavailable } from "./auth-unavailable.ts";
@@ -81,6 +83,34 @@ export class CloseAccount extends Context.Service<
       | WorkspaceBusy
       | WorkspaceSubscribed
     >;
+    /**
+     * Closes an account nobody claimed: one made with an address that was
+     * never confirmed, used, then confirmed by someone else (the address's
+     * owner), who must not inherit what it made. The same erasure, with
+     * no password, the subscriptions of what it deletes cancelled, and no
+     * email: the address is the owner's, not the account's maker's. Asked
+     * for only by the address's owner, in so many words, from the
+     * confirmation page. It is refused as a closure is (`LastOwner` while
+     * others use a workspace it alone owns, a partner's workspaces, Stripe
+     * out of reach), and with `AccountClaimed` once the address is
+     * confirmed: checked before Stripe is asked anything, and again in the
+     * erasure's transaction, the user's row held to its end.
+     */
+    readonly closeUnclaimed: (
+      userId: UserId
+    ) => Effect.Effect<
+      void,
+      | AccountClaimed
+      | BillingUnavailable
+      | DatabaseError
+      | ErasureLedgerUnavailable
+      | LastOwner
+      | NotSignedIn
+      | PartnerOwnsWorkspaces
+      | ErasureIncomplete
+      | WorkspaceBusy
+      | WorkspaceSubscribed
+    >;
   }
 >()("peal-server/workspace/application/CloseAccount") {
   static readonly layer = Layer.effect(
@@ -98,15 +128,17 @@ export class CloseAccount extends Context.Service<
       const { transaction } = yield* TransactionRunner;
       const analytics = yield* ProductAnalytics;
 
-      const close = Effect.fn("CloseAccount.close")(function* close(
-        principal: UserPrincipal,
-        password: Redacted.Redacted,
-        options: WorkspaceErasureOptions
+      // The closure itself, once it is known to be the user's to ask for:
+      // `tell` emails the account's address its confirmation.
+      const closeAs = Effect.fn("CloseAccount.closeAs")(function* closeAs(
+        userId: UserId,
+        options: WorkspaceErasureOptions,
+        tell: boolean,
+        unclaimedOnly: boolean
       ) {
-        const userId = yield* Effect.fromResult(ownSession(principal));
-
-        if (!(yield* passwords.matches(userId, password))) {
-          return yield* new IncorrectPassword();
+        // Before Stripe is asked anything, which cannot be undone.
+        if (unclaimedOnly && !(yield* store.holdUnconfirmed(userId))) {
+          return yield* new AccountClaimed();
         }
 
         const { user } = yield* store.records(userId).pipe(
@@ -154,6 +186,13 @@ export class CloseAccount extends Context.Service<
                 // What the user pays for first, as every other path that
                 // changes it holds the payer before the accounts.
                 yield* records.holdUser(userId);
+
+                // An account nobody claimed is closed only while its
+                // address is still unconfirmed, its row held to the end:
+                // a confirmation that committed meanwhile keeps it.
+                if (unclaimedOnly && !(yield* store.holdUnconfirmed(userId))) {
+                  return yield* new AccountClaimed();
+                }
 
                 // Again, under the workspaces' locks: a workspace someone
                 // joined meanwhile is left rather than deleted.
@@ -232,17 +271,47 @@ export class CloseAccount extends Context.Service<
               workspaceIds: deleted,
             });
 
-            yield* mail.deleted({
-              email: user.email,
-              legalHold,
-              locale: user.locale,
-              subscriptionsCancelled,
-            });
+            if (tell) {
+              yield* mail.deleted({
+                email: user.email,
+                legalHold,
+                locale: user.locale,
+                subscriptionsCancelled,
+              });
+            }
           })
         );
       }, Effect.provideContext(ports));
 
-      return CloseAccount.of({ close });
+      const close = Effect.fn("CloseAccount.close")(function* close(
+        principal: UserPrincipal,
+        password: Redacted.Redacted,
+        options: WorkspaceErasureOptions
+      ) {
+        const userId = yield* Effect.fromResult(ownSession(principal));
+
+        if (!(yield* passwords.matches(userId, password))) {
+          return yield* new IncorrectPassword();
+        }
+
+        // Only an unclaimed closure checks the address: never this one.
+        return yield* closeAs(userId, options, true, false).pipe(
+          Effect.catchTag("AccountClaimed", Effect.die)
+        );
+      });
+
+      const closeUnclaimed = Effect.fn("CloseAccount.closeUnclaimed")(
+        function* closeUnclaimed(userId: UserId) {
+          return yield* closeAs(
+            userId,
+            { cancelSubscriptions: true },
+            false,
+            true
+          );
+        }
+      );
+
+      return CloseAccount.of({ close, closeUnclaimed });
     })
   );
 }

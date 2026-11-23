@@ -3,8 +3,13 @@
 A restore brings back every database of the cluster: Peal's, and the
 blog's (`peal_blog`) where it runs. The blog's media is not in the
 database: it stays in the blog's own bucket, which a restore leaves as it
-is. The release that follows signs in as the blog with `secrets.env`'s
-password, and sets it again on a database restored from another server.
+is. The release that follows signs in as the server's role (`peal_server`)
+and as the blog with `secrets.env`'s passwords, and sets them again on a
+database restored from another server; it also gives `peal_server` what
+the restored database holds that it does not own, such as a backup from
+before that role. Until that release, a command the server's image runs
+(`peal-compose run … server`) signs in with `secrets.env`'s password, which
+a database restored from another server refuses.
 
 pgBackRest restores Postgres from the backup bucket: to its latest state,
 which loses at most the last 5 minutes, or to a time since the oldest full
@@ -292,6 +297,151 @@ On a new server, the command needs the media bucket's credentials, which
 cover: single posts, files or channels deleted since the restore point come
 back with the restore, as only whole accounts and workspaces are recorded;
 and a restore to a point more than 42 days back, which no backup allows.
+
+## The backup copy
+
+Where the environment runs it (`peal_backup_copy`, README.md, "The backup
+copy"), every backup is copied into a second bucket,
+`peal-<environment>-backup-copy`, whose lock keeps each object 35 days from
+the time the store wrote it, whatever key asks. Restore from it when the
+backup bucket's repository is gone or cannot be trusted; otherwise restore
+from the backup bucket, as above.
+
+What it protects against: someone who holds the server, or the backups'
+key, deleting or overwriting the backups. The newest complete run before
+that stays whole and locked for 14 days from that run at least, about 13
+days after the server was taken at worst: every file it names has a copy
+the store wrote less than 21 days before it. What it does not protect
+against:
+
+- the backup passphrase lost: the copy holds the files pgBackRest
+  encrypted, and nothing reads them without it. Keep it off the server,
+  where README.md's "Credentials" says;
+- a server taken more than 13 days before anyone restores: the newest
+  honest run may then hold copies past their lock, which whoever holds the
+  server can delete. The copy's alerts and the backups' fire within hours;
+- runs written after the server was taken: whoever holds it may write
+  runs of their own making, with the passphrase it holds, so that they
+  verify. The store's clock tells them apart, never a run's name: restore
+  only from a run whose index, and every copy it names, the store wrote
+  before the incident began, which `rebuild --before` checks;
+- time spent on planted keys: whoever holds the copy's key may fill the
+  bucket with objects, locked as any other. They cost no command its
+  memory, but each listing reads them all, so `copy` and `runs` (without
+  `--run`) slow down with them, and the planted keys cost storage. `runs
+  --run` and `rebuild` read a run's own keys alone and never list the
+  bucket: name the run and they work whatever the bucket holds. The way out
+  of a flooded bucket is a new copy bucket (a Pulumi change, approved as a
+  paid resource).
+
+1. **Take the keys back first.** On a server that was taken, rebuild the
+   server ([A new server](#a-new-server)) rather than trust it, and replace
+   both buckets' keys: on the environment's Pulumi stack,
+   `pulumi up --replace` the URNs of `key-backups` and `key-backup-copy`
+   (`pulumi stack --show-urns`), then `scripts/cloudflare_from_pulumi.py`
+   and `site.yml`, which write the new keys. That `site.yml` starts the
+   copy's timer again: set `peal_backup_copy_trust_after` to now, a quoted
+   UTC instant, in the same run, so the copy trusts nothing written while
+   the server was taken (step 7 sets it to the incident's end once known;
+   steps 3 and 4 work either way, as a `--before` at or before it ignores
+   it).
+
+2. **Note when the incident began**, in UTC, by the earliest sign of it
+   (an alert, a log, the provider's console), and take a margin before it.
+   That time is `--before` below. Note when it ended too, for step 7.
+
+3. **List the copy's complete runs**, with the settings its unit holds and
+   the credentials file itself (the unit gets a copy of it from systemd):
+
+   ```sh
+   sudo env $(systemctl show peal-backup-copy.service --property=Environment --value) \
+     PEAL_BACKUP_COPY_CREDENTIALS=/srv/peal/credentials.env \
+     python3 -I /usr/local/sbin/peal-backup-copy runs --before 2026-11-24T08:00:00Z
+   ```
+
+   It prints, as the listing goes, the runs it does not trust (`NOT
+   TRUSTED`: a name that is no time or out of range, an index stored
+   before its name, more than 12 hours after it, or named in the future)
+   and those stored at or after `--before`, unread; then the newest
+   trusted runs, 100 at most, with how many files each names, or why it
+   cannot be read (`NOT READABLE`, or `UNREACHABLE` when the store did not
+   answer: run it again). Pick the newest candidate stored before the
+   incident, and check it alone, which reads its own keys and no listing:
+
+   ```sh
+   sudo env $(systemctl show peal-backup-copy.service --property=Environment --value) \
+     PEAL_BACKUP_COPY_CREDENTIALS=/srv/peal/credentials.env \
+     python3 -I /usr/local/sbin/peal-backup-copy runs \
+     --run 2026-11-23T021500Z-1a2b3c4d --before 2026-11-24T08:00:00Z
+   ```
+
+   It gives when the store wrote the run's oldest copy, until when the
+   lock keeps them all, and `REBUILD WOULD TAKE IT` or why not. Prefer a
+   run marked `all locked until` a time still to come: a run whose copies
+   left their lock before the incident may have had them replaced. A
+   `--before` at or before `peal_backup_copy_trust_after` (step 7 of an
+   earlier incident) judges runs without it, so a run from before that
+   incident still rebuilds.
+
+4. **Rebuild the repository from that run**, under a new path of the backup
+   bucket, which must be empty. It refuses a run the store's times give
+   away, an index that names a copy the store wrote after it, and anything
+   the store wrote at or after `--before`; it checks each copy's ETag and
+   SHA-256 against the index, and lists as `missing` a file the copy lost
+   to its lifecycle rule, which only matters when it belongs to the backup
+   you restore (step 5 tells):
+
+   ```sh
+   sudo env $(systemctl show peal-backup-copy.service --property=Environment --value) \
+     PEAL_BACKUP_COPY_CREDENTIALS=/srv/peal/credentials.env \
+     python3 -I /usr/local/sbin/peal-backup-copy rebuild \
+     --run 2026-11-23T021500Z-1a2b3c4d --before 2026-11-24T08:00:00Z \
+     --to-path /production-from-2026-11-23T021500Z
+   ```
+
+5. **See and check the rebuilt backups**, with pgBackRest reading that path
+   (`info` lists them, `verify` reads every file):
+
+   ```sh
+   sudo peal-compose run --rm --no-deps --user postgres --entrypoint pgbackrest \
+     -e PGBACKREST_REPO1_PATH=/production-from-2026-11-23T021500Z postgres info
+   sudo peal-compose run --rm --no-deps --user postgres --entrypoint pgbackrest \
+     -e PGBACKREST_REPO1_PATH=/production-from-2026-11-23T021500Z postgres verify
+   ```
+
+6. **Restore** as [On the same server](#on-the-same-server) does, steps 2
+   to 8, with the same path in step 4's command:
+
+   ```sh
+   sudo peal-compose run --rm --no-deps --user postgres --entrypoint pgbackrest \
+     -e PGBACKREST_REPO1_PATH=/production-from-2026-11-23T021500Z postgres restore --delta
+   ```
+
+   A restore to a time works too, within what the run held, and before the
+   incident.
+
+7. **Trust no run of the incident's window again**, before any copy runs
+   again. The copy bucket still holds what was written into it while the
+   server was taken, and those runs stay until the lifecycle deletes them.
+   Set `peal_backup_copy_trust_after` to the incident's end, a UTC instant
+   in quotes (`"2026-11-24T12:00:00Z"`, which `peal_preflight` checks), in
+   the environment's `group_vars/<environment>/main.yml`, and run
+   `site.yml`: no later run reuses anything of a run the store wrote before
+   it, and `runs` marks them all `NOT TRUSTED`, unless given a `--before` at
+   or before it (step 3). Write the window in the incident's record. Once
+   the lifecycle has deleted the window's runs (49 days), the setting may
+   go back to empty. A bucket of its own for the copy from then on is the
+   owner's call, and a Pulumi change of its own (another bucket's name,
+   approved as a paid resource).
+
+8. **Start the backups over** on the backup bucket's own path, which holds
+   nothing to trust: [Starting a server's database over](#starting-a-servers-database-over),
+   steps 2 to 7. The copy follows from the next backup. Keep the rebuilt
+   path until the restore is confirmed final, then delete it in the
+   dashboard.
+
+Practise the rebuild on the sandbox with [Practise](#practise): steps 3 to
+5 change nothing of the running server.
 
 ## Starting a server's database over
 

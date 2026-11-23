@@ -20,7 +20,7 @@ from typing import Any
 import pytest
 import yaml
 
-from conftest import INFRA, render, role_file
+from conftest import INFRA, ansible_render, render, role_file
 
 ROLE = INFRA / "roles" / "peal_backup"
 SCRIPT = ROLE / "templates" / "peal-backup.j2"
@@ -83,7 +83,8 @@ def collector() -> Iterator[Collector]:
     running.close()
 
 
-def _run(folder: Path, port: int, backup_type: str = "diff", fails: str | None = None) -> subprocess.CompletedProcess[str]:
+def _run(folder: Path, port: int, backup_type: str = "diff", fails: str | None = None,
+         *more: str) -> subprocess.CompletedProcess[str]:
     """peal-backup as Ansible renders it, run with sh. The stand-in for
     `peal-compose` records each pgBackRest command, and the one named
     `fails` exits as pgBackRest does on a mismatched stanza."""
@@ -101,7 +102,7 @@ fi
     script = folder / "peal-backup"
     script.write_text(render(SCRIPT.read_text(), peal_compose_bin=str(compose), peal_ports={"otlp_http": port}, **RETRIES))
     return subprocess.run(
-        ["sh", str(script), backup_type],
+        ["sh", str(script), backup_type, *more],
         check=False,
         capture_output=True,
         text=True,
@@ -182,8 +183,30 @@ def test_a_collector_still_starting_is_asked_again(tmp_path: Path, collector: Co
     assert name == ("peal_backup_last_success_timestamp" if fails is None else "peal_backup_last_failure_timestamp")
 
 
+def test_a_run_systemd_ended_reports_its_failure_alone(tmp_path: Path, collector: Collector) -> None:
+    """The unit's ExecStopPost, when flock, a signal or a limit ended the
+    run: a failure is reported, and pgBackRest is not called."""
+    ran = _run(tmp_path, collector.port, "diff", None, "--failed")
+
+    assert ran.returncode == 0, ran.stderr
+    assert not (tmp_path / "pgbackrest.calls").exists()
+    name, backup_type, _ = _gauge(collector)
+    assert (name, backup_type) == ("peal_backup_last_failure_timestamp", "diff")
+
+
+def test_the_unit_reports_a_run_that_did_not_succeed() -> None:
+    service = (ROLE / "templates" / "peal-backup@.service.j2").read_text()
+
+    assert (
+        "ExecStopPost=/bin/sh -c 'test \"$$SERVICE_RESULT\" = success || exec /usr/local/sbin/peal-backup %i --failed'"
+        in service.splitlines()
+    )
+
+
 def test_the_role_retries_a_report_for_a_minute() -> None:
-    assert role_file("peal_backup", "defaults") == {"peal_backup_report_retries": 6, "peal_backup_report_retry_delay": 10}
+    defaults = role_file("peal_backup", "defaults")
+
+    assert (defaults["peal_backup_report_retries"], defaults["peal_backup_report_retry_delay"]) == (6, 10)
 
 
 def test_a_failure_the_collector_misses_still_fails_the_run(tmp_path: Path, collector: Collector) -> None:
@@ -200,7 +223,8 @@ def _unit(name: str) -> dict[str, dict[str, str]]:
     """A unit file, by section and key, as the role writes it."""
     sections: dict[str, dict[str, str]] = {}
     current: dict[str, str] = {}
-    for line in render((ROLE / "templates" / f"{name}.j2").read_text()).splitlines():
+    text = (ROLE / "templates" / f"{name}.j2").read_text()
+    for line in str(ansible_render(text, peal_backup_copy=False)).splitlines():
         if line.startswith("["):
             current = sections.setdefault(line.strip("[]"), {})
         elif "=" in line and not line.startswith("#"):
@@ -217,7 +241,9 @@ def test_one_backup_runs_at_a_time() -> None:
     failure alert fire for nothing. The second waits for the first."""
     service = _unit("peal-backup@.service")["Service"]
 
-    assert service["ExecStart"] == "/usr/bin/flock /run/peal-backup.lock /usr/local/sbin/peal-backup %i"
+    assert service["ExecStart"] == "/usr/bin/flock --wait 43200 /run/peal-backup.lock /usr/local/sbin/peal-backup %i"
+    # A lock held too long ends in a reported failure, within the stop limit.
+    assert service["TimeoutStopSec"] == "3min"
 
 
 def _rule(uid: str) -> dict[str, Any]:
@@ -234,7 +260,9 @@ def _query(uid: str) -> str:
 def test_the_script_posts_the_gauges_the_rules_read() -> None:
     """Prometheus names each gauge with its unit: `_seconds`."""
     posted = set(re.findall(r"\breport (peal_backup_\w+)", SCRIPT.read_text()))
-    assert posted == {"peal_backup_last_success_timestamp", "peal_backup_last_failure_timestamp"}
+    # And, where the backup copy runs, that a copy is due (test_backup_copy.py).
+    assert posted == {"peal_backup_last_success_timestamp", "peal_backup_last_failure_timestamp",
+                      "peal_backup_copy_expected_timestamp"}
 
     assert "peal_backup_last_success_timestamp_seconds" in _query("peal-backup-stale")
     failed = _query("peal-backup-failed")

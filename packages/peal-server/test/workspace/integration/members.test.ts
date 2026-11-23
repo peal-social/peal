@@ -232,6 +232,128 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
     );
 
     it.effect(
+      "send an address as many invitation emails from a workspace as a day allows, through the API and Better Auth's route alike, leaving other workspaces theirs",
+      () =>
+        Effect.gen(function* daily() {
+          const app = yield* TestApp;
+          const sql = yield* SqlClient.SqlClient;
+          const owner = yield* signedUp("flooder");
+          const workspaceId = yield* workspaceOf(owner, "Flood");
+          const other = yield* signedUp("second-flooder");
+          const otherId = yield* workspaceOf(other, "Second flood");
+          const email = newEmail("flooded");
+
+          // Two through the API, the third through Better Auth's route
+          // with `resend`, which sends the pending one again.
+          for (let sent = 0; sent < 2; sent += 1) {
+            assert.strictEqual(
+              (yield* invite(owner, workspaceId, { email, role: "viewer" }))
+                .status,
+              201
+            );
+          }
+
+          const resent = yield* app.request(
+            "/api/auth/organization/invite-member",
+            {
+              body: {
+                email,
+                organizationId: workspaceId,
+                resend: true,
+                role: "viewer",
+              },
+              headers: asPerson(owner),
+            }
+          );
+
+          assert.strictEqual(resent.status, 200);
+
+          // The workspace sent the address its day: the API and the route
+          // refuse a fourth.
+          const refused = yield* invite(owner, workspaceId, {
+            email,
+            role: "viewer",
+          });
+
+          assert.strictEqual(refused.status, 409);
+          assert.deepInclude(refused.body, {
+            _tag: "TooManyInvitations",
+            code: "too_many_invitations",
+          });
+          assert.include(
+            (yield* bodyOf(Schema.Struct({ message: Schema.String }), refused))
+              .message,
+            "a day allows"
+          );
+
+          const byRoute = yield* app.request(
+            "/api/auth/organization/invite-member",
+            {
+              body: { email, organizationId: workspaceId, role: "viewer" },
+              headers: asPerson(owner),
+            }
+          );
+
+          assert.strictEqual(byRoute.status, 429);
+          assert.deepInclude(byRoute.body, {
+            code: "DAILY_INVITATION_LIMIT_REACHED",
+          });
+
+          // Another workspace still invites the address: one workspace's
+          // invitations never use up another's.
+          assert.strictEqual(
+            (yield* invite(other, otherId, { email, role: "viewer" })).status,
+            201
+          );
+
+          const pending = yield* sql<{
+            readonly count: number;
+          }>`SELECT count(*)::int AS count FROM auth.invitation WHERE organization_id = ${otherId} AND status = 'pending'`;
+
+          assert.strictEqual(pending[0]?.count, 1);
+        })
+    );
+
+    it.effect(
+      "count an invitation sent again only when the route sends it, never for a member who may not invite",
+      () =>
+        Effect.gen(function* resends() {
+          const app = yield* TestApp;
+          const owner = yield* signedUp("resend-owner");
+          const workspaceId = yield* workspaceOf(owner, "Resends");
+          const viewer = yield* joined(owner, workspaceId, "watcher", "viewer");
+          const email = newEmail("resent");
+
+          const resend = (person: Person) =>
+            app.request("/api/auth/organization/invite-member", {
+              body: {
+                email,
+                organizationId: workspaceId,
+                resend: true,
+                role: "viewer",
+              },
+              headers: asPerson(person),
+            });
+
+          assert.strictEqual(
+            (yield* invite(owner, workspaceId, { email, role: "viewer" }))
+              .status,
+            201
+          );
+
+          // The route refuses the viewer: none of the day's emails goes.
+          for (let tries = 0; tries < 4; tries += 1) {
+            assert.strictEqual((yield* resend(viewer)).status, 403);
+          }
+
+          // So the owner still has the workspace's two more for it.
+          assert.strictEqual((yield* resend(owner)).status, 200);
+          assert.strictEqual((yield* resend(owner)).status, 200);
+          assert.strictEqual((yield* resend(owner)).status, 429);
+        })
+    );
+
+    it.effect(
       "refuse an invitation to a member, the owner role to an admin, and anything to those who may not invite",
       () =>
         Effect.gen(function* refuses() {

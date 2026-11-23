@@ -1,5 +1,6 @@
 import { Match, Option } from "effect";
 
+import { nameForMail } from "#shared/domain/display-name.ts";
 import type { Locale } from "#shared/domain/locale.ts";
 
 import type { EmailCatalog, EmailMessages } from "./email-catalog.ts";
@@ -448,7 +449,10 @@ export const renderNoticeEmail = (email: NoticeEmail): RenderedEmail => {
 
   const values: ReadonlyMap<string, string> = new Map([
     ...own,
-    ["workspaceName", email.workspaceName],
+    [
+      "workspaceName",
+      nameForMail(email.workspaceName, catalog.withheldNames.workspace),
+    ],
   ]);
 
   const inHtml = (template: string) => fill(template, values, escapeHtml);

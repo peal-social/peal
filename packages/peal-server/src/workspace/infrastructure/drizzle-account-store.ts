@@ -28,6 +28,8 @@ import {
   user,
   verification,
 } from "./auth-schema.generated.ts";
+import { bindingOf, tokensNotBeforeOf } from "./auth/sign-up-binding.ts";
+import { makerOf } from "./drizzle-workspace-api-keys.ts";
 import {
   partnerKeys,
   partners,
@@ -358,6 +360,40 @@ export const DrizzleAccountStore = Layer.effect(
           .where(eq(deviceCode.userId, userId))
           .pipe(Effect.mapError(failed));
 
+        // The API keys they made in the workspaces they leave stop working
+        // with their account; keys with no recorded maker stay.
+        const memberships = yield* db
+          .select({ workspaceId: member.organizationId })
+          .from(member)
+          .where(eq(member.userId, userId))
+          .pipe(Effect.mapError(failed));
+
+        // A key names its workspace in a text column.
+        const keys =
+          memberships.length === 0
+            ? []
+            : yield* db
+                .select({ id: apikey.id, metadata: apikey.metadata })
+                .from(apikey)
+                .where(
+                  inArray(
+                    apikey.referenceId,
+                    memberships.map(({ workspaceId }) => workspaceId)
+                  )
+                )
+                .pipe(Effect.mapError(failed));
+
+        const theirs = keys
+          .filter(({ metadata }) => Option.contains(makerOf(metadata), userId))
+          .map(({ id }) => id);
+
+        if (theirs.length > 0) {
+          yield* db
+            .delete(apikey)
+            .where(inArray(apikey.id, theirs))
+            .pipe(Effect.mapError(failed));
+        }
+
         // Subscriptions belong to workspaces, but one made for the user
         // would refer to them by id alone.
         yield* db
@@ -392,10 +428,23 @@ export const DrizzleAccountStore = Layer.effect(
           )
           .pipe(Effect.mapError(failed));
 
-        // The partner keys they created stay their partner's, without them.
+        // The browser a sign-up of theirs may still confirm from, and the
+        // instant before which their bearer tokens stop working: rows named
+        // after the user, holding digests and a time only.
         yield* db
-          .update(partnerKeys)
-          .set({ createdBy: null })
+          .delete(verification)
+          .where(
+            inArray(verification.identifier, [
+              bindingOf(userId),
+              tokensNotBeforeOf(userId),
+            ])
+          )
+          .pipe(Effect.mapError(failed));
+
+        // The partner keys they created stop working with their account, as
+        // their API keys do; keys with no recorded maker stay.
+        yield* db
+          .delete(partnerKeys)
           .where(eq(partnerKeys.createdBy, userId))
           .pipe(Effect.mapError(failed));
 
@@ -464,9 +513,23 @@ export const DrizzleAccountStore = Layer.effect(
       }
     );
 
+    const holdUnconfirmed = Effect.fn("AccountStore.holdUnconfirmed")(
+      function* holdUnconfirmed(userId: UserId) {
+        const held = yield* db
+          .update(user)
+          .set({ updatedAt: new Date() })
+          .where(and(eq(user.id, userId), eq(user.emailVerified, false)))
+          .returning({ id: user.id })
+          .pipe(Effect.mapError(failed));
+
+        return held.length > 0;
+      }
+    );
+
     return AccountStore.of({
       deleteUser,
       deleteWorkspace,
+      holdUnconfirmed,
       identification,
       records,
       standings,

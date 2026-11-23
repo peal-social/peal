@@ -539,6 +539,27 @@ export class PostScheduling extends Context.Service<
       | Unpublishable
     >;
     /**
+     * Runs `effect` in one transaction that first locks the workspace's
+     * post, as every change of a post locks it: what the effect reads of
+     * the post, then does to it through these use cases (which lock it
+     * again, in that transaction), no other change comes between. Needs
+     * post:read. The agent reads a post under it before it runs a change
+     * the person approved on what they were shown. Given the queue the
+     * effect places the post on, it locks the queue first, in the order
+     * placing a post on a queue takes them.
+     */
+    readonly holding: (
+      actor: Actor,
+      postId: PostId,
+      queueId?: Option.Option<QueueId>
+    ) => <A, E, R>(
+      effect: Effect.Effect<A, E, R>
+    ) => Effect.Effect<
+      A,
+      DatabaseError | E | MissingPermission | PostNotFound,
+      R
+    >;
+    /**
      * Takes a scheduled post back to draft, to change what it says: its
      * revision goes up, so the job for its time, which is stopped, would
      * publish nothing if it woke anyway. Schedule it again once edited.
@@ -1998,11 +2019,35 @@ export class PostScheduling extends Context.Service<
         }
       );
 
+      // The queue before the post, as placing a post on a queue, a
+      // reshuffle and deleting a queue lock them: in the other order, one
+      // of two such transactions would end as a deadlock.
+      const holding =
+        (
+          actor: Actor,
+          postId: PostId,
+          queueId: Option.Option<QueueId> = Option.none()
+        ) =>
+        <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+          transaction(
+            Effect.fromResult(authorize(actor, "post:read")).pipe(
+              Effect.andThen(
+                Option.match(queueId, {
+                  onNone: () => Effect.void,
+                  onSome: (id) => queues.lock(id),
+                })
+              ),
+              Effect.andThen(lockPost(actor, postId)),
+              Effect.andThen(effect)
+            )
+          ).pipe(Effect.withSpan("PostScheduling.holding"));
+
       return PostScheduling.of({
         cancel,
         dropTarget,
         enqueue,
         forgetExpiredKeys,
+        holding,
         mayAsk,
         reschedule,
         reshuffle,

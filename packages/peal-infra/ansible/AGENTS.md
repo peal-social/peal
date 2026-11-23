@@ -160,6 +160,23 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   `PEAL_MEDIA_PUBLIC_BASE_URL` without `peal_erasure_ledger_bucket`. The server migrates when it
   starts, so write migrations that the previous release can still run
   against, and roll back by releasing the previous commit.
+- The backup copy (`peal_backup_copy`, off by default, a paid resource:
+  README.md, "The backup copy") copies the backups into a bucket whose
+  lock keeps every object 35 days (the Pulumi stack's `backupCopy`). It
+  never writes a key twice: each run under a prefix of its own, an index
+  last with each copy's SHA-256, nothing when nothing changed. Every file
+  the newest index names has a copy younger than the refresh
+  (`peal_backup_copy_refresh_days`, 21), which stays 14 days below the
+  lock, and the lock's days are the same in both projects; the store's
+  times, never a run's name, say which runs to trust
+  (`tests/test_backup_copy.py`: SeaweedFS, and a store with a clock over
+  two months). Nothing the copy bucket holds may stop a command: parse
+  whatever is read from it where it is read, and make a failure local to
+  that run or object (an untrusted or unreadable run), never an exception
+  out of `copy`, `runs` or `rebuild`; do arithmetic on the store's times,
+  never on a run's name. Keep memory bounded whatever the bucket holds: a
+  listing streams and keeps run indexes alone, and `rebuild` and `runs
+  --run` read a run's keys by exact key, never a listing.
 - The disks' health goes to the collector as the backups' does:
   `peal_disks` posts gauges of the md arrays and of SMART, and Grafana's
   rules alert on them (`peal-docker`'s `rules.yaml`), with no mail
@@ -183,6 +200,17 @@ approval are in the root [`AGENTS.md`](../../../AGENTS.md), under Infrastructure
   (`AUD_NAMES`): production's `admin` application covers
   `peal_access_paths`, so a path added there is added to the Pulumi
   project's `adminPaths` too.
+- The server signs in to Postgres as `peal_server`, never the superuser
+  (`PEAL_DATABASE_USER` in `host.env`, `PEAL_DATABASE_PASSWORD` in
+  `secrets.env`, which compose.production.yaml builds `DATABASE_URL`
+  from). `release.yml` makes the role, keeps its password in step and,
+  at every release, gives it Peal's database and whatever the superuser
+  owns there (`tests/test_release_server_role.py`, on a new database
+  migrated by the role and on one the superuser migrated). A migration
+  needs nothing a database owner lacks: schemas, trusted extensions such
+  as `pg_trgm`, advisory locks; one that needs a superuser (an untrusted
+  extension, `ALTER SYSTEM`) cannot run, and goes in the release as a
+  superuser step instead.
 - Peal's blog runs behind `peal_blog`, off by default (README.md, "The
   blog"): with the flag off, every rendered file stays as it was
   (`tests/test_blog.py`). On the site's host name the tunnel refuses

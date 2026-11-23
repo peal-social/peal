@@ -730,6 +730,10 @@ describe("the site, its notice and its measurement", { serial: true }, () => {
       await browser.goto(
         await emailedLink(member(), "Confirm your email for Peal")
       );
+      // The page confirms from the browser: signed in once it says so.
+      await expect(
+        screen.getByRole("heading", "Email confirmed")
+      ).toBeVisible();
       await app.open("/");
       ({ slug: workspaceSlug } = await openedWorkspace(browser));
       memberId = textOf(

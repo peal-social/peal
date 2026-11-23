@@ -3,6 +3,7 @@ import { APIError, getSessionFromCtx } from "better-auth/api";
 import { Option, Schema } from "effect";
 
 import { bodyIdsOf, changesWorkspace } from "./impersonation.ts";
+import { revokedKeysOf } from "./member-keys.ts";
 
 /**
  * A request to Better Auth's routes that asked to change a workspace (its
@@ -137,4 +138,34 @@ export const recordWorkspaceChange = async (
     userId: user.id,
     workspaceId: workspaceId.value,
   });
+
+  // The API keys and partner keys a member's leaving, removal or new role
+  // revoked, each as revoked by whoever asked for the change: they are
+  // gone, whatever the route answered after (member-keys.ts).
+  const { apiKeyIds, partnerKeyIds } = revokedKeysOf(request);
+
+  const revocations = [
+    ...apiKeyIds.map((apiKeyId) => ({
+      objectIds: { apiKeyId },
+      operation: "apiKeys.revoke",
+    })),
+    ...partnerKeyIds.map((partnerKeyId) => ({
+      objectIds: { partnerKeyId },
+      operation: "partnerAccount.revokeKey",
+    })),
+  ];
+
+  await Promise.all(
+    revocations.map(async ({ objectIds: ids, operation }) => {
+      await record({
+        done: true,
+        impersonatedBy: session.impersonatedBy ?? null,
+        objectIds: ids,
+        operation,
+        status: 204,
+        userId: user.id,
+        workspaceId: workspaceId.value,
+      });
+    })
+  );
 };

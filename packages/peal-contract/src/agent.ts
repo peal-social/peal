@@ -20,6 +20,7 @@ import { AssistantQuotaExceeded } from "./assistant-quota-exceeded.ts";
 import { AssistantUnavailable } from "./assistant-unavailable.ts";
 import { Authentication } from "./authentication.ts";
 import { Forbidden } from "./forbidden.ts";
+import { InboxModerationActionSchema } from "./inbox.ts";
 import { MediaKindSchema } from "./media.ts";
 import { OwnTextLimitReached } from "./own-text-limit-reached.ts";
 import { TextProviderBusy } from "./text-provider-busy.ts";
@@ -169,23 +170,109 @@ export const AgentApprovalStateSchema = Schema.Literals([
   "pending",
   "approved",
   "declined",
-  // A message sent before the answer replaced the request.
+  // A message sent before the answer replaced the request, or it waited
+  // past `agentApprovalLifetimeHours`.
   "expired",
+  // Approved, but what it acts on read otherwise than the person was
+  // shown (a post edited since): nothing was done, and the agent says so.
+  "changed",
 ]);
 
 export type AgentApprovalState = typeof AgentApprovalStateSchema.Type;
 
 /**
+ * How long a change waits for the person, in hours from the answer that
+ * asked it: past it, it reads as expired and cannot be approved.
+ */
+export const agentApprovalLifetimeHours = 24;
+
+/** A file of the workspace's media a post shows, with its alt text. */
+export const AgentApprovalMediaSchema = Schema.Struct({
+  altText: Schema.String,
+  mediaId: Schema.String,
+}).annotate({ identifier: "AgentApprovalMedia" });
+
+export type AgentApprovalMedia = typeof AgentApprovalMediaSchema.Type;
+
+/**
+ * What a part of the post has instead on one of the change's channels:
+ * its text, and the media it shows there instead of the part's (null:
+ * the part's own).
+ */
+export const AgentApprovalOverrideSchema = Schema.Struct({
+  channelId: Schema.String,
+  media: Schema.NullOr(Schema.Array(AgentApprovalMediaSchema)),
+  text: Schema.String,
+}).annotate({ identifier: "AgentApprovalOverride" });
+
+export type AgentApprovalOverride = typeof AgentApprovalOverrideSchema.Type;
+
+/**
+ * A part after the post's first, in order: a reply in a thread, or a
+ * first comment, and how long it waits after the one before.
+ */
+export const AgentApprovalPartSchema = Schema.Struct({
+  delaySeconds: Schema.Int,
+  media: Schema.Array(AgentApprovalMediaSchema),
+  overrides: Schema.Array(AgentApprovalOverrideSchema),
+  text: Schema.String,
+}).annotate({ identifier: "AgentApprovalPart" });
+
+export type AgentApprovalPart = typeof AgentApprovalPartSchema.Type;
+
+/**
+ * The post a change acts on, as the workspace holds it when the change
+ * is asked: all that goes out of it on the change's channels (a channel
+ * set's expanded, and a signature already part of its text). Its text,
+ * media and poll; what it has instead on some of those channels; the
+ * parts after its first; each channel with what it sets on its platform
+ * (`options`, the post's target options, by field; null for none); and
+ * whether its links go out shortened.
+ */
+export const AgentApprovalPostSchema = Schema.Struct({
+  followUps: Schema.Array(AgentApprovalPartSchema),
+  media: Schema.Array(AgentApprovalMediaSchema),
+  overrides: Schema.Array(AgentApprovalOverrideSchema),
+  poll: Schema.NullOr(
+    Schema.Struct({
+      choices: Schema.Array(Schema.String),
+      durationMinutes: Schema.Int,
+      multipleChoice: Schema.Boolean,
+    })
+  ),
+  shortenLinks: Schema.Boolean,
+  targets: Schema.Array(
+    Schema.Struct({
+      channelId: Schema.String,
+      options: Schema.NullOr(Schema.Record(Schema.String, Schema.Json)),
+    })
+  ),
+  text: Schema.String,
+}).annotate({ identifier: "AgentApprovalPost" });
+
+export type AgentApprovalPost = typeof AgentApprovalPostSchema.Type;
+
+/**
  * A change the agent asks the person to approve before it is made: one
  * that others see, that cannot be undone, or that costs money. The fields
- * say what the change does, as far as the tool's request tells it, so the
- * person decides on what will happen, not on the agent's words.
+ * say all of what the change does, from the tool's request and from what
+ * it names as the workspace holds it, so the person decides on what will
+ * happen, not on the agent's words: a change the server cannot show whole
+ * is never asked. Once approved, it is made only if what it acts on still
+ * reads as shown (`changed` otherwise).
  */
 export const AgentApprovalSchema = Schema.Struct({
-  // When the change happens: a post's time, or null for now.
+  // For marking a comment answered: true, or false to mark it unanswered;
+  // null for any other change.
+  answered: Schema.NullOr(Schema.Boolean),
+  // When the change happens: a post's time, or null for now (or a queue's
+  // next free slot, `queue`).
   at: Schema.NullOr(Schema.DateTimeUtc),
   callId: Schema.String,
+  // The channels the change goes out on or acts on.
   channelIds: Schema.Array(Schema.String),
+  // The comment sent with a request for changes, whole; null otherwise.
+  comment: Schema.NullOr(Schema.String),
   // The comment or review the change answers or acts on, as the workspace
   // holds it: who wrote it (the name they show, else their handle) and the
   // start of its text, about 500 characters. Null for a change that names
@@ -193,9 +280,28 @@ export const AgentApprovalSchema = Schema.Struct({
   inReplyTo: Schema.NullOr(
     Schema.Struct({ author: Schema.String, text: Schema.String })
   ),
+  // What moderating a comment does to it; null for any other change.
+  moderation: Schema.NullOr(InboxModerationActionSchema),
+  // The part of a published post an edit replaces, from 0; null otherwise.
+  part: Schema.NullOr(Schema.Int),
+  // The post the change acts on, whole; null for a change that names none.
+  post: Schema.NullOr(AgentApprovalPostSchema),
   postId: Schema.NullOr(Schema.String),
+  // The queue a post goes to the next free slot of, by name; null for any
+  // other change.
+  queue: Schema.NullOr(Schema.String),
+  // That queue's next free slot when the change was asked: an indication,
+  // as the slot is taken when the change runs and may have moved by then.
+  // Null for any other change, or a queue with no room.
+  queueAt: Schema.NullOr(Schema.DateTimeUtc),
   state: AgentApprovalStateSchema,
-  // The text the change sends, whole: a post's, or a reply's.
+  // The tags the change makes, or files the post under, by name and colour.
+  tags: Schema.Array(
+    Schema.Struct({ colour: Schema.String, name: Schema.String })
+  ),
+  // The text the change itself sends, whole: a reply, or a published
+  // post's new text; null for a change that sends none (a post's is in
+  // `post`).
   text: Schema.NullOr(Schema.String),
   threadId: Schema.NullOr(Schema.String),
   tool: Schema.String,

@@ -5,6 +5,7 @@ import type { CurrentMember, Member } from "peal-contract";
 
 import type { RequestOrigin } from "#agent/application/ports/agent-runs.ts";
 import type { CallSubject } from "#agent/domain/agent-approvals.ts";
+import type { RunEnded } from "#agent/infrastructure/run-ended.ts";
 
 /** A call of a tool that ran, as the records keep it: never what it carried. */
 export interface ToolCallRecord {
@@ -57,6 +58,19 @@ export class AgentToolbox extends Context.Service<
      * its approval; none for a call that names none, or one they cannot
      * read.
      */
+    /**
+     * Runs `effect` in one transaction that first locks the post the call
+     * names, as the person may read it (none named, or one they cannot
+     * read: no lock): what the effect reads of the post, then does to it,
+     * no other change comes between, as the post's own use cases lock it
+     * again in that transaction.
+     */
+    readonly holdingPost: (
+      member: Member,
+      postId: Option.Option<string>,
+      /** The queue the call places the post on: locked before the post. */
+      queueId: Option.Option<string>
+    ) => <A>(effect: Effect.Effect<A, RunEnded>) => Effect.Effect<A, RunEnded>;
     readonly subjectOf: (
       member: Member,
       tool: string,

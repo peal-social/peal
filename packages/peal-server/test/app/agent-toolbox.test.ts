@@ -1,9 +1,10 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Context, Effect, Schema } from "effect";
+import { Context, Effect, Option, Schema } from "effect";
 import { LanguageModel, Tool } from "effect/ai";
 import { toCodecAnthropic } from "effect/ai/AnthropicStructuredOutput";
 import { toCodecOpenAI } from "effect/ai/OpenAiStructuredOutput";
 
+import { shownParametersOf } from "#agent/domain/agent-approvals.ts";
 import {
   agentToolNames,
   approvedTools,
@@ -98,6 +99,27 @@ describe("the agent's toolkit", () => {
     ).toBeGreaterThan(0);
   });
 
+  it("shows on a change's card every parameter its MCP tool takes, and no more", () => {
+    const keysOf = Schema.decodeUnknownSync(
+      Schema.Struct({
+        properties: Schema.Record(Schema.String, Schema.Json),
+      })
+    );
+
+    for (const name of [...approvedTools, ...draftFreeTools]) {
+      const taken = Object.keys(
+        keysOf(
+          Tool.getJsonSchemaFromSchema(PealTools.tools[name].parametersSchema)
+        ).properties
+      ).toSorted();
+
+      expect([name, taken]).toStrictEqual([
+        name,
+        [...Option.getOrElse(shownParametersOf(name), () => [])].toSorted(),
+      ]);
+    }
+  });
+
   it("offers no webhook, key, member, connection, ad, feed or message tool", () => {
     const refused = [
       "create_webhook",
@@ -108,6 +130,9 @@ describe("the agent's toolkit", () => {
       "send_message",
       "get_conversation",
       "generate_image",
+      // Its post takes channel sets, signatures and default options only
+      // the server resolves: the agent drafts, then schedules the draft.
+      "create_post",
     ];
 
     for (const name of refused) {

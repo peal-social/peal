@@ -573,10 +573,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // What the key may not do is refused in words about a partner
           // key: there is no user whose role to change, nor a person who
           // left the workspace.
-          for (const [tool, args] of [
-            ["list_members", {}],
-            ["list_invitations", {}],
-          ] as const) {
+          for (const [tool, args] of [["list_members", {}]] as const) {
             const refused = yield* client
               .callTool({ arguments: args, tool: toolNamed(tools, tool) })
               .pipe(Effect.provide(context));

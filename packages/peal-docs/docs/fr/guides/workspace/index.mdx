@@ -44,6 +44,13 @@ Sous **Général**, les propriétaires et les administrateurs règlent aussi **A
 
 Seuls les propriétaires peuvent nommer ou retirer un propriétaire. Un espace de travail garde toujours au moins un propriétaire. Le dernier ne peut donc ni quitter ce rôle ni être retiré.
 
+Les [clés d’API](#api-keys) d’un membre suivent sa place dans l’espace :
+
+- Quand un membre est retiré, quitte l’espace de travail ou ferme son compte, les clés qu’il y a créées cessent aussitôt de fonctionner.
+- Quand vous donnez à un membre un rôle aux permissions plus restreintes, les clés qu’il a créées et qui portent une permission que le nouveau rôle n’a pas cessent de fonctionner.
+
+Dans l’espace de travail principal d’un [compte partenaire](/developers/embedding#keys), les clés partenaires qu’un membre a créées cessent aussi de fonctionner quand il part, ou quand son nouveau rôle ne gère pas le compte partenaire. Avant que vous confirmiez un retrait, ou un changement de rôle qui révoque des clés, Peal vous dit combien de ses clés cessent de fonctionner. Chaque clé révoquée ainsi est gardée dans le [journal d’activité](#activity) comme `apiKeys.revoke` (une clé partenaire comme `partnerAccount.revokeKey`), au nom de la personne qui a retiré le membre ou changé son rôle, ou du membre qui est parti.
+
 ### Inviter des personnes [#invitations]
 
 <Steps>
@@ -66,6 +73,10 @@ Les invitations en attente sont listées avec leur date d’expiration. Pour cha
 - Cliquer sur **Copier le lien** pour copier ce même lien, dans votre langue, et le transmettre autrement.
 
 Seule la personne invitée peut l’accepter, connectée avec l’adresse invitée une fois celle-ci vérifiée, et seulement jusqu’à l’expiration de l’invitation.
+
+Chaque invitation, envoyée ou renvoyée, est un e-mail. Une journée (UTC) en permet 100 pour chaque membre qui invite, 100 pour chaque espace de travail, 3 d’un même espace de travail vers une même adresse, et 20 vers une même adresse depuis tout Peal. Au-delà, inviter est refusé jusqu’au lendemain (`too_many_invitations`, 409, par l’API).
+
+L’e-mail montre votre nom et celui de l’espace de travail. Un nom tient sur une ligne, de 100 caractères au plus pour une personne et 120 pour un espace de travail, et ne peut pas contenir `://` ni `www.`. Un nom qui se lit comme une adresse web ou e-mail, comme `Booking.com`, reste valable dans Peal, mais les e-mails disent « Un membre » ou « un espace de travail » à la place, pour qu’aucun e-mail ne porte un lien saisi par quelqu’un.
 
 ### Exiger la validation en deux étapes [#require-two-step]
 
@@ -108,6 +119,8 @@ La clé s’affiche une seule fois, juste après sa création. Copiez-la à ce m
 </Steps>
 
 Cliquez sur **Révoquer** pour arrêter une clé aussitôt. L’équipe qui agit à la place d’un membre ne voit ni ne gère les clés.
+
+La liste montre qui a créé chaque clé. Une clé ne fait jamais plus que ce que peut le membre qui l’a créée : elle cesse donc de fonctionner dès qu’il quitte l’espace de travail, en est retiré ou ferme son compte, et dès que son rôle n’a plus l’une de ses permissions ([Gérer les membres](#members)). Une clé créée avant que Peal n’enregistre qui la crée affiche **Créée avant que les clés n’enregistrent qui les crée**, et fonctionne jusqu’à ce que quelqu’un la révoque.
 
 La liste indique pour chaque clé si elle **Peut programmer et publier des publications**. C’est le cas quand elle porte `post:schedule`, `post:publish` ou `post:approve`. Sans elles, elle écrit tout au plus des brouillons. Une publication créée ou programmée avec une clé le dit sur sa page, avec le nom de la clé.
 
@@ -271,6 +284,8 @@ Dans **Général**, les propriétaires cliquent sur **Supprimer cet espace de tr
   aussitôt de fonctionner. Plus rien n’en est publié. Stripe garde les factures
   qu’il a émises.
 </Callout>
+
+Ses canaux partent comme quand vous les déconnectez à la main : les plateformes qui le permettent sont priées d’oublier Peal, sauf si un autre espace de travail connecte encore le même compte.
 
 Si l’une de ses publications est en cours d’envoi, la suppression attend. Réessayez quelques minutes plus tard.
 

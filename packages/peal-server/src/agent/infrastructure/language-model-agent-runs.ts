@@ -9,11 +9,13 @@ import {
   Option,
   Queue,
   Ref,
+  Result,
   Schema,
   Stream,
 } from "effect";
 import { AiError, Prompt } from "effect/ai";
 import type { LanguageModel, Response } from "effect/ai";
+import { Digest } from "effect/crypto";
 import { CurrentMember } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -28,6 +30,9 @@ import {
   answered,
   approvalOf,
   pendingOf,
+  queueAsked,
+  shownOf,
+  sourcesNeeded,
 } from "#agent/domain/agent-approvals.ts";
 import { cardOf } from "#agent/domain/agent-cards.ts";
 import type { AgentEvent } from "#agent/domain/agent-event.ts";
@@ -35,6 +40,7 @@ import { agentInstructions } from "#agent/domain/agent-instructions.ts";
 import { AgentMessage } from "#agent/domain/agent-message.ts";
 import type {
   AgentApproval,
+  AgentApprovalState,
   AgentAvailability,
   AgentFailure,
   AgentOffReason,
@@ -55,12 +61,18 @@ import { AgentMessageIdSchema } from "#agent/domain/ids.ts";
 import { inPerson } from "#agent/domain/person-required.ts";
 import {
   maxAnswerLength,
+  maxHistoryLength,
   maxRounds,
   roundTimeout,
   runTimeout,
   titleTimeout,
 } from "#agent/domain/run-limits.ts";
-import { postOf } from "#agent/domain/tool-items.ts";
+import {
+  nextFreeOf,
+  publishableOf,
+  queuesOf,
+  tagsOf,
+} from "#agent/domain/tool-items.ts";
 import { AgentLanguageModels } from "#agent/infrastructure/agent-language-models.ts";
 import { AgentToolbox } from "#agent/infrastructure/agent-toolbox.ts";
 import type { AgentTool } from "#agent/infrastructure/agent-toolbox.ts";
@@ -73,6 +85,7 @@ import {
   historyOf,
   storedHistory,
   unansweredCalls,
+  withinBudget,
   withResults,
   withRound,
   withUserMessage,
@@ -89,11 +102,28 @@ import { storableText } from "#shared/domain/platform-text.ts";
 
 /** What the model reads in place of a change that waited and was not made. */
 const notMade = {
+  changed:
+    "What this change acts on changed after the person was shown it (the post was edited, or can no longer be read), so nothing was done. Tell them, and ask again, showing what it holds now, only if they still want it.",
   declined:
     "The person declined this change: nothing was done. Do not ask again unless they ask for it.",
   expired:
     "The person wrote again instead of answering: this change was not made.",
 } as const;
+
+// How the person's answer leaves a change: approved only when what it
+// acts on still reads as they were shown it.
+const approvalState = (
+  approved: boolean,
+  holds: boolean
+): AgentApprovalState => {
+  if (!approved) {
+    return "declined";
+  }
+
+  return holds ? "approved" : "changed";
+};
+
+const encoder = new TextEncoder();
 
 // The tools that run only once the person approved them, on any post or a
 // post that is not a draft.
@@ -116,10 +146,6 @@ const decodeJson = Schema.decodeUnknownEffect(Schema.Json);
 const asJson = flow(
   decodeJson,
   Effect.orElseSucceed((): Schema.Json => null)
-);
-
-const decodePostNamed = Schema.decodeUnknownOption(
-  Schema.Struct({ postId: Schema.String })
 );
 
 const isRefusal = Schema.is(
@@ -234,6 +260,7 @@ export const LanguageModelAgentRunsLive = Layer.effect(
     const chats = yield* AgentChats;
     const skills = yield* AgentSkills;
     const ids = yield* Ids;
+    const digests = yield* Digest.Digest;
 
     const availability = (actor: RunRequest["actor"]) =>
       assistant.status(actor).pipe(
@@ -271,26 +298,107 @@ export const LanguageModelAgentRunsLive = Layer.effect(
         Effect.mapError(() => new RunEnded({ reason: "failed" }))
       );
 
-    // The post a call names, as the workspace holds it, for its approval.
-    const postNamed = (member: Member, params: Schema.Json) =>
-      Option.match(decodePostNamed(params), {
-        onNone: () => Effect.succeedNone,
-        onSome: ({ postId }) =>
-          toolbox.toolkit.handle("get_post", { postId }).pipe(
-            Effect.flatMap(Stream.runLast),
-            Effect.flatMap(
-              Option.match({
-                onNone: () => Effect.succeedNone,
-                onSome: (result) =>
-                  result.isFailure
-                    ? Effect.succeedNone
-                    : asJson(result.encodedResult).pipe(Effect.map(postOf)),
-              })
+    // What a reading tool answers, as the person may read it; none when
+    // it refused or failed.
+    const readOf = (member: Member, tool: string, params: Schema.Json) =>
+      toolbox.toolkit.handle(tool, params).pipe(
+        Effect.flatMap(Stream.runLast),
+        Effect.flatMap(
+          Option.match({
+            onNone: () => Effect.succeedNone,
+            onSome: (result) =>
+              result.isFailure
+                ? Effect.succeedNone
+                : asJson(result.encodedResult).pipe(Effect.map(Option.some)),
+          })
+        ),
+        Effect.provideService(CurrentMember, member),
+        Effect.withTracerEnabled(false),
+        Effect.orElseSucceed(() => Option.none<Schema.Json>())
+      );
+
+    // The queue a queuing call places its post on, by its id, read before
+    // the post is held: the hold locks it first, as placing a post does.
+    const queuePlacing = (member: Member, call: MadeCall) =>
+      sourcesNeeded(call).queues
+        ? readOf(member, "list_queues", {}).pipe(
+            Effect.map((answer) =>
+              answer.pipe(
+                Option.flatMap(queuesOf),
+                Option.flatMap((known) => queueAsked(call, known)),
+                Option.map(({ id }) => id)
+              )
+            )
+          )
+        : Effect.succeed(Option.none<string>());
+
+    // Hashing a text in memory does not fail.
+    const hashOf = (shown: string) =>
+      digests
+        .digestHex(Digest.sha256, encoder.encode(shown))
+        .pipe(Effect.orDie);
+
+    // The change a call asks for, as the person decides on it: what it
+    // names read as they may read it, now, and the digest of what they
+    // are shown; or why it cannot be shown whole, for the model.
+    const requested = (member: Member, call: MadeCall) =>
+      Effect.gen(function* requesting() {
+        const needed = sourcesNeeded(call);
+
+        const post = yield* Option.match(needed.postId, {
+          onNone: () => Effect.succeedNone,
+          onSome: (postId) =>
+            readOf(member, "get_post", { postId }).pipe(
+              Effect.map(Option.flatMap(publishableOf))
             ),
-            Effect.provideService(CurrentMember, member),
-            Effect.withTracerEnabled(false),
-            Effect.orElseSucceed(() => Option.none())
-          ),
+        });
+
+        const queues = needed.queues
+          ? (yield* readOf(member, "list_queues", {})).pipe(
+              Option.flatMap(queuesOf)
+            )
+          : Option.none();
+
+        const tags = needed.tags
+          ? (yield* readOf(member, "list_tags", {})).pipe(
+              Option.flatMap(tagsOf)
+            )
+          : Option.none();
+
+        const subject = yield* toolbox.subjectOf(
+          member,
+          call.tool,
+          call.params
+        );
+
+        const built = approvalOf(call, { post, queues, subject, tags });
+
+        if (Result.isFailure(built)) {
+          return built;
+        }
+
+        const digest = yield* hashOf(shownOf(built.success));
+
+        // Where a queue would put the post now, as preview_queue says:
+        // an indication only, kept out of the digest.
+        const queueAt = yield* Option.match(
+          queues.pipe(Option.flatMap((known) => queueAsked(call, known))),
+          {
+            onNone: () => Effect.succeed(null),
+            onSome: ({ id }) =>
+              readOf(member, "preview_queue", { count: 1, queueId: id }).pipe(
+                Effect.map((answer) =>
+                  Option.getOrNull(answer.pipe(Option.flatMap(nextFreeOf)))
+                )
+              ),
+          }
+        );
+
+        return Result.succeed<AgentApproval>({
+          ...built.success,
+          digest,
+          queueAt,
+        });
       });
 
     const start = Effect.fn("AgentRuns.start")(function* start(
@@ -606,14 +714,39 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                     );
 
                     if (call !== undefined) {
-                      const approval = approvalOf(
-                        call,
-                        yield* postNamed(member, call.params),
-                        yield* toolbox.subjectOf(member, call.tool, call.params)
-                      );
+                      const built = yield* requested(member, call);
 
-                      waiting.push(approval);
-                      yield* emit({ _tag: "approval", approval });
+                      if (Result.isSuccess(built)) {
+                        waiting.push(built.success);
+                        yield* emit({
+                          _tag: "approval",
+                          approval: built.success,
+                        });
+                      } else {
+                        // What cannot be shown whole is not asked: the
+                        // model reads why, as the tool's refusal.
+                        results.push({
+                          callId: call.callId,
+                          encoded: {
+                            _tag: "ToolRefused",
+                            message: built.failure,
+                          },
+                          isFailure: true,
+                          tool: call.tool,
+                        });
+                        yield* Ref.update(toolsCalled, (called) => [
+                          ...called,
+                          call.tool,
+                        ]);
+                        yield* emit({
+                          _tag: "step",
+                          step: yield* stepOf(
+                            call.callId,
+                            "refused",
+                            call.tool
+                          ),
+                        });
+                      }
                     }
                   }
                 });
@@ -628,7 +761,9 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                         options: cachedPrefix,
                       }),
                     ]),
-                    history
+                    // Each round is one request whatever it holds: a long
+                    // chat sends its latest turns only.
+                    withinBudget(history, maxHistoryLength)
                   ),
                   toolCallValidation: "deferred",
                   toolkit,
@@ -861,7 +996,9 @@ export const LanguageModelAgentRunsLive = Layer.effect(
             });
 
           // The person's answer to a change: made, with their permissions
-          // as they are now, or not, and the model reads which.
+          // as they are now, only when what it acts on still reads as the
+          // card showed it (`changed` otherwise); or not, and the model
+          // reads which.
           const answerTaken = (callId: string, approved: boolean) =>
             Effect.gen(function* taken() {
               const asked = asking.pipe(
@@ -878,15 +1015,54 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 (made) => made.callId === callId
               );
 
-              const state = approved ? "approved" : "declined";
+              // Read again, then run, with the post it names held between:
+              // a post edited since the card was shown, by a teammate or by
+              // a call of the same answer, is not what the person
+              // approved, and no edit lands between the reading and the
+              // change.
+              const ran =
+                approved && call !== undefined && Option.isSome(asked)
+                  ? yield* toolbox.holdingPost(
+                      member,
+                      sourcesNeeded(call).postId,
+                      yield* queuePlacing(member, call)
+                    )(
+                      Effect.gen(function* held() {
+                        const fresh = yield* requested(member, call);
+
+                        if (
+                          Result.isFailure(fresh) ||
+                          fresh.success.digest !== asked.value.digest
+                        ) {
+                          return Option.none<CallResult>();
+                        }
+
+                        yield* Queue.offer(queue, {
+                          _tag: "approval",
+                          approval: { ...asked.value, state: "approved" },
+                        });
+                        yield* emit({
+                          _tag: "step",
+                          step: yield* stepOf(callId, "running", call.tool),
+                        });
+
+                        return Option.some(yield* runApproved(member, call));
+                      })
+                    )
+                  : Option.none<CallResult>();
+
+              const state = approvalState(approved, Option.isSome(ran));
 
               // The answered change, on the answer that asked it: sent
-              // first, under its call, and kept there.
+              // first, under its call (an approved one before it ran), and
+              // kept there.
               if (Option.isSome(asked) && Option.isSome(asking)) {
-                yield* Queue.offer(queue, {
-                  _tag: "approval",
-                  approval: { ...asked.value, state },
-                });
+                if (state !== "approved") {
+                  yield* Queue.offer(queue, {
+                    _tag: "approval",
+                    approval: { ...asked.value, state },
+                  });
+                }
 
                 yield* keptWith(
                   asking.value,
@@ -894,26 +1070,20 @@ export const LanguageModelAgentRunsLive = Layer.effect(
                 );
               }
 
-              if (call !== undefined && approved) {
-                yield* emit({
-                  _tag: "step",
-                  step: yield* stepOf(callId, "running", call.tool),
-                });
-
-                const result = yield* runApproved(member, call);
-
-                history = withResults(history, [result]);
+              if (Option.isSome(ran)) {
+                history = withResults(history, [ran.value]);
                 yield* ranCall(
-                  result,
+                  ran.value,
                   asked.pipe(Option.map((approval) => ({ ...approval, state })))
                 );
               }
 
-              if (call !== undefined && !approved) {
+              if (call !== undefined && state !== "approved") {
                 history = withResults(history, [
                   {
                     callId,
-                    encoded: notMade.declined,
+                    encoded:
+                      state === "changed" ? notMade.changed : notMade.declined,
                     isFailure: true,
                     tool: call.tool,
                   },
@@ -1003,4 +1173,4 @@ export const LanguageModelAgentRunsLive = Layer.effect(
 
     return AgentRuns.of({ availability, start });
   })
-);
+).pipe(Layer.provide(Digest.layerWebCrypto));

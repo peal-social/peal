@@ -35,6 +35,7 @@ import { ChannelDirectory } from "#channels/application/channel-directory.ts";
 import { ChannelRecords } from "#channels/application/channel-records.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { encryptTokens } from "#channels/application/channel-tokens.ts";
+import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
 import { Channel } from "#channels/domain/channel.ts";
 import { DrizzleChannelRecords } from "#channels/infrastructure/drizzle-channel-records.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
@@ -52,6 +53,7 @@ import { facebookMessageScopes } from "#shared/domain/inbox-message-platform.ts"
 import { metaHosts } from "#shared/infrastructure/platforms/meta-graph.ts";
 import { publicHttpClient } from "#shared/infrastructure/platforms/public-http.ts";
 import { channelAccessOf } from "#test/analytics/access-log.ts";
+import { authorizersOf } from "#test/channels/connect-support.ts";
 import { metaApp } from "#test/channels/fakes/fake-meta.ts";
 import {
   DatabaseTest,
@@ -678,7 +680,8 @@ describe("what the server writes about an erased workspace's channels", () => {
                 Layer.mergeAll(
                   DrizzleChannelRepository,
                   TokenCipherTest,
-                  departures
+                  departures,
+                  Layer.succeed(PlatformAuthorizers, authorizersOf())
                 )
               ),
               Layer.provideMerge(DatabaseTest)

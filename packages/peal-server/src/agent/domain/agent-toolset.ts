@@ -49,7 +49,11 @@ export const freeTools = [
 /**
  * Tools whose change others see, cannot be undone or costs money: each
  * call waits for the person to approve it, and runs only then, with their
- * permissions as they are at that moment.
+ * permissions as they are at that moment. Each one's card shows all it
+ * does (`agent-approvals.ts`). No `create_post`: the post it makes takes
+ * channel sets, signatures and default options only the server resolves,
+ * so the agent writes a draft (which resolves them), and the person
+ * approves scheduling or publishing the draft as the workspace holds it.
  */
 export const approvedTools = [
   "schedule_post",
@@ -58,7 +62,6 @@ export const approvedTools = [
   "queue_post",
   "unschedule_post",
   "cancel_post",
-  "create_post",
   "edit_published_post",
   "unpublish_post",
   "discard_draft",

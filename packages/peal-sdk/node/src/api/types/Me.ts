@@ -5,11 +5,16 @@ import * as Peal from "../index.js";
 export interface Me {
     browserAnalytics?: (Peal.BrowserAnalytics | null) | undefined;
     impersonatedBy: string | null;
+    supportChat?: (Me.SupportChat | null) | undefined;
     user: Me.User;
     workspaces: Peal.Membership[];
 }
 
 export namespace Me {
+    export interface SupportChat {
+        emailSignature: string;
+    }
+
     export interface User {
         email: string;
         emailVerified: boolean;

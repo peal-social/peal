@@ -1,12 +1,20 @@
+import { and, eq } from "drizzle-orm";
 import { Effect, Layer, Option, Redacted, Schema } from "effect";
 
 import { permissionsOf } from "#shared/domain/access.ts";
 import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
+import { Drizzle } from "#shared/infrastructure/database.ts";
 import { AuthGateway } from "#workspace/application/auth-gateway.ts";
 import { AuthUnavailable } from "#workspace/application/auth-unavailable.ts";
 import { ApiKeyPrincipal } from "#workspace/domain/api-key-principal.ts";
+import { beyondMaker } from "#workspace/domain/api-key.ts";
 import { UserPrincipal } from "#workspace/domain/user-principal.ts";
+import {
+  apikey,
+  member,
+  organization,
+} from "#workspace/infrastructure/auth-schema.generated.ts";
 
 import { makeAccessTokens } from "./access-tokens.ts";
 import { attempt } from "./attempt.ts";
@@ -28,6 +36,12 @@ const VerifiedKeySchema = Schema.Struct({
     id: Schema.NonEmptyString,
     permissions: Schema.NullOr(
       Schema.Record(Schema.String, Schema.Array(Schema.String))
+    ),
+    // What Peal wrote in it, which Better Auth answers parsed: the member
+    // who made the key; nothing for a key made before makers were
+    // recorded. Peal alone writes it (makerMetadata).
+    metadata: Schema.optional(
+      Schema.NullOr(Schema.Struct({ createdBy: Schema.optional(UserIdSchema) }))
     ),
     // Keys are owned by workspaces: the reference is the workspace's id.
     referenceId: WorkspaceIdSchema,
@@ -91,22 +105,74 @@ export const AuthGatewayLive = Layer.effect(
   AuthGateway,
   Effect.gen(function* authGateway() {
     const auth = yield* BetterAuth;
-    const { adapter } = yield* Effect.promise(async () => await auth.$context);
+    const db = yield* Drizzle;
     const settings = yield* AuthSettings;
     const trusted = trustedOriginsOf(settings);
     const tokens = yield* makeAccessTokens;
 
-    // A workspace's keys are deleted with it. One that remains, however the
+    // The key's workspace, and, when the key records its maker, the role
+    // they hold there now (none once they are no longer a member): one
+    // read, on the primary key and the members' unique index. A
+    // workspace's keys are deleted with it; one that remains, however the
     // workspace went, is no credential.
-    const workspaceExists = (workspaceId: WorkspaceId) =>
-      attempt(
-        async () =>
-          await adapter.findOne({
-            model: "organization",
-            select: ["id"],
-            where: [{ field: "id", value: workspaceId }],
-          })
-      ).pipe(Effect.map((found) => found !== null));
+    const standingOf = (
+      workspaceId: WorkspaceId,
+      maker: Option.Option<UserId>
+    ) =>
+      Option.match(maker, {
+        onNone: () =>
+          db
+            .select({ id: organization.id })
+            .from(organization)
+            .where(eq(organization.id, workspaceId))
+            .limit(1)
+            .pipe(
+              Effect.map((rows) =>
+                rows.length === 0
+                  ? Option.none()
+                  : Option.some(Option.none<string>())
+              )
+            ),
+        onSome: (userId) =>
+          db
+            .select({ role: member.role })
+            .from(organization)
+            .leftJoin(
+              member,
+              and(
+                eq(member.organizationId, organization.id),
+                eq(member.userId, userId)
+              )
+            )
+            .where(eq(organization.id, workspaceId))
+            .limit(1)
+            .pipe(
+              Effect.map(([row]) =>
+                row === undefined
+                  ? Option.none()
+                  : Option.some(Option.fromNullishOr(row.role))
+              )
+            ),
+      }).pipe(Effect.mapError((cause) => new AuthUnavailable({ cause })));
+
+    // A key past its maker's standing, which a key made while that
+    // standing changed may be: revoked, as far as it goes, and refused
+    // either way.
+    const revokeOutgrown = (apiKeyId: string, workspaceId: WorkspaceId) =>
+      db
+        .delete(apikey)
+        .where(
+          and(eq(apikey.id, apiKeyId), eq(apikey.referenceId, workspaceId))
+        )
+        .pipe(
+          Effect.catchCause((cause) =>
+            Effect.logWarning(
+              "Revoking an API key past its maker's standing failed",
+              cause
+            )
+          ),
+          Effect.asVoid
+        );
 
     return AuthGateway.of({
       apiKey: (key) =>
@@ -119,21 +185,41 @@ export const AuthGatewayLive = Layer.effect(
             Option.match({
               onNone: () => Effect.succeedNone,
               onSome: ({ key: verified }) =>
-                workspaceExists(verified.referenceId).pipe(
-                  Effect.map((exists) =>
-                    exists
-                      ? Option.some(
-                          new ApiKeyPrincipal({
-                            apiKeyId: verified.id,
-                            permissions: permissionsOf(
-                              verified.permissions ?? {}
-                            ),
-                            workspaceId: verified.referenceId,
-                          })
-                        )
-                      : Option.none()
-                  )
-                ),
+                Effect.gen(function* standing() {
+                  const permissions = permissionsOf(verified.permissions ?? {});
+
+                  const maker = Option.fromNullishOr(
+                    verified.metadata?.createdBy
+                  );
+
+                  const found = yield* standingOf(verified.referenceId, maker);
+
+                  if (Option.isNone(found)) {
+                    return Option.none();
+                  }
+
+                  if (
+                    Option.isSome(maker) &&
+                    beyondMaker(
+                      permissions,
+                      maker.value,
+                      verified.referenceId,
+                      found.value
+                    )
+                  ) {
+                    yield* revokeOutgrown(verified.id, verified.referenceId);
+
+                    return Option.none();
+                  }
+
+                  return Option.some(
+                    new ApiKeyPrincipal({
+                      apiKeyId: verified.id,
+                      permissions,
+                      workspaceId: verified.referenceId,
+                    })
+                  );
+                }),
             })
           ),
           Effect.withSpan("AuthGateway.apiKey")

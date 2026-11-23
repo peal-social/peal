@@ -1,6 +1,21 @@
 import { describe, expect, it } from "@effect/vitest";
+import { Option } from "effect";
 
-import { isUntraced } from "#app/untraced-paths.ts";
+import {
+  isUntraced,
+  loggedPathOf,
+  redactedQueryNames,
+} from "#app/untraced-paths.ts";
+
+// The query parameters the tracer writes as `<redacted>`: each approves or
+// proves something on its own.
+describe("the query parameters the tracer redacts", () => {
+  it("redacts the device sign-in's code and the tokens addresses carry", () => {
+    expect(redactedQueryNames).toStrictEqual(
+      expect.arrayContaining(["code", "state", "token", "user_code"])
+    );
+  });
+});
 
 // The paths the HTTP tracer leaves out: what their address holds is a
 // visitor's (a short link's redirect) or a capability (the digest's
@@ -15,9 +30,40 @@ describe(isUntraced, () => {
     ).toBeTruthy();
   });
 
+  it("leaves out a password reset's link, whose last segment is its token", () => {
+    expect(
+      isUntraced("/api/auth/reset-password/synthetic-reset-token?callbackURL=x")
+    ).toBeTruthy();
+    // The reset itself carries its token in its body.
+    expect(isUntraced("/api/auth/reset-password")).toBeFalsy();
+  });
+
   it("traces everything else", () => {
     expect(isUntraced("/api/me/notification-preferences")).toBeFalsy();
     expect(isUntraced("/api/health")).toBeFalsy();
     expect(isUntraced("/api/lookups")).toBeFalsy();
+  });
+});
+
+// What the request log writes of a path whose last segment is a token.
+describe(loggedPathOf, () => {
+  it("writes the token's place, never the token", () => {
+    expect(
+      loggedPathOf(
+        "/api/notifications/weekly-digest/unsubscribe/synthetic-token?x=1"
+      )
+    ).toStrictEqual(
+      Option.some("/api/notifications/weekly-digest/unsubscribe/<redacted>")
+    );
+    expect(
+      loggedPathOf("/api/auth/reset-password/synthetic-token?callbackURL=x")
+    ).toStrictEqual(Option.some("/api/auth/reset-password/<redacted>"));
+  });
+
+  it("leaves any other path as it is", () => {
+    expect(loggedPathOf("/api/l/abc123")).toStrictEqual(Option.none());
+    expect(loggedPathOf("/api/auth/reset-password")).toStrictEqual(
+      Option.none()
+    );
   });
 });

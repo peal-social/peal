@@ -44,6 +44,13 @@ Under **General**, owners and admins also set **Approvals**, which decides wheth
 
 Only owners can make someone an owner or remove an owner. A workspace always keeps at least one owner, so the last owner can't give up that role or be removed.
 
+A member's [API keys](#api-keys) follow them:
+
+- When a member is removed, leaves the workspace or closes their account, the keys they made in it stop working at once.
+- When you give a member a role with fewer permissions, the keys they made that hold a permission the new role doesn't have stop working.
+
+In a [partner account](/developers/embedding#keys)'s home workspace, the partner keys a member made stop working too when they go, or when their new role can't manage the partner account. Before you confirm a removal, or a role change that revokes keys, Peal tells you how many of their keys stop working. Each key revoked this way is kept in the [activity log](#activity) as `apiKeys.revoke` (a partner key as `partnerAccount.revokeKey`), by whoever removed the member or changed the role, or by the member who left.
+
 ### Invite people [#invitations]
 
 <Steps>
@@ -66,6 +73,10 @@ Pending invitations are listed with their expiry date. For each one, you can:
 - Click **Copy link** to copy the same link, in your language, and hand it over another way.
 
 Only the person invited can accept it, signed in with the invited address once it's verified, and only until the invitation expires.
+
+Each invitation, sent or sent again, is an email. A day (UTC) allows 100 of them for each member who invites, 100 for each workspace, 3 from one workspace to the same address, and 20 to one address from all of Peal. Past that, inviting is refused until the next day (`too_many_invitations`, 409, through the API).
+
+The email shows your name and the workspace's. A name is one line, up to 100 characters for a person and 120 for a workspace, and can't hold `://` or `www.`. A name that reads as a web or email address, such as `Booking.com`, is fine in Peal, but emails say "A member" or "a workspace" instead, so that no email carries a link someone typed.
 
 ### Require two-step verification [#require-two-step]
 
@@ -104,6 +115,8 @@ The key appears once, right after you create it. Copy it then, because Peal keep
 </Steps>
 
 Click **Revoke** to stop a key at once. Staff acting as a member can't see or handle keys.
+
+The list shows who made each key. A key never does more than the member who made it can do, so it stops working once they leave the workspace, are removed or close their account, and once their role no longer has one of its permissions ([Manage members](#members)). A key made before Peal recorded its maker shows **Made before keys recorded who made them**, and keeps working until someone revokes it.
 
 The list says whether each key **Can schedule and publish posts**. It can when it holds `post:schedule`, `post:publish` or `post:approve`. Without them, it can write drafts at most. A post created or scheduled with a key says so on its page, with the key's name.
 
@@ -263,6 +276,8 @@ On **General**, owners click **Delete this workspace…**, then type the workspa
   API keys, which stop working at once. Nothing more is posted from it. Stripe
   keeps the invoices it issued.
 </Callout>
+
+Its channels go as when you disconnect them by hand: the platforms that allow it are asked to forget Peal, unless another workspace still connects the same account.
 
 If one of the workspace's posts is going out, deleting waits. Try again a few minutes later.
 

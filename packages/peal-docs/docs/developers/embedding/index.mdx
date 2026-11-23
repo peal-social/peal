@@ -83,6 +83,8 @@ A partner key starts with `peal_partner_`, and you send it as `Authorization: Be
 
 You can revoke a key in the same place, or with `DELETE /api/workspaces/{workspaceId}/partner/keys/{partnerKeyId}`. It stops working at once.
 
+The list shows who made each key (`createdBy`). A key follows its maker: it stops working once they leave your home workspace, are removed from it or close their account, and once their role there is one that can't manage the partner account (anything below admin). Before a removal or such a role change, the web app says how many of their keys stop working. So that your backend keeps running when someone leaves, have it use a key made by an owner who stays.
+
 A key's scopes decide what it does with your workspaces:
 
 | A key's scope       | What it allows                                        |

@@ -567,10 +567,23 @@ export const forgetTrustedBrowsers = async (
     return;
   }
 
-  await ctx.context.adapter.deleteMany({
+  await forgetTrustedBrowsersOf(ctx.context.adapter, sender.userId);
+};
+
+/**
+ * Forgets every browser the account trusted to skip the second step, on
+ * the adapter given (a transaction's, inside one): what turning two-step
+ * verification off does, and what a reset or a release of the password
+ * does, so a browser trusted before needs a code again.
+ */
+export const forgetTrustedBrowsersOf = async (
+  adapter: Pick<GenericEndpointContext["context"]["adapter"], "deleteMany">,
+  userId: string
+): Promise<void> => {
+  await adapter.deleteMany({
     model: "verification",
     where: [
-      { field: "value", value: sender.userId },
+      { field: "value", value: userId },
       {
         field: "identifier",
         operator: "starts_with",

@@ -1,6 +1,7 @@
 import { Layer } from "effect";
 
 import { KeyedPseudonymsLive } from "#shared/infrastructure/keyed-pseudonyms.ts";
+import { SupportChatIdentityLive } from "#shared/infrastructure/support-chat-identity.ts";
 import { AccountHandlers } from "#workspace/api/account.ts";
 import { ApiKeysHandlers } from "#workspace/api/api-keys.ts";
 import { BrowserAnalyticsHandlers } from "#workspace/api/browser-analytics.ts";
@@ -24,6 +25,7 @@ import { AccountData } from "#workspace/application/account-data.ts";
 import { AccountStanding } from "#workspace/application/account-standing.ts";
 import { Accounts } from "#workspace/application/accounts.ts";
 import { ActorsNow } from "#workspace/application/actors-now.ts";
+import { ApiKeyMakers } from "#workspace/application/api-key-makers.ts";
 import { ApiKeys } from "#workspace/application/api-keys.ts";
 import { Authenticate } from "#workspace/application/authenticate.ts";
 import { BrowserAnalyticsChoice } from "#workspace/application/browser-analytics-choice.ts";
@@ -46,6 +48,7 @@ import { ReplayErasures } from "#workspace/application/replay-erasures.ts";
 import { ResolveMember } from "#workspace/application/resolve-member.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
 import { StaffStanding } from "#workspace/application/staff-standing.ts";
+import { UnclaimedAccounts } from "#workspace/application/unclaimed-accounts.ts";
 import { WorkspaceContacts } from "#workspace/application/workspace-contacts.ts";
 import { WorkspaceMembers } from "#workspace/application/workspace-members.ts";
 import { WorkspaceSeats } from "#workspace/application/workspace-seats.ts";
@@ -78,10 +81,12 @@ import { DrizzleConnectedAppStore } from "#workspace/infrastructure/drizzle-conn
 import { DrizzleCredentialNames } from "#workspace/infrastructure/drizzle-credential-names.ts";
 import { DrizzleCustomerWorkspaces } from "#workspace/infrastructure/drizzle-customer-workspaces.ts";
 import { DrizzleImpersonationSessions } from "#workspace/infrastructure/drizzle-impersonation-sessions.ts";
+import { DrizzleInvitationEmailsLive } from "#workspace/infrastructure/drizzle-invitation-emails.ts";
 import { MemberDirectoryLive } from "#workspace/infrastructure/drizzle-member-directory.ts";
 import { DrizzlePartnerStore } from "#workspace/infrastructure/drizzle-partner-store.ts";
 import { SecurityPoliciesLive } from "#workspace/infrastructure/drizzle-security-policies.ts";
 import { DrizzleSignUpStore } from "#workspace/infrastructure/drizzle-sign-up-store.ts";
+import { DrizzleWorkspaceApiKeys } from "#workspace/infrastructure/drizzle-workspace-api-keys.ts";
 import { WorkspaceRosterLive } from "#workspace/infrastructure/drizzle-workspace-roster.ts";
 import { EmailedAccountMail } from "#workspace/infrastructure/emailed-account-mail.ts";
 import { LoggedActivityJournal } from "#workspace/infrastructure/logged-activity-journal.ts";
@@ -212,6 +217,22 @@ export const WorkspaceLive = Layer.mergeAll(
   Layer.provideMerge(PartnerOwnershipLive),
   Layer.provideMerge(StaffToolsLive),
   Layer.provideMerge(BetterAuthLive),
+  // What follows a member's standing to the keys they made: Better
+  // Auth's hooks, the members' removal and their list reach it.
+  Layer.provideMerge(
+    ApiKeyMakers.layer.pipe(
+      Layer.provideMerge(DrizzleWorkspaceApiKeys),
+      Layer.provide(DrizzlePartnerStore)
+    )
+  ),
+  // What Better Auth's hooks close an account nobody claimed through,
+  // which WorkspaceSettingsLive serves with CloseAccount.
+  Layer.provideMerge(UnclaimedAccounts.layer),
+  // The day's invitation emails, which Peal's API and Better Auth's route
+  // count alike, under keyed pseudonyms.
+  Layer.provideMerge(
+    DrizzleInvitationEmailsLive.pipe(Layer.provide(KeyedPseudonymsLive))
+  ),
   // The directory other contexts name members with (the review context),
   // and Better Auth's hooks check a membership with.
   Layer.provideMerge(MemberDirectoryLive),
@@ -248,7 +269,7 @@ export const WorkspaceLive = Layer.mergeAll(
  */
 export const WorkspaceSettingsLive = Layer.mergeAll(
   AccountData.layer,
-  CloseAccount.layer,
+  UnclaimedAccounts.served.pipe(Layer.provideMerge(CloseAccount.layer)),
   ConnectedApps.layer,
   DeleteWorkspace.layer,
   OffboardWorkspace.layer,
@@ -329,7 +350,7 @@ export const WorkspaceCronsLive = Layer.mergeAll(
  * the staff console's. The settings' endpoints need WorkspaceSettingsLive.
  */
 export const WorkspaceApiLive = Layer.mergeAll(
-  SessionHandlers,
+  SessionHandlers.pipe(Layer.provide(SupportChatIdentityLive)),
   CredentialHandlers,
   ApiKeysHandlers,
   WorkspacesHandlers,

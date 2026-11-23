@@ -32,6 +32,7 @@ import {
   memoryStore,
 } from "./bluesky-client.ts";
 import type { BlueskyClientOptions } from "./bluesky-client.ts";
+import { boundedDocuments, hostileOf } from "./bounded-documents.ts";
 import { parseSavedSession, parseSavedState } from "./saved-oauth-data.ts";
 
 export interface BlueskyAuthorizerOptions extends Omit<
@@ -47,15 +48,24 @@ export interface BlueskyAuthorizerOptions extends Omit<
 // What went wrong on the wire while the client worked, which its own errors
 // do not tell apart: Peal refused a request, or a server did not answer.
 interface WireTrouble {
+  /** A server sent an answer too large or too deep (`boundedDocuments`). */
+  readonly hostile: boolean;
   readonly refused: Option.Option<OutboundRequestRefused>;
   readonly unreachable: boolean;
 }
 
 const isRefusal = Schema.is(OutboundRequestRefused);
 
-// Wraps the fetch for one operation, noting what failed on the wire.
-const observed = (fetch: PublicFetch) => {
-  let trouble: WireTrouble = { refused: Option.none(), unreachable: false };
+// Wraps the fetch for one operation, its answers bounded before the
+// library reads them (`boundedDocuments`), noting what failed on the wire.
+const observed = (publicFetch: PublicFetch) => {
+  const fetch = boundedDocuments(publicFetch);
+
+  let trouble: WireTrouble = {
+    hostile: false,
+    refused: Option.none(),
+    unreachable: false,
+  };
 
   const watch = async (
     input: Request | URL | string,
@@ -64,6 +74,12 @@ const observed = (fetch: PublicFetch) => {
     try {
       return await fetch(input, init);
     } catch (error) {
+      if (error instanceof TypeError && Option.isSome(hostileOf(error))) {
+        trouble = { ...trouble, hostile: true };
+
+        throw error;
+      }
+
       const refusal = Option.some(
         error instanceof TypeError ? error.cause : undefined
       ).pipe(Option.filter(isRefusal));
@@ -107,7 +123,39 @@ const isTransient = (error: Error) =>
   (error instanceof FetchResponseError &&
     isTransientStatus(error.response.status));
 
+/**
+ * The most of a library error's words a reason keeps: its validation
+ * errors list every issue, which a hostile answer makes enormous.
+ */
+export const maxReasonLength = 300;
+
+// A library error in a few words, for the logs.
+const isText = Schema.is(Schema.String);
+
+// Only a message the error holds is read: a validation error's is a
+// getter that writes out every issue, whatever their number.
+const reasonOf = (cause: unknown): string => {
+  const held: unknown =
+    cause instanceof Error
+      ? Object.getOwnPropertyDescriptor(cause, "message")?.value
+      : undefined;
+
+  const words =
+    cause instanceof Error
+      ? `${cause.name}: ${isText(held) ? held : "(no message kept)"}`
+      : "unknown";
+
+  return words.length > maxReasonLength
+    ? `${words.slice(0, maxReasonLength)}…`
+    : words;
+};
+
 const failureOf = (trouble: WireTrouble, cause: unknown): ClientFailure => {
+  // An answer Peal would not hand the library: an identity it cannot use.
+  if (trouble.hostile) {
+    return { _tag: "unknownIdentity" };
+  }
+
   if (Option.isSome(trouble.refused)) {
     return { _tag: "refused", refusal: trouble.refused.value };
   }
@@ -121,7 +169,7 @@ const failureOf = (trouble: WireTrouble, cause: unknown): ClientFailure => {
 
   return cause instanceof OAuthResolverError
     ? { _tag: "unknownIdentity" }
-    : { _tag: "rejected", reason: String(cause) };
+    : { _tag: "rejected", reason: reasonOf(cause) };
 };
 
 // A server Peal may not call is the member's to fix; a lookup that failed

@@ -9,22 +9,19 @@ import {
   Schema,
 } from "effect";
 
-import { grantOf, permissionsOf } from "#shared/domain/access.ts";
+import { grantOf } from "#shared/domain/access.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 import { ApiKeyIssuer } from "#workspace/application/api-key-issuer.ts";
 import { AuthUnavailable } from "#workspace/application/auth-unavailable.ts";
 import { ApiKey } from "#workspace/domain/api-key.ts";
 import { apikey } from "#workspace/infrastructure/auth-schema.generated.ts";
+import {
+  apiKeyOf,
+  makerMetadata,
+} from "#workspace/infrastructure/drizzle-workspace-api-keys.ts";
 
 import { attempt } from "./attempt.ts";
 import { BetterAuth } from "./better-auth.ts";
-
-// Better Auth stores a key's permissions as a JSON grant.
-const decodeGrant = Schema.decodeUnknownOption(
-  Schema.fromJsonString(
-    Schema.Record(Schema.String, Schema.Array(Schema.String))
-  )
-);
 
 const isUuid = Schema.is(Schema.String.check(Schema.isUUID()));
 
@@ -32,8 +29,9 @@ const utc = (date: Date): DateTime.Utc => DateTime.makeUnsafe(date);
 
 /**
  * API keys through Better Auth's API key plugin. Better Auth creates and
- * deletes them, as it hashes keys and counts their use; listing reads its
- * table with the server's own Drizzle driver.
+ * deletes them, as it hashes keys and counts their use, and keeps who made
+ * each in its metadata (`makerMetadata`); listing reads its table with the
+ * server's own Drizzle driver.
  */
 export const ApiKeyIssuerLive = Layer.effect(
   ApiKeyIssuer,
@@ -55,6 +53,7 @@ export const ApiKeyIssuerLive = Layer.effect(
                   onNone: () => null,
                   onSome: Duration.toSeconds,
                 }),
+                metadata: makerMetadata(request.createdBy),
                 name: request.name,
                 organizationId: request.workspaceId,
                 permissions: grantOf(request.permissions),
@@ -65,6 +64,7 @@ export const ApiKeyIssuerLive = Layer.effect(
           Effect.map((created) => ({
             apiKey: new ApiKey({
               createdAt: utc(created.createdAt),
+              createdBy: Option.some(request.createdBy),
               expiresAt: Option.fromNullishOr(created.expiresAt).pipe(
                 Option.map(utc)
               ),
@@ -85,24 +85,7 @@ export const ApiKeyIssuerLive = Layer.effect(
           .where(eq(apikey.referenceId, workspaceId))
           .orderBy(asc(apikey.createdAt), asc(apikey.id))
           .pipe(
-            Effect.map((rows) =>
-              rows.map(
-                (row) =>
-                  new ApiKey({
-                    createdAt: utc(row.createdAt),
-                    expiresAt: Option.fromNullishOr(row.expiresAt).pipe(
-                      Option.map(utc)
-                    ),
-                    id: row.id,
-                    name: row.name ?? "",
-                    permissions: decodeGrant(row.permissions).pipe(
-                      Option.match({ onNone: () => [], onSome: permissionsOf })
-                    ),
-                    start: Option.fromNullishOr(row.start),
-                    workspaceId,
-                  })
-              )
-            ),
+            Effect.map((rows) => rows.map((row) => apiKeyOf(row, workspaceId))),
             Effect.mapError((cause) => new AuthUnavailable({ cause })),
             Effect.withSpan("ApiKeyIssuer.list")
           ),

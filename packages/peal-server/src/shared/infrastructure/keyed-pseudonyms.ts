@@ -11,10 +11,12 @@ const encoder = new TextEncoder();
 // Apart from anything else the secret keys, and from each other.
 const emailPurpose = "peal-pseudonym-v1:email:";
 const memberPurpose = "peal-pseudonym-v1:platform-member:";
+const countedPurpose = "peal-pseudonym-v1:counted:";
 
 /**
  * Pseudonyms as the HMAC-SHA256 of the lowercased, trimmed email address,
- * or of a platform's member's identifier as the platform gives it, keyed
+ * of a platform's member's identifier as the platform gives it, or of
+ * what a count is kept by, keyed
  * with the server's secret, in hexadecimal. Changing the secret changes
  * every pseudonym, so the records kept forget whom they were about.
  */
@@ -43,6 +45,8 @@ export const KeyedPseudonymsLive = Layer.effect(
           `${emailPurpose}${email.trim().toLowerCase()}`,
           "Pseudonyms.ofEmail"
         ),
+      ofCounted: (kind, id) =>
+        tagOf(`${countedPurpose}${kind}:${id}`, "Pseudonyms.ofCounted"),
       ofPlatformMember: (platform, memberId) =>
         tagOf(
           `${memberPurpose}${platform}:${memberId}`,

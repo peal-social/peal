@@ -5,7 +5,11 @@
   Better Auth's endpoints. Its oxlint config refuses `peal-server` imports,
   and `@effect/platform-bun` outside `src/main.ts`.
 - The API URL comes from `--api-url`, then `PEAL_API_URL`, then
-  `http://localhost:3000`. A key or a token goes only over HTTPS or to a
+  `http://localhost:3000` (`PealApi.apiUrlNamed` says whether the run named
+  one). An API key goes to no default: whatever sends one goes through
+  `PealApi.withApiKey` (or yields `sendingApiKey`), which refuses
+  (`api_url_required`) until the run names the server, and `peal doctor`'s
+  `api-url` check fails the same way. A key or a token goes only over HTTPS or to a
   loopback host: whatever sends one yields `PealApi.sendingCredentials`
   first (`signedIn` does), which refuses plain HTTP elsewhere
   (`insecure_api_url`) unless `--insecure-http` or `PEAL_INSECURE_HTTP`

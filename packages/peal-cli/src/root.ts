@@ -3,15 +3,16 @@ import { Command, Flag } from "effect/cli";
 
 export const defaultApiUrl = "http://localhost:3000";
 
-// The flag wins, then PEAL_API_URL, then the local development server.
+// The flag wins, then PEAL_API_URL, then the local development server
+// (cli.ts), which an API key is never sent to unless the run names it.
 const apiUrl = Flag.String("api-url").pipe(
   Flag.withDescription(
-    `Base URL of the Peal API. Defaults to PEAL_API_URL, then ${defaultApiUrl}.`
+    `Base URL of the Peal API. Defaults to PEAL_API_URL, then ${defaultApiUrl}. With an API key in PEAL_API_KEY, one of the two must name the server.`
   ),
   Flag.withMetavar("<url>"),
   Flag.withSchema(Schema.URLFromString),
   Flag.withFallbackConfig(Config.URL("PEAL_API_URL")),
-  Flag.withDefault(new URL(defaultApiUrl))
+  Flag.optional
 );
 
 /** The flag that lets credentials go over plain HTTP beyond this machine. */

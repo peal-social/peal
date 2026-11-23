@@ -27,6 +27,15 @@ credentials and how to adopt what exists.
   cloudflared role): keep the rewrite and that route in step. The rewrite
   leaves `/cdn-cgi/` and `/api/l/` paths alone, and relies on the zone's
   URL normalisation, which stays on, in code.
+- HTTPS is in code on both zones (`src/https.ts`): HTTP redirected to
+  HTTPS, TLS 1.2 at least, and HSTS (`security_header`) with the web app's
+  value (`packages/peal-web/next.config.ts`: two years, subdomains, no
+  preload), which the static image's nginx sends too
+  (`packages/peal-docker/config/static/default.conf`): change the three
+  together. The main zone's settings and its incoming URL normalisation
+  are the account stack's (`src/account.ts`), the link domain's its own.
+  A zone setting's `value` reaches Cloudflare's API as written, so an
+  object's keys are the API's, in snake case.
 - Resource names (the first argument) are what the state knows a resource
   by: renaming one makes Pulumi delete it and make it again. Use an alias.
 - The sandbox is applied, as production will be: `test/sandbox-resources.ts` pins
@@ -70,4 +79,9 @@ credentials and how to adopt what exists.
   keeps from being bypassed. A day, not more: EmDash overwrites a replaced
   image under the same key, with no hash in its URLs. Production's names alone: the sandbox is
   behind Access.
+- The backup copy (`backupCopy`, off unless `on`: a paid resource the
+  owner approves): its bucket, lock, lifecycle and key
+  (`test/environment-backup-copy.test.ts`). The lock stays 14 days above the
+  Ansible project's refresh (21 days) and below the lifecycle, and its
+  days match the Ansible project's `peal_backup_copy_lock_days`.
 - Pin `@pulumi/pulumi` and `@pulumi/cloudflare` exactly, as everything else.

@@ -4,3 +4,19 @@
 # starts after a boot or a release.
 peal_backup_report_retries: 6
 peal_backup_report_retry_delay: 10
+# The backup copy (peal_backup_copy, README.md "The backup copy"): how long
+# the copy's bucket lock keeps each object, as the environment's Pulumi
+# stack sets it (src/environment.ts, backupCopyLockDays), and how old a
+# file's copy, and the newest index, may grow before a run copies it again:
+# 14 days below the lock, so every file the newest index names stays
+# locked for 14 days after it at least.
+peal_backup_copy_lock_days: 35
+peal_backup_copy_refresh_days: 21
+# After an incident in which the repository was kept (the restore runbook,
+# "The backup copy"): an instant with its zone, such as
+# 2026-11-24T12:00:00Z, the incident's end. No run the store wrote before
+# it is trusted, so the copy reuses nothing of a run written while the
+# server was held. Empty: every run is judged by its times alone.
+peal_backup_copy_trust_after: ""
+# The group that may read the backups' lock, which the copy's run joins.
+peal_backup_lock_group: peal-backup-lock

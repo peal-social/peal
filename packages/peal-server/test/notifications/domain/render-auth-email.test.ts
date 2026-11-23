@@ -346,6 +346,30 @@ describe(renderAuthEmail, () => {
     expect(email.html).not.toContain("<Admin>");
     expect(email.text).toContain("Ada <Admin> & Co invited you");
   });
+
+  it.each([
+    ["en", "A member invited you to a workspace on Peal"],
+    ["fr", "Un membre"],
+  ] as const)(
+    "leaves out, in %s, names that read as hosts or addresses, which a mail client would link",
+    (locale, said) => {
+      const email = renderAuthEmail({
+        _tag: "Invitation",
+        inviterName: "admin@evil.social",
+        locale,
+        role: "viewer",
+        to: "grace@example.test",
+        url: "https://app.example.test/invitations/42",
+        workspaceName: "Claim at evil.finance",
+      });
+
+      expect(email.subject).toContain(said);
+
+      for (const part of [email.subject, email.html, email.text]) {
+        expect(part).not.toContain("evil");
+      }
+    }
+  );
 });
 
 interface Catalogue {

@@ -21,6 +21,8 @@ import social.peal.core.ObjectMappers;
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = WorkspaceMember.Builder.class)
 public final class WorkspaceMember {
+    private final Optional<ApiKeysAtStake> apiKeysAtStake;
+
     private final String email;
 
     private final String joinedAt;
@@ -36,6 +38,7 @@ public final class WorkspaceMember {
     private final Map<String, Object> additionalProperties;
 
     private WorkspaceMember(
+            Optional<ApiKeysAtStake> apiKeysAtStake,
             String email,
             String joinedAt,
             String name,
@@ -43,6 +46,7 @@ public final class WorkspaceMember {
             Optional<Boolean> twoStepEnabled,
             String userId,
             Map<String, Object> additionalProperties) {
+        this.apiKeysAtStake = apiKeysAtStake;
         this.email = email;
         this.joinedAt = joinedAt;
         this.name = name;
@@ -50,6 +54,11 @@ public final class WorkspaceMember {
         this.twoStepEnabled = twoStepEnabled;
         this.userId = userId;
         this.additionalProperties = additionalProperties;
+    }
+
+    @JsonProperty("apiKeysAtStake")
+    public Optional<ApiKeysAtStake> getApiKeysAtStake() {
+        return apiKeysAtStake;
     }
 
     @JsonProperty("email")
@@ -94,7 +103,8 @@ public final class WorkspaceMember {
     }
 
     private boolean equalTo(WorkspaceMember other) {
-        return email.equals(other.email)
+        return apiKeysAtStake.equals(other.apiKeysAtStake)
+                && email.equals(other.email)
                 && joinedAt.equals(other.joinedAt)
                 && name.equals(other.name)
                 && role.equals(other.role)
@@ -104,7 +114,8 @@ public final class WorkspaceMember {
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.email, this.joinedAt, this.name, this.role, this.twoStepEnabled, this.userId);
+        return Objects.hash(
+                this.apiKeysAtStake, this.email, this.joinedAt, this.name, this.role, this.twoStepEnabled, this.userId);
     }
 
     @java.lang.Override
@@ -145,6 +156,10 @@ public final class WorkspaceMember {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
+        _FinalStage apiKeysAtStake(Optional<ApiKeysAtStake> apiKeysAtStake);
+
+        _FinalStage apiKeysAtStake(ApiKeysAtStake apiKeysAtStake);
+
         _FinalStage twoStepEnabled(Optional<Boolean> twoStepEnabled);
 
         _FinalStage twoStepEnabled(Boolean twoStepEnabled);
@@ -165,12 +180,15 @@ public final class WorkspaceMember {
 
         private Optional<Boolean> twoStepEnabled = Optional.empty();
 
+        private Optional<ApiKeysAtStake> apiKeysAtStake = Optional.empty();
+
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
 
         @java.lang.Override
         public Builder from(WorkspaceMember other) {
+            apiKeysAtStake(other.getApiKeysAtStake());
             email(other.getEmail());
             joinedAt(other.getJoinedAt());
             name(other.getName());
@@ -229,13 +247,28 @@ public final class WorkspaceMember {
         }
 
         @java.lang.Override
+        public _FinalStage apiKeysAtStake(ApiKeysAtStake apiKeysAtStake) {
+            this.apiKeysAtStake = Optional.ofNullable(apiKeysAtStake);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "apiKeysAtStake", nulls = Nulls.SKIP)
+        public _FinalStage apiKeysAtStake(Optional<ApiKeysAtStake> apiKeysAtStake) {
+            this.apiKeysAtStake = apiKeysAtStake;
+            return this;
+        }
+
+        @java.lang.Override
         public WorkspaceMember build() {
-            return new WorkspaceMember(email, joinedAt, name, role, twoStepEnabled, userId, additionalProperties);
+            return new WorkspaceMember(
+                    apiKeysAtStake, email, joinedAt, name, role, twoStepEnabled, userId, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("email")
+            if (key.equalsIgnoreCase("apiKeysAtStake")
+                    || key.equalsIgnoreCase("email")
                     || key.equalsIgnoreCase("joinedAt")
                     || key.equalsIgnoreCase("name")
                     || key.equalsIgnoreCase("role")

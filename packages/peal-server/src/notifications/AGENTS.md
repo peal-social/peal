@@ -107,4 +107,12 @@
   fixed label), have no lifetime, and are revoked when the digest goes
   from off to on, which moves the generation (said on while on, it does
   not). The path is never traced (`src/app/untraced-paths.ts`), as
-  `url.full` would keep the token.
+  `url.full` would keep the token, and the request log writes it with
+  `<redacted>` in the token's place (`SecretPathsLive`).
+- A name someone typed (a member's, a workspace's) goes into an email only
+  through `nameForMail` (`#shared/domain/display-name.ts`): one that reads
+  as a host or an address is replaced by the catalog's `withheldNames`
+  ("A member", "a workspace"), so no email of Peal's carries a link
+  someone typed (the invitation, the deletion of a workspace, notices'
+  `{workspaceName}`, the weekly digest). A new email that shows such a
+  name does the same.

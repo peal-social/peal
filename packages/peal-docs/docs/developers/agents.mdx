@@ -92,7 +92,7 @@ An application asks for up to three permissions on the workspace, which OAuth ca
 | Scope               | The consent page says                                                                                                           | What it allows                                                                                                                                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `workspace:read`    | Read the workspace: posts, channels, media and analytics                                                                        | Reading, and no change                                                                                                                                                                                                                                         |
-| `workspace:write`   | Do what your role allows in the workspace, such as writing drafts and managing media, without scheduling or publishing anything | Everything your role allows but what puts posts out: drafts, media, invitations. Nothing it does reaches a platform.                                                                                                                                           |
+| `workspace:write`   | Do what your role allows in the workspace, such as writing drafts and managing media, without scheduling or publishing anything | Everything your role allows but what puts posts out: drafts, media, webhooks. Nothing it does reaches a platform.                                                                                                                                              |
 | `workspace:publish` | Let it schedule and publish posts to your connected accounts, and answer comments there, where everyone can see them            | What your role allows of what puts posts out: scheduling, moving, publishing and reposting a post, unscheduling it, cancelling it, confirming how it went, and approving a post that waits for an [approval](/guides/posts/review) or asking for changes on it |
 
 <Callout type="warning" title="The ads scope spends money">
@@ -103,6 +103,8 @@ An application asks for up to three permissions on the workspace, which OAuth ca
   monthly ceiling an owner set. No application ever decides whether an ad
   account may spend, or how much. That stays with an owner, signed in to Peal.
 </Callout>
+
+No application but Peal's command line invites people, cancels an invitation, changes a member's role or removes a member, or sets where the writing assistant's prompts go, whatever its scopes. A refusal says so, and names no scope to ask for.
 
 Both `workspace:write` and `workspace:publish` include reading. Without `workspace:publish`, the tools that write drafts and handle media still work. Those that put posts out are refused, and the refusal names the scope.
 

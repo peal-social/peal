@@ -199,6 +199,8 @@ describe("a plan's refusal, through the tools", () => {
             Layer.provide(
               Layer.mergeAll(
                 Layer.mock(PostScheduling, {
+                  // A generic method has no default: it holds nothing.
+                  holding: () => (effect) => effect,
                   send: () =>
                     refusing(
                       new PlanLimitReached({

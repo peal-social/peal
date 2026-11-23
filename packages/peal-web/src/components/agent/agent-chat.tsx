@@ -14,6 +14,7 @@ import { agentChats, agentStatus } from "#agent/atoms.ts";
 import { transcriptOf } from "#agent/history.ts";
 import { AgentComposer } from "#components/agent/agent-composer.tsx";
 import { chatTitle } from "#components/agent/agent-views.tsx";
+import { ApprovalMedia } from "#components/agent/approval-media.tsx";
 import {
   AgentOffView,
   TranscriptView,
@@ -192,6 +193,9 @@ export const ChatBody = ({
           },
         }}
         links={links}
+        renderMedia={(media) => (
+          <ApprovalMedia media={media} workspaceId={workspaceId} />
+        )}
         nameOf={nameOf}
         now={now}
         state={state}

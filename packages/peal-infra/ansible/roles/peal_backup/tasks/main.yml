@@ -43,3 +43,84 @@
   loop_control:
     label: "{{ item.item }}"
   when: not ansible_check_mode or item.stat.exists
+
+# The backup copy (peal_backup_copy, README.md "The backup copy"): after each
+# backup that succeeded (peal-backup@.service's OnSuccess) and daily, the
+# repository's files go into the locked bucket. Off, nothing of it is on the
+# server, and a server it was on loses its script and units.
+- name: Look for the backup copy's timer
+  ansible.builtin.stat:
+    path: /etc/systemd/system/peal-backup-copy.timer
+  register: peal_backup_copy_timer
+
+- name: Install and start the backup copy
+  when: peal_backup_copy | bool
+  block:
+    - name: Install peal-backup-copy
+      ansible.builtin.copy:
+        src: backup_copy.py
+        dest: /usr/local/sbin/peal-backup-copy
+        owner: root
+        group: root
+        # Read by the run's own user (DynamicUser); it holds no secret.
+        mode: "0755"
+
+    - name: Create the group that may read the backups' lock
+      ansible.builtin.group:
+        name: "{{ peal_backup_lock_group }}"
+        system: true
+
+    # The backups' lock's file, readable by the copy's own user: made at
+    # each boot, and now.
+    - name: Make the backups' lock readable by the copy
+      ansible.builtin.template:
+        src: peal-backup.tmpfiles.j2
+        dest: /etc/tmpfiles.d/peal-backup.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Make the backups' lock
+
+    - name: Write the backup copy's service and timer
+      ansible.builtin.template:
+        src: "{{ item }}.j2"
+        dest: /etc/systemd/system/{{ item }}
+        mode: "0644"
+      loop: [peal-backup-copy.service, peal-backup-copy.timer]
+      notify: Reload systemd
+
+    - name: Apply the backup copy's units now
+      ansible.builtin.meta: flush_handlers
+
+    - name: Start the backup copy's timer at boot
+      ansible.builtin.systemd_service:
+        name: peal-backup-copy.timer
+        state: started
+        enabled: true
+      when: not ansible_check_mode or peal_backup_copy_timer.stat.exists
+
+- name: Remove the backup copy
+  when: not peal_backup_copy | bool
+  block:
+    - name: Stop the backup copy's timer
+      ansible.builtin.systemd_service:
+        name: peal-backup-copy.timer
+        state: stopped
+        enabled: false
+      when: peal_backup_copy_timer.stat.exists
+
+    - name: Remove the backup copy's script and units
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /usr/local/sbin/peal-backup-copy
+        - /etc/systemd/system/peal-backup-copy.service
+        - /etc/systemd/system/peal-backup-copy.timer
+        - /etc/tmpfiles.d/peal-backup.conf
+      notify: Reload systemd
+
+    - name: Remove the group that may read the backups' lock
+      ansible.builtin.group:
+        name: "{{ peal_backup_lock_group }}"
+        state: absent

@@ -94,25 +94,20 @@ describe(parseInline, () => {
     ]);
   });
 
-  it("links this origin's paths in place and other sites in a new tab", () => {
+  it("links this origin's paths, and keeps any other address as its words", () => {
+    // A link out could carry what the agent read in its query, as text
+    // a tool answered can ask it to write.
     expect(
       parseInline(
-        "[the post](/studio/posts/p1) or [docs](https://docs.example.com/x)"
+        "[the post](/studio/posts/p1) or [docs](https://docs.example.com/x?q=secret)"
       )
     ).toStrictEqual([
       {
         _tag: "link",
         children: [{ _tag: "text", text: "the post" }],
         href: "/studio/posts/p1",
-        internal: true,
       },
-      { _tag: "text", text: " or " },
-      {
-        _tag: "link",
-        children: [{ _tag: "text", text: "docs" }],
-        href: "https://docs.example.com/x",
-        internal: false,
-      },
+      { _tag: "text", text: " or docs" },
     ]);
   });
 
@@ -124,19 +119,41 @@ describe(parseInline, () => {
 });
 
 describe(linkTarget, () => {
-  it("takes paths of this origin and http(s) addresses only", () => {
+  it("takes paths of this origin only, never one a browser reads as another site", () => {
     expect(
       [
         "/a/b",
+        " /a/b?tab=drafts#top ",
         "https://example.com",
         "http://example.com/x",
         "//example.com",
         String.raw`/\example.com`,
+        String.raw`/a\b`,
+        "/\t/example.com",
+        "/\n/example.com",
+        "/a/\u0000b",
+        "/\u007F/example.com",
         scriptUrl,
         "data:text/html,hi",
         "mailto:someone@example.com",
         "relative/path",
-      ].map((href) => linkTarget(href)?.internal ?? null)
-    ).toStrictEqual([true, false, false, null, null, null, null, null, null]);
+      ].map((href) => linkTarget(href))
+    ).toStrictEqual([
+      "/a/b",
+      "/a/b?tab=drafts#top",
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+    ]);
   });
 });

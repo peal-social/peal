@@ -103,6 +103,10 @@ docker compose --project-name peal --file compose.production.yaml \
 
 Caddy (`self-host/Caddyfile`) sends `/api/*` and `/.well-known/oauth-*` to the server, and everything else to the web app. It waits 150 seconds for an answer, which is longer than the writing assistant and the web app's forwarding wait. Set `AUTH_IP_HEADERS=x-forwarded-for`, as the example file does.
 
+Each service joins only the Docker networks it needs. Only the server reaches Postgres, only the server sends telemetry to the collector, and only the collector and Grafana reach Loki, Tempo and Prometheus, which have no internet access. Caddy reaches the server, the web app, and the site and docs when you serve them. A service you add to the stack, such as a database tool, gets none of them until you list the network it needs under its `networks:`, for example `database` for Postgres.
+
+After an upgrade from a version without these networks, Compose leaves the old shared network behind. Remove it once the stack is running: `docker network rm peal_default`.
+
 ### Upgrade [#upgrade]
 
 The server applies its migrations as it starts. So to upgrade, check out a newer version and run the same two commands. Compose gives the server its 75 seconds to stop.
@@ -257,7 +261,7 @@ The [command line](/developers/cli) signs in with a code that people approve at 
 
 [MCP clients](/developers/mcp) sign in with OAuth, which needs `PUBLIC_URL` on HTTPS, or `localhost` for development. On a plain HTTP address elsewhere, such as `http://192.168.1.20:3001`, the server starts and logs a warning, and its MCP endpoint refuses every request.
 
-Most MCP clients register themselves before they sign in. The server allows that only with `MCP_DYNAMIC_REGISTRATION=true`, and then anyone may register a client, under any name. The consent page tells people that Peal hasn't checked the client, and where it sends them back to.
+Most MCP clients register themselves before they sign in. The server allows that only with `MCP_DYNAMIC_REGISTRATION=true`, and then anyone may register a client, under any name. The consent page tells people that Peal hasn't checked the client, and where it sends them back to. A registration that asks to be told when someone signs out (`backchannel_logout_uri`) is refused with 400, as Peal would then call an address the client chose.
 
 ## Make an account staff [#staff]
 

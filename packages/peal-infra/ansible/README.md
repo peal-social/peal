@@ -119,15 +119,15 @@ Run each with `--limit production` or `--limit sandbox` (`--limit uptime` for
 
 ### On the server
 
-| Path                          | What it holds                                                                                                                              |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/srv/peal/secrets.env`       | The database password, `BETTER_AUTH_SECRET`, `PEAL_TOKEN_KEYS`, Grafana's admin password and the Bluesky client keys, generated there once |
-| `/srv/peal/credentials.env`   | What outside services issued: R2 keys, the email key, the backup passphrase, Telegram's, Slack's webhook                                   |
-| `/srv/peal/host.env`          | Plain settings, written by Ansible                                                                                                         |
-| `/srv/peal/release.env`       | The image tags that run, and a hash of the files each service mounts from the release                                                      |
-| `/srv/peal/releases/<commit>` | Each release's Compose file and configuration, the last three kept                                                                         |
-| `/srv/peal/current`           | Link to the release that runs                                                                                                              |
-| `/etc/cloudflared/`           | The tunnel's routes and its token                                                                                                          |
+| Path                          | What it holds                                                                                                                                                                                                   |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/srv/peal/secrets.env`       | The database superuser's password, the server's database role's (`PEAL_DATABASE_PASSWORD`), `BETTER_AUTH_SECRET`, `PEAL_TOKEN_KEYS`, Grafana's admin password and the Bluesky client keys, generated there once |
+| `/srv/peal/credentials.env`   | What outside services issued: R2 keys, the email key, the backup passphrase, Telegram's, Slack's webhook                                                                                                        |
+| `/srv/peal/host.env`          | Plain settings, written by Ansible                                                                                                                                                                              |
+| `/srv/peal/release.env`       | The image tags that run, and a hash of the files each service mounts from the release                                                                                                                           |
+| `/srv/peal/releases/<commit>` | Each release's Compose file and configuration, the last three kept                                                                                                                                              |
+| `/srv/peal/current`           | Link to the release that runs                                                                                                                                                                                   |
+| `/etc/cloudflared/`           | The tunnel's routes and its token                                                                                                                                                                               |
 
 `peal-compose` runs Docker Compose on the release that runs, with those
 files. SSH is for reading:
@@ -405,7 +405,10 @@ copy run without Pulumi, and for what Pulumi does in their place.
 5. **Telegram** ([Telegram](#telegram)): three bots from @BotFather, one for
    each server that alerts, and two private channels.
 6. **Email**: a Resend key for the verified sending domain `peal.social`,
-   which sends as `notifications@peal.social` (`peal_mail_from`).
+   which sends as `notifications@peal.social` (`peal_mail_from`), and,
+   where the blog runs and mails, a second one of its own
+   (`PEAL_BLOG_RESEND_API_KEY`), with Sending access alone, for that
+   domain: the blog never holds the server's key.
 7. **The platforms' apps**, a set of its own for each environment
    ([The platforms' apps](#the-platforms-apps)).
 
@@ -627,6 +630,26 @@ included, but for the Zero Trust team.
 backup passphrase (`PGBACKREST_REPO1_CIPHER_PASS`) outside the server, in a
 password manager: the backups cannot be read without it.
 
+### Support chat
+
+The app's support chat names each signed-in person by their account's
+address. Anyone on a page can set an address in the chat themselves, so an
+address alone proves nothing. Crisp's identity verification fixes that:
+
+1. In Crisp, as the website's owner: **Settings**, **Workspace Settings**,
+   **Advanced configuration**, **Identity Verification**, turn on verifying
+   user emails with signatures, and copy the secret it makes. Crisp's
+   documentation gives this feature from its Mini plan up.
+2. Put it in each environment's vault as
+   `peal_credentials.PEAL_CRISP_IDENTITY_SECRET` (or in
+   `credentials.env`), then run `site.yml`. The server signs the session's
+   own address with it, and the app hands the signature to the chat.
+
+With the secret set and verification on, the chat's verified mark is what
+support trusts: an unverified address, typed by a visitor or set from a
+page's console, proves nothing about who writes. Without the secret, every
+address in the chat is unverified.
+
 ### A new server
 
 1. Create it in the provider's console, from its Ubuntu LTS image, with
@@ -790,8 +813,16 @@ server:
    the old server stops first, with 75 seconds to finish its calls to the
    platforms;
 3. Postgres starts, and keeps the database password in step with
-   `secrets.env`, and, where the blog runs, the blog's role and database
-   too (made the first time);
+   `secrets.env`; the server's own role, `peal_server` (`LOGIN` and no
+   other attribute), is made the first time and its password kept in step,
+   and it is given Peal's database and every schema, table, sequence,
+   view, function and type the superuser owns there, at every release (a
+   release that finds nothing to move changes nothing). The server signs
+   in as that role (`PEAL_DATABASE_USER` in `host.env`), never as the
+   superuser, which can run programs in Postgres's container, where the
+   backup bucket's key and passphrase are; the superuser stays for the
+   local socket, pgBackRest and the runbooks. Where the blog runs, its
+   role and database are kept the same way (made the first time);
 4. the new server starts and applies its migrations before it listens;
 5. the rest of the stack starts (the blog applies EmDash's migrations as it
    starts), and the release is checked on the server and, for production,
@@ -852,11 +883,14 @@ playbooks render stays as it was. With it:
   (`PEAL_BLOG_ENCRYPTION_KEY`), each once, generated on the server and never
   read back; writes the blog's settings into `host.env` (`PEAL_BLOG_*`, the
   site's links as `BLOG_*`, and EmDash's SMTP through Resend's relay,
-  `smtp.resend.com:465` as `resend`, from `peal_mail_from`, with the
-  server's `RESEND_API_KEY` as its password; `peal_blog_mail: false` sends
-  none); requires the blog bucket's key (`PEAL_BLOG_S3_ACCESS_KEY_ID`,
-  `PEAL_BLOG_S3_SECRET_ACCESS_KEY`) and `RESEND_API_KEY` in the
-  credentials; and routes the tunnel:
+  `smtp.resend.com:465` as `resend`, from `peal_mail_from`, with a Resend
+  key of the blog's own, `PEAL_BLOG_RESEND_API_KEY`, as its password, never
+  the server's `RESEND_API_KEY`; `peal_blog_mail: false` sends none);
+  requires the blog bucket's key (`PEAL_BLOG_S3_ACCESS_KEY_ID`,
+  `PEAL_BLOG_S3_SECRET_ACCESS_KEY`) and, where it mails,
+  `PEAL_BLOG_RESEND_API_KEY` in the credentials, by name (the release
+  checks `credentials.env` for it before it changes anything); and routes
+  the tunnel:
   1. `/blog/_emdash…`, in any case, answers 404: EmDash would take an API
      call there for a public page and skip its CSRF check;
   2. `/_emdash/api/media/file/…` goes to the blog, public in production,
@@ -879,7 +913,9 @@ playbooks render stays as it was. With it:
   going from `secrets.env` to psql through the environment alone; it runs
   the `blog` profile and checks `/_emdash/api/health`, which then gates
   every release of the environment. Before it changes anything, it stops
-  when `secrets.env` lacks the blog's secrets (run `site.yml` first). The
+  when `secrets.env` lacks the blog's secrets (run `site.yml` first), or,
+  where the blog mails, `credentials.env` lacks `PEAL_BLOG_RESEND_API_KEY`
+  (names only). The
   app's database is closed to every role but its owner, so the blog's role
   reaches its own database alone.
 - `peal_preflight` refuses the flag without `peal_blog_bucket`, and in
@@ -896,7 +932,9 @@ Turn it on, for the sandbox first:
    --diff` and `pulumi up` on the environment's stack, and
    `scripts/cloudflare_from_pulumi.py --vault-id <environment>@…`, which
    writes `peal_blog_bucket`, production's `blog` audience tag and the
-   bucket's key.
+   bucket's key. Make the blog's Resend key (Resend › API Keys, Sending
+   access, the environment's domain) and put it in the vault as
+   `PEAL_BLOG_RESEND_API_KEY`, unless `peal_blog_mail: false`.
 2. Set `peal_blog: true`, run `site.yml --check --diff`, then `site.yml`,
    then `release.yml --limit <environment>`.
 3. Open `https://<site>/_emdash/admin` right away (behind Access), complete
@@ -1069,6 +1107,125 @@ database, to its latest state or to a time. When a server's database is
 started over rather than restored, pgBackRest refuses its backups until the
 old ones are deleted:
 [Starting a server's database over](runbooks/restore-database.md#starting-a-servers-database-over).
+
+### The backup copy
+
+**A paid resource, off until the owner approves it.** The backups' key is
+on the server, in the Postgres container and in `credentials.env`, and it
+can delete every backup: whoever takes the server can take the backups
+with it. A bucket lock on pgBackRest's own bucket would stop pgBackRest,
+which rewrites `backup.info` and a backup's manifest. The backup copy is a
+second bucket per environment (`peal-<environment>-backup-copy`, R2, the
+EU jurisdiction, private), with:
+
+- a bucket lock: no object in it can be overwritten or deleted for 35 days
+  from the time the store wrote it, whatever key asks, the server's
+  included;
+- a lifecycle rule that deletes objects after 49 days;
+- a key of its own, for that bucket alone, which reads and writes it and
+  can change neither the lock nor the lifecycle.
+
+What it costs: R2 storage and operations. A file is copied again once its
+copy is 21 days old, and copies live 49 days, so the copy holds each file
+of the repository two or three times: about 2.5 times the backup bucket's
+size, which pgBackRest keeps at four full backups and their write-ahead
+log.
+
+`peal-backup-copy` (`roles/peal_backup/files/backup_copy.py`, Python's
+standard library alone) runs after each backup that succeeded (the backup
+unit's `OnSuccess`) and from a daily timer at 06:45 UTC, under the backups'
+lock (`/run/peal-backup.lock`, which tmpfiles.d makes at boot, 0640, for
+the `peal-backup-lock` group the copy's run joins,
+`/etc/tmpfiles.d/peal-backup.conf`; each side waits for it 6 or 12 hours at
+most, then fails and reports it), as a user systemd makes for each
+run, to which it hands `credentials.env` (`LoadCredential`), in a sandbox
+(no home, a read-only system, no devices or capabilities, the internet and
+the collector alone, 1 GB of memory), for 12 hours at most: at 20 MB/s or more, a first run
+copies a repository of 800 GB at least, and a larger one needs a longer
+limit (`TimeoutStartSec` and `PEAL_BACKUP_COPY_MAX_RUN_HOURS` together).
+While it runs, a backup waits for it. Each run writes under a prefix of its
+own, the time it started and random characters
+(`2026-11-23T021500Z-1a2b3c4d/`), so no key is ever written twice and no
+one can take the next run's prefix: the
+repository's files the newest index does not hold as they are now
+(`backup.info` and the manifests as each run finds them; a segment or a
+backup file once), those whose copy the store wrote more than 21 days ago,
+and last an `index.json` that names, for every file of the repository, its
+copy's key, size and SHA-256, computed while the run copied it. A run also
+writes a new index once the newest is 21 days old, even with nothing else
+to copy, and one that finds nothing to do writes nothing. Every PUT carries
+`If-None-Match: *`, and each copy is checked against the source's ETag and
+its own where they are the content's MD5.
+
+So every file the newest complete run names, `archive.info` (whose
+passphrase decrypts the write-ahead log) included, has a copy the store
+wrote less than 21 days before that run: **the newest run before the server
+is taken stays whole and locked for 14 days from that run, at least**,
+whatever the server's keys do. A run succeeds each day, so that is about 13
+days after the server is taken, at worst. Within them, alerts must be read
+and the copy restored from (`tests/test_backup_copy.py` checks it day by
+day over two months).
+
+The store's clock, not a run's name, says when a run was written: a run
+whose index the store wrote before its name, more than 12 hours after it,
+or that is named in the future, whose name is no time, or that the store
+wrote before `peal_backup_copy_trust_after` (empty unless an incident sets
+it), is not trusted, and neither the next run nor a rebuild takes it; a
+rebuild also refuses an index that names a copy the store wrote after it,
+and anything the store wrote at or after the time the incident began. An
+index that does not read as one the copy writes is skipped (`NOT READABLE`
+in `runs`), and the next run falls back on the run before it: nothing the
+copy bucket holds stops a command. A run checks first that this host's
+clock is the store's, to 5 minutes, and last that the store dates its
+index as its name says.
+
+Its limits, accepted: an index holds some 400 000 files of the repository
+(128 MiB, about 300 bytes each), past which a run fails rather than write
+one no run reads; pgBackRest's bundles keep the repository far below that.
+Memory never grows with what the copy bucket holds, but time does: whoever
+holds the copy's key may plant objects by the million, which every
+listing reads, so `copy` and `runs` slow down with them. `runs --run` and
+`rebuild` read a run's own keys alone, and work whatever the bucket holds;
+the way out of a flooded bucket is a new one. The files are those pgBackRest encrypted on the
+server: the copy is no use without the backup passphrase, kept off the
+server as [Credentials](#credentials) says.
+
+The copy reports to the collector when it matched the backups, or failed
+(in Python, or otherwise: the unit's `ExecStopPost` reports a run that
+flock, the memory or the time limit ended, as the backup's unit does for
+the backup), and `peal-backup` reports, after each backup, that a copy is due: Grafana
+alerts when the last copy failed (`peal-backup-copy-failed`), and when a
+backup finished more than 6 hours after the last copy, or none ever
+succeeded (`peal-backup-copy-behind`). A server without the copy reports
+none of them. What the copy protects against, and what it does not, and
+how to restore from it: [the runbook](runbooks/restore-database.md#the-backup-copy).
+
+Turn it on, for the sandbox first, once the owner approved the bucket:
+
+1. On the environment's Pulumi stack, `pulumi config set peal:backupCopy
+   on`, then `pulumi preview --diff` (a bucket, its lock, its lifecycle, its
+   key) and `pulumi up`.
+2. `scripts/cloudflare_from_pulumi.py --vault-id <environment>@…`, which
+   writes `peal_backup_copy_bucket` into `cloudflare.yml` and the copy's
+   key into the vault (`PEAL_BACKUP_COPY_S3_ACCESS_KEY_ID`,
+   `PEAL_BACKUP_COPY_S3_SECRET_ACCESS_KEY`).
+3. Set `peal_backup_copy: true` for the environment
+   (`group_vars/<environment>/main.yml`), run `site.yml --check --diff`,
+   then `site.yml`. `peal_preflight` refuses the flag without the bucket,
+   and `site.yml` the flag without the key.
+4. Check it as it runs after a boot, its usual order: reboot the server
+   (`sudo systemctl reboot`), then, before any backup, start the copy by
+   hand and check the lock's file is its group's to read:
+
+   ```sh
+   sudo systemctl start peal-backup-copy
+   sudo stat -c '%a %G' /run/peal-backup.lock    # 640 peal-backup-lock
+   sudo journalctl --unit peal-backup-copy  # copied run …
+   ```
+
+With the flag off, the role installs nothing of it, removes what an earlier
+run installed, and every rendered file stays as it was. A self-hoster's
+stack has none of it.
 
 ## Disks
 
@@ -1567,7 +1724,8 @@ A second run of `site.yml` reports no change:
 
 `release.yml` changes what a release changes. Run again for the same commit,
 it builds and uploads nothing (the images are on the server), creates no
-Bluesky key (one is in `secrets.env`), leaves the database password alone
-(the server's is accepted, over the network as the server signs in), and
+Bluesky key (one is in `secrets.env`), leaves the database passwords alone
+(each is accepted, over the network as the server signs in), moves no
+object to the server's role (it owns them all already), and
 Compose recreates nothing. What it reads of the running containers is their
 image and settings' hash, never their environment, which holds secrets.

@@ -25,6 +25,14 @@ export const runTimeout = Duration.seconds(110);
  */
 export const runLease = Duration.seconds(150);
 
+/**
+ * How long a change the agent asked to make waits for the person, from
+ * the answer that asked it: past it, it reads as expired and cannot be
+ * approved. What it acts on may have changed in a day; the person asks
+ * again.
+ */
+export const approvalLifetimeHours = 24;
+
 /** How long the title's own request waits for the provider. */
 export const titleTimeout = Duration.seconds(15);
 
@@ -39,6 +47,15 @@ export const chatRetentionDays = 90;
  * model reads, and that the chat keeps for its next rounds.
  */
 export const maxToolResultLength = 12_000;
+
+/**
+ * The most of a chat's history one round sends the model, in UTF-16 code
+ * units of its text, its calls' parameters and its tools' answers: each
+ * round is one request, metered as one whatever it holds, so a long chat
+ * sends its latest turns only (`withinBudget`). About ten tools' answers
+ * at their longest.
+ */
+export const maxHistoryLength = 120_000;
 
 /** The most of an answer's text a chat keeps. */
 export const maxAnswerLength = 40_000;

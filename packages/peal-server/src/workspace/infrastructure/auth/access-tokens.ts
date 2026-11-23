@@ -18,6 +18,7 @@ import { WorkspaceScopeSchema } from "#workspace/domain/oauth-grant.ts";
 import { BetterAuth } from "./better-auth.ts";
 import { issuerOf } from "./oauth.ts";
 import { AuthSettings } from "./settings.ts";
+import { issuedBeforeReset, tokensNotBefore } from "./tokens-not-before.ts";
 
 // Failures of fetching the keys, as opposed to keys that do not verify.
 const unavailableKeyCodes: ReadonlySet<string> = new Set([
@@ -39,6 +40,11 @@ const decodeScope = Schema.decodeUnknownOption(
 );
 
 const isWorkspaceScope = Schema.is(WorkspaceScopeSchema);
+
+// Who a token was issued to, and when (seconds).
+const decodeIssued = Schema.decodeUnknownOption(
+  Schema.Struct({ iat: Schema.Number, sub: Schema.String })
+);
 
 // RFC 6750 §3.1: a token that is valid but grants no workspace scope, asked
 // to step up to reading at least.
@@ -200,6 +206,23 @@ export const makeAccessTokens = Effect.gen(function* makeAccessTokens() {
           });
         },
       });
+
+      // A token issued before its user's password was reset, or their
+      // unconfirmed account released, ends with what the old password let
+      // in (tokens-not-before.ts), though its signature still holds.
+      const issued = decodeIssued(payload);
+
+      if (Option.isSome(issued)) {
+        const notBefore = yield* Effect.tryPromise({
+          catch: (cause) => new AuthUnavailable({ cause }),
+          try: async () =>
+            await tokensNotBefore(internalAdapter, issued.value.sub),
+        });
+
+        if (issuedBeforeReset(issued.value.iat, notBefore)) {
+          return yield* invalid(unauthorized("token revoked", "invalid_token"));
+        }
+      }
 
       // A token that grants no workspace scope was agreed to for nothing in
       // Peal (its user's identity, say), so its client gets nothing from

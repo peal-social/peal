@@ -47,7 +47,7 @@ const ofKey = Effect.fn("whoami.ofKey")(function* ofKey(
 ) {
   const api = yield* PealApi;
   const url = display(api.baseUrl);
-  const client = yield* api.signedIn(key);
+  const client = yield* api.withApiKey(key);
 
   const credential = yield* client.credential.get().pipe(
     Effect.catchTags({

@@ -430,6 +430,11 @@ const ChangeErrors = {
     code: "CHECKOUT_UNAVAILABLE",
     message: "Stripe could not open the checkout. Try again in a moment.",
   },
+  WORKSPACE_REQUIRED: {
+    code: "UPGRADE_WORKSPACE_REQUIRED",
+    message:
+      "An upgrade names its workspace in the body's referenceId, and nowhere else",
+  },
 } as const;
 
 // Nothing to add to the checkout.
@@ -962,6 +967,30 @@ const checkoutInstead = async (
   });
 };
 
+const ReferenceSchema = Schema.Struct({ referenceId: Schema.Unknown });
+
+const isReferenced = Schema.is(ReferenceSchema);
+
+const decodeNamedReference = Schema.decodeUnknownOption(
+  Schema.Struct({ referenceId: Schema.NonEmptyString })
+);
+
+/**
+ * An upgrade names its workspace in the body's `referenceId`, the one
+ * field the order's check reads: Stripe's plugin also reads the query's,
+ * and without either falls back to the session's active workspace, which
+ * would let a request past the check onto a workspace it never named. A
+ * request without the body's, or with the query's, is refused (400).
+ */
+const refuseUnnamedUpgrade = (ctx: GenericEndpointContext): void => {
+  if (
+    isReferenced(ctx.query) ||
+    Option.isNone(decodeNamedReference(ctx.body))
+  ) {
+    throw APIError.from("BAD_REQUEST", ChangeErrors.WORKSPACE_REQUIRED);
+  }
+};
+
 /**
  * The order an upgrade needs when the workspace already has a subscription,
  * which Better Auth changes in place, through Stripe's API or its portal,
@@ -981,6 +1010,8 @@ const orderedChange =
     lineItems: () => Promise<Option.Option<readonly CatalogueLineItem[]>>
   ) =>
   async (ctx: GenericEndpointContext) => {
+    refuseUnnamedUpgrade(ctx);
+
     const checkout = await checkoutInstead(
       client,
       settings,

@@ -22,10 +22,35 @@ import { useOfferUpgrade } from "#components/billing/use-offer-upgrade.ts";
 // it, so a member never collects a tab per platform.
 const signInTab = "peal-sign-in";
 
+const openBlankTab = (): Window | null => {
+  try {
+    return globalThis.open("", signInTab);
+  } catch {
+    return null;
+  }
+};
+
+// Takes the tab's way back to this one, which only a tab of this origin
+// (a blank one) lets set: whether it did.
+const cutOff = (tab: Window): boolean => {
+  try {
+    tab.opener = null;
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 /**
  * Opens the tab a run's sign-ins happen in, from a click (browsers open a
  * tab only then), blank until its sign-in starts; none where the browser
  * refuses, and the step's own tab then leaves for the platform.
+ *
+ * The tab goes to other sites' pages (a platform's, any Mastodon server a
+ * member names), so it keeps no `opener`: a page there could otherwise
+ * send this signed-in tab elsewhere. The handle stays, for
+ * `location.assign` and `close()`.
  */
 export const openSignInTab = (): Window | null => {
   // A tab opened from this one starts with a copy of its storage: a
@@ -33,11 +58,27 @@ export const openSignInTab = (): Window | null => {
   // the callback page there.
   forgetConnection();
 
-  try {
-    return globalThis.open("", signInTab);
-  } catch {
-    return null;
+  const tab = openBlankTab();
+
+  if (tab === null || cutOff(tab)) {
+    return tab;
   }
+
+  // A tab of that name left on another site's page (an earlier run's)
+  // refuses it: it closes, and the tab opened in its place is blank, of
+  // this origin. Where that one cannot be cut off either, or the browser
+  // opens no second tab from the click, the step's own tab leaves instead.
+  tab.close();
+
+  const again = openBlankTab();
+
+  if (again === null || cutOff(again)) {
+    return again;
+  }
+
+  again.close();
+
+  return null;
 };
 
 /**

@@ -870,7 +870,8 @@ things there, as they would with a colleague. Chats are the person's own.
   bubble, `{rounded.lg}`, 85% wide at most. The agent's answer full
   width, no bubble, 14 px with a relaxed line height: paragraphs, lists,
   bold (600), italics, inline code (Geist Mono on `muted`, 4 px radius)
-  and links in blue's text, a link out of Peal in a new tab. Under a
+  and links to Peal's own pages in blue's text; an address out of Peal
+  is no link, only its words. Under a
   finished answer, `xs` ghost icon buttons: thumbs up, thumbs down
   (pressed toggles) and copy.
 - **Work under way** reads as a line, never a spinner: "Thinking…"
@@ -893,12 +894,31 @@ things there, as they would with a colleague. Chats are the person's own.
 - **Approval card**: a change others see, that cannot be undone or that
   costs money waits for the person. White, hairline, `{rounded.lg}`,
   16 px inside: what the change does (14 px, 600: "Schedule this
-  post"), the text whole on `muted`, the channels as outline badges,
-  when on the person's clock in muted text, then **Approve** (primary,
-  `sm`) and **Decline** (outline, `sm`), with "Open the post" in
-  blue's text at the end. Once answered, an outline badge at the
-  title's end says Approved, Declined or Expired (or "Approved, not done" when the change then failed), and the buttons go.
-  Everything on it comes from the request, never from the agent's words.
+  post", "Hide this comment", "Delete this comment"), the text it sends
+  whole on `muted` (a reply; an edit's new text under "New text"; a
+  request's comment under "Your comment"), then all that goes out of the
+  post it acts on: its text on `muted`, its media one a row, an 80 px
+  thumbnail (`{rounded.md}`, zoom cursor) that opens the file whole in
+  the media library's preview dialog (an image at the window's size, a
+  video with its controls), and beside it the alt text whole (12 px
+  muted, its line breaks kept; "No alt text" in italics for none), its
+  poll's choices, what it has instead on a channel ("Instead, on Client
+  A", and "No media on this channel" when it shows none), each part
+  after it ("1st part after the post, right after the one before"),
+  each channel's settings as a list of fields (the field in Geist Mono
+  12 px muted, its value 14 px; a file a field names, such as a cover,
+  as its thumbnail), and "Links go out shortened." when they do; each
+  block under a 12 px 500 muted label, 12 px apart. Then the channels
+  and tags as outline badges, when on the person's clock (or the
+  queue's next free slot, said as where it would go for now) in muted
+  text, then **Approve** (primary, `sm`) and **Decline**
+  (outline, `sm`), with "Open the post" in blue's text at the end. Once
+  answered, an outline badge at the title's end says Approved, Declined,
+  Expired (after a day too) or "Changed since, not done" (the post was
+  edited after the card was shown), or "Approved, not done" when the
+  change then failed, and the buttons go. Everything on it comes from
+  the request, never from the agent's words; what the server cannot show
+  whole is never asked.
 - **The composer**: a white field, hairline, `{rounded.lg}`, 8 px
   inside, growing with its text to 192 px, then scrolling; the focus
   ring on the whole field. At its end the send button, primary, round
@@ -937,13 +957,15 @@ things there, as they would with a colleague. Chats are the person's own.
   skill) is a form in the settings column: Name (with how many
   characters it takes), Instructions (a textarea of ten rows, counted),
   "Who can use it" as two radios, each with its line (Personal: only
-  you; Workspace: every member who may use the agent), then **Save**
+  you; Workspace: every member who may use the agent), for those who
+  manage the assistant's settings only (anyone else's skills are
+  personal, and the radios do not show), then **Save**
   (primary) and **Cancel** (outline). Its **…** in the header offers
   **Use in chat**, which opens the agent page with the skill picked,
   and **Delete**, after a dialog saying it cannot be undone. A
   workspace skill the person may not change shows its form disabled,
-  with a muted line saying another member made it, and neither Save
-  nor Delete.
+  with a muted line saying only those who manage the assistant's
+  settings change it, and neither Save nor Delete.
 - **Off**: where no model answers, the page and the panel say so in the
   empty state's title and line, with the next step as the primary
   button (the assistant settings for those who may change them, the

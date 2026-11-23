@@ -149,21 +149,24 @@ func (r *RevokeAPIKeysRequest) SetAPIKeyID(apiKeyID string) {
 
 var (
 	aPIKeyFieldCreatedAt   = big.NewInt(1 << 0)
-	aPIKeyFieldExpiresAt   = big.NewInt(1 << 1)
-	aPIKeyFieldID          = big.NewInt(1 << 2)
-	aPIKeyFieldName        = big.NewInt(1 << 3)
-	aPIKeyFieldPermissions = big.NewInt(1 << 4)
-	aPIKeyFieldStart       = big.NewInt(1 << 5)
+	aPIKeyFieldCreatedBy   = big.NewInt(1 << 1)
+	aPIKeyFieldExpiresAt   = big.NewInt(1 << 2)
+	aPIKeyFieldID          = big.NewInt(1 << 3)
+	aPIKeyFieldName        = big.NewInt(1 << 4)
+	aPIKeyFieldPermissions = big.NewInt(1 << 5)
+	aPIKeyFieldStart       = big.NewInt(1 << 6)
 )
 
 // aPIKeyNullableFields maps the wire names of APIKey's nullable fields (required or optional) to their field bits.
 var aPIKeyNullableFields = map[string]*big.Int{
+	"createdBy": aPIKeyFieldCreatedBy,
 	"expiresAt": aPIKeyFieldExpiresAt,
 	"start":     aPIKeyFieldStart,
 }
 
 type APIKey struct {
 	CreatedAt   string       `json:"createdAt" url:"createdAt"`
+	CreatedBy   *APIKeyMaker `json:"createdBy,omitempty" url:"createdBy,omitempty"`
 	ExpiresAt   *string      `json:"expiresAt,omitempty" url:"expiresAt,omitempty"`
 	ID          string       `json:"id" url:"id"`
 	Name        string       `json:"name" url:"name"`
@@ -182,6 +185,13 @@ func (a *APIKey) GetCreatedAt() string {
 		return ""
 	}
 	return a.CreatedAt
+}
+
+func (a *APIKey) GetCreatedBy() *APIKeyMaker {
+	if a == nil {
+		return nil
+	}
+	return a.CreatedBy
 }
 
 func (a *APIKey) GetExpiresAt() *string {
@@ -240,6 +250,13 @@ func (a *APIKey) require(field *big.Int) {
 func (a *APIKey) SetCreatedAt(createdAt string) {
 	a.CreatedAt = createdAt
 	a.require(aPIKeyFieldCreatedAt)
+}
+
+// SetCreatedBy sets the CreatedBy field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (a *APIKey) SetCreatedBy(createdBy *APIKeyMaker) {
+	a.CreatedBy = createdBy
+	a.require(aPIKeyFieldCreatedBy)
 }
 
 // SetExpiresAt sets the ExpiresAt field and marks it as non-optional;

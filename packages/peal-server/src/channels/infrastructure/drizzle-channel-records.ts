@@ -14,6 +14,8 @@ import { ChannelDepartures } from "#channels/application/channel-departures.ts";
 import { ChannelRecords } from "#channels/application/channel-records.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { decryptTokens } from "#channels/application/channel-tokens.ts";
+import { revokeUnsharedGrant } from "#channels/application/grant-revocation.ts";
+import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
 import { TokenCipher } from "#channels/application/token-cipher.ts";
 import type { Channel } from "#channels/domain/channel.ts";
 import { userStarter } from "#channels/domain/connect-attempt.ts";
@@ -79,7 +81,9 @@ const leftBehind = (channel: Channel) => ({
 
 /**
  * ChannelRecords on the channels schema. Needs the ChannelRepository, the
- * TokenCipher and ChannelDepartures, for what an erasure lets go first.
+ * TokenCipher, ChannelDepartures and the PlatformAuthorizers, for what an
+ * erasure lets go first: what the channels set up on their platforms, and
+ * the grants no other channel shares.
  */
 export const DrizzleChannelRecords = Layer.effect(
   ChannelRecords,
@@ -88,6 +92,7 @@ export const DrizzleChannelRecords = Layer.effect(
     const repository = yield* ChannelRepository;
     const cipher = yield* TokenCipher;
     const departures = yield* ChannelDepartures;
+    const authorizers = yield* PlatformAuthorizers;
 
     // Every channel's tokens, read now, before the erasure deletes them;
     // they stay Redacted for the release to hold.
@@ -129,21 +134,33 @@ export const DrizzleChannelRecords = Layer.effect(
 
         // Eight side by side, bounded as a whole; then each channel its
         // platform did not let go is logged by its id and counted.
+        // Each channel's platform also forgets the grant, where it takes it
+        // and no channel staying shares the account (`revokeUnsharedGrant`),
+        // beside the departure, under the same bounds.
         const releasing = Effect.forEach(
           held,
           ({ channel, tokens }) =>
-            departures
-              .departed(channel, tokens, leaving)
-              .pipe(
-                Effect.tap((outcome) =>
-                  outcome === "done"
-                    ? Ref.update(
-                        released,
-                        (done) => new Set([...done, channel.id])
-                      )
-                    : Effect.void
-                )
-              ),
+            Effect.all(
+              [
+                departures
+                  .departed(channel, tokens, leaving)
+                  .pipe(
+                    Effect.tap((outcome) =>
+                      outcome === "done"
+                        ? Ref.update(
+                            released,
+                            (done) => new Set([...done, channel.id])
+                          )
+                        : Effect.void
+                    )
+                  ),
+                revokeUnsharedGrant(channel, tokens, leaving).pipe(
+                  Effect.provideService(ChannelRepository, repository),
+                  Effect.provideService(PlatformAuthorizers, authorizers)
+                ),
+              ],
+              { concurrency: 2, discard: true }
+            ),
           { concurrency: releaseConcurrency, discard: true }
         ).pipe(
           Effect.timeoutOption(releaseLimit),

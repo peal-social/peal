@@ -208,10 +208,22 @@
   mobile apps only): the state, bound to member and workspace, guards the
   callback, and a token answer naming an `error` is a refusal whatever its
   status. A `PlatformAuthorizer` may have `revoke` (TikTok's guidelines ask
-  for it; Google takes it), which `DisconnectChannel` calls once the
-  channel is deleted and no other channel, in any workspace, connects the
-  same account (`ChannelRepository.accountInUse`), waiting 10 seconds at
-  most and logging any failure.
+  for it; Google takes it, but `grantsSpanningAccounts` leaves YouTube and
+  Google Business Profile out: Google ends a user's whole grant to Peal's
+  client whichever token is revoked, a sign-in gives several locations or
+  channels the same tokens, and no channel keeps the Google user's id, so
+  revoking for one would end the others, in any workspace), which
+  `revokeUnsharedGrant`
+  (`application/grant-revocation.ts`) calls once no other channel, in any
+  workspace, connects the same account (`ChannelRepository.accountInUse`,
+  the channels going with it left out), waiting `revokeTimeout` (10
+  seconds) at most and logging any failure, never failing: `DisconnectChannel`
+  once the channel is deleted, and `ChannelRecords.releaseWorkspaces` for
+  every channel of the workspaces an erasure deletes (a deleted workspace,
+  a closed account's), beside its departure and under the release's
+  bounds, with the tokens it read. An erasure that then fails leaves those
+  channels with tokens the platform revoked, as it leaves their departures:
+  they ask to be reconnected.
 - Pinterest's OAuth names no PKCE either, takes the app's id and secret as
   Basic credentials, and separates scopes with commas. Its errors are
   `{ code, message }`, never RFC 6749's: a 401 from the token endpoint
@@ -480,6 +492,23 @@
   `OutboundGuard` for an open one only to reach loopback fakes.
 - The AT Protocol OAuth client runs on Bun only with the handle resolver built
   on Peal's guarded fetch; its default one needs Node's undici.
+- Every answer the AT Protocol's libraries read (DID documents, handles,
+  servers' metadata, PAR and token answers) goes through
+  `boundedDocuments` (`platforms/bluesky/bounded-documents.ts`), inside
+  the authorizer's `observed` fetch, which is the only fetch they are
+  given: read whole up to `maxDocumentBytes` (32 KiB) and, as JSON, no
+  more than `maxArrayEntries` (256) array entries in total nor
+  `maxNestingDepth` (16) deep, read into one buffer and in `maxChunks`
+  (2048) chunks at most (an answer dripped a byte a chunk is refused as
+  too large), or the fetch fails with `HostileAnswer`,
+  which the sign-in tells as an identity it cannot use (`InvalidHandle`
+  at the start, `AuthorizationFailed` once back, `TokenExpired` on a
+  refresh). The libraries validate with zod, entry by entry and an issue
+  per failing one: a megabyte of entries costs seconds and gigabytes.
+  Never stringify a library error whole: `reasonOf` keeps the message it
+  holds (never a validation error's getter), cut at `maxReasonLength`.
+  Publishing, reading and messages reach the PDS through Effect's client
+  and Schemas, never these libraries, under `publicHttpClient`'s limits.
 - The refresh sweep takes each platform's cutoff from every way in the
   server has for it (`PlatformAuthorizers.every`), the latest one, then
   checks each channel against its own way in's policy: a platform's first

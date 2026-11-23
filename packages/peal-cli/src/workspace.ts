@@ -33,9 +33,9 @@ export const signedIn = Effect.gen(function* signedIn() {
   const key = yield* apiKey;
 
   return {
-    client: yield* api.signedIn(
-      Option.isSome(key) ? key.value : yield* accessToken
-    ),
+    client: Option.isSome(key)
+      ? yield* api.withApiKey(key.value)
+      : yield* api.signedIn(yield* accessToken),
     url,
     withKey: Option.isSome(key),
   };

@@ -1,5 +1,6 @@
 import {
   Context,
+  DateTime,
   Deferred,
   Duration,
   Effect,
@@ -26,10 +27,13 @@ import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { AccountMail } from "#workspace/application/account-mail.ts";
 import type { TwoStepChange } from "#workspace/application/account-mail.ts";
 import { ActivityJournal } from "#workspace/application/activity-journal.ts";
+import { ApiKeyMakers } from "#workspace/application/api-key-makers.ts";
 import { ImpersonationGuard } from "#workspace/application/impersonation-guard.ts";
+import { InvitationEmails } from "#workspace/application/invitation-emails.ts";
 import { MemberDirectory } from "#workspace/application/member-directory.ts";
 import { SecurityPolicies } from "#workspace/application/security-policies.ts";
 import { SignUpGate } from "#workspace/application/sign-up-gate.ts";
+import { UnclaimedAccounts } from "#workspace/application/unclaimed-accounts.ts";
 import { UserPrincipal } from "#workspace/domain/user-principal.ts";
 
 import {
@@ -300,6 +304,9 @@ export const BetterAuthLive = Layer.effect(
     const analytics = yield* ProductAnalytics;
     const { settings: site } = yield* SiteMeasurement;
     const agentRecords = yield* AgentRecords;
+    const unclaimed = yield* UnclaimedAccounts;
+    const invitationEmails = yield* InvitationEmails;
+    const makers = yield* ApiKeyMakers;
 
     // The instance, once made: the email of a recovery code used says how
     // many are left, which only the instance reads.
@@ -350,6 +357,20 @@ export const BetterAuthLive = Layer.effect(
       invitation: (link) => {
         run(emails.send({ _tag: "Invitation", ...link }));
       },
+      // Awaited before an invitation's email: one of the day's for the
+      // inviter, the workspace and the address. A database failure refuses
+      // the request.
+      invitationEmail: async ({ email, inviterId, workspaceId }) =>
+        await runPromise(
+          Effect.gen(function* invitationEmail() {
+            return yield* invitationEmails.claim({
+              at: yield* DateTime.now,
+              email,
+              inviterId: yield* decodeUserId(inviterId),
+              workspaceId: yield* decodeWorkspaceIdEffect(workspaceId),
+            });
+          }).pipe(Effect.withSpan("BetterAuth.invitationEmail"))
+        ),
       log: (level, message) => {
         run(
           Effect.logWithLevel(severities[level])(message).pipe(
@@ -370,6 +391,27 @@ export const BetterAuthLive = Layer.effect(
           upgrades
             .from(workspaceId, "members", needed)
             .pipe(Effect.map(upgradeOf))
+        ),
+      // Awaited before a member's standing changes: the keys they made
+      // that it no longer covers go. Ids Better Auth did not issue name
+      // no member's keys. A failure refuses the change.
+      memberKeys: async ({ role, userId, workspaceId }) =>
+        await runPromise(
+          Effect.all({
+            user: Effect.option(decodeUserId(userId)),
+            workspace: Effect.option(decodeWorkspaceIdEffect(workspaceId)),
+          }).pipe(
+            Effect.flatMap(({ user, workspace }) =>
+              Option.isSome(user) && Option.isSome(workspace)
+                ? makers.settle(
+                    workspace.value,
+                    user.value,
+                    Option.fromNullOr(role)
+                  )
+                : Effect.succeed({ apiKeyIds: [], partnerKeyIds: [] })
+            ),
+            Effect.withSpan("BetterAuth.memberKeys")
+          )
         ),
       // Awaited once a member left or was removed: their chats with the
       // agent there go. A failure is logged: the retention ends them.
@@ -476,6 +518,15 @@ export const BetterAuthLive = Layer.effect(
           )(kind, userId)
         );
       },
+      // Awaited: an account nobody claimed is closed before the person
+      // confirming is answered. A failure leaves it, and answers false.
+      unclaimedAccount: async (userId) =>
+        await runPromise(
+          decodeUserId(userId).pipe(
+            Effect.flatMap((id) => unclaimed.close(id)),
+            Effect.catch(() => Effect.succeed(false))
+          )
+        ),
       userCreated: (created) => {
         run(toldSignUp(analytics, created));
       },

@@ -7,6 +7,7 @@ import { UserIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { ApiKeyIssuer } from "#workspace/application/api-key-issuer.ts";
 import type { ApiKeyRequest } from "#workspace/application/api-key-issuer.ts";
 import { ApiKeys } from "#workspace/application/api-keys.ts";
+import { WorkspacePeople } from "#workspace/application/workspace-people.ts";
 import { ApiKey } from "#workspace/domain/api-key.ts";
 
 const workspaceId = WorkspaceIdSchema.make(
@@ -38,6 +39,7 @@ const inMemoryIssuer = Effect.gen(function* makeIssuer() {
 
           const apiKey = new ApiKey({
             createdAt,
+            createdBy: Option.some(request.createdBy),
             expiresAt: Option.none(),
             id: `key-${String((yield* Ref.get(keys)).length + 1)}`,
             name: request.name,
@@ -59,19 +61,58 @@ const inMemoryIssuer = Effect.gen(function* makeIssuer() {
     })
   );
 
-  return { layer, requests };
+  return { keys, layer, requests };
 });
+
+// The workspace's members: the creator, by the name they go by, while
+// `present` holds.
+const peopleOf = (present: Ref.Ref<boolean>) =>
+  Layer.succeed(
+    WorkspacePeople,
+    WorkspacePeople.of({
+      invite: () => Effect.die("not invited here"),
+      members: () =>
+        Ref.get(present).pipe(
+          Effect.map((here) =>
+            here
+              ? [
+                  {
+                    email: "ada@example.com",
+                    joinedAt: createdAt,
+                    name: "Ada",
+                    role: "owner",
+                    twoStepEnabled: false,
+                    userId,
+                  },
+                ]
+              : []
+          )
+        ),
+      pendingInvitations: () => Effect.succeed([]),
+      removeMembers: () => Effect.die("nobody is removed here"),
+      reseating: (_workspace, change) => change,
+      revoke: () => Effect.succeed(false),
+      revokeAll: () => Effect.succeed(0),
+    })
+  );
 
 const withIssuer = <A, E>(
   test: (issuer: {
+    readonly keys: Ref.Ref<readonly ApiKey[]>;
+    readonly present: Ref.Ref<boolean>;
     readonly requests: Ref.Ref<readonly ApiKeyRequest[]>;
   }) => Effect.Effect<A, E, ApiKeys>
 ) =>
   Effect.gen(function* run() {
     const issuer = yield* inMemoryIssuer;
+    const present = yield* Ref.make(true);
 
-    return yield* test(issuer).pipe(
-      Effect.provide(ApiKeys.layer.pipe(Layer.provide(issuer.layer)))
+    return yield* test({ ...issuer, present }).pipe(
+      Effect.provide(
+        ApiKeys.layer.pipe(
+          Layer.provide(Layer.merge(issuer.layer, peopleOf(present)))
+        )
+      )
     );
   });
 
@@ -227,5 +268,56 @@ describe(ApiKeys, () => {
         assert.strictEqual(missing._tag, "ApiKeyNotFound");
       })
     )
+  );
+
+  it.effect(
+    "names each key's maker while they are a member, and nobody for a key made before makers were kept",
+    () =>
+      withIssuer(({ keys: stored, present }) =>
+        Effect.gen(function* makers() {
+          const keys = yield* ApiKeys;
+          const owner = member(["apiKey:create", "apiKey:read", "post:read"]);
+
+          const created = yield* keys.create(owner, newKey);
+
+          assert.deepStrictEqual(
+            created.maker,
+            Option.some({ id: userId, name: "Ada" })
+          );
+
+          yield* Ref.update(stored, (all) => [
+            ...all,
+            new ApiKey({
+              createdAt,
+              createdBy: Option.none(),
+              expiresAt: Option.none(),
+              id: "key-old",
+              name: "old",
+              permissions: ["post:read"],
+              start: Option.none(),
+              workspaceId,
+            }),
+          ]);
+
+          assert.deepStrictEqual(
+            (yield* keys.list(owner)).map(({ apiKey, maker }) => [
+              apiKey.id,
+              Option.getOrNull(maker),
+            ]),
+            [
+              ["key-1", { id: userId, name: "Ada" }],
+              ["key-old", null],
+            ]
+          );
+
+          // A maker who is no longer a member is named no more.
+          yield* Ref.set(present, false);
+
+          assert.deepStrictEqual(
+            (yield* keys.list(owner)).map(({ maker }) => Option.isNone(maker)),
+            [true, true]
+          );
+        })
+      )
   );
 });

@@ -7,6 +7,8 @@ module Peal
     class PartnerKey < Internal::Types::Model
       field :created_at, -> { String }, optional: false, nullable: false, api_name: "createdAt"
 
+      field :created_by, -> { Peal::Types::APIKeyMaker }, optional: false, nullable: true, api_name: "createdBy"
+
       field :expires_at, -> { String }, optional: false, nullable: true, api_name: "expiresAt"
 
       field :id, -> { String }, optional: false, nullable: false

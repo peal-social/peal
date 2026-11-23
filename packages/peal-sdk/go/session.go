@@ -199,19 +199,22 @@ func (b BrowserAnalyticsConsent) Ptr() *BrowserAnalyticsConsent {
 var (
 	meFieldBrowserAnalytics = big.NewInt(1 << 0)
 	meFieldImpersonatedBy   = big.NewInt(1 << 1)
-	meFieldUser             = big.NewInt(1 << 2)
-	meFieldWorkspaces       = big.NewInt(1 << 3)
+	meFieldSupportChat      = big.NewInt(1 << 2)
+	meFieldUser             = big.NewInt(1 << 3)
+	meFieldWorkspaces       = big.NewInt(1 << 4)
 )
 
 // meNullableFields maps the wire names of Me's nullable fields (required or optional) to their field bits.
 var meNullableFields = map[string]*big.Int{
 	"browserAnalytics": meFieldBrowserAnalytics,
 	"impersonatedBy":   meFieldImpersonatedBy,
+	"supportChat":      meFieldSupportChat,
 }
 
 type Me struct {
 	BrowserAnalytics *BrowserAnalytics `json:"browserAnalytics,omitempty" url:"browserAnalytics,omitempty"`
 	ImpersonatedBy   *string           `json:"impersonatedBy,omitempty" url:"impersonatedBy,omitempty"`
+	SupportChat      *MeSupportChat    `json:"supportChat,omitempty" url:"supportChat,omitempty"`
 	User             *MeUser           `json:"user" url:"user"`
 	Workspaces       []*Membership     `json:"workspaces" url:"workspaces"`
 
@@ -234,6 +237,13 @@ func (m *Me) GetImpersonatedBy() *string {
 		return nil
 	}
 	return m.ImpersonatedBy
+}
+
+func (m *Me) GetSupportChat() *MeSupportChat {
+	if m == nil {
+		return nil
+	}
+	return m.SupportChat
 }
 
 func (m *Me) GetUser() *MeUser {
@@ -278,6 +288,13 @@ func (m *Me) SetBrowserAnalytics(browserAnalytics *BrowserAnalytics) {
 func (m *Me) SetImpersonatedBy(impersonatedBy *string) {
 	m.ImpersonatedBy = impersonatedBy
 	m.require(meFieldImpersonatedBy)
+}
+
+// SetSupportChat sets the SupportChat field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *Me) SetSupportChat(supportChat *MeSupportChat) {
+	m.SupportChat = supportChat
+	m.require(meFieldSupportChat)
 }
 
 // SetUser sets the User field and marks it as non-optional;
@@ -329,6 +346,92 @@ func (m *Me) MarshalJSON() ([]byte, error) {
 }
 
 func (m *Me) String() string {
+	if m == nil {
+		return "<nil>"
+	}
+	if len(m.rawJSON) > 0 {
+		if value, err := internal.StringifyJSON(m.rawJSON); err == nil {
+			return value
+		}
+	}
+	if value, err := internal.StringifyJSON(m); err == nil {
+		return value
+	}
+	return fmt.Sprintf("%#v", m)
+}
+
+var (
+	meSupportChatFieldEmailSignature = big.NewInt(1 << 0)
+)
+
+type MeSupportChat struct {
+	EmailSignature string `json:"emailSignature" url:"emailSignature"`
+
+	// Private bitmask of fields set to an explicit value and therefore not to be omitted
+	explicitFields *big.Int `json:"-" url:"-"`
+
+	extraProperties map[string]interface{}
+	rawJSON         json.RawMessage
+}
+
+func (m *MeSupportChat) GetEmailSignature() string {
+	if m == nil {
+		return ""
+	}
+	return m.EmailSignature
+}
+
+func (m *MeSupportChat) GetExtraProperties() map[string]interface{} {
+	if m == nil {
+		return nil
+	}
+	return m.extraProperties
+}
+
+func (m *MeSupportChat) require(field *big.Int) {
+	next := new(big.Int)
+	if m.explicitFields != nil {
+		next.Set(m.explicitFields)
+	}
+	next.Or(next, field)
+	m.explicitFields = next
+}
+
+// SetEmailSignature sets the EmailSignature field and marks it as non-optional;
+// this prevents an empty or null value for this field from being omitted during serialization.
+func (m *MeSupportChat) SetEmailSignature(emailSignature string) {
+	m.EmailSignature = emailSignature
+	m.require(meSupportChatFieldEmailSignature)
+}
+
+func (m *MeSupportChat) UnmarshalJSON(data []byte) error {
+	type unmarshaler MeSupportChat
+	var value unmarshaler
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*m = MeSupportChat(value)
+	extraProperties, err := internal.ExtractExtraProperties(data, *m)
+	if err != nil {
+		return err
+	}
+	m.extraProperties = extraProperties
+	m.rawJSON = json.RawMessage(data)
+	return nil
+}
+
+func (m *MeSupportChat) MarshalJSON() ([]byte, error) {
+	type embed MeSupportChat
+	var marshaler = struct {
+		embed
+	}{
+		embed: embed(*m),
+	}
+	explicitMarshaler := internal.HandleExplicitFields(marshaler, m.explicitFields)
+	return json.Marshal(explicitMarshaler)
+}
+
+func (m *MeSupportChat) String() string {
 	if m == nil {
 		return "<nil>"
 	}

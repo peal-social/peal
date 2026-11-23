@@ -39,6 +39,113 @@ The staff context follows these rules too. What the law has a host keep is in
   person may make workspaces and invite in turn: the mode limits who signs
   up, not who invites. Everything else (signing in, resets, accepting,
   staff, partners, connect and review links) is the same in both modes.
+- An address is confirmed only by a POST, from a browser: Better Auth's
+  `GET /verify-email` is in `disabledPaths`, and the emailed link
+  (`confirmationUrl` in `options.ts`) opens the web app's
+  `/verify-email?token=`, which posts the token to `/confirm-email`
+  (`auth/email-confirmation.ts`, a plugin of Peal's, the token checked as
+  Better Auth checks it: its secret, HS256, unexpired, the account it was
+  sent for) with an `intent`. A mail gateway that opens the link confirms
+  nothing. The route answers `{ status }` (`ConfirmationOutcomeSchema`), or
+  400 `INVALID_TOKEN` / `TOKEN_EXPIRED`.
+- Nothing about a link erases or releases an account without the person
+  saying so. `auto`, the page's own post as it opens, confirms only from
+  the account's maker's browser: the sign-up's binding (below), or a live
+  session of the account read from the database, never a cookie's cached
+  copy nor one staff act in (`holdsOwnSession`), which keeps the session
+  and the password (`signedIn`); otherwise it changes nothing (`choose`).
+  `confirm`, the page's button once it said what it does, confirms and
+  releases an account never used (`passwordNeeded`), and leaves a used one
+  as it is (`inUse`). `erase`, a button of its own with a step that says
+  what goes, alone closes a used account (`replaced`, or `notErased` when
+  the closure refuses). Each decision runs in one transaction whose first
+  statement confirms the address while it is unconfirmed, holding the row
+  (`confirmUnconfirmed`), and rolls back whatever changes nothing.
+- The maker's browser (`auth/sign-up-browser.ts`): every `/sign-up/email`
+  the route answered with a user (any other answer, a schema's refusal
+  included, sets nothing) sets a fresh nonce in `peal.sign_up_browser`
+  (HttpOnly, SameSite=Lax, `__Secure-` over HTTPS, 7 days), whatever the
+  address, so the answer tells nothing; where the request made the
+  account, its `auth.verification` row `sign-up-browser:<userId>`
+  (`bindingOf`) keeps the nonce's SHA-256 and the SHA-256 of the password
+  hash it goes with, compared in constant time. A resend asked with a live
+  session of the account renews it for that browser (`renewSignUpBrowser`);
+  any other resend only mails the address. A sign-up for an address that
+  has an account runs `takeOver`, which checks the password's length and
+  hashes it (the request that made an account hashes once more, thrown
+  away, so every answered sign-up costs two hashes), and whose transaction
+  starts with an update of the user's row that holds only while the
+  address is unconfirmed (`claimUnconfirmed`): it stops there for a
+  confirmed one, and otherwise gives the new signer the password, name and
+  language, a new binding, ends the sessions and connected applications,
+  and sends a fresh link. A release (`releaseAccount`) removes the
+  credential account, the sessions, the connected applications, the
+  binding, stops bearer tokens (`markTokensNotBefore`), and resets the
+  name to the address's local part (`fittedName`) and the language to the
+  default. Better Auth's `autoSignInAfterVerification` is off; the route
+  signs the matching browser in itself.
+- A used account (`wasUsed`: a member of a workspace, which only
+  `AUTH_REQUIRE_EMAIL_VERIFICATION=false` allows) is closed only on
+  `erase`, through `CloseAccount.closeUnclaimed` (the closure's erasure, no
+  password, its subscriptions cancelled, no email), which holds the user's
+  row while the address is unconfirmed (`AccountStore.holdUnconfirmed`)
+  before Stripe is asked anything, and again in the erasure's
+  transaction, right after the payer's hold, answering `AccountClaimed`
+  once confirmed. Better Auth's hooks reach it through `UnclaimedAccounts`,
+  which `WorkspaceSettingsLive` serves once built (`UnclaimedAccounts.served`);
+  unserved, nothing is closed (`notErased`).
+- A provider's sign-in for an unconfirmed account never used confirms and
+  releases it (`requireLocalEmailVerified: false`, then
+  `releaseUnconfirmedAccount` in `providerAdmission` before Better Auth
+  links it), so the provider's person takes it over without its password;
+  for a used one it changes nothing and refuses `account_in_use`. A
+  provider's sign-in never erases. Tests confirm with `confirmFrom` and the
+  sign-up's cookies (`confirmedAccount`).
+- A password reset proves the address too (`afterPasswordReset`,
+  `auth/reset-confirmation.ts`): it confirms an unconfirmed account,
+  holding its row, and when the account was used, deletes, in that
+  transaction, the API keys made before the reset and the pending
+  invitations of every workspace it is the only owner of, whoever else
+  belongs. Members stay: removing them would hit a real, never-confirmed
+  user's team. The reset's answer then always carries
+  `usedBeforeConfirmation` with `apiKeysRemoved` and
+  `invitationsCancelled` (zero included), and the reset page warns,
+  naming what to check (members, invitations, webhooks, keys, connected
+  channels). Partner keys, webhook endpoints and channels are left.
+  `takeOver` stops at a used account too, so a server switched from
+  verification off to on hands nobody a used account by a sign-up.
+- A password sign-in is checked against what happened while it ran
+  (`auth/sign-in-credential.ts`): the before hook notes the credential's
+  hash, the after hook reads it again once the session is written, and a
+  credential gone or changed meanwhile deletes that session, expires its
+  cookie, clears the new session (`setNewSession(null)`, so the two-factor
+  plugin's after hook issues no challenge) and answers
+  `INVALID_EMAIL_OR_PASSWORD`. A second step begun with an old password
+  never finishes: a reset deletes the account's `2fa-` challenges, and
+  `/two-factor/verify-*` without a session refuses a challenge created
+  before the account's instant plus 5 seconds
+  (`refuseStaleTwoStepChallenge`). A release, a takeover
+  and a reset also end the account's sessions once more after their
+  transaction commits.
+- `/oauth2/token` refuses (`invalid_target`) any grant that would issue an
+  opaque access token, which a grant naming no resource gets: no route of
+  Peal's takes one, and the command line and MCP clients always name the
+  resource.
+- A password reset ends the sessions (`revokeSessionsOnPasswordReset`)
+  and disconnects every connected application
+  (`disconnectAfterPasswordReset` in `auth/tokens-not-before.ts`): it
+  writes the account's instant first (`auth.verification` row
+  `tokens-not-before:<userId>`, an hour), then deletes the OAuth
+  provider's stored access tokens, refresh tokens, consents and the device
+  codes not yet exchanged (`forgetConnectedApplications`). A bearer token
+  issued before the instant, its second included, is refused
+  (`issuedBeforeReset` in `access-tokens.ts`, one read a request), so a
+  JWT no longer lasts out its 15 minutes; any `/oauth2/token` answer (a
+  renewal, a code's exchange, a device code's) for a subject whose instant
+  is at or after the request's start less 5 seconds has its tokens
+  deleted, the instant moved to now and `invalid_grant` answered
+  (`noteTokenRequest`, `refuseRenewalAcrossReset`). The reset email says
+  so.
 - The person's choice about the web app's measurement is two columns of
   Better Auth's user row (`browserAnalyticsConsent`,
   `browserAnalyticsConsentAt`, `input: false`, `returned: false`): only
@@ -70,13 +177,64 @@ The staff context follows these rules too. What the law has a host keep is in
   person, never an API key, and its pending invitations to those with
   invitation:create (owner invitations to owners only, as an invitation's
   id opens its link), and invite and revoke for a member in person, never
-  staff impersonating them. `WorkspacePeopleLive` writes an invitation
+  staff impersonating them, nor an OAuth client but the command line
+  (`commandLineOnlyPermissions`). `WorkspacePeopleLive` writes an invitation
   itself, under the workspace's advisory lock, following Better Auth's
   `/organization/invite-member` (one role, owners for owners, never to a
   member, replacing a pending one to the address, the pending limit and the
   plan's room) and sharing its constants and link (`invitationLifetime`,
   `pendingInvitationLimit`, `invitationUrl` in `options.ts`): change both
   together. The web app still invites through Better Auth's route.
+- Every invitation email, new or sent again, is one of the day's (UTC)
+  for the member who invites (across their workspaces), the workspace,
+  the workspace and the address together, and the address across Peal
+  (`invitationEmailsPerDay`, `workspace/domain/invitation-emails.ts`: 100,
+  100, 3, 20: a workspace's few for an address never use up another
+  workspace's, so no account blocks a stranger's invitations; the
+  address's ceiling only stops a flood), counted by `InvitationEmails`
+  (`DrizzleInvitationEmailsLive`: `workspace.invitation_emails`, one row
+  per subject and day under a keyed pseudonym, `Pseudonyms.ofCounted` and
+  `ofEmail`, so a row names nobody without the server's secret; each claim
+  adds one to the three while each stays within its limit, in one
+  transaction, subjects in one order, and deletes the days before
+  `invitationEmailDays`). `WorkspacePeopleLive` claims inside its
+  invitation's transaction, after the other checks (`TooManyInvitations`
+  `emailsToday`, 409 `too_many_invitations` with `invitationEmailsRefused`
+  as its message, for the API and the MCP tool alike). Better Auth's route
+  claims in `beforeCreateInvitation`, once it checked the rest, and, for
+  `resend` (which writes nothing), in the before hook once the request
+  passes what the route checks (`claimResentInvitationEmail`: a member
+  whose role holds `invitation:create`, the owner role's invitation sent
+  again by an owner, an address that is no member's, an invitation pending
+  and unexpired as `findPendingInvitation` reads it): 429
+  `DAILY_INVITATION_LIMIT_REACHED`.
+  Never claim in `sendInvitationEmail`: Better Auth runs it where a
+  failure is only logged. A refused re-invite through the route has
+  already cancelled the address's pending invitation (Better Auth cancels
+  it first).
+- A person's name and a workspace's go out in emails from Peal's own
+  domain. `typedName` (`#shared/domain/display-name.ts`) keeps one line
+  (`storableLine`), at most `maxPersonNameLength` (100) or
+  `maxWorkspaceNameLength` (120) characters, and refuses a web address's
+  markers (`holdsLinkMarker`: `://`, `www.`); it never refuses a name for
+  looking like a host (`Node.js`, `Booking.com` are names). Better Auth's
+  hooks apply it (`auth/display-names.ts`): `/sign-up/email` in the before
+  hook (`refuseUnfitSignUpNames`, as the route answers a known address
+  with a made-up user before any write), `databaseHooks.user` on create
+  and update (refused on `/sign-up/email` and `/update-user`, 400
+  `INVALID_NAME`; made fit elsewhere), and the organization hooks on
+  create and update (400 `INVALID_WORKSPACE_NAME`), which the web app's
+  forms explain; the partner API takes a workspace's name through it too
+  (`PartnerWorkspaces`, `InvalidWorkspaceDetails`). A sign-in provider's
+  name is made fit instead (`fittedName` in `profileToUser`: the markers
+  taken out), so the sign-in goes on. Emails are made safe where they are
+  built: the notifications context's renderers show a name through
+  `nameForMail`, which puts the catalog's `withheldNames` ("A member", "a
+  workspace") in place of one that reads as a host or an address by a
+  broad test on its NFC form (`readsAsAddress`: the markers, `@`, a
+  letter, digit or mark, a dot and two letters of any script and case,
+  marks included, a dotted IPv4 address, `tel:`, `sms:`, or seven digits
+  or more), names stored before included.
 - `ResolveMember.resolveMany` decides several workspaces for one user from
   one read of the memberships (`MemberDirectory.memberships`), each through
   `actorFor` as `resolve` decides one: anything that reads across
@@ -101,6 +259,41 @@ The staff context follows these rules too. What the law has a host keep is in
   owner in person gives them, as the owner's leave for an application;
   partner keys never hold those. Keys are created only through `POST /api/workspaces/:workspaceId/api-keys`:
   Better Auth's own key routes are disabled.
+- A key records its maker in Better Auth's `metadata` (`makerMetadata`,
+  `{"createdBy": <user id>}`, read with `makerOf`), and the list names
+  them while they are a member. Keys follow their maker's standing
+  (`ApiKeyMakers`, `keysBeyond` in `workspace/domain/api-key.ts`): a
+  member removed, leaving or closing their account loses every key they
+  made in that workspace, and one given a lower role those holding a
+  permission the role could not give a new key (`grantableBy`). Keys with
+  no recorded maker (made before) are left alone. Better Auth's routes do
+  it in their before hooks, once the rest is checked, so a change that
+  fails after leaves the keys gone, never the keys outliving their maker
+  (`member-keys.ts`), and again in the after hooks, for a key made while
+  the change ran; each key revoked is kept in the activity log as
+  `apiKeys.revoke` by whoever asked for the change.
+  `WorkspacePeople.removeMembers` revokes in its transaction, and
+  `AccountStore.deleteUser` in the closure's. Making a key checks, then
+  inserts, so one made while its maker's standing changes can land past
+  every revocation: `AuthGateway.apiKey`, which the API and the MCP
+  endpoint share, reads the maker's role with the key's workspace (one
+  read, `standingOf`) and refuses a key `beyondMaker` holds past it,
+  revoking it as far as it goes. Keep that check: the revocations keep
+  the list truthful, the check closes every interleaving. The leaving
+  member's keys go only once every before guard let the leave through
+  (`settleLeavingMemberKeys` comes last).
+- Partner keys follow their maker the same way (`partnerKeyBeyondMaker`):
+  `partner_keys.created_by` is the member of the home workspace who made
+  the key, and it stays only while they are a member whose role holds
+  partner:manage. `ApiKeyMakers.settle` revokes them with the API keys
+  (`PartnerStore.removeKeysMadeBy`; kept as `partnerAccount.revokeKey`),
+  closing the account deletes them, and `PartnerKeys.verify` refuses and
+  revokes one past its maker's standing from the same read that finds
+  the key (`keyByDigest` joins the maker's membership). A key with no
+  recorded maker stays. The list names the maker (`createdBy`), and the
+  members' counts include them. The members list gives a
+  reader with member:update what each change would revoke
+  (`apiKeysAtStake`), which the web app's dialogs say before confirming.
 - Staff (Better Auth's admin role) act through the staff context's use
   cases only (`StaffActions`): each checks `mayAct`
   (`staff/domain/account-rules.ts`), records an `AuditEvent` in
@@ -115,8 +308,13 @@ The staff context follows these rules too. What the law has a host keep is in
   then lose the permissions `withheldWhileImpersonating` lists
   (`workspace/domain/membership.ts`), and Better Auth refuses them every route
   that changes a workspace or the account (name, language, password,
-  sessions), grants an OAuth client access or approves a device code
-  (`impersonation.ts`). They may write and edit drafts, not schedule or
+  sessions), grants an OAuth client access or approves a device code, and
+  `/list-sessions`, which answers each of the member's sessions with its
+  token (`impersonation.ts`; the web app's account page says so in place
+  of the list). `/get-session`, `/update-session` and the OAuth
+  provider's `/oauth2/end-session` act on the impersonation's own session
+  only; every other route about sessions is refused, which
+  `impersonation.test.ts` checks against the served routes. They may write and edit drafts, not schedule or
   publish them: a scheduled post goes out after the impersonation ends, to
   the member's real accounts. What they write keeps the member as its author
   (`author_id`), and the audit log keeps the staff member behind it.
@@ -320,7 +518,12 @@ The staff context follows these rules too. What the law has a host keep is in
 - Better Auth is also the OAuth authorization server for the CLI (device
   grant, the `peal-cli` public client registered at startup) and MCP clients
   (authorization code with PKCE, and dynamic registration when
-  `MCP_DYNAMIC_REGISTRATION=true`). Access tokens are JWTs that last 15
+  `MCP_DYNAMIC_REGISTRATION=true`). A registration that asks for
+  back-channel logout (`backchannel_logout_uri`,
+  `backchannel_logout_session_required`) is refused 400
+  `REGISTRATION_FIELD_NOT_ALLOWED` (`guardClientRegistration`): Better
+  Auth would post to that address on sign-out with a fetch of its own,
+  past the `OutboundGuard`. Access tokens are JWTs that last 15
   minutes and are checked locally; refresh tokens rotate, and one sent again
   within 30 seconds gets the same answer, while later reuse revokes that user
   and client's refresh tokens.
@@ -336,13 +539,18 @@ The staff context follows these rules too. What the law has a host keep is in
   it existed publishes nothing, and `scopeFor` names the scope a permission
   takes. Never fold it back into `workspace:write`.
 - `commandLineOnlyPermissions` (`assistant:configure`: where the
-  workspace's prompts and drafts go, with whose key) reach no OAuth client
-  but Peal's command line (`isCommandLine`), whatever its scopes: an MCP
-  client could point them at its own server, which would keep receiving
-  them once its grant is revoked. API keys and partner keys given it keep it.
-  A refusal of it, or of a `personOnlyPermissions` one, to an OAuth client
-  says no connected application does it (`withoutPermission`), never the
-  role.
+  workspace's prompts and drafts go, with whose key; `invitation:create`,
+  `invitation:cancel`, `member:create`, `member:update`, `member:delete`:
+  who is in the workspace, and as what) reach no OAuth client but Peal's
+  command line (`isCommandLine`), whatever its scopes: an MCP client could
+  point the first at its own server, or invite an address it holds as an
+  admin or an owner, who would hold everything its grant withheld; both
+  outlive the grant. A new permission that changes who is in a workspace,
+  or their role, joins them. API keys and partner keys given them keep
+  them. A refusal of one, or of a `personOnlyPermissions` one, to an OAuth
+  client (`withheldWhateverScopes`) names no scope to ask for
+  (`missingScope`) and says no connected application does it
+  (`withoutPermission`), never the role.
 - When `PUBLIC_URL` is neither HTTPS nor a loopback host, the server runs the
   plain OAuth provider without the MCP resource: the CLI signs in, the MCP
   endpoint refuses every request, and startup logs a warning.
@@ -385,7 +593,8 @@ The staff context follows these rules too. What the law has a host keep is in
   `requireIdTokenVerification`: the profile is the ID token's claims alone,
   checked for signature, issuer, audience and nonce, never the userinfo
   endpoint (`getUserInfo`); PKCE on; no offline access. The name is made
-  storable (`profileToUser`), the picture never kept. The account id is
+  fit (`profileToUser`, `fittedName`: one line, without `://` or `www.`),
+  the picture never kept. The account id is
   the verified token's `sub` (`accountSubject`), `<issuer>|<sub>` for
   `oidc` (`oidcAccountId`): a subject belongs to its issuer, so a new
   `PEAL_OIDC_ISSUER` reaches no account the old one's subjects joined.
@@ -425,8 +634,9 @@ The staff context follows these rules too. What the law has a host keep is in
   lower-case UUID). An account is made only when a page under the terms
   line asks (`disableImplicitSignUp`, `requestSignUp`): the sign-up page,
   and the sign-in page where anyone may sign up. Linking is implicit only, by
-  an address both sides confirmed (`accountLinking`, no trusted provider,
-  `requireLocalEmailVerified` left at its default); `/link-social`,
+  an address the provider confirmed (`accountLinking`, no trusted
+  provider, `requireLocalEmailVerified: false` as an unconfirmed account
+  is released first: see the sign-up browser above); `/link-social`,
   `/unlink-account`, `/get-access-token`, `/refresh-token` and
   `/account-info` are disabled (the list of kept account routes is in
   `auth-plugins.test.ts`). `guardProviderSignIn` refuses 400
@@ -443,9 +653,13 @@ The staff context follows these rules too. What the law has a host keep is in
   `GET /api/me`) until it resets one, which `/reset-password` creates;
   closing it and turning two-step verification on need one. A workspace's
   two-step requirement holds for it as for any account.
-- The HTTP tracer redacts `code` and `state` in `url.full` and
+- The HTTP tracer redacts `code`, `state` and `token` in `url.full` and
   `url.query` (`RedactedQueryLive`, `src/app/untraced-paths.ts`): the
-  callback's address carries both (`test/app/secrets-in-logs.test.ts`).
+  callback's address carries the first two, an address's confirmation
+  link (`/verify-email`) the third. A password reset's link
+  (`GET /reset-password/:token`) is never traced, and the request log
+  writes it with `<redacted>` in the token's place (`SecretPathsLive`)
+  (`test/app/secrets-in-logs.test.ts`).
 - `GOOGLE_SIGN_IN_ISSUER` is a test setting, refused but as `http://` on a
   loopback host: it puts the fake behind Google's button
   (`appWithGoogle`). It is in no docs table and no compose file.

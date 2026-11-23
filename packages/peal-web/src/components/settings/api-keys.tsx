@@ -301,9 +301,11 @@ export const KeyPublishing = ({
   );
 };
 
-// One key: its name, how it starts, what it may do and until when, and
-// revoking it once confirmed.
-const KeyRow = ({
+/**
+ * One key: its name, how it starts, who made it, what it may do and until
+ * when, and revoking it once confirmed.
+ */
+export const KeyRow = ({
   apiKey,
   mayRevoke,
   workspaceId,
@@ -352,6 +354,11 @@ const KeyRow = ({
             {t("startsWith", { start: apiKey.start })}
           </span>
         )}
+        <span className="text-muted-foreground text-sm">
+          {apiKey.createdBy === null
+            ? t("makerUnknown")
+            : t("madeBy", { name: apiKey.createdBy.name })}
+        </span>
         <span className="text-muted-foreground text-sm">
           {t("dates", {
             created: when(apiKey.createdAt),

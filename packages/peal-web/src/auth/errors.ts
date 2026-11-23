@@ -42,6 +42,10 @@ const KnownErrorSchema = Schema.Literals([
   // cannot route it.
   "ORGANIZATION_SLUG_ALREADY_TAKEN",
   "INVALID_WORKSPACE_SLUG",
+  // A person's name, or a new workspace's, is one line, bounded, and
+  // never reads as a link.
+  "INVALID_NAME",
+  "INVALID_WORKSPACE_NAME",
 ]);
 
 export type AuthErrorKey =
@@ -78,6 +82,7 @@ export const authErrorKey = (error: AuthClientError): AuthErrorKey =>
 const providerErrorKeys = {
   access_denied: "PROVIDER_ACCESS_DENIED",
   account_banned: "PROVIDER_FAILED",
+  account_in_use: "PROVIDER_ACCOUNT_IN_USE",
   account_not_linked: "PROVIDER_ACCOUNT_NOT_LINKED",
   email_not_found: "PROVIDER_EMAIL_NOT_FOUND",
   provider_email_invalid: "PROVIDER_EMAIL_INVALID",
@@ -91,6 +96,7 @@ const providerErrorKeys = {
 const ProviderCodeSchema = Schema.Literals([
   "access_denied",
   "account_banned",
+  "account_in_use",
   "account_not_linked",
   "email_not_found",
   "provider_email_invalid",

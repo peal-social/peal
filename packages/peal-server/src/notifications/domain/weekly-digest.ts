@@ -1,5 +1,6 @@
 import { DateTime, Option } from "effect";
 
+import { nameForMail } from "#shared/domain/display-name.ts";
 import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import type { Locale } from "#shared/domain/locale.ts";
 
@@ -224,13 +225,18 @@ const partOf = (
 ): Part => ({
   calendar: fill(
     catalog.weeklyDigest.calendar,
-    new Map([["workspaceName", workspace.name]]),
+    new Map([
+      [
+        "workspaceName",
+        nameForMail(workspace.name, catalog.withheldNames.workspace),
+      ],
+    ]),
     keep
   ),
   calendarUrl: workspace.calendarUrl,
   counts: countsOf(catalog, locale, workspace.counts),
   figures: figuresOf(catalog, locale, workspace.engagement),
-  name: workspace.name,
+  name: nameForMail(workspace.name, catalog.withheldNames.workspace),
   planned: workspace.planned.map((post) => postLine(catalog, locale, post)),
   plannedMore: moreOf(
     catalog,

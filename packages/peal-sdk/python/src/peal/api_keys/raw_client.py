@@ -32,7 +32,7 @@ class RawApiKeysClient:
         self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[ApiKey]]:
         """
-        Lists the workspace's API keys. Needs apiKey:read.
+        Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
 
         Parameters
         ----------
@@ -124,7 +124,7 @@ class RawApiKeysClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CreatedApiKey]:
         """
-        Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.
+        Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
 
         Parameters
         ----------
@@ -313,7 +313,7 @@ class AsyncRawApiKeysClient:
         self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[ApiKey]]:
         """
-        Lists the workspace's API keys. Needs apiKey:read.
+        Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
 
         Parameters
         ----------
@@ -405,7 +405,7 @@ class AsyncRawApiKeysClient:
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CreatedApiKey]:
         """
-        Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys.
+        Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
 
         Parameters
         ----------

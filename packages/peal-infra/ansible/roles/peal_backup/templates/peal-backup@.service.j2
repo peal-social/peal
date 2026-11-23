@@ -4,11 +4,22 @@
 Description=Back the Peal database up (%i)
 Requires=docker.service
 After=docker.service
+{% if peal_backup_copy | bool %}
+# Then the backup copy (peal-backup-copy.service), once this one succeeded.
+OnSuccess=peal-backup-copy.service
+{% endif %}
 
 [Service]
 Type=oneshot
 # The full and the differential backups are two units: one waits for the
 # other rather than meet pgBackRest's lock and report a failure.
-ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/local/sbin/peal-backup %i
+# A lock held longer than 12 hours (a copy, or another backup, stuck) ends
+# this run in a reported failure rather than wait for ever.
+ExecStart=/usr/bin/flock --wait 43200 /run/peal-backup.lock /usr/local/sbin/peal-backup %i
+# A backup that ends otherwise than in success, in the script or not (flock,
+# a signal), reports its failure; the script's own report may come first.
+ExecStopPost=/bin/sh -c 'test "$$SERVICE_RESULT" = success || exec /usr/local/sbin/peal-backup %i --failed'
+# The report asks the collector for a minute at most (peal_backup_report_*).
+TimeoutStopSec=3min
 Nice=10
 IOSchedulingClass=idle

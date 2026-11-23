@@ -63,7 +63,12 @@ def test_the_check_comes_before_the_release_changes_anything() -> None:
     assert names[2:4] == [FIND, STOP]
     # Then the blog's secrets, and only then the release's first change.
     assert names[4:6] == [
-        "Find whether secrets.env lacks the blog's secrets",
+        "Find whether the server lacks the blog's secrets",
         "Stop before the blog would start without its secrets",
     ]
-    assert names.index("Create the local release folder") == 6
+    # Then the server's role's password.
+    assert names[6:8] == [
+        "Find whether secrets.env lacks the server's database password",
+        "Stop before the server would sign in without its role's password",
+    ]
+    assert names.index("Create the local release folder") == 8

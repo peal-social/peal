@@ -45,11 +45,31 @@ import {
   turnstile,
 } from "./billing.ts";
 import type { BillingHooks } from "./billing.ts";
+import { guardClientRegistration } from "./client-registration.ts";
+import {
+  refuseUnfitSignUpNames,
+  userWithFitName,
+  workspaceWithFitName,
+} from "./display-names.ts";
+import { emailConfirmation } from "./email-confirmation.ts";
+import type { UnclaimedAccountCloser } from "./email-confirmation.ts";
 import {
   guardImpersonatedRequest,
   refuseImpersonatedChanges,
 } from "./impersonation.ts";
 import type { ImpersonationCheck } from "./impersonation.ts";
+import {
+  claimInvitationEmail,
+  claimResentInvitationEmail,
+} from "./invitation-emails.ts";
+import type { InvitationEmailAllowance } from "./invitation-emails.ts";
+import {
+  settleLeavingMemberKeys,
+  settleMemberKeys,
+  sweepLeftMemberKeys,
+  sweepMemberKeys,
+} from "./member-keys.ts";
+import type { MemberKeysSettler } from "./member-keys.ts";
 import {
   apiResourceOf,
   cliClientId,
@@ -61,15 +81,26 @@ import {
 } from "./oauth.ts";
 import { providerAdmission } from "./provider-admission.ts";
 import { guardProviderSignIn } from "./provider-sign-in.ts";
+import { afterPasswordReset, tellTakenBack } from "./reset-confirmation.ts";
 import { refuseRevokedSessions } from "./revoked-sessions.ts";
 import type { AuthConfiguration } from "./settings.ts";
+import {
+  noteSignInCredential,
+  refuseStaleSignIn,
+} from "./sign-in-credential.ts";
 import { offersProviders } from "./sign-in-provider-settings.ts";
 import {
   signInProviderConfigs,
   signInProviderIds,
 } from "./sign-in-providers.ts";
+import { bindSignUpBrowser, renewSignUpBrowser } from "./sign-up-browser.ts";
 import { refuseUnadmittedSignUps } from "./sign-up-gate.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
+import {
+  noteTokenRequest,
+  refuseRenewalAcrossReset,
+  refuseStaleTwoStepChallenge,
+} from "./tokens-not-before.ts";
 import {
   guardTwoStepChanges,
   forgetTrustedBrowsers,
@@ -129,6 +160,8 @@ export interface AuthHooks extends BillingHooks {
    */
   readonly impersonatedRequest: ImpersonationCheck;
   readonly invitation: (link: InvitationLink) => void;
+  /** Awaited before an invitation's email: whether the day has one left. */
+  readonly invitationEmail: InvitationEmailAllowance;
   readonly log: (level: AuthLogLevel, message: string) => void;
   /**
    * Awaited once someone is no longer a member of a workspace (they left
@@ -137,6 +170,13 @@ export interface AuthHooks extends BillingHooks {
    * the rest.
    */
   readonly memberLeft: (workspaceId: string, userId: string) => Promise<void>;
+  /**
+   * Awaited before a member leaves, is removed or has their role changed,
+   * once the route has checked the rest: revokes the API keys they made
+   * in the workspace that their new standing does not cover. A failure
+   * throws, and refuses the change.
+   */
+  readonly memberKeys: MemberKeysSettler;
   readonly resetPassword: (link: AuthLink) => void;
   /** Awaited on each sign-up: whether the server's mode admits the address. */
   readonly signUp: SignUpAdmission;
@@ -152,6 +192,12 @@ export interface AuthHooks extends BillingHooks {
    * The made-up user a known address's sign-up answers makes none.
    */
   readonly userCreated: (created: CreatedUser) => void;
+  /**
+   * Awaited when an unconfirmed account that was used is confirmed by
+   * someone else: closes it through the account's erasure, and says
+   * whether it did (email-confirmation.ts).
+   */
+  readonly unclaimedAccount: UnclaimedAccountCloser;
   readonly verifyEmail: (link: AuthLink) => void;
   /**
    * Awaited once a route that changes a workspace has answered a browser:
@@ -231,6 +277,18 @@ export const signUpMethodOf = (
 
 const localePrefix = (locale: Locale): string =>
   locale === defaultLocale ? "" : `/${locale}`;
+
+/**
+ * The web app's page that confirms an address, in the reader's language:
+ * it posts the token from the browser (email-confirmation.ts), so opening
+ * the link confirms nothing on its own.
+ */
+export const confirmationUrl = (
+  publicUrl: string,
+  locale: Locale,
+  token: string
+): string =>
+  `${publicUrl}${localePrefix(locale)}/verify-email?${new URLSearchParams({ token }).toString()}`;
 
 /** The web app's page that answers an invitation, in the reader's language. */
 export const invitationUrl = (
@@ -401,20 +459,29 @@ const oauthServer = (settings: AuthConfiguration) => {
 // while acting as someone is checked and recorded next, refused or not.
 // Then what two-step verification decides: a workspace's routes for a
 // member it refuses, and turning it on or off, and a sign-up the server's
-// mode does not admit, and a provider's sign-in that asks for more than
-// Peal's pages do.
+// mode does not admit, a provider's sign-in that asks for more than
+// Peal's pages do, and a client registration that asks for back-channel
+// logout.
 const beforeEveryRoute = (hooks: AuthHooks) =>
   createAuthMiddleware(async (ctx) => {
     await refuseRevokedSessions(ctx);
     await guardImpersonatedRequest(ctx, hooks.impersonatedRequest);
     await refuseUnadmittedSignUps(ctx, hooks.signUp);
+    refuseUnfitSignUpNames(ctx);
     guardProviderSignIn(ctx);
+    guardClientRegistration(ctx);
     await refuseImpersonatedChanges(ctx);
     refusePersonalSubscriptions(ctx);
     await keepPayerLeaving(ctx, hooks);
     await refuseLockedOutMembers(ctx, hooks.twoStep);
     await guardTwoStepChanges(ctx, hooks.twoStep);
+    // Once nothing before it refuses the leave.
+    await settleLeavingMemberKeys(ctx, hooks.memberKeys);
     await noteTwoStepSender(ctx);
+    await claimResentInvitationEmail(ctx, hooks.invitationEmail);
+    noteTokenRequest(ctx);
+    await noteSignInCredential(ctx);
+    await refuseStaleTwoStepChallenge(ctx);
   });
 
 // The columns of `auth.account` that hold what a provider issued. Peal needs
@@ -475,14 +542,16 @@ export const makeAuth = ({
 }: AuthDependencies) =>
   betterAuth({
     account: {
-      // A provider reaches an account only through an address both sides
-      // confirmed: the provider's `email_verified`, on each sign-in, and the
-      // account's own (Better Auth's `requireLocalEmailVerified`, on by
-      // default). No provider is trusted without it, an address never
-      // links to another, and a link copies nothing onto the account.
+      // A provider reaches an account only through an address it confirmed
+      // (`email_verified`, on each sign-in). An account that never
+      // confirmed its own is released before the link, so the provider's
+      // sign-in takes it over without its password. No provider is trusted
+      // without it, an address never links to another, and a link copies
+      // nothing onto the account.
       accountLinking: {
         allowDifferentEmails: false,
         enabled: true,
+        requireLocalEmailVerified: false,
         trustedProviders: [],
         updateUserInfoOnLink: false,
       },
@@ -570,6 +639,10 @@ export const makeAuth = ({
       "/oauth2/update-client",
       "/organization/delete",
       "/token",
+      // An address is confirmed by a POST of the web app's page
+      // (`/confirm-email`), never by opening a link: a mail gateway that
+      // opens it would confirm from no browser of the person's.
+      "/verify-email",
     ],
     databaseHooks: {
       account: {
@@ -600,7 +673,19 @@ export const makeAuth = ({
               visitorId: visitorOfSignUp(context, site),
             });
           },
-          before: localeOfProviderSignUp,
+          // The name is one line, bounded, never a link (display-names.ts).
+          before: async (user, context) => {
+            const { data } = await localeOfProviderSignUp(user);
+
+            return { data: userWithFitName(data, context) };
+          },
+        },
+        update: {
+          before: async (user, context) => {
+            await Promise.resolve();
+
+            return { data: userWithFitName(user, context) };
+          },
         },
       },
     },
@@ -621,6 +706,7 @@ export const makeAuth = ({
       }),
       enabled: true,
       minPasswordLength: 12,
+      onPasswordReset: afterPasswordReset,
       requireEmailVerification: settings.requireEmailVerification,
       revokeSessionsOnPasswordReset: true,
       sendResetPassword: async ({ url, user }) => {
@@ -630,22 +716,39 @@ export const makeAuth = ({
       },
     },
     emailVerification: {
-      autoSignInAfterVerification: true,
+      // The link opens the web app's page, which posts its token to
+      // `/confirm-email` (email-confirmation.ts): it signs in only the
+      // browser that signed up (sign-up-browser.ts).
+      autoSignInAfterVerification: false,
       sendOnSignUp: true,
-      sendVerificationEmail: async ({ url, user }) => {
-        hooks.verifyEmail({ locale: localeOf(user), to: user.email, url });
+      sendVerificationEmail: async ({ token, user }) => {
+        const locale = localeOf(user);
+
+        hooks.verifyEmail({
+          locale,
+          to: user.email,
+          url: confirmationUrl(settings.publicUrl, locale, token),
+        });
 
         await Promise.resolve();
       },
     },
     hooks: {
       after: createAuthMiddleware(async (ctx) => {
+        // Before the activity log, which names the keys it revoked.
+        await sweepLeftMemberKeys(ctx, hooks);
         await recordWorkspaceChange(ctx, hooks.workspaceChange);
         await forgetTrustedBrowsers(ctx);
         await tellTwoStepChange(ctx, hooks.twoStepChanged);
         await followOwnersAfterLeaving(ctx, hooks);
         await forgetLeavingMember(ctx, hooks);
         expireVisitorCookie(ctx, site);
+        await bindSignUpBrowser(ctx);
+        await refuseStaleSignIn(ctx);
+        await renewSignUpBrowser(ctx);
+        await refuseRenewalAcrossReset(ctx);
+
+        return await tellTakenBack(ctx);
       }),
       before: beforeEveryRoute(hooks),
     },
@@ -680,10 +783,20 @@ export const makeAuth = ({
           // bills or not: a payer who is no longer an owner pays for it no
           // more.
           afterRemoveMember: async ({ member }) => {
+            await sweepMemberKeys(hooks, {
+              role: null,
+              userId: member.userId,
+              workspaceId: member.organizationId,
+            });
             await hooks.ownersChanged(member.organizationId);
             await hooks.memberLeft(member.organizationId, member.userId);
           },
           afterUpdateMemberRole: async ({ member }) => {
+            await sweepMemberKeys(hooks, {
+              role: member.role,
+              userId: member.userId,
+              workspaceId: member.organizationId,
+            });
             await hooks.ownersChanged(member.organizationId);
           },
           // An invitation is accepted, or a member added, only while the
@@ -701,11 +814,16 @@ export const makeAuth = ({
           },
           // A workspace's slug names its pages in the web app's addresses:
           // one the app can route, when it is made and when it changes.
+          // Its name, as a person's, is one line, never a link.
           beforeCreateOrganization: async ({ organization: workspace }) => {
             await checkNewSlug(workspace.slug);
+
+            return { data: { name: workspaceWithFitName(workspace).name } };
           },
           beforeUpdateOrganization: async ({ organization: workspace }) => {
             await checkChangedSlug(workspace);
+
+            return { data: workspaceWithFitName(workspace) };
           },
           beforeCreateInvitation: async ({ invitation }) => {
             await oneRole(invitation.role);
@@ -714,6 +832,12 @@ export const makeAuth = ({
               invitation.organizationId,
               Option.some(invitation.email)
             );
+            // One of the day's invitation emails (invitation-emails.ts).
+            await claimInvitationEmail(hooks.invitationEmail, {
+              email: invitation.email,
+              inviterId: invitation.inviterId,
+              workspaceId: invitation.organizationId,
+            });
           },
           // A workspace's API keys go with it: they refer to it by id alone,
           // with no foreign key, and would otherwise outlive it. They go
@@ -735,11 +859,18 @@ export const makeAuth = ({
           },
           // The workspace's payer stays one of its owners until they hand
           // it to another payer.
+          // Then the API keys they made that their new standing does not
+          // cover go, before it changes (member-keys.ts).
           beforeRemoveMember: async ({ member }) => {
             await keepPayer(hooks, {
               organizationId: member.organizationId,
               role: Option.none(),
               userId: member.userId,
+            });
+            await settleMemberKeys(hooks.memberKeys, {
+              role: null,
+              userId: member.userId,
+              workspaceId: member.organizationId,
             });
           },
           beforeUpdateMemberRole: async ({ member, newRole }) => {
@@ -748,6 +879,11 @@ export const makeAuth = ({
               organizationId: member.organizationId,
               role: Option.some(newRole.split(",").map((role) => role.trim())),
               userId: member.userId,
+            });
+            await settleMemberKeys(hooks.memberKeys, {
+              role: newRole,
+              userId: member.userId,
+              workspaceId: member.organizationId,
             });
           },
         },
@@ -832,6 +968,8 @@ export const makeAuth = ({
         interval: "5s",
         verificationUri: oauthPages.device,
       }),
+      // `/confirm-email`, which confirms an address from the web app's page.
+      emailConfirmation(hooks.unclaimedAccount),
       ...Option.match(settings.captcha, {
         onNone: () => [],
         onSome: (captcha) => [turnstile(captcha)],

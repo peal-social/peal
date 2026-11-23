@@ -180,6 +180,109 @@ export const withResults = (
   );
 };
 
+// How much of the budget a message takes: its text, its calls' names and
+// parameters, its tools' answers, as the provider is sent them.
+const sizeOf = (message: Prompt.Message): number => {
+  if (message.role === "system") {
+    return message.content.length;
+  }
+
+  let size = 0;
+
+  for (const part of message.content) {
+    if (part.type === "text") {
+      size += part.text.length;
+    } else if (part.type === "tool-call") {
+      size += part.name.length + JSON.stringify(part.params).length;
+    } else if (part.type === "tool-result") {
+      size += part.name.length + JSON.stringify(part.result).length;
+    }
+  }
+
+  return size;
+};
+
+const total = (messages: readonly Prompt.Message[]): number =>
+  messages.reduce((sum, message) => sum + sizeOf(message), 0);
+
+// Messages split where each group starts: a group is never cut.
+const groupsFrom = (
+  messages: readonly Prompt.Message[],
+  starts: (message: Prompt.Message) => boolean
+): Prompt.Message[][] => {
+  const groups: Prompt.Message[][] = [];
+
+  for (const message of messages) {
+    const last = groups.at(-1);
+
+    if (last === undefined || starts(message)) {
+      groups.push([message]);
+    } else {
+      last.push(message);
+    }
+  }
+
+  return groups;
+};
+
+// The newest groups that fit in what is left, oldest first, the last one
+// always: it is what the round answers.
+const newestWithin = (
+  groups: readonly (readonly Prompt.Message[])[],
+  budget: number
+): readonly Prompt.Message[] => {
+  const kept: (readonly Prompt.Message[])[] = [];
+  let left = budget;
+
+  for (let index = groups.length - 1; index >= 0; index -= 1) {
+    const group = groups[index] ?? [];
+    const size = total(group);
+
+    if (kept.length > 0 && size > left) {
+      break;
+    }
+
+    kept.unshift(group);
+    left -= size;
+  }
+
+  return kept.flat();
+};
+
+/**
+ * What a round sends of the history, within `budget` (`maxHistoryLength`):
+ * all of it when it fits; else its latest turns, each from a person's
+ * message, the oldest dropped first. The person's last message and what
+ * came of it are always sent; when they alone pass the budget, the
+ * earliest rounds after the message go, each round's calls with their
+ * answers, never the last round, whose calls may wait for the person's
+ * approval. The chat keeps its whole history: only what is sent is cut.
+ */
+export const withinBudget = (
+  history: Prompt.Prompt,
+  budget: number
+): Prompt.Prompt => {
+  const messages = history.content;
+
+  if (total(messages) <= budget) {
+    return history;
+  }
+
+  const turns = groupsFrom(messages, ({ role }) => role === "user");
+  const [message, ...rounds] = turns.at(-1) ?? [];
+  const last = message === undefined ? 0 : sizeOf(message);
+
+  // The last turn passes the budget alone: its message, then its rounds,
+  // each an answer of the model and the tools' answers after it.
+  if (total(turns.at(-1) ?? []) > budget && message !== undefined) {
+    const own = groupsFrom(rounds, ({ role }) => role === "assistant");
+
+    return Prompt.fromMessages([message, ...newestWithin(own, budget - last)]);
+  }
+
+  return Prompt.fromMessages([...newestWithin(turns, budget)]);
+};
+
 /** The calls of the history's last round that have no answer yet. */
 export const unansweredCalls = (
   history: Prompt.Prompt

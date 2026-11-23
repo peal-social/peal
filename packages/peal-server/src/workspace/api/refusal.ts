@@ -4,8 +4,8 @@ import type { Member, Permission } from "peal-contract";
 
 import { setAnswerHeader } from "#shared/api/answer-headers.ts";
 import {
-  commandLineOnlyPermissions,
   personOnlyPermissions,
+  withheldWhateverScopes,
 } from "#workspace/domain/oauth-grant.ts";
 import type { WorkspaceScope } from "#workspace/domain/oauth-grant.ts";
 
@@ -43,13 +43,17 @@ const withoutPermission = (member: Member, permission: Permission) => {
   // scopes it holds: the person does it, or Peal's command line may.
   if (
     principal.oauth !== undefined &&
-    commandLineOnlyPermissions.has(permission)
+    withheldWhateverScopes(
+      {
+        clientId: principal.oauth.clientId,
+        workspaceId: Option.fromNullOr(principal.oauth.workspaceId),
+      },
+      permission
+    )
   ) {
-    return `No application connected over OAuth does this (permission ${permission}), whatever its scopes: the person does it in the web app, or with Peal's command line (peal login).`;
-  }
-
-  if (principal.oauth !== undefined && personOnlyPermissions.has(permission)) {
-    return `No application connected over OAuth does this (permission ${permission}), whatever its scopes: the person does it themselves, in the web app.`;
+    return personOnlyPermissions.has(permission)
+      ? `No application connected over OAuth does this (permission ${permission}), whatever its scopes: the person does it themselves, in the web app.`
+      : `No application connected over OAuth does this (permission ${permission}), whatever its scopes: the person does it in the web app, or with Peal's command line (peal login).`;
   }
 
   return principal.impersonatedBy === null

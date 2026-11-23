@@ -155,14 +155,33 @@ and no socket, for tests.
   version alike.
 - Before any route runs, `ApiAnswersLive` answers 400 (`BadRequest`) to a
   path holding an encoded slash or backslash (`%2F`, `%5C`, any case), a
-  backslash, or a dot segment, raw or encoded (`isRefusedPath`,
-  `peal-contract/path-spelling`; the query is not read). cloudflared
-  decodes and resolves a path before it picks the rule that says whether
-  Access guards it, and forwards it as sent; the router keeps `%2F` inside a
-  segment, so `/api/admin/users/x%2F..%2F..%2Fapi%2Fhealth` would be open
-  to one and the staff console to the other. Never give a path parameter a
+  backslash, a semicolon, raw or encoded (`%3B`), or a dot segment, raw or
+  encoded (`isRefusedPath`, `peal-contract/path-spelling`; the query is not
+  read). cloudflared decodes and resolves a path before it picks the rule
+  that says whether Access guards it, dropping what follows a `;` in a
+  segment, and forwards it as sent; the router keeps `%2F` inside a
+  segment, so `/api/admin/users/x%2F..%2F..%2Fapi%2Fhealth` (or
+  `/api/admin/users/..;/..;/api/health`) would be open to one and the
+  staff console to the other
+  (`packages/peal-infra/ansible/tests/test_cloudflared.py` models it). Never give a path parameter a
   value that needs one of them: send it in the query or the body
   (`test/app/path-spellings.test.ts`).
+- Every request's body is held to its route's limit (`bodyLimitFor`,
+  `src/app/body-limits.ts`): `contentBodyLimit` (8 MiB) for posts,
+  articles and the MCP endpoint, `defaultBodyLimit` (1 MiB) for the rest,
+  Better Auth's and the routes without credentials included.
+  `ApiAnswersLive` answers 413 to a body declared larger before any route
+  runs (Better Auth reads the web request itself, past `MaxBodySize`: a
+  body it would read in chunks, with no length, is read first under the
+  limit and handed over as a request of those same bytes, `boundedBody`
+  in `workspace/infrastructure/auth/`, so Stripe's events keep what they
+  verify), and provides `HttpIncomingMessage.MaxBodySize` for the bodies read, which
+  fail their read past it (413, in the envelope; the MCP endpoint's as a
+  JSON-RPC error). A route that reads less sets its own around its read
+  (the error reports, Stripe's meter errors, Meta's events, the review
+  page); one that needs more gets a named limit there, never a larger
+  default. Bun stops reading past `largestBodyLimit`
+  (`maxRequestBodySize`). Media never comes through the server.
 - Every error of the API is one envelope: its own fields, then `code`,
   `message` and `requestId` (`errorEnvelope`, which every contract error
   spreads first; `enveloped` in `src/app/error-envelope.ts` fills them). A
@@ -247,7 +266,12 @@ and no socket, for tests.
   sends again. `peal.platform_events` counts each by `app` and
   `outcome`; refusals are logged once a minute a kind at most
   (`refusalLogEvery`). `hub.verify_token` is a redacted query name
-  (`redactedQueryNames`). Never log a body or a signature
+  (`redactedQueryNames`). A path whose last segment is a token (the
+  digest's unsubscribe link, a password reset's) is never traced, and
+  the request log writes it with `<redacted>` in its place
+  (`secretPathPrefixes` and `SecretPathsLive`,
+  `src/app/untraced-paths.ts`): a new route that takes one joins them,
+  though a token belongs in a header or the body. Never log a body or a signature
   (`test/app/secrets-in-logs.test.ts`); the engagement guide says what an
   event does.
 - `GET /api/health` is liveness: keep it free of the database.

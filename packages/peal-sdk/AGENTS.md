@@ -97,8 +97,9 @@
   tag `v<version>` on `peal-social/peal-php` for Packagist. That repository
   is a read-only copy of `packages/peal-sdk/php` (`git subtree split`), which
   `sdk-php-mirror.yml` updates from `main` with the deploy key in
-  `PHP_MIRROR_DEPLOY_KEY` (`.github/scripts/push-php-mirror.sh`); never
-  commit to it.
+  `PHP_MIRROR_DEPLOY_KEY` (`.github/scripts/push-php-mirror.sh`), a secret
+  of the `sdk-release` environment alone, whose deployment branches name
+  `main` beside the `sdk-*` tags; never commit to it.
 - `sdk:test` (after `sdk:build`, uncached) runs each SDK's smoke test, a file
   of ours in its folder (`test/smoke.mjs`, `smoke.py`, `smoke_test.go`,
   `smoke.rb`, `src/test/java/…/SmokeTest.java`, `smoke.php`, `smoke/`,

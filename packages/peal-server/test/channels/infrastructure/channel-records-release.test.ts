@@ -20,7 +20,10 @@ import type { DepartureOutcome } from "#channels/application/channel-departures.
 import { ChannelRecords } from "#channels/application/channel-records.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { encryptTokens } from "#channels/application/channel-tokens.ts";
+import { PlatformAuthorizers } from "#channels/application/platform-authorizer.ts";
+import type { PlatformAuthorizer } from "#channels/application/platform-authorizer.ts";
 import type { Channel } from "#channels/domain/channel.ts";
+import { tokenPolicies } from "#channels/domain/token-policy.ts";
 import {
   channelsLeftSubscribed,
   DrizzleChannelRecords,
@@ -29,6 +32,7 @@ import {
 } from "#channels/infrastructure/drizzle-channel-records.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
+import { authorizersOf } from "#test/channels/connect-support.ts";
 import {
   DatabaseTest,
   freshChannel,
@@ -44,12 +48,14 @@ import {
 // by the end is logged by its id, its platform and its account's id there
 // (a Page's, an Instagram account's), and counted.
 
-// The departures begun, and those that ended.
+// The departures begun, and those that ended, and the tokens a platform
+// was asked to revoke.
 class Departures extends Context.Service<
   Departures,
   {
     readonly started: Ref.Ref<readonly string[]>;
     readonly finished: Ref.Ref<readonly string[]>;
+    readonly revoked: Ref.Ref<readonly string[]>;
   }
 >()("test/Departures") {}
 
@@ -85,13 +91,56 @@ const recordedDepartures = (platform: Platform) =>
     })
   );
 
+// TikTok, which takes a revoke, answering as `platform` says.
+const revokingTikTok = (platform: Platform) =>
+  Layer.effect(
+    PlatformAuthorizers,
+    Effect.gen(function* RevokingTikTok() {
+      const { revoked } = yield* Departures;
+
+      const answer: Effect.Effect<void> = {
+        answering: Effect.void,
+        refusing: Effect.void,
+        silent: Effect.never,
+        slow: Effect.sleep("15 seconds"),
+      }[platform];
+
+      const tiktok: PlatformAuthorizer = {
+        begin: () => Effect.die("TikTok is never asked to connect"),
+        complete: () => Effect.die("TikTok is never asked to connect"),
+        platform: "tiktok",
+        policy: tokenPolicies.tiktok,
+        refresh: () => Effect.die("TikTok is never asked to refresh"),
+        revoke: (tokens) =>
+          answer.pipe(
+            Effect.andThen(
+              Ref.update(revoked, (all) => [
+                ...all,
+                Redacted.value(tokens.accessToken),
+              ])
+            )
+          ),
+      };
+
+      // Google's: one grant for every location of a user, never revoked.
+      const google: PlatformAuthorizer = {
+        ...tiktok,
+        platform: "googleBusiness",
+        policy: tokenPolicies.googleBusiness,
+      };
+
+      return authorizersOf(tiktok, google);
+    })
+  );
+
 const recordsTest = (platform: Platform) =>
   DrizzleChannelRecords.pipe(
     Layer.provideMerge(
       Layer.mergeAll(
         DrizzleChannelRepository,
         TokenCipherTest,
-        recordedDepartures(platform)
+        recordedDepartures(platform),
+        revokingTikTok(platform)
       )
     ),
     Layer.provideMerge(
@@ -99,6 +148,7 @@ const recordsTest = (platform: Platform) =>
         Departures,
         Effect.all({
           finished: Ref.make<readonly string[]>([]),
+          revoked: Ref.make<readonly string[]>([]),
           started: Ref.make<readonly string[]>([]),
         })
       )
@@ -109,9 +159,10 @@ const recordsTest = (platform: Platform) =>
 // A channel of the workspace with a token of its own.
 const connected = Effect.fn("connected")(function* connected(
   workspaceId: WorkspaceId,
-  platform: "facebook" | "mastodon"
+  platform: "facebook" | "googleBusiness" | "mastodon" | "tiktok",
+  accountId?: string
 ) {
-  const channel = yield* freshChannel(workspaceId, { platform });
+  const channel = yield* freshChannel(workspaceId, { accountId, platform });
 
   const credentials = yield* encryptTokens(
     {
@@ -224,6 +275,44 @@ layer(recordsTest("answering"))("workspaces about to be erased", (it) => {
             `${page.id}:synthetic-token-${page.id}:3`,
             `${status.id}:synthetic-token-${status.id}:3`,
             `${theirs.id}:synthetic-token-${theirs.id}:3`,
+          ].toSorted()
+        );
+      })
+  );
+
+  it.effect(
+    "have each platform that takes it revoke the grant, unless a channel staying shares the account",
+    () =>
+      Effect.gen(function* revokes() {
+        const workspaceId = yield* freshWorkspace;
+        const otherId = yield* freshWorkspace;
+        const keeperId = yield* freshWorkspace;
+        const alone = yield* connected(workspaceId, "tiktok");
+
+        // A location whose grant the user's other locations share.
+        yield* connected(workspaceId, "googleBusiness");
+        const shared = yield* connected(workspaceId, "tiktok");
+        const bothLeaving = yield* connected(workspaceId, "tiktok");
+
+        // The same account, in a workspace that stays and in one that goes.
+        yield* connected(keeperId, "tiktok", shared.accountId);
+
+        const alsoLeaving = yield* connected(
+          otherId,
+          "tiktok",
+          bothLeaving.accountId
+        );
+
+        yield* ChannelRecords.use((records) =>
+          records.releaseWorkspaces([workspaceId, otherId])
+        );
+
+        assert.deepStrictEqual(
+          (yield* Departures.use(({ revoked }) => Ref.get(revoked))).toSorted(),
+          [
+            `synthetic-token-${alone.id}`,
+            `synthetic-token-${bothLeaving.id}`,
+            `synthetic-token-${alsoLeaving.id}`,
           ].toSorted()
         );
       })

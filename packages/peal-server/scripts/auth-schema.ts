@@ -46,8 +46,11 @@ const auth = makeAuth({
       await Promise.resolve({ _tag: "start", trialDays: null } as const),
     impersonatedRequest: async () => await Promise.resolve(true),
     invitation: ignore,
+    invitationEmail: async () => await Promise.resolve(true),
     log: ignore,
     memberAllowance: async () => await Promise.resolve(Option.none()),
+    memberKeys: async () =>
+      await Promise.resolve({ apiKeyIds: [], partnerKeyIds: [] }),
     memberLeft: nothing,
     memberUpgrade: async () =>
       await Promise.resolve({
@@ -66,6 +69,7 @@ const auth = makeAuth({
       requiredBy: async () => await Promise.resolve([]),
     },
     twoStepChanged: ignore,
+    unclaimedAccount: async () => await Promise.resolve(false),
     userCreated: ignore,
     verifyEmail: ignore,
     workspaceChange: nothing,

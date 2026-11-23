@@ -63,6 +63,7 @@ const workspaceKey = (
 ) =>
   new ApiKey({
     createdAt: now,
+    createdBy: Option.none(),
     expiresAt,
     id: apiKeyId,
     name: "Synthetic key",
@@ -73,6 +74,7 @@ const workspaceKey = (
 
 const partnerKey = new PartnerKey({
   createdAt: now,
+  createdBy: Option.none(),
   expiresAt: Option.none(),
   id: partnerKeyId,
   name: "Synthetic partner key",
@@ -137,6 +139,7 @@ const ActorsNowTest = ActorsNow.layer.pipe(
           purgeUsageBefore: fail("purgeUsageBefore"),
           recordUsage: fail("recordUsage"),
           removeKey: fail("removeKey"),
+          removeKeysMadeBy: fail("removeKeysMadeBy"),
           save: fail("save"),
           usage: fail("usage"),
           usageBetween: fail("usageBetween"),

@@ -67,8 +67,8 @@ export class WorkspacePeople extends Context.Service<
     ) => Effect.Effect<readonly Invitation[], DirectoryUnavailable>;
     /**
      * Removes these users from the workspace's members, and says how many
-     * were: the member alone goes, as when Better Auth removes one. What
-     * they wrote stays.
+     * were: the member goes with the API keys they made there, as when
+     * Better Auth removes one. What they wrote stays.
      */
     readonly removeMembers: (
       workspaceId: WorkspaceId,

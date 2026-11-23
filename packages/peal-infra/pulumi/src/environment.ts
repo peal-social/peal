@@ -110,6 +110,29 @@ export interface AccessPolicies {
 
 type Kind = "media" | "backups" | "blog";
 
+/**
+ * The backup copy (README.md, "The backup copy"): how long the bucket lock
+ * keeps every object from an overwrite or a deletion, whoever holds a key,
+ * the server's included; and when its lifecycle rule deletes an object,
+ * longer than the lock (which takes precedence anyway). The Ansible
+ * project's peal_backup role copies a file again once its copy is 21 days
+ * old (peal_backup_copy_refresh_days), and writes a new index at least as
+ * often: every file the newest index names has a copy the store wrote
+ * less than 21 days before it, which a 35-day lock keeps 14 days more at
+ * least. The lifecycle (7 weeks) lets a file's copy outlive the refresh
+ * that replaces it; each file is held in two or three copies at most.
+ */
+export const backupCopyLockDays = 35;
+export const backupCopyRetentionDays = 49;
+
+/** The backup copy's bucket, its lock and lifecycle rules, and its key. */
+export interface BackupCopy {
+  readonly bucket: cloudflare.R2Bucket;
+  readonly key: BucketKey;
+  readonly lifecycle: cloudflare.R2BucketLifecycle;
+  readonly lock: cloudflare.R2BucketLock;
+}
+
 type Audiences = Readonly<Record<"grafana" | "ssh", pulumi.Output<string>>>;
 
 /**
@@ -136,6 +159,8 @@ export type AccessAud =
 export class PealEnvironment extends pulumi.ComponentResource {
   readonly accessAud: AccessAud;
   readonly applications: readonly cloudflare.ZeroTrustAccessApplication[];
+  // With the backupCopy setting alone (a paid resource).
+  readonly backupCopy: BackupCopy | undefined;
   readonly buckets: Readonly<Record<Kind, cloudflare.R2Bucket>>;
   readonly blogCors: cloudflare.R2BucketCors;
   readonly blogLifecycle: cloudflare.R2BucketLifecycle;
@@ -409,8 +434,13 @@ export class PealEnvironment extends pulumi.ComponentResource {
     };
 
     // An R2 key is an account token: its id is the access key id, the
-    // SHA-256 of its value the secret access key.
-    const key = (kind: Kind): BucketKey => {
+    // SHA-256 of its value the secret access key. It reads, writes and
+    // deletes objects of its bucket alone, and cannot change the bucket's
+    // settings, its lock and lifecycle rules included.
+    const keyOf = (
+      kind: Kind | "backup-copy",
+      target: cloudflare.R2Bucket
+    ): BucketKey => {
       const token = new cloudflare.AccountToken(
         `key-${kind}`,
         {
@@ -427,7 +457,7 @@ export class PealEnvironment extends pulumi.ComponentResource {
             },
           ],
         },
-        { dependsOn: [this.buckets[kind]], parent: this }
+        { dependsOn: [target], parent: this }
       );
 
       return {
@@ -441,9 +471,9 @@ export class PealEnvironment extends pulumi.ComponentResource {
     };
 
     this.keys = {
-      backups: key("backups"),
-      blog: key("blog"),
-      media: key("media"),
+      backups: keyOf("backups", this.buckets.backups),
+      blog: keyOf("blog", this.buckets.blog),
+      media: keyOf("media", this.buckets.media),
     };
 
     const lifecycle = (
@@ -512,6 +542,72 @@ export class PealEnvironment extends pulumi.ComponentResource {
       },
       { parent: this }
     );
+
+    // The backup copy: a private bucket of its own in the same
+    // jurisdiction, where the server copies the backups, each run under a
+    // prefix of its own so no key is written twice. The lock keeps every
+    // object for backupCopyLockDays, whoever holds a key: the server's
+    // copy key reads and writes the bucket, and cannot delete what is
+    // locked, nor change the lock. The lifecycle rule then deletes what is
+    // older than backupCopyRetentionDays, and the parts of an upload left
+    // unfinished.
+    if (settings.backupCopy === "on") {
+      const copyBucket = new cloudflare.R2Bucket(
+        "bucket-backup-copy",
+        { accountId, jurisdiction: "eu", name: `peal-${env}-backup-copy` },
+        { parent: this, protect: true, retainOnDelete: true }
+      );
+
+      this.backupCopy = {
+        bucket: copyBucket,
+        key: keyOf("backup-copy", copyBucket),
+        lifecycle: new cloudflare.R2BucketLifecycle(
+          "lifecycle-backup-copy",
+          {
+            accountId,
+            bucketName: copyBucket.name,
+            jurisdiction: "eu",
+            rules: [
+              { ...abortIncompleteUploads(1), id: "abort-incomplete-uploads" },
+              {
+                conditions: { prefix: "" },
+                deleteObjectsTransition: {
+                  condition: {
+                    maxAge: backupCopyRetentionDays * 86_400,
+                    type: "Age",
+                  },
+                },
+                enabled: true,
+                id: "expire-copies",
+              },
+            ],
+          },
+          { parent: this }
+        ),
+        lock: new cloudflare.R2BucketLock(
+          "lock-backup-copy",
+          {
+            accountId,
+            bucketName: copyBucket.name,
+            jurisdiction: "eu",
+            rules: [
+              {
+                condition: {
+                  maxAgeSeconds: backupCopyLockDays * 86_400,
+                  type: "Age",
+                },
+                enabled: true,
+                id: "lock-every-copy",
+                prefix: "",
+              },
+            ],
+          },
+          { parent: this, protect: true }
+        ),
+      };
+    } else {
+      this.backupCopy = undefined;
+    }
 
     this.r2Endpoint = `https://${accountId}.eu.r2.cloudflarestorage.com`;
     this.registerOutputs({

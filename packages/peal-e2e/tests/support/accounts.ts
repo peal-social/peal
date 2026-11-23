@@ -25,9 +25,29 @@ export const confirmedAccount = async (
     throw new Error(`Signing up answered ${created.status}`);
   }
 
-  const link = await emailedLink(account.email, "Confirm your email for Peal");
+  // The link keeps the password only in the browser that signed up: its
+  // cookies go with it.
+  const cookie = created.headers
+    .getSetCookie()
+    .map((header) => header.split(";")[0] ?? "")
+    .filter((pair) => !pair.endsWith("="))
+    .join("; ");
 
-  await fetch(link, { redirect: "manual" });
+  // The link opens the confirmation page, which posts its token: opening
+  // it alone confirms nothing.
+  const link = new URL(
+    await emailedLink(account.email, "Confirm your email for Peal")
+  );
+
+  const confirmed = await fetch(`${baseUrl}/api/auth/confirm-email`, {
+    body: JSON.stringify({ token: link.searchParams.get("token") ?? "" }),
+    headers: { "content-type": "application/json", cookie, origin: baseUrl },
+    method: "POST",
+  });
+
+  if (!confirmed.ok) {
+    throw new Error(`Confirming answered ${confirmed.status}`);
+  }
 };
 
 /**

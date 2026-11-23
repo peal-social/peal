@@ -28,6 +28,8 @@ import social.peal.core.ObjectMappers;
 public final class PartnerKey {
     private final String createdAt;
 
+    private final Optional<ApiKeyMaker> createdBy;
+
     private final Optional<String> expiresAt;
 
     private final String id;
@@ -44,6 +46,7 @@ public final class PartnerKey {
 
     private PartnerKey(
             String createdAt,
+            Optional<ApiKeyMaker> createdBy,
             Optional<String> expiresAt,
             String id,
             String name,
@@ -52,6 +55,7 @@ public final class PartnerKey {
             String start,
             Map<String, Object> additionalProperties) {
         this.createdAt = createdAt;
+        this.createdBy = createdBy;
         this.expiresAt = expiresAt;
         this.id = id;
         this.name = name;
@@ -64,6 +68,14 @@ public final class PartnerKey {
     @JsonProperty("createdAt")
     public String getCreatedAt() {
         return createdAt;
+    }
+
+    @JsonIgnore
+    public Optional<ApiKeyMaker> getCreatedBy() {
+        if (createdBy == null) {
+            return Optional.empty();
+        }
+        return createdBy;
     }
 
     @JsonIgnore
@@ -100,6 +112,12 @@ public final class PartnerKey {
     }
 
     @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
+    @JsonProperty("createdBy")
+    private Optional<ApiKeyMaker> _getCreatedBy() {
+        return createdBy;
+    }
+
+    @JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = NullableNonemptyFilter.class)
     @JsonProperty("expiresAt")
     private Optional<String> _getExpiresAt() {
         return expiresAt;
@@ -118,6 +136,7 @@ public final class PartnerKey {
 
     private boolean equalTo(PartnerKey other) {
         return createdAt.equals(other.createdAt)
+                && createdBy.equals(other.createdBy)
                 && expiresAt.equals(other.expiresAt)
                 && id.equals(other.id)
                 && name.equals(other.name)
@@ -129,7 +148,14 @@ public final class PartnerKey {
     @java.lang.Override
     public int hashCode() {
         return Objects.hash(
-                this.createdAt, this.expiresAt, this.id, this.name, this.permissions, this.scopes, this.start);
+                this.createdAt,
+                this.createdBy,
+                this.expiresAt,
+                this.id,
+                this.name,
+                this.permissions,
+                this.scopes,
+                this.start);
     }
 
     @java.lang.Override
@@ -166,6 +192,12 @@ public final class PartnerKey {
 
         _FinalStage additionalProperties(Map<String, Object> additionalProperties);
 
+        _FinalStage createdBy(Optional<ApiKeyMaker> createdBy);
+
+        _FinalStage createdBy(ApiKeyMaker createdBy);
+
+        _FinalStage createdBy(Nullable<ApiKeyMaker> createdBy);
+
         _FinalStage expiresAt(Optional<String> expiresAt);
 
         _FinalStage expiresAt(String expiresAt);
@@ -201,6 +233,8 @@ public final class PartnerKey {
 
         private Optional<String> expiresAt = Optional.empty();
 
+        private Optional<ApiKeyMaker> createdBy = Optional.empty();
+
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
@@ -208,6 +242,7 @@ public final class PartnerKey {
         @java.lang.Override
         public Builder from(PartnerKey other) {
             createdAt(other.getCreatedAt());
+            createdBy(other.getCreatedBy());
             expiresAt(other.getExpiresAt());
             id(other.getId());
             name(other.getName());
@@ -319,13 +354,40 @@ public final class PartnerKey {
         }
 
         @java.lang.Override
+        public _FinalStage createdBy(Nullable<ApiKeyMaker> createdBy) {
+            if (createdBy.isNull()) {
+                this.createdBy = null;
+            } else if (createdBy.isEmpty()) {
+                this.createdBy = Optional.empty();
+            } else {
+                this.createdBy = Optional.of(createdBy.get());
+            }
+            return this;
+        }
+
+        @java.lang.Override
+        public _FinalStage createdBy(ApiKeyMaker createdBy) {
+            this.createdBy = Optional.ofNullable(createdBy);
+            return this;
+        }
+
+        @java.lang.Override
+        @JsonSetter(value = "createdBy", nulls = Nulls.SKIP)
+        public _FinalStage createdBy(Optional<ApiKeyMaker> createdBy) {
+            this.createdBy = createdBy;
+            return this;
+        }
+
+        @java.lang.Override
         public PartnerKey build() {
-            return new PartnerKey(createdAt, expiresAt, id, name, permissions, scopes, start, additionalProperties);
+            return new PartnerKey(
+                    createdAt, createdBy, expiresAt, id, name, permissions, scopes, start, additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
             if (key.equalsIgnoreCase("createdAt")
+                    || key.equalsIgnoreCase("createdBy")
                     || key.equalsIgnoreCase("expiresAt")
                     || key.equalsIgnoreCase("id")
                     || key.equalsIgnoreCase("name")

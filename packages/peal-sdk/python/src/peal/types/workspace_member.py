@@ -6,9 +6,13 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from .api_keys_at_stake import ApiKeysAtStake
 
 
 class WorkspaceMember(UniversalBaseModel):
+    api_keys_at_stake: typing_extensions.Annotated[
+        typing.Optional[ApiKeysAtStake], FieldMetadata(alias="apiKeysAtStake"), pydantic.Field(alias="apiKeysAtStake")
+    ] = None
     email: str
     joined_at: typing_extensions.Annotated[str, FieldMetadata(alias="joinedAt"), pydantic.Field(alias="joinedAt")]
     name: str

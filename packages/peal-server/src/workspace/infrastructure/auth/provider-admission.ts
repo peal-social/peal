@@ -5,6 +5,7 @@ import type {
 import { getOAuthState } from "better-auth/api";
 import { Option, Schema } from "effect";
 
+import { releaseUnconfirmedAccount } from "./sign-up-browser.ts";
 import type { SignUpAdmission } from "./sign-up-gate.ts";
 
 /**
@@ -28,6 +29,12 @@ export const providerRefusalCodes = [
   "sign_up_by_invitation",
   // The account is banned, or could not be read.
   "account_banned",
+  // An account someone made with the address, never confirmed and used
+  // (a server that does not ask to confirm addresses lets it in): never
+  // joined nor changed by a provider. Its maker signs in with its
+  // password and confirms it; anyone else may have it closed from a
+  // confirmation link, in so many words.
+  "account_in_use",
 ] as const;
 
 export type ProviderRefusalCode = (typeof providerRefusalCodes)[number];
@@ -183,7 +190,6 @@ const InvitationStateSchema = Schema.Struct({ invitation: Schema.String });
 
 const decodeInvitationState = Schema.decodeUnknownOption(InvitationStateSchema);
 
-/** The admission, as Better Auth's `user.validateUserInfo`. */
 // What Better Auth hands `user.validateUserInfo`: the provider's profile
 // is the raw ID token claims sign-in-providers.ts kept.
 interface ValidatedUser {
@@ -221,10 +227,19 @@ const provisioned = ({ source, user }: ValidatedUser): ProvisionedUser => ({
   user,
 });
 
+/**
+ * The admission, as Better Auth's `user.validateUserInfo`. A provider's
+ * identity it lets link to an account that never confirmed its address
+ * confirms and releases that account first (`releaseUnconfirmedAccount`):
+ * its password and sessions go, and the provider's sign-in takes it over.
+ * One that was used before (a server that does not ask to confirm
+ * addresses lets it in) is left as it is, and the sign-in refused
+ * (`account_in_use`): a provider's sign-in never erases anything.
+ */
 export const providerAdmission =
   (signUp: SignUpAdmission) =>
-  async (data: ValidatedUser, ctx: GenericEndpointContext) =>
-    await admitProviderUser(provisioned(data), {
+  async (data: ValidatedUser, ctx: GenericEndpointContext) => {
+    const refused = await admitProviderUser(provisioned(data), {
       // From the database, never a session's cached user: a flag turned on
       // a moment ago holds at once.
       account: async (userId) => {
@@ -256,3 +271,18 @@ export const providerAdmission =
       now: () => new Date(),
       signUp,
     });
+
+    const { id } = data.user;
+
+    if (
+      refused === undefined &&
+      data.source.method === "oauth" &&
+      data.source.action === "link-account" &&
+      id !== undefined &&
+      (await releaseUnconfirmedAccount(ctx, id)) === "used"
+    ) {
+      return refusal("account_in_use");
+    }
+
+    return refused;
+  };

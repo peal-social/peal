@@ -752,8 +752,12 @@
   only when Better Auth opens a Checkout Session: for a workspace with an
   active or trialing subscription, which it would change in place (Stripe's
   API or a portal `subscription_update_confirm`), the plugin's before hook
-  on `/subscription/upgrade` (`orderedChange`) takes the order first, refuses
-  a request naming a `subscriptionId`, and opens a Checkout Session of its
+  on `/subscription/upgrade` (`orderedChange`) refuses a request that does
+  not name its workspace in the body's `referenceId`, or names one in the
+  query (400 `UPGRADE_WORKSPACE_REQUIRED`, `refuseUnnamedUpgrade`: the
+  plugin reads the query's too, and falls back to the session's active
+  workspace, which the order's check never read), takes the order first,
+  refuses a request naming a `subscriptionId`, and opens a Checkout Session of its
   own for `payAsYouGo` (`checkoutBeside`), as a live subscription must not
   change in place. Per-account pricing's checkout (`checkoutParams`, and
   the plan's `lineItems`: each meter's price by lookup key, kept 5

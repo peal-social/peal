@@ -72,6 +72,15 @@ export const isPublicAddress = (address: NetAddress.IpAddress): boolean => {
   );
 };
 
+/**
+ * Whether a host's addresses all lead to the internet: at least one, and
+ * none private. Every address of none is public, so an empty answer, which
+ * a resolver should never give, leads nowhere Peal lets a request go.
+ */
+export const allPublic = (
+  addresses: readonly NetAddress.IpAddress[]
+): boolean => addresses.length > 0 && addresses.every(isPublicAddress);
+
 // An IPv6 host comes out of URL in brackets.
 const literalOf = (hostname: string): Option.Option<NetAddress.IpAddress> =>
   Result.getSuccess(
@@ -177,7 +186,7 @@ export class OutboundGuard extends Context.Service<
       const publicOnly = (url: URL) =>
         addressesOf(url.hostname).pipe(
           Effect.flatMap((addresses) =>
-            addresses.every(isPublicAddress)
+            allPublic(addresses)
               ? Effect.void
               : Effect.fail(refused(url.host, "notPublic"))
           )

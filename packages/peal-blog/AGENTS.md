@@ -107,7 +107,10 @@ the docs' environment variables page.
   production, so sign-ins survive a release.
 - **Email.** EmDash's built-in SMTP transport, from `EMAIL_SMTP_*`, sends
   invitations and magic links; it requires TLS (587 with STARTTLS, or 465)
-  and refuses port 25. In production it goes through Resend's SMTP relay.
+  and refuses port 25. In production it goes through Resend's SMTP relay,
+  with a Resend key of the blog's own (`PEAL_BLOG_RESEND_API_KEY` in the
+  stack's credentials, a sending-only key for the mail domain), never the
+  server's `RESEND_API_KEY`.
   The development stack's Mailpit speaks plain SMTP, so `dev` sends none.
 
 ## Settings

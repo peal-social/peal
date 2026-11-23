@@ -7,6 +7,20 @@ sidebar:
 
 Your account is yours, across every workspace you belong to. Its settings apply in all of them.
 
+## Confirm your address [#confirm]
+
+When you sign up with an email and a password, Peal emails you a link. Open it in the browser you signed up in: the page it opens confirms your address and signs you in.
+
+Opened in another browser, on another device or in your mail app, the page changes nothing on its own. It says what confirming there does: your address is confirmed, nobody is signed in, and the name and password chosen at sign-up are removed. Click **Confirm my address** if that's what you want, then **Choose a password** to get a link that sets a new one. To keep your password, open the link in the browser you signed up in instead. This way, someone who signed up with your address before you can't keep the account once you confirm it.
+
+Opened again once your address is confirmed, the page signs nobody in. Sign in with your password, or click **Forgot your password?** to choose a new one.
+
+Signing up again with an address that is still waiting for its confirmation replaces the name and the password, and sends a new link. An address that's already confirmed keeps its account as it is.
+
+On a server that lets accounts work before their address is confirmed, an account may already be in use when its link is opened. Signed in to it on that browser, the page confirms it and keeps everything. Anywhere else, it changes nothing and says the account is in use: if it's yours, sign in, then open the link again. If someone else made it with your address, click **This account isn't mine**, then **Delete it so I can sign up**: the account goes, with the workspaces only it belongs to and everything in them, and you sign up with your address. Nothing else deletes it, a provider's sign-in included.
+
+If you forget your password, click **Forgot your password?** on the sign-in page. Choosing a new one confirms your address, signs you out everywhere and disconnects your [connected applications](#account) at once, which then have to sign in again. If someone else used the account before you confirmed it, the API keys they made in its workspaces are deleted too, and the page says so.
+
 ## Your settings [#account]
 
 Open the account menu and click **Account settings**, or click **Account** under **Settings** in any workspace. The page has these settings:
@@ -27,7 +41,7 @@ Where the server offers it, the sign-in and sign-up pages show **Continue with G
 Here's what the button does on each page:
 
 - On the sign-up page, it creates your account with the address your provider confirmed, and accepts the terms as the form does.
-- On the sign-in page, it signs in the account that uses the same address, once both your provider and Peal have confirmed it. An account whose address Peal never confirmed has to sign in with its password first. With no account for that address, it creates one and accepts the terms, as the sign-up page does, where the server lets anyone sign up.
+- On the sign-in page, it signs in the account that uses the same address, once your provider has confirmed it. If that account never confirmed its address, your provider's confirmation counts: the account becomes yours, and the password it was made with is removed. With no account for that address, it creates one and accepts the terms, as the sign-up page does, where the server lets anyone sign up.
 
 Two cases are refused:
 
