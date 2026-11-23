@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 """Copies pgBackRest's repository into the backup copy's bucket, which a
-bucket lock keeps from any overwrite or deletion for a while (the Pulumi
-project's environment stacks, `backupCopy`), so that whoever holds the
-server, and with it the one key that can delete every backup, cannot take
-the last copies too.
+bucket lock keeps from any overwrite or deletion for PEAL_BACKUP_COPY_LOCK_DAYS
+(35) from the time the store wrote each object (the Pulumi project's
+environment stacks, `backupCopy`), so that whoever holds the server, and
+with it the one key that can delete every backup, cannot take the last
+copies too.
 
 Managed by Ansible (peal-infra, the peal_backup role), which installs it as
 peal-backup-copy and runs it after each backup that succeeded and from a
@@ -12,31 +13,41 @@ daily timer, under the backups' lock. Standard library only.
 Each run writes under a prefix of its own, `<run>/`, the time it started
 (`2026-11-23T021500Z`), so no key is ever written twice:
 
-- the repository's files the copy does not hold yet, or holds in another
-  size or content (backup.info and the manifests, which pgBackRest
-  rewrites, are copied as each run finds them), or holds from more than
-  PEAL_BACKUP_COPY_REFRESH_DAYS ago (so what the repository still holds is
-  never older in the copy than its lifecycle rule keeps);
+- the repository's files the newest trusted index does not hold as they
+  are now (backup.info and the manifests, which pgBackRest rewrites, are
+  copied as each run finds them), or holds in a copy the store wrote more
+  than PEAL_BACKUP_COPY_REFRESH_DAYS (21) ago;
 - last, `<run>/index.json`: every file of the repository as the run found
-  it, and the key of its copy, which may be an earlier run's. A run with an
-  index is complete, and the index is what `rebuild` restores from.
+  it, the key of its copy (which may be an earlier run's), its size and its
+  SHA-256, computed while the run copied it. A run with an index is
+  complete. A run also writes a new index once the newest is older than the
+  refresh, even with nothing else to copy.
 
-A run that finds the repository as the last index left it writes nothing.
-It refuses a run prefix that holds anything already. Every PUT carries
-If-None-Match: *, which the store refuses on an existing key.
+So every file the newest index names has a copy the store wrote less than
+21 days before that run, which the lock keeps for 14 days more at least:
+however the server is taken, the newest complete run before it stays whole
+for 14 days after it, and longer the more recent its copies.
+
+The store's clock, not a run's name, says when something was written: a
+run whose index the store wrote more than PEAL_BACKUP_COPY_MAX_RUN_HOURS
+(6, the unit's time limit) after its name, or before it, or named in the
+future, is not trusted; `rebuild` refuses it, refuses an index that names a
+copy the store wrote after the index, and, given the time an incident
+began (`--before`), anything the store wrote at or after it.
 
   peal-backup-copy copy                     one run
-  peal-backup-copy runs                     the complete runs, newest last
-  peal-backup-copy rebuild --run <run> --to-path <path>
+  peal-backup-copy runs                     the complete runs, oldest first,
+                                            with the store's times
+  peal-backup-copy rebuild --run <run> --before <time> --to-path <path>
                                             writes the run's set into the
                                             backup bucket under a new path
 
 Settings come from the environment (the systemd unit): the endpoint, the
 buckets, the repository's path, the collector's address. The keys come
-from PEAL_BACKUP_COPY_CREDENTIALS (credentials.env), read by name, never
-from the command line, and are never printed. The files are those
-pgBackRest encrypted before they left the host: the copy needs no
-passphrase, and cannot read them.
+from PEAL_BACKUP_COPY_CREDENTIALS (the credentials file systemd hands the
+unit), read by name, never from the command line, and are never printed.
+The files are those pgBackRest encrypted before they left the host: the
+copy needs no passphrase, and cannot read them.
 """
 
 from __future__ import annotations
@@ -58,16 +69,49 @@ import xml.etree.ElementTree as ElementTree
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import BinaryIO
+from typing import Any, BinaryIO, Protocol
 
 RUN = re.compile(r"^(\d{4}-\d{2}-\d{2}T\d{6}Z)/(.+)$")
 INDEX = "index.json"
 S3 = "{http://s3.amazonaws.com/doc/2006-03-01/}"
 CHUNK = 1024 * 1024
+# How far the store's clock and this host's may disagree.
+SKEW = datetime.timedelta(minutes=5)
 
 
 class CopyError(Exception):
     """A failure the run reports in words of its own, never a secret."""
+
+
+@dataclass(frozen=True)
+class Stored:
+    """An object as the store lists it: its size, ETag and the time the
+    store wrote it, by the store's own clock."""
+
+    size: int
+    etag: str
+    modified: datetime.datetime
+
+
+class Store(Protocol):
+    """What the copy needs of a bucket."""
+
+    name: str
+
+    def list(self, prefix: str = "") -> Iterator[tuple[str, Stored]]: ...
+
+    def get(self, key: str) -> bytes: ...
+
+    def open(self, key: str) -> tuple[int, BinaryIO]: ...
+
+    def put_new(self, key: str, body: BinaryIO | bytes, size: int, part_size: int) -> str: ...
+
+
+def _modified(text: str | None) -> datetime.datetime:
+    """An S3 listing's LastModified, such as 2026-11-23T02:15:00.000Z."""
+    if not text:
+        raise CopyError("the store gave an object without its time")
+    return datetime.datetime.fromisoformat(text.replace("Z", "+00:00")).astimezone(datetime.UTC)
 
 
 @dataclass(frozen=True)
@@ -92,14 +136,10 @@ class Bucket:
             "x-amz-date": stamp,
         }
         names = sorted(signed)
-        canonical_query = "&".join(
-            f"{urllib.parse.quote(name, safe='-_.~')}={urllib.parse.quote(value, safe='-_.~')}"
-            for name, value in sorted(query.items())
-        )
         canonical = "\n".join([
             method,
             urllib.parse.quote(path, safe="/-_.~"),
-            canonical_query,
+            _query(query),
             "".join(f"{name}:{signed[name].strip()}\n" for name in names),
             ";".join(names),
             "UNSIGNED-PAYLOAD",
@@ -135,15 +175,20 @@ class Bucket:
         connection = connection_type(parts.netloc, timeout=300)
         target = urllib.parse.quote(path, safe="/-_.~")
         if query:
-            target += "?" + "&".join(
-                f"{urllib.parse.quote(name, safe='-_.~')}={urllib.parse.quote(value, safe='-_.~')}"
-                for name, value in sorted(query.items())
-            )
+            target += "?" + _query(query)
         connection.request(method, target, body=body, headers=signed)
         return connection.getresponse()
 
-    def call(self, method: str, key: str = "", expect: tuple[int, ...] = (200,), **options: object) -> bytes:
-        response = self.request(method, key, **options)  # type: ignore[arg-type]
+    def call(
+        self,
+        method: str,
+        key: str = "",
+        expect: tuple[int, ...] = (200,),
+        query: dict[str, str] | None = None,
+        headers: dict[str, str] | None = None,
+        body: bytes | None = None,
+    ) -> bytes:
+        response = self.request(method, key, query=query, headers=headers, body=body)
         data = response.read()
         if response.status not in expect:
             code = re.search(rb"<Code>([^<]+)</Code>", data)
@@ -153,8 +198,8 @@ class Bucket:
             )
         return data
 
-    def list(self, prefix: str = "") -> Iterator[tuple[str, int, str]]:
-        """Every object under the prefix: its key, size and ETag."""
+    def list(self, prefix: str = "") -> Iterator[tuple[str, Stored]]:
+        """Every object under the prefix, with the store's time for it."""
         token: str | None = None
         while True:
             query = {"list-type": "2", "prefix": prefix}
@@ -162,14 +207,24 @@ class Bucket:
                 query["continuation-token"] = token
             tree = ElementTree.fromstring(self.call("GET", query=query))
             for item in tree.iter(f"{S3}Contents"):
-                yield (
-                    item.findtext(f"{S3}Key") or "",
+                yield item.findtext(f"{S3}Key") or "", Stored(
                     int(item.findtext(f"{S3}Size") or "0"),
                     (item.findtext(f"{S3}ETag") or "").strip('"'),
+                    _modified(item.findtext(f"{S3}LastModified")),
                 )
             if tree.findtext(f"{S3}IsTruncated") != "true":
                 return
             token = tree.findtext(f"{S3}NextContinuationToken")
+
+    def get(self, key: str) -> bytes:
+        return self.call("GET", key)
+
+    def open(self, key: str) -> tuple[int, BinaryIO]:
+        response = self.request("GET", key)
+        if response.status != 200:
+            response.read()
+            raise CopyError(f"GET of {self.name}/{key} answered {response.status}")
+        return int(response.getheader("Content-Length") or "-1"), response
 
     def put_new(self, key: str, body: BinaryIO | bytes, size: int, part_size: int) -> str:
         """Writes a key that must not exist yet: the store refuses an
@@ -213,6 +268,13 @@ class Bucket:
             raise
 
 
+def _query(query: dict[str, str]) -> str:
+    return "&".join(
+        f"{urllib.parse.quote(name, safe='-_.~')}={urllib.parse.quote(value, safe='-_.~')}"
+        for name, value in sorted(query.items())
+    )
+
+
 def _read(body: BinaryIO | bytes, offset: int, length: int) -> bytes:
     """The next `length` bytes of a body, at `offset` in bytes or read on
     from a stream, which may give fewer at a time."""
@@ -229,37 +291,60 @@ def _read(body: BinaryIO | bytes, offset: int, length: int) -> bytes:
     return b"".join(chunks)
 
 
-def copy_object(source: Bucket, key: str, target: Bucket, to: str, size: int, part_size: int) -> str:
-    """Streams one object from a bucket into a new key of another."""
-    response = source.request("GET", key)
-    if response.status != 200:
-        response.read()
-        raise CopyError(f"GET of {source.name}/{key} answered {response.status}")
-    length = int(response.getheader("Content-Length") or "-1")
+class _Digesting:
+    """A stream that hashes what is read from it, as it is read."""
+
+    def __init__(self, stream: BinaryIO) -> None:
+        self.stream = stream
+        self.sha256 = hashlib.sha256()
+        self.md5 = hashlib.md5(usedforsecurity=False)
+        self.length = 0
+
+    def read(self, size: int = -1) -> bytes:
+        data = self.stream.read(size)
+        self.sha256.update(data)
+        self.md5.update(data)
+        self.length += len(data)
+        return data
+
+
+def _multipart(etag: str) -> bool:
+    """An ETag of an upload in parts, which is no digest of the content."""
+    return "-" in etag
+
+
+def copy_object(source: Store, key: str, target: Store, to: str, size: int, etag: str, part_size: int) -> str:
+    """Streams one object from a bucket into a new key of another, and
+    checks the bytes: the size, the source's ETag where it is the content's
+    MD5, and the new copy's ETag likewise. Returns the SHA-256."""
+    length, stream = source.open(key)
     if length != size:
-        response.read()
         raise CopyError(f"{source.name}/{key} changed while it was copied")
-    return target.put_new(to, response, size, part_size)
+    digesting = _Digesting(stream)
+    written = target.put_new(to, digesting, size, part_size)  # type: ignore[arg-type]
+    md5 = digesting.md5.hexdigest()
+    if digesting.length != size:
+        raise CopyError(f"{source.name}/{key} ended early")
+    if etag and not _multipart(etag) and etag != md5:
+        raise CopyError(f"{source.name}/{key} did not read back as the store holds it")
+    if written and not _multipart(written) and written != md5:
+        raise CopyError(f"{target.name}/{to} was not stored as it was sent")
+    return digesting.sha256.hexdigest()
 
 
-def _same(size: int, etag: str, copy_size: int, copy_etag: str) -> bool:
-    """Whether a copy holds the source's content: the same size, and the
-    same ETag unless one was written in parts, whose ETag is no digest."""
-    multipart = "-" in etag or "-" in copy_etag
-    return size == copy_size and (multipart or etag == copy_etag)
-
-
-def _run_time(run: str) -> datetime.datetime:
+def run_time(run: str) -> datetime.datetime:
     return datetime.datetime.strptime(run, "%Y-%m-%dT%H%M%SZ").replace(tzinfo=datetime.UTC)
 
 
 @dataclass(frozen=True)
 class Settings:
-    source: Bucket
-    copy: Bucket
+    source: Store
+    copy: Store
     path: str
     refresh_days: int
     part_size: int
+    lock_days: int = 35
+    max_run_hours: int = 6
 
     @property
     def prefix(self) -> str:
@@ -269,53 +354,88 @@ class Settings:
         return f"{path}/" if path else ""
 
 
+@dataclass(frozen=True)
+class Run:
+    """A complete run of the copy, as the store holds its index."""
+
+    name: str
+    stored: datetime.datetime
+    trusted: bool
+    why: str
+
+
+def _runs(settings: Settings, listing: dict[str, Stored], now: datetime.datetime) -> list[Run]:
+    """The runs whose index the copy holds, oldest first by the store's
+    time, each trusted or not: an index the store wrote before its name,
+    more than the unit's time limit after it, or named in the future, was
+    written by someone else than the run it names."""
+    runs = []
+    limit = datetime.timedelta(hours=settings.max_run_hours) + SKEW
+    for key, stored in listing.items():
+        found = RUN.match(key)
+        if not found or found.group(2) != INDEX:
+            continue
+        named = run_time(found.group(1))
+        if named > now + SKEW:
+            why = "named in the future"
+        elif stored.modified < named - SKEW:
+            why = "stored before its name says it began"
+        elif stored.modified > named + limit:
+            why = f"stored {stored.modified - named} after its name"
+        else:
+            why = ""
+        runs.append(Run(found.group(1), stored.modified, not why, why))
+    return sorted(runs, key=lambda run: (run.stored, run.name))
+
+
 def copy(settings: Settings, now: datetime.datetime | None = None) -> tuple[str | None, int]:
     """One run: the run's name and how many files it wrote, or None and 0
-    when the copy already matched the repository."""
+    when the copy already holds the repository as it is, fresh enough."""
     now = now or datetime.datetime.now(datetime.UTC)
     run = now.strftime("%Y-%m-%dT%H%M%SZ")
-    source = {
-        key.removeprefix(settings.prefix): (size, etag)
-        for key, size, etag in settings.source.list(settings.prefix)
-    }
-    copies: dict[str, list[tuple[str, int, str]]] = {}
-    runs: set[str] = set()
-    for key, size, etag in settings.copy.list():
-        found = RUN.match(key)
-        if not found:
-            continue
-        if found.group(1) == run:
-            raise CopyError(f"the copy already holds a run {run}")
-        if found.group(2) == INDEX:
-            runs.add(found.group(1))
-        else:
-            copies.setdefault(found.group(2), []).append((found.group(1), size, etag))
+    source = {key.removeprefix(settings.prefix): stored for key, stored in settings.source.list(settings.prefix)}
+    listing = dict(settings.copy.list())
+    if any(key.startswith(f"{run}/") for key in listing):
+        raise CopyError(f"the copy already holds a run {run}")
 
     fresh_after = now - datetime.timedelta(days=settings.refresh_days)
-    index: dict[str, dict[str, object]] = {}
+    trusted = [found for found in _runs(settings, listing, now) if found.trusted]
+    latest = trusted[-1] if trusted else None
+    previous: dict[str, dict[str, Any]] = (
+        json.loads(settings.copy.get(f"{latest.name}/{INDEX}"))["objects"] if latest else {}
+    )
+
+    index: dict[str, dict[str, Any]] = {}
     todo: list[str] = []
-    for key, (size, etag) in sorted(source.items()):
-        held = [
-            (copied, copy_size)
-            for copied, copy_size, copy_etag in copies.get(key, [])
-            if _same(size, etag, copy_size, copy_etag) and _run_time(copied) > fresh_after
-        ]
-        if held:
-            copied, _ = max(held)
-            index[key] = {"copy": f"{copied}/{key}", "size": size}
+    for key, stored in sorted(source.items()):
+        entry = previous.get(key)
+        held = listing.get(entry["copy"]) if entry else None
+        if (
+            entry is not None
+            and held is not None
+            and entry.get("sha256")
+            and entry["size"] == stored.size == held.size
+            and entry.get("source_etag") == stored.etag
+            # Written by the store before the index that names it, so not
+            # written again since, and fresh enough to stay locked.
+            and latest is not None
+            and held.modified <= latest.stored
+            and held.modified > fresh_after
+        ):
+            index[key] = entry
         else:
             todo.append(key)
 
-    latest = max(runs) if runs else None
-    if not todo and latest is not None:
-        previous = json.loads(settings.copy.call("GET", f"{latest}/{INDEX}"))
-        if previous.get("objects") == index:
-            return None, 0
+    if not todo and latest is not None and latest.stored > fresh_after and previous == index:
+        return None, 0
 
     for key in todo:
-        size, _ = source[key]
-        copy_object(settings.source, settings.prefix + key, settings.copy, f"{run}/{key}", size, settings.part_size)
-        index[key] = {"copy": f"{run}/{key}", "size": size}
+        stored = source[key]
+        sha256 = copy_object(
+            settings.source, settings.prefix + key, settings.copy, f"{run}/{key}",
+            stored.size, stored.etag, settings.part_size,
+        )
+        index[key] = {"copy": f"{run}/{key}", "sha256": sha256, "size": stored.size, "source_etag": stored.etag}
 
     document = json.dumps(
         {"run": run, "source": {"bucket": settings.source.name, "path": settings.path}, "objects": index},
@@ -325,16 +445,36 @@ def copy(settings: Settings, now: datetime.datetime | None = None) -> tuple[str 
     return run, len(todo) + 1
 
 
-def complete_runs(copy_bucket: Bucket) -> list[str]:
-    return sorted(
-        found.group(1) for key, _, _ in copy_bucket.list() if (found := RUN.match(key)) and found.group(2) == INDEX
-    )
+def describe_runs(settings: Settings, now: datetime.datetime | None = None) -> list[str]:
+    """A line for each complete run, oldest first: its name, when the store
+    wrote its index, the oldest copy it names and until when the lock keeps
+    all of them, or why it is not trusted."""
+    now = now or datetime.datetime.now(datetime.UTC)
+    listing = dict(settings.copy.list())
+    lines = []
+    for found in _runs(settings, listing, now):
+        if not found.trusted:
+            lines.append(f"{found.name}  index stored {found.stored:%Y-%m-%dT%H:%M:%SZ}  NOT TRUSTED: {found.why}")
+            continue
+        objects = json.loads(settings.copy.get(f"{found.name}/{INDEX}"))["objects"]
+        times = [listing[entry["copy"]].modified for entry in objects.values() if entry["copy"] in listing]
+        missing = len(objects) - len(times)
+        oldest = min(times, default=found.stored)
+        locked = oldest + datetime.timedelta(days=settings.lock_days)
+        lines.append(
+            f"{found.name}  index stored {found.stored:%Y-%m-%dT%H:%M:%SZ}"
+            f"  oldest copy stored {oldest:%Y-%m-%dT%H:%M:%SZ}"
+            f"  {'all locked until' if locked > now else 'unlocked since'} {locked:%Y-%m-%dT%H:%M:%SZ}"
+            + (f"  {missing} missing" if missing else "")
+        )
+    return lines
 
 
-def rebuild(settings: Settings, run: str, to_path: str) -> list[str]:
+def rebuild(settings: Settings, run: str, to_path: str, before: datetime.datetime) -> list[str]:
     """Writes the run's set under a new path of the backup bucket, which
-    must hold nothing: the keys its index names whose copy is gone (the
-    copy's lifecycle rule), which it could not write."""
+    must hold nothing, once its index and every copy it names pass the
+    checks: the keys whose copy is gone (the copy's lifecycle rule), which
+    it could not write."""
     target = to_path.strip("/")
     if not target or f"{target}/" == settings.prefix:
         raise CopyError("rebuild into a new path, never the repository's own")
@@ -342,14 +482,35 @@ def rebuild(settings: Settings, run: str, to_path: str) -> list[str]:
         raise CopyError(f"{target}/ already holds files")
     if not RUN.match(f"{run}/{INDEX}"):
         raise CopyError(f"{run} is no run")
-    index = json.loads(settings.copy.call("GET", f"{run}/{INDEX}"))
-    held = {key for key, _, _ in settings.copy.list()}
+    listing = dict(settings.copy.list())
+    found = next((found for found in _runs(settings, listing, before) if found.name == run), None)
+    if found is None:
+        raise CopyError(f"the copy holds no index of {run}")
+    if not found.trusted:
+        raise CopyError(f"{run} is not trusted: {found.why}")
+    if found.stored >= before:
+        raise CopyError(f"the store wrote {run}'s index at {found.stored:%Y-%m-%dT%H:%M:%SZ}, not before {before:%Y-%m-%dT%H:%M:%SZ}")
+    objects = json.loads(settings.copy.get(f"{run}/{INDEX}"))["objects"]
+
     missing: list[str] = []
-    for key, entry in sorted(index["objects"].items()):
-        if entry["copy"] not in held:
+    for key, entry in sorted(objects.items()):
+        held = listing.get(entry["copy"])
+        if held is None:
             missing.append(key)
+        elif held.modified > found.stored or held.modified >= before:
+            raise CopyError(f"the copy of {key} was written after {run}'s index, or not before the incident")
+        elif held.size != entry["size"] or not entry.get("sha256"):
+            raise CopyError(f"the copy of {key} is not the one {run}'s index names")
+
+    for key, entry in sorted(objects.items()):
+        if key in missing:
             continue
-        copy_object(settings.copy, entry["copy"], settings.source, f"{target}/{key}", entry["size"], settings.part_size)
+        sha256 = copy_object(
+            settings.copy, entry["copy"], settings.source, f"{target}/{key}",
+            entry["size"], listing[entry["copy"]].etag, settings.part_size,
+        )
+        if sha256 != entry["sha256"]:
+            raise CopyError(f"the copy of {key} does not hold what {run} copied")
     return missing
 
 
@@ -380,7 +541,10 @@ def settings_from(environ: dict[str, str]) -> Settings:
         copy=Bucket(endpoint, region, environ["PEAL_BACKUP_COPY_BUCKET"], copy_key, copy_secret),
         path=environ["PEAL_BACKUP_COPY_SOURCE_PATH"],
         refresh_days=int(environ.get("PEAL_BACKUP_COPY_REFRESH_DAYS", "21")),
-        part_size=int(environ.get("PEAL_BACKUP_COPY_PART_SIZE", str(256 * 1024 * 1024))),
+        # S3 takes no part under 5 MiB but the last.
+        part_size=max(5 * 1024 * 1024, int(environ.get("PEAL_BACKUP_COPY_PART_SIZE", str(256 * 1024 * 1024)))),
+        lock_days=int(environ.get("PEAL_BACKUP_COPY_LOCK_DAYS", "35")),
+        max_run_hours=int(environ.get("PEAL_BACKUP_COPY_MAX_RUN_HOURS", "6")),
     )
 
 
@@ -404,11 +568,19 @@ def report(environ: dict[str, str], name: str, description: str) -> None:
             request = urllib.request.Request(url, data=body, headers={"Content-Type": "application/json"})
             with urllib.request.urlopen(request, timeout=10):
                 return
-        except (urllib.error.URLError, OSError):
+        except (urllib.error.URLError, OSError, http.client.HTTPException):
             if attempt == retries:
                 print(f"peal-backup-copy: the collector did not record {name}", file=sys.stderr)
                 return
             time.sleep(delay)
+
+
+def _instant(text: str) -> datetime.datetime:
+    """A time with its zone, such as 2026-11-23T02:00:00Z."""
+    found = datetime.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    if found.tzinfo is None:
+        raise argparse.ArgumentTypeError("give the time with its zone, such as 2026-11-23T02:00:00Z")
+    return found.astimezone(datetime.UTC)
 
 
 def main(argv: list[str] | None = None, environ: dict[str, str] | None = None) -> int:
@@ -420,23 +592,26 @@ def main(argv: list[str] | None = None, environ: dict[str, str] | None = None) -
     rebuilding = commands.add_parser("rebuild")
     rebuilding.add_argument("--run", required=True)
     rebuilding.add_argument("--to-path", required=True)
+    rebuilding.add_argument("--before", required=True, type=_instant,
+                            help="when the incident began, by the store's clock (UTC)")
     arguments = parser.parse_args(argv)
     try:
         settings = settings_from(environ)
         if arguments.command == "runs":
-            print("\n".join(complete_runs(settings.copy)))
+            print("\n".join(describe_runs(settings)))
             return 0
         if arguments.command == "rebuild":
-            missing = rebuild(settings, arguments.run, arguments.to_path)
+            missing = rebuild(settings, arguments.run, arguments.to_path, arguments.before)
             for key in missing:
                 print(f"missing {key}")
             print(f"rebuilt {arguments.run} under {arguments.to_path.strip('/')}/, {len(missing)} missing")
             return 1 if missing else 0
         run, written = copy(settings)
         print(f"copied run {run}, {written} files" if run else "the copy is up to date")
-    except (CopyError, OSError, KeyError, ValueError, ElementTree.ParseError) as error:
-        # A missing setting names itself; any other error says its kind
-        # alone, never a value it may carry.
+    except Exception as error:  # noqa: BLE001 - every failure is reported, never a traceback alone.
+        # A missing setting names itself; a failure of the copy's own says
+        # what failed; any other error says its kind alone, never a value it
+        # may carry.
         message = (
             str(error) if isinstance(error, CopyError)
             else f"setting {error} is not set" if isinstance(error, KeyError)

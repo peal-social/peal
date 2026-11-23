@@ -237,7 +237,9 @@ def _query(uid: str) -> str:
 def test_the_script_posts_the_gauges_the_rules_read() -> None:
     """Prometheus names each gauge with its unit: `_seconds`."""
     posted = set(re.findall(r"\breport (peal_backup_\w+)", SCRIPT.read_text()))
-    assert posted == {"peal_backup_last_success_timestamp", "peal_backup_last_failure_timestamp"}
+    # And, where the backup copy runs, that a copy is due (test_backup_copy.py).
+    assert posted == {"peal_backup_last_success_timestamp", "peal_backup_last_failure_timestamp",
+                      "peal_backup_copy_expected_timestamp"}
 
     assert "peal_backup_last_success_timestamp_seconds" in _query("peal-backup-stale")
     failed = _query("peal-backup-failed")

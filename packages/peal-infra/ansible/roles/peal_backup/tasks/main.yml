@@ -62,7 +62,8 @@
         dest: /usr/local/sbin/peal-backup-copy
         owner: root
         group: root
-        mode: "0750"
+        # Read by the run's own user (DynamicUser); it holds no secret.
+        mode: "0755"
 
     - name: Write the backup copy's service and timer
       ansible.builtin.template:

@@ -81,7 +81,7 @@ credentials and how to adopt what exists.
   behind Access.
 - The backup copy (`backupCopy`, off unless `on`: a paid resource the
   owner approves): its bucket, lock, lifecycle and key
-  (`test/environment-backup-copy.test.ts`). The lock stays longer than a
-  week (pgBackRest's full backups) and shorter than the lifecycle, and its
+  (`test/environment-backup-copy.test.ts`). The lock stays 14 days above the
+  Ansible project's refresh (21 days) and below the lifecycle, and its
   days match the Ansible project's `peal_backup_copy_lock_days`.
 - Pin `@pulumi/pulumi` and `@pulumi/cloudflare` exactly, as everything else.

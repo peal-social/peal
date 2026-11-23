@@ -45,8 +45,8 @@ ruleset per phase, so one would need importing first.
 With `peal:backupCopy` set to `on`, a stack also makes the backup copy
 (the Ansible project's README, "The backup copy"), a paid resource, off by
 default: `bucket-backup-copy` (`peal-<env>-backup-copy`, protected, kept
-when its resource goes), `lock-backup-copy` (every object locked 14 days,
-`backupCopyLockDays`), `lifecycle-backup-copy` (objects deleted after 35
+when its resource goes), `lock-backup-copy` (every object locked 35 days,
+`backupCopyLockDays`), `lifecycle-backup-copy` (objects deleted after 49
 days, unfinished uploads after one) and `key-backup-copy`, for that bucket
 alone (`backupCopyBucket`, `backupCopyKey`). The key reads and writes
 objects; neither it nor the server's other keys can change the lock.

@@ -1116,38 +1116,63 @@ can delete every backup: whoever takes the server can take the backups
 with it. A bucket lock on pgBackRest's own bucket would stop pgBackRest,
 which rewrites `backup.info` and a backup's manifest. The backup copy is a
 second bucket per environment (`peal-<environment>-backup-copy`, R2, the
-EU jurisdiction, private, billed by storage and operations), with:
+EU jurisdiction, private), with:
 
-- a bucket lock: no object in it can be overwritten or deleted for 14 days,
-  whatever key asks, the server's included;
-- a lifecycle rule that deletes objects after 35 days;
+- a bucket lock: no object in it can be overwritten or deleted for 35 days
+  from the time the store wrote it, whatever key asks, the server's
+  included;
+- a lifecycle rule that deletes objects after 49 days;
 - a key of its own, for that bucket alone, which reads and writes it and
   can change neither the lock nor the lifecycle.
+
+What it costs: R2 storage and operations. A file is copied again once its
+copy is 21 days old, and copies live 49 days, so the copy holds each file
+of the repository two or three times: about 2.5 times the backup bucket's
+size, which pgBackRest keeps at four full backups and their write-ahead
+log.
 
 `peal-backup-copy` (`roles/peal_backup/files/backup_copy.py`, Python's
 standard library alone) runs after each backup that succeeded (the backup
 unit's `OnSuccess`) and from a daily timer at 06:45 UTC, under the backups'
-lock. Each run writes under a prefix of its own, the time it started
-(`2026-11-23T021500Z/`), so no key is ever written twice: the repository's
-files the copy lacks or holds in another content (`backup.info` and the
-manifests as each run finds them; a segment or a backup file once), those
-whose copy is older than 21 days (so what the backups still hold stays in
-the copy), and last an `index.json` that names, for every file of the
-repository, the key of its copy. A run that finds nothing new writes
-nothing. Every PUT carries `If-None-Match: *`. It reads both keys by name
-from `credentials.env`, and posts when it matched the backups, or failed,
-to the collector: Grafana alerts when the last copy failed
-(`peal-backup-copy-failed`) and when a backup finished more than 6 hours
-after the last copy (`peal-backup-copy-behind`); a server without the copy
-posts neither.
+lock, as a user systemd makes for each run, to which it hands
+`credentials.env` (`LoadCredential`), in a sandbox (no home, a read-only
+system, no devices or capabilities, the internet and the collector alone),
+for 6 hours at most. Each run writes under a prefix of its own, the time it
+started (`2026-11-23T021500Z/`), so no key is ever written twice: the
+repository's files the newest index does not hold as they are now
+(`backup.info` and the manifests as each run finds them; a segment or a
+backup file once), those whose copy the store wrote more than 21 days ago,
+and last an `index.json` that names, for every file of the repository, its
+copy's key, size and SHA-256, computed while the run copied it. A run also
+writes a new index once the newest is 21 days old, even with nothing else
+to copy, and one that finds nothing to do writes nothing. Every PUT carries
+`If-None-Match: *`, and each copy is checked against the source's ETag and
+its own where they are the content's MD5.
 
-The lock is longer than a week, so the newest full backup, and everything
-a restore from it needs, is always locked. The files are those pgBackRest
-encrypted on the server: the copy holds them as they are, and is no use
-without the backup passphrase, kept off the server as
-[Credentials](#credentials) says. What it protects against, and what it
-does not, and how to restore from it:
-[the runbook](runbooks/restore-database.md#the-backup-copy).
+So every file the newest complete run names, `archive.info` (whose
+passphrase decrypts the write-ahead log) included, has a copy the store
+wrote less than 21 days before that run: **the newest run before the server
+is taken stays whole and locked for 14 days after it, at least**, whatever
+the server's keys do. Within those 14 days, alerts must be read and the
+copy restored from (`tests/test_backup_copy.py` checks it day by day over
+two months).
+
+The store's clock, not a run's name, says when a run was written: a run
+whose index the store wrote before its name, more than 6 hours after it, or
+that is named in the future, is not trusted, and neither the next run nor
+a rebuild takes it; a rebuild also refuses an index that names a copy the
+store wrote after it, and anything the store wrote at or after the time
+the incident began. The files are those pgBackRest encrypted on the
+server: the copy is no use without the backup passphrase, kept off the
+server as [Credentials](#credentials) says.
+
+The copy reports to the collector when it matched the backups, or failed,
+and `peal-backup` reports, after each backup, that a copy is due: Grafana
+alerts when the last copy failed (`peal-backup-copy-failed`), and when a
+backup finished more than 6 hours after the last copy, or none ever
+succeeded (`peal-backup-copy-behind`). A server without the copy reports
+none of them. What the copy protects against, and what it does not, and
+how to restore from it: [the runbook](runbooks/restore-database.md#the-backup-copy).
 
 Turn it on, for the sandbox first, once the owner approved the bucket:
 

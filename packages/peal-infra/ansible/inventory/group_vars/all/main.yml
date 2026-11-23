@@ -72,7 +72,7 @@ peal_docs_server: "{{ peal_static_build_args.DOCS_ASSISTANT_MODEL | default('') 
 peal_blog: false
 peal_blog_bucket: ""
 # The backup copy (README.md, "The backup copy"): a second bucket, which a
-# bucket lock keeps from any deletion or overwrite for 14 days, where the
+# bucket lock keeps from any deletion or overwrite for 35 days, where the
 # backups are copied after each one, so whoever takes the server, and the
 # backups' key with it, cannot delete the last copies. A paid resource: off
 # until the owner approves it and the environment's Pulumi stack makes the

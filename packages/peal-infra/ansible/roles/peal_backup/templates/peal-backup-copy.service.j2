@@ -2,6 +2,9 @@
 # bucket, which a bucket lock keeps for {{ peal_backup_copy_lock_days }} days whatever
 # this server's keys do (README.md, "The backup copy"). Runs after each
 # backup that succeeded and from its daily timer, never during a backup.
+# It runs as a user of its own, which systemd makes for each run: systemd,
+# as root, reads the credentials file, which only root may read, and hands
+# the run a copy of it alone.
 [Unit]
 Description=Copy the Peal database's backups to the locked bucket
 After=network-online.target
@@ -9,20 +12,47 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-# Plain settings; the keys are read by name from the credentials file.
+DynamicUser=true
+LoadCredential=credentials:{{ peal_root }}/credentials.env
+# Plain settings; the keys are read by name from the credentials.
 Environment=PEAL_BACKUP_COPY_ENDPOINT=https://{{ peal_backup_endpoint }}
 Environment=PEAL_BACKUP_COPY_REGION={{ (peal_settings | default({})).get('PGBACKREST_REPO1_S3_REGION', 'auto') }}
 Environment=PEAL_BACKUP_COPY_SOURCE_BUCKET={{ peal_backup_bucket }}
 Environment=PEAL_BACKUP_COPY_SOURCE_PATH={{ peal_backup_path }}
 Environment=PEAL_BACKUP_COPY_BUCKET={{ peal_backup_copy_bucket }}
-Environment=PEAL_BACKUP_COPY_CREDENTIALS={{ peal_root }}/credentials.env
+Environment=PEAL_BACKUP_COPY_CREDENTIALS=%d/credentials
+Environment=PEAL_BACKUP_COPY_LOCK_DAYS={{ peal_backup_copy_lock_days }}
 Environment=PEAL_BACKUP_COPY_REFRESH_DAYS={{ peal_backup_copy_refresh_days }}
+Environment=PEAL_BACKUP_COPY_MAX_RUN_HOURS=6
 Environment=PEAL_BACKUP_COPY_OTLP_URL=http://127.0.0.1:{{ peal_ports.otlp_http }}/v1/metrics
 Environment=PEAL_BACKUP_COPY_REPORT_RETRIES={{ peal_backup_report_retries }}
 Environment=PEAL_BACKUP_COPY_REPORT_RETRY_DELAY={{ peal_backup_report_retry_delay }}
-# The backups' lock: pgBackRest rewrites backup.info as a backup ends.
-ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 /usr/local/sbin/peal-backup-copy copy
-NoNewPrivileges=true
-PrivateTmp=true
+# The backups' lock: pgBackRest rewrites backup.info as a backup ends. Root
+# makes the lock's file, which the run's user then opens to read alone.
+ExecStartPre=+/usr/bin/touch /run/peal-backup.lock
+ExecStart=/usr/bin/flock /run/peal-backup.lock /usr/bin/python3 -I /usr/local/sbin/peal-backup-copy copy
+# The index's time is trusted up to this long after the run's name
+# (PEAL_BACKUP_COPY_MAX_RUN_HOURS).
+TimeoutStartSec=6h
 Nice=10
 IOSchedulingClass=idle
+MemoryMax=512M
+UMask=0077
+NoNewPrivileges=true
+CapabilityBoundingSet=
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+SystemCallArchitectures=native
