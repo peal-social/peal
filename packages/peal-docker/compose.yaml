@@ -86,7 +86,7 @@ services:
           curl --fail --silent --output /dev/null http://127.0.0.1:8888/buckets/${PEAL_S3_BUCKET:-peal-media}/
 
   mailpit:
-    image: axllent/mailpit:v1.33.1
+    image: axllent/mailpit:v1.34.0
     environment:
       MP_DATABASE: /data/mailpit.db
       MP_SMTP_AUTH_ACCEPT_ANY: "true"
