@@ -325,6 +325,7 @@ const coverage = {
   "videoGenerations.get": by("media video status"),
   "videoGenerations.list": by("media video list"),
   "slideshows.create": by("media slideshow create"),
+  "slideshows.createFromEdit": by("media slideshow render"),
   "slideshows.get": by("media slideshow status"),
   "slideshows.list": by("media slideshow list"),
   "mediaAudio.createVoiceover": by("media voiceover"),

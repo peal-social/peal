@@ -36,6 +36,10 @@ export const slideshowOf = (slideshow: Slideshow) => ({
 
 const notFound = () => Effect.fail(new SlideshowNotFound());
 
+type RequestFailure = Effect.Error<
+  ReturnType<AssistantSlideshows["Service"]["request"]>
+>;
+
 export const SlideshowsHandlers = HttpApiBuilder.group(
   Api,
   "slideshows",
@@ -44,13 +48,46 @@ export const SlideshowsHandlers = HttpApiBuilder.group(
     const paths = yield* UpgradePaths;
     const limitReached = yield* limitRefusal;
 
+    // A request's refusals, as the contract answers them: the same for
+    // slides and edits.
+    const answered = (
+      actor: ReturnType<typeof actorOf>,
+      asked: Effect.Effect<Slideshow, RequestFailure>
+    ) =>
+      asked.pipe(
+        Effect.catchTags({
+          CompositionBusy: ({ slideshowId }) =>
+            Effect.fail(new CompositionBusy({ slideshowId })),
+          CompositionNeedsPayment: () =>
+            paths
+              .paid(actor.workspaceId)
+              .pipe(
+                Effect.flatMap(({ billingUrl }) =>
+                  Effect.fail(new CompositionNeedsPayment({ billingUrl }))
+                )
+              ),
+          CompositionUnavailable: ({ reason }) =>
+            Effect.fail(new CompositionUnavailable({ reason })),
+          MissingPermission: forbidden,
+          PlanLimitReached: limitReached,
+          SlideshowRejected: ({ reason }) =>
+            Effect.fail(new SlideshowRequestRejected({ reason })),
+          SlideshowsExhausted: ({ dailyLimit, resetsAt }) =>
+            Effect.fail(
+              new CompositionAllowanceReached({ dailyLimit, resetsAt })
+            ),
+        }),
+        Effect.map(slideshowOf)
+      );
+
     return handlers.handleAll({
       create: ({ payload }) =>
         Effect.gen(function* create() {
           const actor = actorOf(yield* CurrentMember);
 
-          const slideshow = yield* slideshows
-            .request(actor, {
+          return yield* answered(
+            actor,
+            slideshows.request(actor, {
               aspect: payload.aspect,
               secondsPerSlide: payload.secondsPerSlide ?? null,
               slides: payload.slides.map((slide) => ({
@@ -61,32 +98,16 @@ export const SlideshowsHandlers = HttpApiBuilder.group(
               transition: payload.transition ?? "fade",
               voiceoverMediaId: payload.voiceoverMediaId ?? null,
             })
-            .pipe(
-              Effect.catchTags({
-                CompositionBusy: ({ slideshowId }) =>
-                  Effect.fail(new CompositionBusy({ slideshowId })),
-                CompositionNeedsPayment: () =>
-                  paths
-                    .paid(actor.workspaceId)
-                    .pipe(
-                      Effect.flatMap(({ billingUrl }) =>
-                        Effect.fail(new CompositionNeedsPayment({ billingUrl }))
-                      )
-                    ),
-                CompositionUnavailable: ({ reason }) =>
-                  Effect.fail(new CompositionUnavailable({ reason })),
-                MissingPermission: forbidden,
-                PlanLimitReached: limitReached,
-                SlideshowRejected: ({ reason }) =>
-                  Effect.fail(new SlideshowRequestRejected({ reason })),
-                SlideshowsExhausted: ({ dailyLimit, resetsAt }) =>
-                  Effect.fail(
-                    new CompositionAllowanceReached({ dailyLimit, resetsAt })
-                  ),
-              })
-            );
+          );
+        }),
+      createFromEdit: ({ payload }) =>
+        Effect.gen(function* createFromEdit() {
+          const actor = actorOf(yield* CurrentMember);
 
-          return slideshowOf(slideshow);
+          return yield* answered(
+            actor,
+            slideshows.requestEdit(actor, payload.edit)
+          );
         }),
       get: ({ params }) =>
         Effect.gen(function* get() {

@@ -860,41 +860,59 @@ drafts and the posts that need an approval are tabs of Posts. Home keeps "Write 
 
 ### The editor
 
-Studio's **Editor** makes a video from the library's images, in Peal's
-own look: no third party's editor, canvas or theme is embedded. It is
-built from peal-ui and ui-sdk's behaviours (a toolbar, a slider, a
-listbox), and its export is the workspace's own Shotstack account, as
-slide videos are. It shows only to members who may compose one
-(assistant:use and media:upload).
+Studio's **Editor** makes a video of the library's pictures, videos and
+sounds and of texts, on tracks. Shotstack's Studio SDK is its engine
+(the document, every change, undo and redo, the playback and the
+preview's canvas); every control around it is Peal's, built from peal-ui
+and ui-sdk's behaviours (toolbar, listbox, slider, select), in Peal's
+look: the SDK's own timeline, toolbars and theme are never loaded. Its
+export is the workspace's own Shotstack account, as slide videos are. It
+shows only to members who may compose one (assistant:use and
+media:upload).
 
 - The panel's header holds **Export video** (a small ghost button, its
-  icon first), disabled until the video can be made.
-- The **stage**, on `muted` with a hairline, `{rounded.lg}`: the frame
-  in the video's shape (portrait, landscape or square), on ink, drawing
-  the clip at the playhead with its motion, its fade and its caption as
-  the export does (white on a translucent ink band at the foot); paused,
-  the clip shows whole, without its fade. Before any image, the frame
-  says to add some.
-- The **transport** under it: back a clip, play or pause, on a clip (a
-  toolbar of ghost icon buttons), then the playhead as a slider along
-  the whole width (a 4 px rail, the played part in `primary`, a round
-  thumb with a `primary` edge), then the time in mono figures, "0:04.3 /
-  0:12.0".
-- The **inspector** beside the stage, 18 rem, a bordered column of
-  sections under small headings: the chosen image (its caption with its
-  count, its motion, Earlier, Later and Remove as small ghost buttons),
-  the video (shape, each image's length or fit to the voice-over, the
-  transition), and the export (the length in all, what is left today,
-  why it cannot be made yet, the refusal, and where the video lands). On
-  a phone it goes under the stage.
+  icon first), disabled until there is a clip.
+- The **toolbar** above the stage, one tab stop with arrow keys between
+  its controls: **Add files** (the library's picker), **Add text**, then
+  Undo and Redo (icon buttons), **Duplicate** and **Delete** for the
+  chosen clip, and **Start over**, in small ghost buttons with a hairline
+  between groups.
+- The **stage**, on `muted` with a hairline, `{rounded.lg}`, 48 % of the
+  window's height: the SDK's canvas, fitted to it. Before the first clip,
+  it says to add a file or a text.
+- The **transport** under it: back to the previous edge, play or pause,
+  on to the next edge (a toolbar of ghost icon buttons), then the
+  playhead as a slider along the whole width (a 4 px rail, the played
+  part in `primary`, a round thumb with a `primary` edge), then the time
+  in mono figures, "0:04.3 / 0:12.0". Under it, in small muted text,
+  where an export goes and how many are left today, and a refusal above
+  it.
+- The **inspector** beside the stage, 20 rem, as tall as the stage and
+  the transport and scrolling inside: the chosen clip's sections under
+  small headings (its timing; its sound: volume, what it skips, fades;
+  its words and style: font among Peal's offered fonts, size, weight,
+  colour, alignment, background and box; its layout: fit, position,
+  offset, scale, opacity; its motion, how it comes in and goes out, and
+  its filter), then the video's (shape, resolution, frame rate,
+  backdrop). A number applies when it is left or on Enter, a slider when
+  it is let go, a choice at once: each is one undo. On a phone it goes
+  under the stage.
 - The **timeline**, a bordered card under them, its header naming it
-  with **Add images**, **Add a voice-over** and **Remove**: three
-  tracks, each named in a muted column, the clips as wide as their
-  length. Captions on `brand-tint` (a dashed outline where there is
-  none); the images as thumbnails, one tab stop with arrow keys between
-  them, the chosen one ringed in `primary`; the voice-over on a lavender
-  tint, or "No voice-over" in a dashed outline. The playhead is a 2 px
-  `primary` line across the three.
+  with zoom out and in: a ruler that seeks where it is pressed, then one
+  row per track, the first on top as the video layers them, each named
+  in a muted column with its delete button. Clips sit where they start,
+  as wide as they last, tinted by what they hold (pictures
+  `brand-tint`, texts lavender, videos a lighter lavender, sounds a sun
+  tint), with their icon and name; the chosen one is ringed in
+  `primary`. Dragging a clip moves it, up or down to another track;
+  dragging its edges trims it; both snap to the playhead, the start and
+  the other clips' edges. The clips are one listbox, arrow keys between
+  them; with one chosen, Alt and an arrow moves it, with ⌘ or Ctrl
+  changes its length, Shift for whole seconds, Delete removes it. The
+  playhead is a 2 px `primary` line across the tracks. A muted line at
+  the foot says the keys.
+- Space plays or pauses, ⌘Z or Ctrl+Z undoes and with Shift redoes,
+  outside a field.
 - Exports on their way show under the timeline as the library's
   placeholders do, and a toast says when one lands in Media or why it
   failed.

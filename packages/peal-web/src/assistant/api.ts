@@ -65,6 +65,12 @@ export const slideshows = Atom.family((workspaceId: string) =>
 export const createSlideshow = PealApi.mutation("slideshows", "create");
 
 /**
+ * Renders the editor's document through the same job as a slide video;
+ * send it with the slide videos' reactivity key.
+ */
+export const renderEdit = PealApi.mutation("slideshows", "createFromEdit");
+
+/**
  * Makes a voice-over into the workspace's media library; send it with the
  * media list's reactivity key, so the library shows it.
  */

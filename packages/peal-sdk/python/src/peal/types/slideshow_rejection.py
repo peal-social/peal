@@ -4,7 +4,18 @@ import typing
 
 SlideshowRejection = typing.Union[
     typing.Literal[
-        "imageNotFound", "imageNotSupported", "voiceoverNotFound", "tooLong", "voiceoverTooLong", "voiceoverTooShort"
+        "imageNotFound",
+        "imageNotSupported",
+        "voiceoverNotFound",
+        "tooLong",
+        "voiceoverTooLong",
+        "voiceoverTooShort",
+        "editInvalid",
+        "mediaNotFound",
+        "mediaNotSupported",
+        "editTooLong",
+        "editTooLarge",
+        "outputNotSupported",
     ],
     typing.Any,
 ]

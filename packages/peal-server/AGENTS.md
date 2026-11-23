@@ -452,7 +452,12 @@ and no socket, for tests.
   before cannot decode where it reads them (every workspace's collection
   jobs included): never roll back past it while a channel or a link
   names it (the runbook's "Past Unified login"; unsetting
-  `META_INSTAGRAM_CONFIG_ID` makes no roll-back safe).
+  `META_INSTAGRAM_CONFIG_ID` makes no roll-back safe). Edits rendered
+  whole did too: a slide video job whose `plan` is `{ edit }`, which the
+  release before cannot decode when it claims it, so the job stays
+  `running` without anything sent until it goes stale: roll back past it
+  only once no job on its way has one (the runbook's "Past edits rendered
+  whole").
 
 ### Product analytics
 

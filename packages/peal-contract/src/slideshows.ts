@@ -41,6 +41,18 @@ export const maxSlideshowSeconds = 90;
 
 export const slideshowsPerDay = 20;
 
+/**
+ * What an edit rendered whole may hold: every clip whose start and length
+ * are numbers ends by 300 seconds, in at most 20 tracks and 200 clips in
+ * all. The server's values (src/assistant/domain/slideshow-limits.ts) are
+ * the source.
+ */
+export const maxEditSeconds = 300;
+
+export const maxEditTracks = 20;
+
+export const maxEditClips = 200;
+
 /** The most slide videos a list answers. */
 export const maxSlideshowsListed = 50;
 
@@ -106,6 +118,14 @@ export const SlideshowRequestSchema = Schema.Struct({
 }).annotate({ identifier: "SlideshowRequest" });
 
 export type SlideshowRequest = typeof SlideshowRequestSchema.Type;
+
+export const EditRenderRequestSchema = Schema.Struct({
+  // A Shotstack Edit (https://shotstack.io/docs/api/#tocs_edit), as JSON:
+  // the server checks it against Shotstack's schema and Peal's rules.
+  edit: Schema.JsonObject,
+}).annotate({ identifier: "EditRenderRequest" });
+
+export type EditRenderRequest = typeof EditRenderRequestSchema.Type;
 
 /**
  * Where a slide video stands: `queued`, waiting its turn; `running`, the
@@ -223,6 +243,25 @@ export class SlideshowsApi extends HttpApiGroup.make("slideshows")
       OpenApi.annotations({
         description: `Asks the service the workspace chose for slide videos (\`PUT .../assistant/models/composition\`, Shotstack) to compose ${minSlides} to ${maxSlides} images of its library, in order, each with an optional caption and motion, optionally over a voice-over of its library, in the aspect asked, and answers 202 with the job, \`queued\`. Each slide lasts \`secondsPerSlide\`, or the voice-over's length shared between them, ${maxSlideshowSeconds} seconds at most in all. Follow it with \`GET .../media/slideshows/{id}\`; once \`succeeded\`, the video is a file of the media library (\`mediaId\`, MP4 at 1080p), not marked \`aiGenerated\`, and the member who asked is told in the app. The service receives each file through a link that works for an hour, and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. Its sandbox, when the connection names it, is free and watermarks every video. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One slide video at a time a workspace (CompositionBusy), ${slideshowsPerDay} a UTC day (CompositionAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is composed fails it (\`interrupted\`). Neither the captions nor the video are logged, and the captions are kept only while the video is composed. Needs assistant:use and media:upload.`,
         summary: "Compose a slide video into the media library",
+      })
+    ),
+    HttpApiEndpoint.post("createFromEdit", "/edits", {
+      error: [
+        Forbidden,
+        CompositionUnavailable,
+        CompositionNeedsPayment,
+        SlideshowRequestRejected,
+        CompositionBusy,
+        CompositionAllowanceReached,
+        PlanLimitReached,
+      ],
+      params: workspace,
+      payload: EditRenderRequestSchema,
+      success: SlideshowSchema.pipe(HttpApiSchema.status(202)),
+    }).annotateMerge(
+      OpenApi.annotations({
+        description: `Asks the service the workspace chose for slide videos (\`PUT .../assistant/models/composition\`, Shotstack) to render a whole [Shotstack Edit](https://shotstack.io/docs/api/#tocs_edit), as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, \`queued\`, as a slide video's. A file of the workspace's library is named \`peal:media/<mediaId>\`: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from \`https://fonts.gstatic.com/\`; an asset Shotstack generates from a \`prompt\` needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (\`format\` \`mp4\` or none), at \`preview\`, \`mobile\`, \`sd\`, \`hd\` or \`1080\` (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's \`aspect\`), at 30 frames a second at most, without \`size\`, \`range\`, \`scaleTo\`, \`repeat\`, \`poster\` or \`thumbnail\`; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops \`callback\` and \`disk\`. At most ${maxEditTracks} tracks and ${maxEditClips} clips, and every clip whose start and length are numbers ends by ${maxEditSeconds} seconds (\`durationSeconds\` is the latest such end). The job lists every library file the edit names in \`imageMediaIds\`, images or not. Follow it with \`GET .../media/slideshows/{id}\`; once \`succeeded\`, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and ${slideshowsPerDay} a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.`,
+        summary: "Render a Shotstack Edit into the media library",
       })
     ),
     HttpApiEndpoint.get("list", "/", {

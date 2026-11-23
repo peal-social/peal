@@ -16,7 +16,7 @@ const other = {
 };
 
 describe(uploadRule, () => {
-  it("allows the signed headers of a PUT from each origin once", () => {
+  it("allows uploads and the editor's reads from each origin once, never HEAD", () => {
     expect(
       uploadRule([
         "https://app.example.test",
@@ -24,9 +24,10 @@ describe(uploadRule, () => {
         "https://app.example.test",
       ])
     ).toStrictEqual({
-      AllowedHeaders: ["content-type", "if-none-match"],
-      AllowedMethods: ["PUT"],
+      AllowedHeaders: ["content-type", "if-none-match", "range"],
+      AllowedMethods: ["GET", "PUT"],
       AllowedOrigins: ["http://localhost:3001", "https://app.example.test"],
+      ExposeHeaders: ["accept-ranges", "content-length", "content-range"],
       ID: uploadRuleId,
       MaxAgeSeconds: 3600,
     });
@@ -44,7 +45,7 @@ describe(withUploadRule, () => {
   it("changes nothing when the bucket has the rule", () => {
     const stored = {
       ...rule,
-      AllowedHeaders: ["If-None-Match", "Content-Type"],
+      AllowedHeaders: ["Range", "If-None-Match", "Content-Type"],
       AllowedOrigins: [...(rule.AllowedOrigins ?? [])].toReversed(),
     };
 
@@ -65,9 +66,10 @@ describe(r2Policy, () => {
   it("states the rule without its id, as R2's dashboard takes it", () => {
     expect(r2Policy(rule)).toStrictEqual([
       {
-        AllowedHeaders: ["content-type", "if-none-match"],
-        AllowedMethods: ["PUT"],
+        AllowedHeaders: ["content-type", "if-none-match", "range"],
+        AllowedMethods: ["GET", "PUT"],
         AllowedOrigins: ["http://localhost:3001", "https://app.example.test"],
+        ExposeHeaders: ["accept-ranges", "content-length", "content-range"],
         MaxAgeSeconds: 3600,
       },
     ]);

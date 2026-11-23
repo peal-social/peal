@@ -92658,6 +92658,48 @@ func TestEnumSlideshowRejection(t *testing.T) {
 		assert.Equal(t, SlideshowRejection("voiceoverTooShort"), val, "enum value should match expected wire value")
 	})
 
+	t.Run("NewFromString_editInvalid", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSlideshowRejectionFromString("editInvalid")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SlideshowRejection("editInvalid"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_mediaNotFound", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSlideshowRejectionFromString("mediaNotFound")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SlideshowRejection("mediaNotFound"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_mediaNotSupported", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSlideshowRejectionFromString("mediaNotSupported")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SlideshowRejection("mediaNotSupported"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_editTooLong", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSlideshowRejectionFromString("editTooLong")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SlideshowRejection("editTooLong"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_editTooLarge", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSlideshowRejectionFromString("editTooLarge")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SlideshowRejection("editTooLarge"), val, "enum value should match expected wire value")
+	})
+
+	t.Run("NewFromString_outputNotSupported", func(t *testing.T) {
+		t.Parallel()
+		val, err := NewSlideshowRejectionFromString("outputNotSupported")
+		assert.NoError(t, err, "valid enum value should not return error")
+		assert.Equal(t, SlideshowRejection("outputNotSupported"), val, "enum value should match expected wire value")
+	})
+
 	t.Run("NewFromString_Invalid", func(t *testing.T) {
 		_, err := NewSlideshowRejectionFromString("invalid_value_that_does_not_exist")
 		assert.Error(t, err)

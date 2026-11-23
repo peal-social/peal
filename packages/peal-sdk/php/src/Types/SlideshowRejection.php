@@ -10,4 +10,10 @@ enum SlideshowRejection: string
     case TooLong = "tooLong";
     case VoiceoverTooLong = "voiceoverTooLong";
     case VoiceoverTooShort = "voiceoverTooShort";
+    case EditInvalid = "editInvalid";
+    case MediaNotFound = "mediaNotFound";
+    case MediaNotSupported = "mediaNotSupported";
+    case EditTooLong = "editTooLong";
+    case EditTooLarge = "editTooLarge";
+    case OutputNotSupported = "outputNotSupported";
 }

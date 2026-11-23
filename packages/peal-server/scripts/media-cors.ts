@@ -51,8 +51,8 @@ const program = Effect.gen(function* mediaCors() {
 
   yield* Console.log(
     changed
-      ? `Browser uploads from ${rule.AllowedOrigins?.join(", ")} are now allowed on the ${where}.`
-      : `The ${where} already allows browser uploads from ${rule.AllowedOrigins?.join(", ")}.`
+      ? `Browser uploads and the editor's reads from ${rule.AllowedOrigins?.join(", ")} are now allowed on the ${where}.`
+      : `The ${where} already allows browser uploads and the editor's reads from ${rule.AllowedOrigins?.join(", ")}.`
   );
 
   yield* Console.log(

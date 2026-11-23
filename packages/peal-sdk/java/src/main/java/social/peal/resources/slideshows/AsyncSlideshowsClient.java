@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
+import social.peal.resources.slideshows.requests.EditRenderRequest;
 import social.peal.resources.slideshows.requests.GetSlideshowsRequest;
 import social.peal.resources.slideshows.requests.ListSlideshowsRequest;
 import social.peal.resources.slideshows.requests.SlideshowRequest;
@@ -110,6 +111,37 @@ public class AsyncSlideshowsClient {
             String workspaceId, SlideshowRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
                 this.rawClient.create(workspaceId, request, requestOptions);
+        CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
+     */
+    public CompletableFuture<Slideshow> createFromEdit(String workspaceId, EditRenderRequest request) {
+        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
+                this.rawClient.createFromEdit(workspaceId, request);
+        CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
+     */
+    public CompletableFuture<Slideshow> createFromEdit(
+            String workspaceId, EditRenderRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
+                this.rawClient.createFromEdit(workspaceId, request, requestOptions);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

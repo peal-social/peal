@@ -3718,6 +3718,42 @@
       }
     },
     {
+      "id": "c94718d5-5ff7-47aa-af61-546a232e2136",
+      "name": "Render a Shotstack Edit into the media library - default",
+      "request": {
+        "urlPathTemplate": "/api/workspaces/{workspaceId}/media/slideshows/edits",
+        "method": "POST",
+        "headers": {
+          "Authorization": {
+            "matches": "Bearer .+"
+          }
+        },
+        "pathParameters": {
+          "workspaceId": {
+            "equalTo": "workspaceId"
+          }
+        }
+      },
+      "response": {
+        "status": 202,
+        "body": "{\n  \"aspect\": \"square\",\n  \"createdAt\": \"createdAt\",\n  \"durationSeconds\": \"Infinity\",\n  \"finishedAt\": \"finishedAt\",\n  \"id\": \"id\",\n  \"imageMediaIds\": [\n    \"imageMediaIds\"\n  ],\n  \"mediaId\": \"mediaId\",\n  \"reason\": \"unavailable\",\n  \"sandbox\": true,\n  \"startedAt\": \"startedAt\",\n  \"status\": \"queued\",\n  \"voiceoverMediaId\": \"voiceoverMediaId\"\n}",
+        "headers": {
+          "Content-Type": "application/json"
+        }
+      },
+      "uuid": "c94718d5-5ff7-47aa-af61-546a232e2136",
+      "persistent": true,
+      "priority": 3,
+      "metadata": {
+        "mocklab": {
+          "created": {
+            "at": "2020-01-01T00:00:00.000Z",
+            "via": "SYSTEM"
+          }
+        }
+      }
+    },
+    {
       "id": "09608387-0dd9-400b-9943-69d1ec6e67f5",
       "name": "Get a slide video job - default",
       "request": {
@@ -9849,6 +9885,6 @@
     }
   ],
   "meta": {
-    "total": 262
+    "total": 263
   }
 }

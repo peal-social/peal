@@ -1,10 +1,11 @@
 import { setTimeout as delay } from "node:timers/promises";
 
 import { assert, layer } from "@effect/vitest";
-import { Effect, Fiber, Ref, Schema } from "effect";
+import { Effect, Fiber, FileSystem, Path, Ref, Schema } from "effect";
 import { TestClock } from "effect/testing";
 
 import { filesLayer, signedIn } from "./signed-in.ts";
+import type { SignedIn } from "./signed-in.ts";
 import { madeSlideshowId, slideshowId } from "./studio-slideshows.ts";
 import { readyMediaId } from "./studio.ts";
 
@@ -43,6 +44,18 @@ const joined = <A, E>(fiber: Fiber.Fiber<A, E>) =>
     }
 
     return yield* Fiber.join(fiber);
+  });
+
+// A file of the test's own, holding `contents`.
+const fileOf = (session: SignedIn, name: string, contents: string) =>
+  Effect.gen(function* writing() {
+    const fs = yield* FileSystem.FileSystem;
+    const path = yield* Path.Path;
+    const file = path.join(session.directory, name);
+
+    yield* fs.writeFileString(file, contents);
+
+    return file;
   });
 
 const twoImages = ["--image", readyMediaId, "--image", readyMediaId];
@@ -266,6 +279,70 @@ layer(filesLayer)("peal media slideshow", (it) => {
         yield* session.refused(create(...twoImages, "--seconds", "11")),
         "--seconds takes 2 to 10 seconds"
       );
+    })
+  );
+
+  it.effect("renders a whole Shotstack Edit from a file", () =>
+    Effect.gen(function* renders() {
+      const session = yield* signedIn();
+
+      const file = yield* fileOf(
+        session,
+        "edit.json",
+        JSON.stringify({
+          output: { aspectRatio: "1:1", format: "mp4" },
+          timeline: {
+            tracks: [
+              {
+                clips: [
+                  {
+                    asset: { src: `peal:media/${readyMediaId}`, type: "image" },
+                    length: 4,
+                    start: 0,
+                  },
+                ],
+              },
+            ],
+          },
+        })
+      );
+
+      const printed = yield* session.printed([
+        "media",
+        "slideshow",
+        "render",
+        file,
+        "--json",
+        ...inStudio,
+      ]);
+
+      const { changes } = yield* Ref.get(session.studio.state);
+
+      assert.deepStrictEqual(
+        [Answer(printed).status, Answer(printed).id],
+        ["queued", firstId]
+      );
+      assert.include(changes, `slideshow-edit:${firstId}`);
+    })
+  );
+
+  it.effect("refuses a file that holds no JSON object, before asking", () =>
+    Effect.gen(function* refuses() {
+      const session = yield* signedIn();
+      const file = yield* fileOf(session, "notes.txt", "[1, 2, 3]");
+
+      const said = yield* session.refused([
+        "media",
+        "slideshow",
+        "render",
+        file,
+        ...inStudio,
+      ]);
+
+      const { changes } = yield* Ref.get(session.studio.state);
+
+      assert.include(said, "does not hold a JSON object");
+      assert.notInclude(changes.join(" "), "slideshow-edit");
     })
   );
 });

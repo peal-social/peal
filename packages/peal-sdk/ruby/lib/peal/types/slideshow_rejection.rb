@@ -13,6 +13,12 @@ module Peal
       TOO_LONG = "tooLong"
       VOICEOVER_TOO_LONG = "voiceoverTooLong"
       VOICEOVER_TOO_SHORT = "voiceoverTooShort"
+      EDIT_INVALID = "editInvalid"
+      MEDIA_NOT_FOUND = "mediaNotFound"
+      MEDIA_NOT_SUPPORTED = "mediaNotSupported"
+      EDIT_TOO_LONG = "editTooLong"
+      EDIT_TOO_LARGE = "editTooLarge"
+      OUTPUT_NOT_SUPPORTED = "outputNotSupported"
     end
   end
 end
