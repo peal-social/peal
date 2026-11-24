@@ -14,23 +14,22 @@ import {
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
 
-import { FeedStore } from "#publishing/application/feed-store.ts";
-import type { FeedItemRecord } from "#publishing/application/feed-store.ts";
+import { FeedStore } from "#publishing/application/feeds/feed-store.ts";
+import type { FeedItemRecord } from "#publishing/application/feeds/feed-store.ts";
 import {
   FeedItemOutcomeSchema,
   FeedItemReasonSchema,
   FeedPictureSkipSchema,
-} from "#publishing/domain/feed-item-outcome.ts";
-import { Feed } from "#publishing/domain/feed.ts";
-import type { FeedStatus } from "#publishing/domain/feed.ts";
-import { ItemDigestSchema } from "#publishing/domain/item-digest.ts";
-import type { ItemDigest } from "#publishing/domain/item-digest.ts";
+} from "#publishing/domain/feeds/feed-item-outcome.ts";
+import { Feed } from "#publishing/domain/feeds/feed.ts";
+import type { FeedStatus } from "#publishing/domain/feeds/feed.ts";
+import { ItemDigestSchema } from "#publishing/domain/feeds/item-digest.ts";
+import type { ItemDigest } from "#publishing/domain/feeds/item-digest.ts";
 import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
+import { feedItems, feeds } from "#publishing/infrastructure/schema.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { PostIdSchema } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
-
-import { feedItems, feeds } from "./schema.ts";
 
 type Row = typeof feeds.$inferSelect;
 

@@ -1,14 +1,13 @@
 import { lt, sql } from "drizzle-orm";
 import { DateTime, Duration, Effect, Layer } from "effect";
 
-import { FeedReads } from "#publishing/application/feed-reads.ts";
-import type { FeedReadAllowance } from "#publishing/application/feed-reads.ts";
-import { feedReadsPerHour } from "#publishing/domain/feed.ts";
+import { FeedReads } from "#publishing/application/feeds/feed-reads.ts";
+import type { FeedReadAllowance } from "#publishing/application/feeds/feed-reads.ts";
+import { feedReadsPerHour } from "#publishing/domain/feeds/feed.ts";
+import { feedReads } from "#publishing/infrastructure/schema.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
-
-import { feedReads } from "./schema.ts";
 
 const failed = (cause: unknown) => new DatabaseError({ cause });
 

@@ -1,7 +1,7 @@
 import { DateTime, Effect, Layer, Option } from "effect";
 
 import { Notify } from "#notifications/application/notify.ts";
-import { FeedNotices } from "#publishing/application/feed-notices.ts";
+import { FeedNotices } from "#publishing/application/feeds/feed-notices.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 
 /**

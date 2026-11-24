@@ -1,9 +1,10 @@
-import { Match, Option } from "effect";
+import { Option } from "effect";
 import type { RecyclingRule as RuleView } from "peal-contract";
 
 import type { ListedRule } from "#publishing/application/recycling.ts";
-import type { PostOrigin } from "#publishing/domain/post-origin.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
+
+import { originView } from "./origin-view.ts";
 
 const pad = (value: number, length: number) =>
   String(value).padStart(length, "0");
@@ -11,25 +12,6 @@ const pad = (value: number, length: number) =>
 /** A calendar date as the contract writes it: YYYY-MM-DD. */
 export const dayOf = ({ day, month, year }: LocalDate): string =>
   `${pad(year, 4)}-${pad(month, 2)}-${pad(day, 2)}`;
-
-/**
- * How the starter of what acts later (a rule, a feed) reached Peal, as a
- * post's origin is shown.
- */
-export const originView = (origin: PostOrigin): RuleView["startedVia"] =>
-  Match.valueTags(origin, {
-    apiKey: ({ apiKeyId, name }) => ({
-      id: apiKeyId,
-      name: name ?? null,
-      via: "apiKey" as const,
-    }),
-    application: ({ clientId, name }) => ({
-      id: clientId,
-      name: name ?? null,
-      via: "application" as const,
-    }),
-    web: () => ({ id: null, name: null, via: "web" as const }),
-  });
 
 /** What clients see of a rule, and of the posts it will make. */
 export const ruleView = ({ coming, rule }: ListedRule): RuleView => ({

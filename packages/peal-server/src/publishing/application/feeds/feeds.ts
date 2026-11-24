@@ -9,25 +9,48 @@ import {
   Result,
 } from "effect";
 
+import { ChannelSetNotFound } from "#publishing/application/channel-set-not-found.ts";
+import { ChannelSetStore } from "#publishing/application/channel-set-store.ts";
+import { queueNamed } from "#publishing/application/placement.ts";
+import { PostDrafts } from "#publishing/application/post-drafts.ts";
+import { PostOrigins } from "#publishing/application/post-origins.ts";
+import { channelsFor } from "#publishing/application/post-references.ts";
+import { PostScheduling } from "#publishing/application/post-scheduling.ts";
+import type { QueueNotFound } from "#publishing/application/queue-not-found.ts";
+import type { QueueStore } from "#publishing/application/queue-store.ts";
+import { RecyclingActors } from "#publishing/application/recycling-actors.ts";
+import type { SignatureNotFound } from "#publishing/application/signature-not-found.ts";
+import {
+  mayChangeStarted,
+  notImpersonating,
+  starterOf,
+} from "#publishing/application/started-by.ts";
+import type { UnknownChannels } from "#publishing/application/unknown-channels.ts";
+import type { UnknownMedia } from "#publishing/application/unknown-media.ts";
+import type { UnknownTags } from "#publishing/application/unknown-tags.ts";
+import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
 import type { ChannelSetId } from "#publishing/domain/channel-set-id.ts";
-import type { FeedAddressRefused } from "#publishing/domain/feed-address-refused.ts";
-import { FeedAddressRefused as AddressRefused } from "#publishing/domain/feed-address-refused.ts";
-import { parseFeedAddress } from "#publishing/domain/feed-address.ts";
-import type { FeedAddress } from "#publishing/domain/feed-address.ts";
-import type { FeedDocument } from "#publishing/domain/feed-document.ts";
-import type { FeedEntry } from "#publishing/domain/feed-entry.ts";
-import { FeedIdSchema } from "#publishing/domain/feed-id.ts";
-import type { FeedId } from "#publishing/domain/feed-id.ts";
-import type { FeedItemReason } from "#publishing/domain/feed-item-outcome.ts";
-import { distinctItems, newItems } from "#publishing/domain/feed-items.ts";
-import type { FeedStopReason } from "#publishing/domain/feed-stop-reason.ts";
-import type { FeedTemplateInvalid } from "#publishing/domain/feed-template-invalid.ts";
+import type { FeedAddressRefused } from "#publishing/domain/feeds/feed-address-refused.ts";
+import { FeedAddressRefused as AddressRefused } from "#publishing/domain/feeds/feed-address-refused.ts";
+import { parseFeedAddress } from "#publishing/domain/feeds/feed-address.ts";
+import type { FeedAddress } from "#publishing/domain/feeds/feed-address.ts";
+import type { FeedDocument } from "#publishing/domain/feeds/feed-document.ts";
+import type { FeedEntry } from "#publishing/domain/feeds/feed-entry.ts";
+import { FeedIdSchema } from "#publishing/domain/feeds/feed-id.ts";
+import type { FeedId } from "#publishing/domain/feeds/feed-id.ts";
+import type { FeedItemReason } from "#publishing/domain/feeds/feed-item-outcome.ts";
+import {
+  distinctItems,
+  newItems,
+} from "#publishing/domain/feeds/feed-items.ts";
+import type { FeedStopReason } from "#publishing/domain/feeds/feed-stop-reason.ts";
+import type { FeedTemplateInvalid } from "#publishing/domain/feeds/feed-template-invalid.ts";
 import {
   defaultTemplate,
   parseTemplate,
   writtenFrom,
   writtenTooLong,
-} from "#publishing/domain/feed-template.ts";
+} from "#publishing/domain/feeds/feed-template.ts";
 import {
   adoptFeed,
   editFeed,
@@ -41,13 +64,13 @@ import {
   resumeFeed,
   startFeed,
   stopFeed,
-} from "#publishing/domain/feed.ts";
+} from "#publishing/domain/feeds/feed.ts";
 import type {
   Feed,
   FeedChange,
   FeedMode,
   FeedValidators,
-} from "#publishing/domain/feed.ts";
+} from "#publishing/domain/feeds/feed.ts";
 import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import type { PostContentRejected } from "#publishing/domain/post-content-rejected.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
@@ -62,8 +85,6 @@ import { authorize } from "#shared/domain/authorize.ts";
 import type { ChannelId, PostId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 
-import { ChannelSetNotFound } from "./channel-set-not-found.ts";
-import { ChannelSetStore } from "./channel-set-store.ts";
 import { FeedNotFound } from "./feed-not-found.ts";
 import { FeedNotices } from "./feed-notices.ts";
 import { FeedPictures } from "./feed-pictures.ts";
@@ -76,21 +97,7 @@ import type { FeedRead } from "./feed-source.ts";
 import { FeedStore } from "./feed-store.ts";
 import type { FeedItemRecord } from "./feed-store.ts";
 import { FeedUnreadable } from "./feed-unreadable.ts";
-import { queueNamed } from "./placement.ts";
-import { PostDrafts } from "./post-drafts.ts";
-import { PostOrigins } from "./post-origins.ts";
-import { channelsFor } from "./post-references.ts";
-import { PostScheduling } from "./post-scheduling.ts";
-import type { QueueNotFound } from "./queue-not-found.ts";
-import type { QueueStore } from "./queue-store.ts";
-import { RecyclingActors } from "./recycling-actors.ts";
-import type { SignatureNotFound } from "./signature-not-found.ts";
-import { mayChangeStarted, notImpersonating, starterOf } from "./started-by.ts";
 import { TooManyFeeds } from "./too-many-feeds.ts";
-import type { UnknownChannels } from "./unknown-channels.ts";
-import type { UnknownMedia } from "./unknown-media.ts";
-import type { UnknownTags } from "./unknown-tags.ts";
-import type { WorkspaceChannels } from "./workspace-channels.ts";
 
 /** How many items of a feed its page shows. */
 export const itemsShown = 50;
@@ -259,7 +266,7 @@ const newestFirst = (items: readonly FeedEntry[]) =>
  * Feeds to posts: a workspace follows web feeds (RSS 2.0, Atom 1.0, JSON
  * Feed 1.1), and every item that appears in one after it was added
  * becomes a draft, or a post on a queue's next free slot, as its template
- * writes it (`#publishing/domain/feed.ts`).
+ * writes it (`#publishing/domain/feeds/feed.ts`).
  *
  * Reading feeds needs post:read; creating, changing, pausing, resuming and
  * deleting one needs post:create, with post:schedule too for a feed that

@@ -2,14 +2,14 @@ import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
 import type { ChannelSetId } from "#publishing/domain/channel-set-id.ts";
-import type { FeedId } from "#publishing/domain/feed-id.ts";
+import type { FeedId } from "#publishing/domain/feeds/feed-id.ts";
 import type {
   FeedItemOutcome,
   FeedItemReason,
   FeedPictureSkip,
-} from "#publishing/domain/feed-item-outcome.ts";
-import type { Feed } from "#publishing/domain/feed.ts";
-import type { ItemDigest } from "#publishing/domain/item-digest.ts";
+} from "#publishing/domain/feeds/feed-item-outcome.ts";
+import type { Feed } from "#publishing/domain/feeds/feed.ts";
+import type { ItemDigest } from "#publishing/domain/feeds/item-digest.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import type { PostId, WorkspaceId } from "#shared/domain/ids.ts";
 

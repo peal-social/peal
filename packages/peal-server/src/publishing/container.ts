@@ -11,10 +11,10 @@ import type { AttachableMedia } from "#publishing/application/attachable-media.t
 import { ChannelDefaults } from "#publishing/application/channel-defaults.ts";
 import { ChannelLookups } from "#publishing/application/channel-lookups.ts";
 import { ChannelSets } from "#publishing/application/channel-sets.ts";
-import { FeedNotices } from "#publishing/application/feed-notices.ts";
-import { FeedPictures } from "#publishing/application/feed-pictures.ts";
-import { FeedSource } from "#publishing/application/feed-source.ts";
-import { Feeds } from "#publishing/application/feeds.ts";
+import { FeedNotices } from "#publishing/application/feeds/feed-notices.ts";
+import { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
+import { FeedSource } from "#publishing/application/feeds/feed-source.ts";
+import { Feeds } from "#publishing/application/feeds/feeds.ts";
 import { FollowUpChannels } from "#publishing/application/follow-up-channels.ts";
 import { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
 import { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
@@ -67,7 +67,6 @@ import {
 } from "#publishing/infrastructure/channel-access-credentials.ts";
 import { ChannelAccessGrants } from "#publishing/infrastructure/channel-access-grants.ts";
 import {
-  FeedsCron,
   FollowUpsCron,
   IdempotencyRetentionCron,
   QuotaRetentionCron,
@@ -80,8 +79,6 @@ import {
 import { DrizzleChannelDefaultsStore } from "#publishing/infrastructure/drizzle-channel-defaults-store.ts";
 import { DrizzleChannelSetStore } from "#publishing/infrastructure/drizzle-channel-set-store.ts";
 import { DrizzleContentFingerprints } from "#publishing/infrastructure/drizzle-content-fingerprints.ts";
-import { DrizzleFeedReads } from "#publishing/infrastructure/drizzle-feed-reads.ts";
-import { DrizzleFeedStore } from "#publishing/infrastructure/drizzle-feed-store.ts";
 import { DrizzleFollowUpStore } from "#publishing/infrastructure/drizzle-follow-up-store.ts";
 import { DrizzleIdempotencyKeys } from "#publishing/infrastructure/drizzle-idempotency-keys.ts";
 import { DrizzleLivePostChangeStore } from "#publishing/infrastructure/drizzle-live-post-change-store.ts";
@@ -98,10 +95,14 @@ import { DrizzleSignatureStore } from "#publishing/infrastructure/drizzle-signat
 import { DrizzleTagStore } from "#publishing/infrastructure/drizzle-tag-store.ts";
 import { DrizzleUploadSessions } from "#publishing/infrastructure/drizzle-upload-sessions.ts";
 import { DrizzleWorkspacePostStore } from "#publishing/infrastructure/drizzle-workspace-post-store.ts";
+import { DrizzleFeedReads } from "#publishing/infrastructure/feeds/drizzle-feed-reads.ts";
+import { DrizzleFeedStore } from "#publishing/infrastructure/feeds/drizzle-feed-store.ts";
+import { FeedsCron } from "#publishing/infrastructure/feeds/feeds-cron.ts";
 import { HttpFeedSource } from "#publishing/infrastructure/feeds/http-feed-source.ts";
+import { LibraryFeedPictures } from "#publishing/infrastructure/feeds/library-feed-pictures.ts";
+import { NotifiedFeedNotices } from "#publishing/infrastructure/feeds/notified-feed-notices.ts";
 import { armedOutcomes } from "#publishing/infrastructure/follow-up-outcomes.ts";
 import { LibraryAttachableMedia } from "#publishing/infrastructure/library-attachable-media.ts";
-import { LibraryFeedPictures } from "#publishing/infrastructure/library-feed-pictures.ts";
 import { LibraryMediaForPublishing } from "#publishing/infrastructure/library-media-for-publishing.ts";
 import { ListedChannelConnections } from "#publishing/infrastructure/listed-channel-connections.ts";
 import { ListedSiteChannels } from "#publishing/infrastructure/listed-site-channels.ts";
@@ -111,7 +112,6 @@ import { LoggedOperatorAlerts } from "#publishing/infrastructure/logged-operator
 import { meteredOutcomes } from "#publishing/infrastructure/metered-publication-outcomes.ts";
 import { MeteredXPostsLive } from "#publishing/infrastructure/metered-x-posts.ts";
 import { NamedPostOrigins } from "#publishing/infrastructure/named-post-origins.ts";
-import { NotifiedFeedNotices } from "#publishing/infrastructure/notified-feed-notices.ts";
 import { NotifiedFollowUpNotices } from "#publishing/infrastructure/notified-follow-up-notices.ts";
 import { NotifiedPublicationOutcomes } from "#publishing/infrastructure/notified-publication-outcomes.ts";
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/notified-recycling-notices.ts";
@@ -557,7 +557,7 @@ export { RecyclingHandlers as RecyclingApiLive } from "#publishing/api/recycling
 
 export { FollowUpsHandlers as FollowUpsApiLive } from "#publishing/api/follow-ups.ts";
 
-export { FeedsHandlers as FeedsApiLive } from "#publishing/api/feeds.ts";
+export { FeedsHandlers as FeedsApiLive } from "#publishing/api/feeds/feeds.ts";
 
 export { ChannelDefaultsHandlers as ChannelDefaultsApiLive } from "#publishing/api/channel-defaults.ts";
 

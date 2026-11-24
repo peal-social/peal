@@ -15,16 +15,16 @@ import {
   UnknownChannels,
 } from "peal-contract";
 
-import type { ChangeFeedRequest } from "#publishing/application/feeds.ts";
-import { Feeds } from "#publishing/application/feeds.ts";
+import { channelIdsFrom, queueIdOf } from "#publishing/api/post-input.ts";
+import type { ChangeFeedRequest } from "#publishing/application/feeds/feeds.ts";
+import { Feeds } from "#publishing/application/feeds/feeds.ts";
 import { ChannelSetIdSchema } from "#publishing/domain/channel-set-id.ts";
-import { FeedIdSchema } from "#publishing/domain/feed-id.ts";
+import { FeedIdSchema } from "#publishing/domain/feeds/feed-id.ts";
 import { actorOf } from "#shared/api/actor.ts";
 import { setAnswerHeader } from "#shared/api/answer-headers.ts";
 import { forbidden } from "#shared/api/forbidden.ts";
 
 import { feedItemView, feedPreviewView, feedView } from "./feed-view.ts";
-import { channelIdsFrom, queueIdOf } from "./post-input.ts";
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
 

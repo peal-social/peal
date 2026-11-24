@@ -1,10 +1,11 @@
 import { Option, Result } from "effect";
 
+import { maxPostTextLength } from "#publishing/domain/post-text.ts";
+
 import { maxFeedUrlLength } from "./feed-address.ts";
 import type { FeedEntry } from "./feed-entry.ts";
 import { FeedTemplateInvalid } from "./feed-template-invalid.ts";
 import { maxFeedTitleLength, maxSummaryLength } from "./feed.ts";
-import { maxPostTextLength } from "./post-text.ts";
 
 /** The longest template a feed keeps, in characters. */
 export const maxTemplateLength = 1000;

@@ -26,7 +26,7 @@ import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import { ChannelSetNameTaken } from "./channel-set-name-taken.ts";
 import { ChannelSetNotFound } from "./channel-set-not-found.ts";
 import { ChannelSetStore } from "./channel-set-store.ts";
-import { FeedStore } from "./feed-store.ts";
+import { FeedStore } from "./feeds/feed-store.ts";
 import { channelsFor } from "./post-references.ts";
 import { QueueStore } from "./queue-store.ts";
 import { TooManyChannelSets } from "./too-many-channel-sets.ts";

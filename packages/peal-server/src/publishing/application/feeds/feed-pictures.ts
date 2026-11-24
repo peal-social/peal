@@ -1,6 +1,6 @@
 import { Context, Effect, Layer } from "effect";
 
-import type { FeedPictureSkip } from "#publishing/domain/feed-item-outcome.ts";
+import type { FeedPictureSkip } from "#publishing/domain/feeds/feed-item-outcome.ts";
 import type { Actor } from "#shared/domain/access.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 

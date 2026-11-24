@@ -1,7 +1,7 @@
 import { Context, Effect, Layer } from "effect";
 
-import type { FeedStopReason } from "#publishing/domain/feed-stop-reason.ts";
-import type { Feed } from "#publishing/domain/feed.ts";
+import type { FeedStopReason } from "#publishing/domain/feeds/feed-stop-reason.ts";
+import type { Feed } from "#publishing/domain/feeds/feed.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 
 /**

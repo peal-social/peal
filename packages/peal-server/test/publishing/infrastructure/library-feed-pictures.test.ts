@@ -8,8 +8,8 @@ import { mediaWith } from "#media/container.ts";
 import { DrizzleMediaAssetsLive } from "#media/infrastructure/drizzle-media-assets.ts";
 import { HttpRemoteMedia } from "#media/infrastructure/http-remote-media.ts";
 import { S3MediaStorageLive } from "#media/infrastructure/s3-media-storage.ts";
-import { FeedPictures } from "#publishing/application/feed-pictures.ts";
-import { LibraryFeedPictures } from "#publishing/infrastructure/library-feed-pictures.ts";
+import { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
+import { LibraryFeedPictures } from "#publishing/infrastructure/feeds/library-feed-pictures.ts";
 import { Ids } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import {

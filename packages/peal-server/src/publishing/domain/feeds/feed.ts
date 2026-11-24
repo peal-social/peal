@@ -1,5 +1,11 @@
 import { DateTime, Duration, Option, Schema } from "effect";
 
+import { ChannelSetIdSchema } from "#publishing/domain/channel-set-id.ts";
+import type { ChannelSetId } from "#publishing/domain/channel-set-id.ts";
+import { PostOriginSchema } from "#publishing/domain/post-origin.ts";
+import type { PostOrigin } from "#publishing/domain/post-origin.ts";
+import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
+import type { QueueId } from "#publishing/domain/queue-id.ts";
 import {
   ChannelIdSchema,
   UserIdSchema,
@@ -7,8 +13,6 @@ import {
 } from "#shared/domain/ids.ts";
 import type { ChannelId, UserId, WorkspaceId } from "#shared/domain/ids.ts";
 
-import { ChannelSetIdSchema } from "./channel-set-id.ts";
-import type { ChannelSetId } from "./channel-set-id.ts";
 import { FeedAddressSchema } from "./feed-address.ts";
 import type { FeedAddress } from "./feed-address.ts";
 import { FeedIdSchema } from "./feed-id.ts";
@@ -17,10 +21,6 @@ import { FeedReadFailureSchema } from "./feed-read-failure.ts";
 import type { FeedReadFailure } from "./feed-read-failure.ts";
 import { FeedStopReasonSchema } from "./feed-stop-reason.ts";
 import type { FeedStopReason } from "./feed-stop-reason.ts";
-import { PostOriginSchema } from "./post-origin.ts";
-import type { PostOrigin } from "./post-origin.ts";
-import { QueueIdSchema } from "./queue-id.ts";
-import type { QueueId } from "./queue-id.ts";
 
 // The limits below are the owner's to change: each is written once here,
 // and the contract's copy is kept equal by a test.
@@ -91,7 +91,7 @@ export interface FeedValidators {
 }
 
 /**
- * A web feed a workspace follows (`#publishing/application/feeds.ts`):
+ * A web feed a workspace follows (`#publishing/application/feeds/feeds.ts`):
  * read every `feedCheckInterval`, each item it had not held before
  * becomes a draft (`draft`) or a post on a queue's next free slot
  * (`queue`: the queue named, or the workspace's default), for its
