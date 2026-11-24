@@ -180,7 +180,7 @@ const mayStillAsk = (gate: typeof ApprovalGate.Service, actor: Actor) =>
 
 /**
  * Rules that act by themselves on a published post once it has enough
- * likes (`#publishing/domain/follow-up-rule.ts`), the publishing side of
+ * likes (`#publishing/domain/follow-ups/follow-up-rule.ts`), the publishing side of
  * them: `arm` arms a target as it is published, in the transaction that
  * settles it; `runDue` (the `publishing.follow-ups` cron) reads the likes
  * analytics last counted for every armed follow-up, never a platform,
