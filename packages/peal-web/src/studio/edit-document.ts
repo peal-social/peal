@@ -1,6 +1,6 @@
 import type { components } from "@shotstack/schemas";
 import { Schema } from "effect";
-import type { Media } from "peal-contract";
+import type { ImageAspect, Media } from "peal-contract";
 
 import { relayedAddressOf, upstreamAddressOf } from "#studio/asset-relay.ts";
 
@@ -161,6 +161,67 @@ export const storedOf = (
         : { ...stored.timeline, fonts: eachOnce(fonts) },
   };
 };
+
+/**
+ * Whether a clip still waits to be generated: a prompt and no file. Sent
+ * as it is, Shotstack would generate it, at the cost of the workspace's
+ * Shotstack account.
+ */
+export const waitsToBeGenerated = (edit: StudioEdit): boolean =>
+  edit.timeline.tracks.some(({ clips }) =>
+    clips.some(
+      ({ asset }) =>
+        "prompt" in asset &&
+        asset.prompt !== undefined &&
+        asset.src === undefined
+    )
+  );
+
+// An asset made from a prompt is its file alone: with the prompt, the
+// render would generate it again.
+const generatedAsset = (asset: StudioAsset): StudioAsset => {
+  if (!("prompt" in asset) || asset.src === undefined) {
+    return asset;
+  }
+
+  const { model: _model, options: _options, prompt: _prompt, ...rest } = asset;
+
+  return rest;
+};
+
+/** The document as it is rendered: what was generated, by its file alone. */
+export const renderedOf = (edit: StudioEdit): StudioEdit => ({
+  ...edit,
+  timeline: {
+    ...edit.timeline,
+    tracks: edit.timeline.tracks.map((track) => ({
+      ...track,
+      clips: track.clips.map((clip) => ({
+        ...clip,
+        asset: generatedAsset(clip.asset),
+      })),
+    })),
+  },
+});
+
+/** The shape an image made for the edit takes. */
+export const imageAspectOf = (edit: StudioEdit): ImageAspect => {
+  const { aspectRatio } = sizedOutput(edit.output);
+
+  if (aspectRatio === "16:9") {
+    return "landscape";
+  }
+
+  return aspectRatio === "1:1" ? "square" : "portrait";
+};
+
+/** A picture to generate from a prompt, at `start`. */
+export const promptedImageOf = (prompt: string, start: number): StudioClip => ({
+  asset: { prompt, type: "image" },
+  fit: "crop",
+  length: stillSeconds,
+  start,
+});
 
 /** A new portrait edit of these clips, on one track. */
 export const emptyEdit = (clips: readonly StudioClip[]): StudioEdit => ({

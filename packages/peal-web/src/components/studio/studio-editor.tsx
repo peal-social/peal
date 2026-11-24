@@ -15,7 +15,7 @@ import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { toast } from "peal-ui/components/toast";
 import { cn } from "peal-ui/lib/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { isSlideshowSettingsRefusal } from "#assistant/slideshows.ts";
 import { SlideshowJobs } from "#components/media/generate-slideshow.tsx";
@@ -28,21 +28,30 @@ import {
   clipPreviewOf,
   emptyEdit,
   hasClips,
+  imageAspectOf,
   laidEnd,
   mediaIdsOf,
   previewOf,
+  renderedOf,
   storedOf,
   textClipOf,
+  waitsToBeGenerated,
 } from "#studio/edit-document.ts";
 import type { StudioEdit } from "#studio/edit-document.ts";
 import { useLibraryFiles } from "#studio/library-files.ts";
 
 import { canvasAttribute, startStudio } from "./studio-engine.ts";
-import type { Studio } from "./studio-engine.ts";
-import { captionsTool, figureTool, textTool } from "./studio-tools.ts";
+import type { Generation, Studio } from "./studio-engine.ts";
+import {
+  captionsTool,
+  figureTool,
+  imageTool,
+  textTool,
+} from "./studio-tools.ts";
 import { useStudioExport } from "./use-studio-export.ts";
 import type { StudioExport } from "./use-studio-export.ts";
 import { useStudioFrame } from "./use-studio-frame.ts";
+import { useStudioGenerator } from "./use-studio-generator.ts";
 
 import "./studio.css";
 
@@ -159,12 +168,37 @@ const LoadedStudio = ({
   const [full, setFull] = useState(true);
   const exporting = useStudioExport(workspaceId);
   const frame = useStudioFrame(workspaceId);
+  const generator = useStudioGenerator(workspaceId, status);
   useFullWindow(full);
+
+  const handleGeneration = useEffectEvent(
+    async (from: Studio, { prompt, type }: Generation): Promise<string> => {
+      if (type !== "image") {
+        throw new Error(t("notGenerated"));
+      }
+
+      const media = await generator.image(
+        prompt,
+        imageAspectOf(from.getEdit())
+      );
+
+      files.current.set(media.id, media);
+
+      if (media.url === null) {
+        throw new Error(t("notGenerated"));
+      }
+
+      return media.url;
+    }
+  );
 
   const addCaptions = t("addCaptions");
   const addCircle = t("addCircle");
   const addRectangle = t("addRectangle");
   const addText = t("addText");
+  const generateImage = t("generateImage");
+  const imagePrompt = t("imagePrompt");
+  const makesImages = status.images.available;
   const captionsNeedVoice = t("captionsNeedVoice");
   const newText = t("newText");
 
@@ -177,6 +211,7 @@ const LoadedStudio = ({
     const start = async (element: HTMLElement) => {
       try {
         const started = await startStudio({
+          generate: handleGeneration,
           initial: previewOf(
             initial,
             (mediaId) => files.current.get(mediaId)?.url ?? null,
@@ -187,6 +222,7 @@ const LoadedStudio = ({
             textTool(addText, newText),
             figureTool("rectangle", addRectangle),
             figureTool("circle", addCircle),
+            ...(makesImages ? [imageTool(generateImage, imagePrompt)] : []),
             captionsTool(addCaptions, () => {
               toast.info(captionsNeedVoice);
             }),
@@ -222,6 +258,9 @@ const LoadedStudio = ({
     addCircle,
     addRectangle,
     addText,
+    generateImage,
+    imagePrompt,
+    makesImages,
     captionsNeedVoice,
     initial,
     newText,
@@ -281,7 +320,14 @@ const LoadedStudio = ({
   const handleExport = () => {
     if (studio !== null) {
       studio.pause();
-      exporting.exportVideo(storedIn(studio, files.current));
+
+      const edit = storedIn(studio, files.current);
+
+      if (waitsToBeGenerated(edit)) {
+        toast.error(t("generateFirst"));
+      } else {
+        exporting.exportVideo(renderedOf(edit));
+      }
     }
   };
 
