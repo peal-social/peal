@@ -25,11 +25,9 @@ import {
   ArticleStateSchema,
   articleMediaOf,
 } from "#publishing/domain/article.ts";
-import {
-  AttemptOutcomeSchema,
-  earlierRefusalsOf,
-} from "#publishing/domain/publication-policy.ts";
+import { earlierRefusalsOf } from "#publishing/domain/publication-policy.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
+import { AttemptOutcomeSchema } from "#shared/domain/attempt-outcome.ts";
 import {
   ChannelIdSchema,
   MediaAssetIdSchema,

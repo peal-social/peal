@@ -14,9 +14,11 @@ import {
 import { ArticleIdSchema } from "#publishing/domain/article-id.ts";
 import { PublicationDecisionSchema } from "#publishing/domain/publication-policy.ts";
 import type { PublicationDecision } from "#publishing/domain/publication-policy.ts";
-
-import { retryingDatabase, retryingDatabaseOr } from "./activity-retry.ts";
-import { sleepUntil } from "./sleep-until.ts";
+import {
+  retryingDatabase,
+  retryingDatabaseOr,
+} from "#shared/infrastructure/workflows/activity-retry.ts";
+import { sleepUntil } from "#shared/infrastructure/workflows/sleep-until.ts";
 
 /**
  * Sends one revision of an article to its site, in one round: sleeps

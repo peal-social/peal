@@ -21,7 +21,6 @@ import {
 import type { Article, ArticleViolation } from "#publishing/domain/article.ts";
 import type { InvalidArticleTransition } from "#publishing/domain/invalid-article-transition.ts";
 import { authorOf } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { siteRules } from "#publishing/domain/site-rules.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
@@ -32,6 +31,7 @@ import type { ChannelId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import type { TimeZoneId } from "#shared/domain/time-zone.ts";
 
 import { ApprovalGate } from "./approval-gate.ts";

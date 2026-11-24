@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Result, Schema } from "effect";
 
-import { isDue, Schedule, scheduleAt } from "#publishing/domain/schedule.ts";
+import { isDue, Schedule, scheduleAt } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 const paris = TimeZoneIdSchema.make("Europe/Paris");

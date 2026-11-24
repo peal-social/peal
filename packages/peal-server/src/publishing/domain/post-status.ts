@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { Schedule } from "./schedule.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 
 /** How a post ended across the channels it went to. */
 export const PostOutcomeSchema = Schema.Literals([

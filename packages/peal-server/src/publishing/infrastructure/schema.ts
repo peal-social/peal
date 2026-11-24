@@ -7,7 +7,6 @@ import {
   index,
   integer,
   jsonb,
-  pgSchema,
   primaryKey,
   text,
   timestamp,
@@ -16,12 +15,14 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { publishing } from "#shared/infrastructure/publishing-schema.ts";
+
 // The publishing context's tables, in their own Postgres schema. Instants are
 // timestamptz written from the Clock (never NOW()), so tests control them.
 // Effect's cluster tables (cluster_*) live in the public schema, created by
 // Effect itself: drizzle-kit never sees them.
 
-export const publishing = pgSchema("publishing");
+export { publishing } from "#shared/infrastructure/publishing-schema.ts";
 
 const instant = (name: string) => timestamp(name, { withTimezone: true });
 

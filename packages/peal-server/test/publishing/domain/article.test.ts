@@ -19,13 +19,13 @@ import {
   unscheduled,
 } from "#publishing/domain/article.ts";
 import type { Article } from "#publishing/domain/article.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import {
   ChannelIdSchema,
   MediaAssetIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 const now = DateTime.makeUnsafe("2026-06-15T07:00:00Z");

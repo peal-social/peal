@@ -106,9 +106,11 @@ and no socket, for tests.
   issues), the platform list (`PlatformSchema`), the permission vocabulary
   (`access.ts`, `authorize.ts`), locales (`LocaleSchema`: en, fr), IANA zones
   (`TimeZoneIdSchema`), wall-clock time (`LocalDateSchema`, `LocalTimeSchema`,
-  `WeekdaySchema`, `fromWallClock`), and how a platform call can end
+  `WeekdaySchema`, `fromWallClock`), a schedule (`Schedule`: the instant
+  in UTC and the zone it was chosen in), how a platform call can end
   (`PublishResult`, `PublishFailure`, and `TokenRejected` for a token the
-  platform refused before doing anything).
+  platform refused before doing anything), and how an attempt ended
+  (`AttemptOutcome`: a `PublishResult` or a `PublishFailure`).
 - Take ids from the `Ids` port: `yield* newId(PostIdSchema)`. Tests provide
   `Ids.layerTest`, which issues `00000000-0000-7000-8000-000000000001`, then
   `…002`, from each build of the layer.

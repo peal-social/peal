@@ -34,7 +34,6 @@ import {
   createDraft,
   schedulePost,
 } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import type { Permission } from "#shared/domain/access.ts";
@@ -44,6 +43,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type { WorkspaceId } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { memberOf } from "#test/channels/support.ts";
 import {

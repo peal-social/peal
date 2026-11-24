@@ -8,6 +8,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type { PostId, UserId, WorkspaceId } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 
 import { InvalidPostTransition } from "./invalid-post-transition.ts";
 import type { PostAction } from "./invalid-post-transition.ts";
@@ -24,7 +25,6 @@ import type { PostTarget } from "./post-target.ts";
 import { QueueIdSchema } from "./queue-id.ts";
 import type { QueueId } from "./queue-id.ts";
 import { ScheduleInPast } from "./schedule-in-past.ts";
-import { Schedule } from "./schedule.ts";
 import type { TagId } from "./tag-id.ts";
 import { PostTagIdsSchema } from "./tag.ts";
 

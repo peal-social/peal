@@ -23,8 +23,7 @@ import type {
 } from "#publishing/domain/publication-claims.ts";
 import { PublicationDecisionSchema } from "#publishing/domain/publication-policy.ts";
 import type { TargetSettlement } from "#publishing/domain/target-settlement.ts";
-
-import { retryingDatabase } from "./activity-retry.ts";
+import { retryingDatabase } from "#shared/infrastructure/workflows/activity-retry.ts";
 
 /**
  * Publishes one post on one channel, for one round, part by part: claims

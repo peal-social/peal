@@ -464,7 +464,7 @@
   "test/publishing/domain/recycling-rule.test.ts": 42,
   "test/publishing/domain/recycling-variant-media.test.ts": 3,
   "test/publishing/domain/removal-decision.test.ts": 3,
-  "test/publishing/domain/schedule.test.ts": 2,
+  "test/shared/domain/schedule.test.ts": 2,
   "test/publishing/domain/short-links.test.ts": 81,
   "test/publishing/domain/signature.test.ts": 3,
   "test/publishing/domain/slack-rules.test.ts": 20,
