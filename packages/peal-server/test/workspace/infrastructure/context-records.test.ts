@@ -9,6 +9,8 @@ import { ActivityRecords } from "#activity/application/activity-records.ts";
 import { AdRecords } from "#ads/application/ad-records.ts";
 import { AgentRecords } from "#agent/application/agent-records.ts";
 import { AnalyticsRecords } from "#analytics/application/analytics-records.ts";
+import { ArticleRecords } from "#articles/application/article-records.ts";
+import { ArticlesSending } from "#articles/application/articles-sending.ts";
 import { UsageRecords } from "#assistant/application/ports/usage-records.ts";
 import { BillingRecords } from "#billing/application/billing-records.ts";
 import { WorkspaceStillBilled } from "#billing/application/workspace-still-billed.ts";
@@ -17,8 +19,6 @@ import { EngagementRecords } from "#engagement/application/engagement-records.ts
 import { LegalRecords } from "#legal/application/legal-records.ts";
 import { MediaRecords } from "#media/application/media-records.ts";
 import { NoticeRecords } from "#notifications/application/notice-records.ts";
-import { ArticleRecords } from "#publishing/application/article-records.ts";
-import { ArticlesSending } from "#publishing/application/articles-sending.ts";
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { PostsPublishing } from "#publishing/application/posts-publishing.ts";
 import { ReviewRecords } from "#review/application/review-records.ts";

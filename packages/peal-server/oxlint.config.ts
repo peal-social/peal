@@ -14,6 +14,7 @@ import { modules as moduleMap } from "./test/lint-modules.ts";
 
 const contexts = [
   "publishing",
+  "articles",
   "channels",
   "media",
   "workspace",

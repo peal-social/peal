@@ -5,6 +5,7 @@ import { AdRecords } from "#ads/application/ad-records.ts";
 import { AgentRecords } from "#agent/application/agent-records.ts";
 import type { ExportedChat } from "#agent/application/ports/agent-chats.ts";
 import { AnalyticsRecords } from "#analytics/application/analytics-records.ts";
+import { ArticleRecords } from "#articles/application/article-records.ts";
 import { UsageRecords } from "#assistant/application/ports/usage-records.ts";
 import { BillingRecords } from "#billing/application/billing-records.ts";
 import type { WorkspaceStillBilled } from "#billing/application/workspace-still-billed.ts";
@@ -13,7 +14,6 @@ import { EngagementRecords } from "#engagement/application/engagement-records.ts
 import { LegalRecords } from "#legal/application/legal-records.ts";
 import { MediaRecords } from "#media/application/media-records.ts";
 import { NoticeRecords } from "#notifications/application/notice-records.ts";
-import { ArticleRecords } from "#publishing/application/article-records.ts";
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { ReviewRecords } from "#review/application/review-records.ts";
 import { Pseudonyms } from "#shared/application/pseudonyms.ts";

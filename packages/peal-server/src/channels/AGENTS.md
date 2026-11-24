@@ -519,7 +519,7 @@
 - Refresh a channel's tokens only inside `ChannelLocks.withLock` (Postgres
   advisory locks, `#shared/infrastructure/advisory-locks.ts`). A process
   holds at most four at once, each on a pool connection, beside the two
-  article turns of the publishing context, so never nest `withLock`. Bluesky and X refresh tokens work
+  article turns of the articles context, so never nest `withLock`. Bluesky and X refresh tokens work
   once.
 - Other contexts get a working token only from `ChannelAccess`
   (`channels/application/channel-access.ts`). `withToken` decrypts it,
