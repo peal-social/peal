@@ -647,7 +647,9 @@ in SeaweedFS under `tests/media/`, and check billing against stripe-mock.
 `SMTP_URL` and `MAILPIT_URL`, the `PEAL_S3_*` variables and `STRIPE_MOCK_URL`
 point them elsewhere. Run the tests on a database of
 their own when a dev server uses the stack's: it would run the jobs they leave
-behind.
+behind. The usage-snapshot suite also keeps a second database
+beside it, named after it with `_snapshot`, which its role needs `CREATEDB`
+to make: drop that one when you drop the first.
 
 ### SDKs
 
