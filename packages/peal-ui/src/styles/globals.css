@@ -145,6 +145,27 @@
   }
 }
 
+/* A block that waits, a skeleton: muted grey with the same light passing
+   across it, as where a dragged widget will land; with reduced motion,
+   still. */
+@utility bg-shimmer {
+  background-color: color-mix(in oklab, var(--muted) 60%, transparent);
+  background-image: linear-gradient(
+    100deg,
+    transparent 30%,
+    color-mix(in oklab, var(--card) 70%, transparent) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+  animation-duration: 1.6s;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-image: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring;

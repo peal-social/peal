@@ -740,7 +740,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `Feedback` (`boardPlugins`) sets the drop's curve, the one `glide`
   and `settle` share (`motion`); dnd-kit hides the placeholder it leaves,
   so its slot is drawn by the placeholder's `::after`
-  (`data-[dnd-placeholder]:after:visible`). It ignores untrusted pointer
+  (`data-[dnd-placeholder]:after:visible`), a skeleton with peal-ui's
+  `bg-shimmer`. It ignores untrusted pointer
   events: check a move in a browser with its keyboard (Space, arrows). The board is
   the person's, kept per workspace in `localStorage`
   (`#analytics/board-store.ts`, `peal.analytics.board.<workspace>`,

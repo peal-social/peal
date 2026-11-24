@@ -70,7 +70,7 @@ export const WidgetCardView = ({
       data-widget-id={widgetId}
       data-dragging={dragging ? "" : undefined}
       data-resizing={resizing ? "" : undefined}
-      className={`group/widget data-[dnd-placeholder]:after:border-border data-[dnd-placeholder]:after:bg-muted/50 relative flex min-h-0 min-w-0 data-[dnd-placeholder]:after:visible data-[dnd-placeholder]:after:absolute data-[dnd-placeholder]:after:inset-0 data-[dnd-placeholder]:after:rounded-lg data-[dnd-placeholder]:after:border-2 data-[dnd-placeholder]:after:border-dashed data-[resizing]:z-20 data-[resizing]:h-(--resize-height) data-[resizing]:w-(--resize-width) data-[resizing]:translate-x-(--resize-x) data-[resizing]:translate-y-(--resize-y) data-[resizing]:self-start data-[resizing]:justify-self-start ${widthClasses[width]} ${heightClasses[height]}`}
+      className={`group/widget data-[dnd-placeholder]:after:bg-shimmer relative flex min-h-0 min-w-0 data-[dnd-placeholder]:after:visible data-[dnd-placeholder]:after:absolute data-[dnd-placeholder]:after:inset-0 data-[dnd-placeholder]:after:rounded-lg data-[resizing]:z-20 data-[resizing]:h-(--resize-height) data-[resizing]:w-(--resize-width) data-[resizing]:translate-x-(--resize-x) data-[resizing]:translate-y-(--resize-y) data-[resizing]:self-start data-[resizing]:justify-self-start ${widthClasses[width]} ${heightClasses[height]}`}
     >
       {handle}
       <article

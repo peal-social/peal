@@ -1373,8 +1373,10 @@ thing over a period of its own.
   beside its name (no border, `muted-foreground`), shown on hover and
   focus, picks it
   up: it follows the pointer in any direction, lifted (2 %
-  larger, a deep shadow), while the others glide aside and a dashed
-  `muted` slot shows where it lands; let go, it settles into the slot; Space picks it up from the keyboard, the arrows carry
+  larger, a deep shadow), while the others glide aside and a skeleton shows where it
+  lands: the slot in `muted`, no border, a light passing across it
+  (`bg-shimmer`, 1.6 s, the agent's `text-shimmer` for a block; still
+  under reduced motion); let go, it settles into the slot; Space picks it up from the keyboard, the arrows carry
   it and Space puts it down. Every edge and corner resizes it: the
   pointer finds each edge along its length and each corner, and only
   the edge under it, focused or being pulled shows its pill (none
