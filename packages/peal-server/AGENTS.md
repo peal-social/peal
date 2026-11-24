@@ -78,11 +78,13 @@ and no socket, for tests.
   same name in each layer (`src/<context>/<layer>/<module>/`; publishing's
   `feeds`). A module's files keep their layer's rules and may import the
   rest of the context; the rest of the context imports a module only from
-  the container and the seams `oxlint.config.ts` names, each with its
-  reason, and modules never import each other. A file in a module reaches
-  the rest of its layer by alias (`#publishing/application/x.ts`), as `../`
-  is refused. A new module goes into that file's `modules` map with its
-  seams; its rules go in its guide, `src/<context>/application/<module>/AGENTS.md`.
+  the container and the seams its entry in `test/lint-modules.ts` (which
+  `oxlint.config.ts` reads) names, each with its reason, and modules never
+  import each other. A file in a module reaches the rest of its layer by
+  alias (`#publishing/application/x.ts`), as `../` is refused. A new module
+  goes into that `modules` map with its seams (`test/lint-modules.test.ts`
+  checks that its folders and seams exist); its rules go in its guide,
+  `src/<context>/application/<module>/AGENTS.md`.
 - Contexts talk through ports: an adapter in one context may call another
   context's `application` layer, never its domain or infrastructure.
   Publishing lists channels through `ListedWorkspaceChannels`, which calls the
