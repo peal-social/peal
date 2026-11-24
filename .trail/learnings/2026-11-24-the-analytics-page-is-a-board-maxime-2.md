@@ -3,7 +3,7 @@ title: "The analytics page is a board of widgets kept in the person's browser, m
 author: Maxime
 date: 2026-11-24
 branch: worktree-silly-imagining-snowglobe
-cost: { minutes: 67, tokens: 497525 }
+cost: { minutes: 69, tokens: 520345 }
 id: l-35173635
 scope: repo
 status: active
@@ -41,6 +41,9 @@ In the code: packages/peal-web/src/components/analytics/widgets/analytics-board.
 The owner (2026-11-24) wants a widget's filter button to look like the "…" beside it: transparent, no border, no background, its icon blue while the widget is filtered, and its tooltip only "Filter" (the accessible name still names the widget, for screen readers). List toolbars keep the outline Filter button.
 
 In the code: packages/peal-ui/src/components/list-toolbar.tsx (ListToolButton quiet), packages/peal-web/src/components/lists/filter-menu.tsx (quiet, tooltip), widget-controls.tsx.
+The owner (2026-11-24) wants the slot a dragged widget will land in to read as a loading skeleton, the grey kept: muted, no border, a light passing across it, like the agent's waiting text. peal-ui's `bg-shimmer` is that block, on the same shimmer keyframes as `text-shimmer`; the dashed outline is gone.
+
+In the code: packages/peal-ui/src/styles/globals.css (bg-shimmer), packages/peal-web/src/components/analytics/widgets/widget-card.tsx (data-[dnd-placeholder]:after:bg-shimmer).
 
 ## Tried and ruled out
 Keeping the board on the server. It would need a contract endpoint, regenerating the eight SDKs, a table and migration, an entry in the data-processing registry with the privacy policy's table in both languages, and erasure on account and workspace deletion. That is too much for a layout. Move it to the server only once people ask for the same board across devices.
