@@ -1,5 +1,6 @@
 import { captionClipOf } from "#studio/captions.ts";
 import {
+  promptedFilmOf,
   promptedImageOf,
   promptedVoiceOf,
   textClipOf,
@@ -55,6 +56,18 @@ export const imageTool = (label: string, prompt: string): StudioTool => ({
   label,
   onPress: (studio) => {
     void studio.addTrack("over", [promptedImageOf(prompt, studio.time())]);
+  },
+});
+
+/** A film to generate, over the others, at the playhead. */
+export const filmTool = (label: string, prompt: string): StudioTool => ({
+  icon: iconOf(
+    '<rect x="1.5" y="3.5" width="9" height="9" rx="1.5"/><path d="M10.5 7l4-2v6l-4-2"/>'
+  ),
+  id: "generate-video",
+  label,
+  onPress: (studio) => {
+    void studio.addTrack("over", [promptedFilmOf(prompt, studio.time())]);
   },
 });
 

@@ -36,6 +36,8 @@ export interface Studio {
 /** What a clip asks to be generated. */
 export interface Generation {
   readonly prompt: string;
+  /** Told once nobody waits for it: the clip is gone, or the editor. */
+  readonly signal: AbortSignal;
   readonly type: string;
 }
 
@@ -184,13 +186,14 @@ export const startStudio = async ({
 
     // A clip lasts as long as what was generated for it plays, once the
     // SDK has put it there.
+    const stopped = new AbortController();
     const lengths = new Map<string, number>();
 
-    edit.registerAssetGenerator(async ({ asset, clipId }) => {
-      const { seconds, url } = await generate(
-        studio,
-        await decodeGeneration(asset)
-      );
+    edit.registerAssetGenerator(async ({ asset, clipId, signal }) => {
+      const { seconds, url } = await generate(studio, {
+        ...(await decodeGeneration(asset)),
+        signal: AbortSignal.any([signal, stopped.signal]),
+      });
 
       if (seconds !== null) {
         lengths.set(clipId, seconds);
@@ -219,6 +222,7 @@ export const startStudio = async ({
     await canvas.load();
 
     stops.push(() => {
+      stopped.abort();
       edit.pause();
       ui.dispose();
       canvas.dispose();
