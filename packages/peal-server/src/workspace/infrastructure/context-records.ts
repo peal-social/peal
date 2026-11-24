@@ -130,7 +130,7 @@ export const ContextRecordsLive = Layer.effect(
           // Articles too, whose jobs would send to its websites.
           yield* articles
             .eraseWorkspace(workspaceId)
-            .pipe(Effect.catchTag("PostsPublishing", busy));
+            .pipe(Effect.catchTag("ArticlesSending", busy));
 
           yield* reviews.eraseWorkspace(workspaceId);
           yield* analytics.eraseWorkspace(workspaceId);
@@ -240,7 +240,10 @@ export const ContextRecordsLive = Layer.effect(
             (workspaceId) =>
               posts.ensureErasable(workspaceId).pipe(
                 Effect.andThen(articles.ensureErasable(workspaceId)),
-                Effect.catchTag("PostsPublishing", busy),
+                Effect.catchTags({
+                  ArticlesSending: busy,
+                  PostsPublishing: busy,
+                }),
                 // Nor while a boost may still spend: erasing would leave
                 // it running at its network with nobody to stop it here.
                 Effect.andThen(adRecords.ensureErasable(workspaceId)),

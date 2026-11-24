@@ -18,6 +18,7 @@ import { LegalRecords } from "#legal/application/legal-records.ts";
 import { MediaRecords } from "#media/application/media-records.ts";
 import { NoticeRecords } from "#notifications/application/notice-records.ts";
 import { ArticleRecords } from "#publishing/application/article-records.ts";
+import { ArticlesSending } from "#publishing/application/articles-sending.ts";
 import { PostRecords } from "#publishing/application/post-records.ts";
 import { PostsPublishing } from "#publishing/application/posts-publishing.ts";
 import { ReviewRecords } from "#review/application/review-records.ts";
@@ -33,8 +34,10 @@ import { ContextRecordsLive } from "#workspace/infrastructure/context-records.ts
 const harbour = WorkspaceIdSchema.make("5d1c8e2a-3b4f-4a6c-9d7e-8f9a0b1c2d3e");
 const meadow = WorkspaceIdSchema.make("6e2d9f3b-4c5a-4b7d-8e8f-9a0b1c2d3e4f");
 const going = WorkspaceIdSchema.make("7f3e0a4c-5d6b-4c8e-9f9a-0b1c2d3e4f5a");
+const sending = WorkspaceIdSchema.make("8a4f1b5d-6e7c-4d9f-8a0b-1c2d3e4f5a6b");
 
-// The workspaces billed, and the one with a post going out.
+// The workspaces billed, the one with a post going out, and the one with
+// an article on its way to its site.
 const billed: ReadonlySet<WorkspaceId> = new Set([harbour, meadow]);
 
 class Calls extends Context.Service<
@@ -63,8 +66,14 @@ const RecordsTest = Layer.unwrap(
             eraseWorkspace: (workspaceId) => call(`posts:${workspaceId}`),
           }),
           Layer.mock(ArticleRecords, {
-            ensureErasable: () => Effect.void,
-            eraseWorkspace: (workspaceId) => call(`articles:${workspaceId}`),
+            ensureErasable: (workspaceId) =>
+              workspaceId === sending
+                ? Effect.fail(new ArticlesSending({ workspaceId }))
+                : Effect.void,
+            eraseWorkspace: (workspaceId) =>
+              workspaceId === sending
+                ? Effect.fail(new ArticlesSending({ workspaceId }))
+                : call(`articles:${workspaceId}`),
           }),
           Layer.mock(BillingRecords, {
             billedBy: (workspaceId) =>
@@ -164,6 +173,34 @@ layer(RecordsTest)("settling deletions at Stripe", (it) => {
       assert.strictEqual(failure._tag, "WorkspaceBusy");
       assert.deepStrictEqual(yield* made, []);
     })
+  );
+
+  it.effect("cancels nothing while an article of one of them is sent", () =>
+    Effect.gen(function* articleBusy() {
+      const records = yield* ContextRecords;
+
+      const failure = yield* records
+        .settleWorkspaces([harbour, sending], { cancelSubscriptions: true })
+        .pipe(Effect.flip);
+
+      assert.strictEqual(failure._tag, "WorkspaceBusy");
+      assert.deepStrictEqual(yield* made, []);
+    })
+  );
+
+  it.effect(
+    "refuses to erase a workspace while one of its articles is sent",
+    () =>
+      Effect.gen(function* erasureBusy() {
+        const records = yield* ContextRecords;
+
+        const failure = yield* records
+          .eraseWorkspace(sending)
+          .pipe(Effect.flip);
+
+        assert.strictEqual(failure._tag, "WorkspaceBusy");
+        assert.deepStrictEqual(yield* made, [`posts:${sending}`]);
+      })
   );
 
   it.effect("erases a settled workspace without asking Stripe to cancel", () =>

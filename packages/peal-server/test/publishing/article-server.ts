@@ -19,15 +19,17 @@ import { Articles } from "#publishing/application/articles.ts";
 import { AttachableMedia } from "#publishing/application/attachable-media.ts";
 import { PostAllowance } from "#publishing/application/post-allowance.ts";
 import type { Article } from "#publishing/domain/article.ts";
-import { ChannelAccessSiteCredentials } from "#publishing/infrastructure/channel-access-credentials.ts";
+import { ChannelAccessSiteCredentials } from "#publishing/infrastructure/channel-access-site-credentials.ts";
 import {
   DrizzleArticleJournal,
   DrizzleArticleStore,
 } from "#publishing/infrastructure/drizzle-article-store.ts";
+import { LibraryArticleMedia } from "#publishing/infrastructure/library-article-media.ts";
 import { ListedSiteChannels } from "#publishing/infrastructure/listed-site-channels.ts";
 import { devtoSiteAdapter } from "#publishing/infrastructure/platforms/devto/devto-articles.ts";
 import { hashnodeSiteAdapter } from "#publishing/infrastructure/platforms/hashnode/hashnode-articles.ts";
 import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { PostingArticleGates } from "#publishing/infrastructure/posting-article-gates.ts";
 import { routedSitePublisher } from "#publishing/infrastructure/routed-site-publisher.ts";
 import { SqlArticleSendTurns } from "#publishing/infrastructure/sql-article-send-turns.ts";
 import { WorkflowArticleJobs } from "#publishing/infrastructure/workflow-article-jobs.ts";
@@ -292,12 +294,15 @@ export const ArticleServerTest = Layer.mergeAll(
     Layer.mergeAll(
       HookedArticleStore,
       SqlArticleSendTurns,
-      ApprovalGateTest,
-      PostAllowanceTest,
+      // The approval policy and the plan as the test sets them, through
+      // the adapters the server asks them with.
+      PostingArticleGates.pipe(
+        Layer.provide(Layer.merge(ApprovalGateTest, PostAllowanceTest))
+      ),
       OutagedArticleJournal,
       WorkflowArticleJobs,
       ListedSiteChannels,
-      LibraryTest,
+      LibraryArticleMedia.pipe(Layer.provide(LibraryTest)),
       RecordedArticleEvents,
       SitePublisherTest
     )

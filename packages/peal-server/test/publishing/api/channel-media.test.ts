@@ -7,7 +7,6 @@ import type { PostContent } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
-import { DrizzleArticleStore } from "#publishing/infrastructure/drizzle-article-store.ts";
 import { newId } from "#shared/application/ids.ts";
 import {
   MediaAssetIdSchema,
@@ -120,15 +119,10 @@ describe("a post with media of its own on a channel", () => {
 
           const release = yield* MediaInPosts.use((inPosts) =>
             inPosts.release(workspaceId, MediaAssetIdSchema.make(own))
-          ).pipe(
-            Effect.provide(
-              MediaInPosts.layer.pipe(Layer.provide(DrizzleArticleStore))
-            )
-          );
+          ).pipe(Effect.provide(MediaInPosts.layer));
 
           assert.deepStrictEqual(release, {
             _tag: "inUse",
-            articles: [],
             scheduled: [PostIdSchema.make(draft.id)],
           });
 
@@ -208,11 +202,7 @@ describe("a post with media of its own on a channel", () => {
 
           const release = yield* MediaInPosts.use((inPosts) =>
             inPosts.release(workspaceId, MediaAssetIdSchema.make(photo))
-          ).pipe(
-            Effect.provide(
-              MediaInPosts.layer.pipe(Layer.provide(DrizzleArticleStore))
-            )
-          );
+          ).pipe(Effect.provide(MediaInPosts.layer));
 
           assert.deepStrictEqual(release, {
             _tag: "released",

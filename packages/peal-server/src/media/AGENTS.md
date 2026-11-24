@@ -118,11 +118,15 @@
   (`sourceLink`, `MediaStorage.downloadUrl`: it stops working after the
   time asked, an hour, whether or not the bucket is served publicly), for
   the files of that one request alone; never log the link.
-- Deleting an asset asks the `MediaUsage` port first, which publishing's
-  `MediaInPosts` backs (`PublishingMediaUsage`; the composition root
-  provides `MediaInPostsLive`): a post scheduled or publishing that shows it
-  refuses the deletion (`MediaInUse`, listing the posts), and drafts lose
-  the attachment in one transaction. `GET …/media/:id/usage` tells clients
+- Deleting an asset asks the `MediaUsage` port first, which
+  `HoldersMediaUsage` backs with the articles' `MediaInArticles` and
+  publishing's `MediaInPosts` (the composition root provides
+  `MediaInArticlesLive` and `MediaInPostsLive`), in one transaction:
+  the articles that show it are held first (`MediaInArticles.hold`, their
+  rows locked until the transaction ends), then posts are asked. An
+  article or a post scheduled or publishing that shows it refuses the
+  deletion (`MediaInUse`, listing both), and drafts, and the articles that
+  may still be sent, lose the attachment. `GET …/media/:id/usage` tells clients
   beforehand.
 - A file that arrives (an import, an image the assistant made) is stored
   and recorded through `keepArriving`: from the moment the store holds it

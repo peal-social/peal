@@ -8,25 +8,27 @@ import {
   Schema,
 } from "effect";
 
+import type {
+  ArticleDecision,
+  ArticleSettlement,
+} from "#publishing/domain/article-failure.ts";
 import type { ArticleId } from "#publishing/domain/article-id.ts";
+import { articleDecide } from "#publishing/domain/article-policy.ts";
+import { articleRefusalCodes } from "#publishing/domain/article-refusals.ts";
 import { claimed, settled } from "#publishing/domain/article.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
-import { decide } from "#publishing/domain/publication-policy.ts";
-import type { PublicationDecision } from "#publishing/domain/publication-policy.ts";
-import type { TargetSettlement } from "#publishing/domain/target-settlement.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 
 import { ArticleEvents } from "./article-events.ts";
+import { ArticleGates } from "./article-gates.ts";
 import type { ArticleJob } from "./article-jobs.ts";
 import { ArticleJournal } from "./article-journal.ts";
 import { ArticleSendTurns } from "./article-send-turns.ts";
 import { ArticleStore } from "./article-store.ts";
 import { SitePublisher } from "./site-publisher.ts";
 import type { SitePublishRequest, SiteSearch } from "./site-publisher.ts";
-import { withinPlan } from "./within-plan.ts";
 
 // The steps of the job that sends an article (`PublishArticleV1`): claim
 // it, make attempts until one settles it, record how it ended. Their
@@ -153,7 +155,7 @@ const searchRefused: AttemptOutcome = {
 
 // The workspace holds more channels or members than its plan allows.
 const planRefusal: AttemptOutcome = new BadRequest({
-  code: ownRefusalCodes.planLimit,
+  code: articleRefusalCodes.planLimit,
 });
 
 /** One attempt at sending the article in its round. */
@@ -179,12 +181,13 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
     const publisher = yield* SitePublisher;
     const store = yield* ArticleStore;
     const turns = yield* ArticleSendTurns;
+    const gates = yield* ArticleGates;
 
     const article = yield* store.get(attempt.articleId);
 
     // Deleted while the job waited: nothing is sent.
     if (Option.isNone(article)) {
-      const gone: PublicationDecision = {
+      const gone: ArticleDecision = {
         _tag: "settle",
         settlement: { _tag: "cancelled" },
       };
@@ -213,7 +216,7 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
     if (Option.isSome(recorded) && recorded.value._tag === "completed") {
       const { finishedAt, outcome, startedAt } = recorded.value;
 
-      return decide(outcome, {
+      return articleDecide(outcome, {
         earlier: yield* refusalsFor(outcome),
         sinceScheduled: DateTime.distance(attempt.dueAt, finishedAt),
         startedAt,
@@ -324,7 +327,7 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
       const overPlan =
         start._tag === "inFlight"
           ? false
-          : yield* withinPlan(article.value.workspaceId).pipe(
+          : yield* gates.withinPlan(article.value.workspaceId).pipe(
               Effect.as(false),
               Effect.catchTag("PlanLimitReached", () => Effect.succeed(true))
             );
@@ -478,7 +481,7 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
           { discard: true }
         );
 
-        return decide(stillToCheck, {
+        return articleDecide(stillToCheck, {
           earlier: { rateLimited: 0, unavailable: 0 },
           sinceScheduled: DateTime.distance(attempt.dueAt, now),
           startedAt: leftFirst.at,
@@ -489,19 +492,19 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
         DateTime.distance(attempt.dueAt, now),
         turnDeadline
       )
-        ? decide(new PlatformUnavailable(), {
+        ? articleDecide(new PlatformUnavailable(), {
             earlier: { rateLimited: 0, unavailable: Number.MAX_SAFE_INTEGER },
             sinceScheduled: DateTime.distance(attempt.dueAt, now),
             startedAt: now,
           })
-        : ({ _tag: "retry", delay: turnWait } satisfies PublicationDecision);
+        : ({ _tag: "retry", delay: turnWait } satisfies ArticleDecision);
     }
 
     const { finishedAt, outcome, startedAt } = ended.value;
 
     const earlier = yield* refusalsFor(outcome);
 
-    const decision: PublicationDecision = decide(outcome, {
+    const decision: ArticleDecision = articleDecide(outcome, {
       earlier,
       sinceScheduled: DateTime.distance(attempt.dueAt, finishedAt),
       startedAt,
@@ -513,7 +516,7 @@ export const articleAttemptRun = Effect.fn("Articles.attemptRun")(
 
 /** Records how the article ended, in a transaction, and tells of it. */
 export const settleArticleRun = Effect.fn("Articles.settleRun")(
-  function* settleArticleRun(job: ArticleJob, settlement: TargetSettlement) {
+  function* settleArticleRun(job: ArticleJob, settlement: ArticleSettlement) {
     const store = yield* ArticleStore;
     const events = yield* ArticleEvents;
     const { transaction } = yield* TransactionRunner;

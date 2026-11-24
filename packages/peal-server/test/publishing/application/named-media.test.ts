@@ -1,5 +1,5 @@
 import { assert, describe, it } from "@effect/vitest";
-import { Duration, Effect, Layer, Option } from "effect";
+import { Duration, Effect, Option } from "effect";
 
 import { ChannelDefaults } from "#publishing/application/channel-defaults.ts";
 import { ChannelSets } from "#publishing/application/channel-sets.ts";
@@ -9,7 +9,6 @@ import { PostDrafts } from "#publishing/application/post-drafts.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { ChannelOptions } from "#publishing/domain/channel-options.ts";
 import { YouTubeOptions } from "#publishing/domain/youtube-options.ts";
-import { DrizzleArticleStore } from "#publishing/infrastructure/drizzle-article-store.ts";
 import { newId } from "#shared/application/ids.ts";
 import { MediaAssetIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId } from "#shared/domain/ids.ts";
@@ -189,14 +188,13 @@ describe("a file an option names", () => {
           assert.deepStrictEqual(
             yield* inPosts.usage(workspaceId, attachableImage),
             {
-              articles: { drafts: [], scheduled: [] },
               drafts: [draft.post.id],
               scheduled: [sent.post.id],
             }
           );
           assert.deepStrictEqual(
             yield* inPosts.release(workspaceId, attachableImage),
-            { _tag: "inUse", articles: [], scheduled: [sent.post.id] }
+            { _tag: "inUse", scheduled: [sent.post.id] }
           );
 
           yield* scheduling.cancel(actor, sent.post.id);
@@ -221,11 +219,7 @@ describe("a file an option names", () => {
               ),
             ]
           );
-        }).pipe(
-          Effect.provide(
-            MediaInPosts.layer.pipe(Layer.provide(DrizzleArticleStore))
-          )
-        )
+        }).pipe(Effect.provide(MediaInPosts.layer))
       ),
     timeout
   );

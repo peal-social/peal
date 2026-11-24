@@ -12,9 +12,9 @@ import type {
   SiteSearch,
 } from "#publishing/application/site-publisher.ts";
 import { articleHtml, escapeHtml } from "#publishing/domain/article-html.ts";
+import { articleRefusalCodes } from "#publishing/domain/article-refusals.ts";
 import { articleMediaOf } from "#publishing/domain/article.ts";
 import type { Article } from "#publishing/domain/article.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import type { SiteAdapter } from "#publishing/infrastructure/platforms/site-adapter.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
@@ -190,7 +190,7 @@ const sentJson = <A, I>(schema: Schema.Codec<A, I>, ok: readonly number[]) =>
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: ownRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
 
 // The site's answer; a failure to reach it is the site being down.
 const execute = (

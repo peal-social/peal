@@ -11,9 +11,9 @@ import {
   claimArticleRun,
   settleArticleRun,
 } from "#publishing/application/article-publication.ts";
+import { ArticleDecisionSchema } from "#publishing/domain/article-failure.ts";
+import type { ArticleDecision } from "#publishing/domain/article-failure.ts";
 import { ArticleIdSchema } from "#publishing/domain/article-id.ts";
-import { PublicationDecisionSchema } from "#publishing/domain/publication-policy.ts";
-import type { PublicationDecision } from "#publishing/domain/publication-policy.ts";
 import {
   retryingDatabase,
   retryingDatabaseOr,
@@ -23,7 +23,8 @@ import { sleepUntil } from "#shared/infrastructure/workflows/sleep-until.ts";
 /**
  * Sends one revision of an article to its site, in one round: sleeps
  * until Peal is due to send it, claims it, makes attempts until one
- * settles it (the posts' policy: `decide`), then records how it ended.
+ * settles it (`articleDecide`, on the posts' figures), then records how
+ * it ended.
  * The payload holds ids and the instant only: nothing an article says is
  * ever in its history.
  *
@@ -45,7 +46,7 @@ export const PublishArticleV1 = Workflow.make("PublishArticleV1", {
 });
 
 // What an attempt the database kept from running answers.
-const laterAttempt: PublicationDecision = {
+const laterAttempt: ArticleDecision = {
   _tag: "retry",
   delay: Duration.minutes(1),
 };
@@ -72,7 +73,7 @@ const attemptAt = (job: ArticleJob, dueAt: DateTime.Utc, attempt: number) =>
       );
     }),
     name: `send/${attempt}`,
-    success: PublicationDecisionSchema,
+    success: ArticleDecisionSchema,
   });
 
 export const PublishArticleV1Live = PublishArticleV1.toLayer(
