@@ -113,8 +113,8 @@ const LoadedEditor = (props: EditorProps) => {
 
 /**
  * The Studio's editor (DESIGN.md, "The editor"): a video of the library's
- * files and texts on tracks, edited on Shotstack's Studio SDK as its
- * engine under Peal's own controls, and rendered by the workspace's own
+ * files and texts on tracks, edited in Shotstack's Studio SDK in Peal's
+ * look, and rendered by the workspace's own
  * Shotstack account into the media library. Render it for members with
  * assistant:use and media:upload. The status it starts from needs the
  * visitor's cookies, so it is read once the page has hydrated.

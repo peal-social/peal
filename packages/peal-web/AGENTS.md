@@ -11,7 +11,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 ## Web front
 
 - Build screens from `peal-ui` components and Tailwind classes; add no other
-  stylesheet.
+  stylesheet, but for the Studio SDK's look (`studio.css`).
 - peal-ui's components are shadcn/ui's look on ui-sdk (`@ui-sdk/react`, on
   `@ui-sdk/core`), which gives their unstyled behaviour (keyboard, focus,
   selection, popups, ARIA), as it does for what peal-ui does not cover:
@@ -955,23 +955,22 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `VideoJobs` does. The Studio's **Editor** (`…/editor`, DESIGN.md "The
   editor", `components/studio/`) runs Shotstack's Studio SDK
   (`@shotstack/shotstack-studio`, pinned, PolyForm Shield: README,
-  "Licensing") as its engine and nothing more: `studio-engine.ts` loads
-  its `Edit` and `Canvas` in the browser only (a dynamic import), and
-  never its `Timeline`, `UIController`, `Controls`, `VideoExporter` (a
-  render is always the workspace's Shotstack account, through `POST
-  …/media/slideshows/edits`) or its `./internal` entry. Every control is
-  ui-sdk on peal-ui's tokens: `StudioToolbar`, `StudioTransport`,
-  `StudioTimeline` (one `Listbox` of clips grouped by track, pointer
-  moves and trims, `#studio/timeline-geometry.ts`, tested) and
-  `StudioInspector`. The document is Shotstack's Edit
+  "Licensing") with its own interface: `studio-engine.ts` loads its
+  `Edit`, `Canvas`, `UIController`, `Timeline` and `Controls` in the
+  browser only (a dynamic import), never its `VideoExporter` (a render is
+  always the workspace's Shotstack account, through `POST
+  …/media/slideshows/edits`) nor its `./internal` entry. Peal restyles it
+  in `studio.css` alone (colours, type, radius, and hiding what the server
+  does not render) and builds no control of its own over it, so leaving
+  Shotstack removes one folder. It opens over the whole window
+  (`useFullWindow`, which `FrameView` answers by hiding the sidebar and
+  the bottom bar, never remounting the page). The document is Shotstack's Edit
   (`#studio/edit-document.ts`, tested), library files named
   `peal:media/<id>` wherever it is kept or sent, swapped for their
-  hour-long addresses only in the preview (`previewOf`, `storedOf`); the
-  draft lives in `localStorage` (`#studio/draft.ts`). Shotstack's Edit
-  holds a clip on every track: the engine starts on the first clip, and
-  a track is added with its clips. The SDK publishes no way to choose a
-  clip, so the timeline's choice is the editor's own (`clip:selected`
-  follows the canvas's); a move across tracks is two of its commands.
+  hour-long addresses only in the preview (`previewOf`, `storedOf`, which
+  also writes the SDK's size as the server's aspect and resolution); the
+  draft lives in `localStorage` (`#studio/draft.ts`). The SDK loads an
+  edit only with a clip on every track, so a new one starts with a text.
   The SDK fetches fonts, WebAssembly and emoji: the committed patch
   (`patches/`, made by `scripts/relay-studio-assets.ts`, which a
   version bump runs again inside `bun patch`) points them at

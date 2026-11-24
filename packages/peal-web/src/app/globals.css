@@ -1,3 +1,4 @@
-/* The peal-ui theme is the only stylesheet: screens use its components and
-   Tailwind classes. */
+/* The peal-ui theme is the only stylesheet, but for the Studio SDK's look
+   (components/studio/studio.css): screens use its components and Tailwind
+   classes. */
 @import "peal-ui/styles/globals.css";

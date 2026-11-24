@@ -1,0 +1,133 @@
+/* The Studio SDK's interface in Peal's look (DESIGN.md, "The editor"):
+   colours, type and radius, never its layout or behaviour. The SDK
+   adds its stylesheet as it starts, after this one: each rule is under
+   `[data-peal-studio]`, or `body` for what the SDK puts there, so it wins. */
+
+[data-peal-studio],
+[data-peal-studio] .ss-html-timeline,
+body .ss-clip-context-menu {
+  font-family: var(--font-sans, sans-serif);
+}
+
+[data-peal-studio] .ss-html-timeline,
+body .ss-clip-context-menu {
+  color: var(--foreground);
+}
+
+/* The SDK sizes its canvas to this box, which must not grow with it. */
+[data-peal-studio] [data-shotstack-studio] {
+  contain: size;
+}
+
+/* The timeline. */
+[data-peal-studio] .ss-html-timeline,
+[data-peal-studio] .ss-timeline-toolbar,
+[data-peal-studio] .ss-timeline-ruler,
+[data-peal-studio] .ss-timeline-tracks,
+[data-peal-studio] .ss-track[data-asset-type] {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+[data-peal-studio] .ss-timeline-toolbar .ss-toolbar-btn,
+[data-peal-studio] .ss-toolbar-status,
+[data-peal-studio] .ss-ruler-marker-label {
+  color: var(--muted-foreground);
+}
+
+[data-peal-studio] .ss-timeline-toolbar .ss-toolbar-btn:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+[data-peal-studio] .ss-timeline-toolbar .ss-toolbar-btn.ss-play-btn,
+[data-peal-studio] .ss-timeline-toolbar .ss-toolbar-btn.ss-play-btn:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+[data-peal-studio] .ss-playhead-line,
+[data-peal-studio] .ss-playhead-handle {
+  background: var(--primary);
+}
+
+[data-peal-studio] .ss-zoom-slider::-webkit-slider-thumb {
+  background: var(--primary);
+}
+
+[data-peal-studio] .ss-clip[data-asset-type] {
+  --clip-bg: var(--brand-tint);
+  --clip-border: var(--brand);
+  --clip-fg: var(--foreground);
+}
+
+[data-peal-studio] .ss-clip[data-asset-type="text"],
+[data-peal-studio] .ss-clip[data-asset-type="rich-text"] {
+  --clip-bg: color-mix(in srgb, var(--lavender) 35%, white);
+  --clip-border: var(--lavender);
+}
+
+[data-peal-studio] .ss-clip[data-asset-type="audio"] {
+  --clip-bg: color-mix(in srgb, var(--sun) 25%, white);
+  --clip-border: var(--sun);
+}
+
+/* A clip that could not load keeps the SDK's own warning colours. */
+[data-peal-studio] .ss-clip.ss-clip--error[data-asset-type] {
+  --clip-bg: color-mix(in srgb, var(--destructive) 10%, white);
+  --clip-border: var(--destructive);
+  --clip-fg: var(--destructive-text);
+}
+
+/* The two toolbars beside the preview, and what they open. */
+[data-peal-studio] .ss-canvas-toolbar,
+[data-peal-studio] .ss-asset-toolbar,
+[data-peal-studio] .ss-canvas-toolbar-popup,
+body .ss-clip-context-menu {
+  background: var(--popover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+[data-peal-studio] .ss-canvas-toolbar-btn,
+[data-peal-studio] .ss-asset-toolbar-btn,
+[data-peal-studio] .ss-canvas-toolbar-popup-item {
+  border-radius: calc(var(--radius) - 2px);
+  color: var(--foreground);
+}
+
+[data-peal-studio] .ss-canvas-toolbar-btn:hover,
+[data-peal-studio] .ss-asset-toolbar-btn:hover,
+[data-peal-studio] .ss-canvas-toolbar-popup-item:hover,
+body .ss-clip-context-menu-item:hover {
+  background: var(--accent);
+}
+
+/* The chosen clip's toolbar over the preview: the SDK draws it in white
+   on near black, as `primary` is. */
+[data-peal-studio] .ss-toolbar,
+[data-peal-studio] .ss-clip-toolbar,
+[data-peal-studio] .ss-media-toolbar,
+[data-peal-studio] .ss-generate-toolbar,
+[data-peal-studio] .ss-toolbar-popup {
+  background: var(--primary);
+  border-radius: var(--radius);
+}
+
+[data-peal-studio] :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+/* What the server does not render: sizes past its three aspects, and more
+   than 30 frames a second. */
+[data-peal-studio] .ss-canvas-toolbar-popup-item[data-height="1350"],
+[data-peal-studio] .ss-canvas-toolbar-popup-item[data-fps="60"],
+[data-peal-studio] [data-popup="resolution"] .ss-canvas-toolbar-popup-divider,
+[data-peal-studio]
+  [data-popup="resolution"]
+  .ss-canvas-toolbar-popup-divider
+  ~ .ss-canvas-toolbar-popup-header,
+[data-peal-studio] .ss-canvas-toolbar-custom-size {
+  display: none;
+}

@@ -5,14 +5,14 @@ import { draftOf, storedDraftOf } from "#studio/draft.ts";
 import {
   clipOfMedia,
   emptyEdit,
-  endOf,
+  hasClips,
+  laidEnd,
   mediaIdOfRef,
   mediaIdsOf,
   mediaRefOf,
   previewOf,
   storedOf,
   textClipOf,
-  tracksOf,
 } from "#studio/edit-document.ts";
 import type { StudioClip, StudioEdit } from "#studio/edit-document.ts";
 
@@ -71,6 +71,13 @@ const addresses = new Map([
   [sound, "https://bucket.example.com/sound.mp3?signature=synthetic"],
 ]);
 
+const sized = (width: number, height: number) =>
+  storedOf(
+    { ...edit, output: { format: "mp4", size: { height, width } } },
+    () => null,
+    origin
+  ).output;
+
 describe("the editor's document", () => {
   it("names library files, and reads the name back", () => {
     expect([
@@ -107,27 +114,38 @@ describe("the editor's document", () => {
     expect(mediaIdsOf(shown)).toStrictEqual([picture, sound]);
   });
 
-  it("lays out clips with numbers, a clip of `auto` timing after the one before", () => {
-    const tracks = tracksOf(edit);
+  it("lays files one after the other, documents left out", () => {
+    expect(
+      laidEnd(
+        [
+          { durationMs: null, id: picture, kind: "image" },
+          { durationMs: null, id: picture, kind: "document" },
+          { durationMs: 12_340, id: sound, kind: "audio" },
+        ],
+        1
+      ).map(({ length, start }) => [start, length])
+    ).toStrictEqual([
+      [1, 4],
+      [5, 12.3],
+    ]);
+  });
 
+  it("stores the size the SDK's menu wrote as the server names it, and any other as it is", () => {
     expect([
-      tracks.map((track) => track.map(({ id, kind }) => `${id}:${kind}`)),
-      tracks[1]?.[1],
-      tracks[2]?.[0]?.length,
-      endOf(tracks),
+      sized(1080, 1920),
+      sized(1280, 720),
+      sized(1080, 1350),
     ]).toStrictEqual([
-      [["t1:text"], ["p1:image", "p2:image"], ["s1:audio"]],
-      {
-        id: "p2",
-        kind: "image",
-        length: 4,
-        mediaId: picture,
-        start: 4,
-        text: null,
-        trackIndex: 1,
-      },
-      12.3,
-      12.3,
+      { aspectRatio: "9:16", format: "mp4", resolution: "1080" },
+      { aspectRatio: "16:9", format: "mp4", resolution: "hd" },
+      { format: "mp4", size: { height: 1350, width: 1080 } },
+    ]);
+  });
+
+  it("knows an edit without a clip", () => {
+    expect([hasClips(edit), hasClips(emptyEdit([]))]).toStrictEqual([
+      true,
+      false,
     ]);
   });
 
@@ -139,12 +157,12 @@ describe("the editor's document", () => {
 
   it("keeps a draft as text and reads it back, and reads nothing else", () => {
     expect([
-      draftOf(storedDraftOf(emptyEdit("1:1"))),
+      draftOf(storedDraftOf(emptyEdit([textClipOf("Hello", 0)]))),
       draftOf("not json"),
-      draftOf(JSON.stringify({ edit: emptyEdit(), version: 2 })),
+      draftOf(JSON.stringify({ edit: emptyEdit([]), version: 2 })),
       draftOf(null),
     ]).toStrictEqual([
-      Option.some(emptyEdit("1:1")),
+      Option.some(emptyEdit([textClipOf("Hello", 0)])),
       Option.none(),
       Option.none(),
       Option.none(),
