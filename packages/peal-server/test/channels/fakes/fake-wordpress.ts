@@ -2,9 +2,10 @@ import { Buffer } from "node:buffer";
 import { once } from "node:events";
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { buffer } from "node:stream/consumers";
 
 import { Clock, Effect, Option, Schema } from "effect";
+
+import { receivedBody } from "#test/shared/received-body.ts";
 
 // A WordPress site as its REST API documents it, on a loopback port: the
 // discovery `Link` header on the home page, the index, the current user,
@@ -682,7 +683,12 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
           incoming: IncomingMessage,
           response: ServerResponse
         ) => {
-          const body = await buffer(incoming);
+          const body = await receivedBody(incoming);
+
+          if (body === undefined) {
+            return;
+          }
+
           const url = new URL(incoming.url ?? "/", origin);
           const restRoute = url.searchParams.get("rest_route");
 

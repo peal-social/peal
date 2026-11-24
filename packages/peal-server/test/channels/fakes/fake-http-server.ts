@@ -1,9 +1,10 @@
 import { once } from "node:events";
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { text } from "node:stream/consumers";
 
 import { Effect, Schema } from "effect";
+
+import { receivedBody } from "#test/shared/received-body.ts";
 
 /** A request a fake platform received. */
 export interface FakeRequest {
@@ -72,11 +73,16 @@ export const fakeHttpServer = (
         incoming: IncomingMessage,
         response: ServerResponse
       ) => {
-        const body = await text(incoming);
+        const body = await receivedBody(incoming);
+
+        if (body === undefined) {
+          return;
+        }
+
         const url = new URL(incoming.url ?? "/", origin);
 
         const request: FakeRequest = {
-          body,
+          body: body.toString("utf-8"),
           headers: incoming.headers,
           method: incoming.method ?? "GET",
           path: decodeURIComponent(url.pathname),

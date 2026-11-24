@@ -2,9 +2,10 @@ import type { Buffer } from "node:buffer";
 import { once } from "node:events";
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { buffer } from "node:stream/consumers";
 
 import { Clock, Effect, Option, Schema } from "effect";
+
+import { receivedBody } from "#test/shared/received-body.ts";
 
 // DEV's API, Forem's v1, on a loopback port, as its specification
 // (forem/forem swagger/v1/api_v1.json) and its code document it: routes
@@ -492,7 +493,12 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
           incoming: IncomingMessage,
           response: ServerResponse
         ) => {
-          const body = await buffer(incoming);
+          const body = await receivedBody(incoming);
+
+          if (body === undefined) {
+            return;
+          }
+
           const url = new URL(incoming.url ?? "/", origin);
 
           const request: FakeDevToRequest = {
