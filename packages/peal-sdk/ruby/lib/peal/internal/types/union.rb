@@ -142,6 +142,12 @@ module Peal
             discriminant_value = (value.fetch(@discriminant, nil) || value.fetch(@discriminant.to_s, nil) if value.is_a?(::Hash))
             discriminant_value ||= members.find { |_key, member_type| member_type.call == type }&.first
             if discriminant_value
+              # The caller's model stays as it was: the tag goes on a copy
+              if coerced.equal?(value)
+                coerced = coerced.dup
+                coerced.instance_variable_set(:@data, coerced.instance_variable_get(:@data).dup)
+                coerced.instance_variable_set(:@explicit_fields, coerced.instance_variable_get(:@explicit_fields).dup)
+              end
               coerced.instance_variable_set(:@_fern_union_discriminant_key, @discriminant.to_s)
               coerced.instance_variable_set(:@_fern_union_discriminant_value, discriminant_value)
             end

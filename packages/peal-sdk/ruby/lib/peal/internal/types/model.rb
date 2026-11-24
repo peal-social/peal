@@ -138,7 +138,9 @@ module Peal
 
             define_method(method_name) do |val|
               @explicit_fields[name] = true
-              @data[name] = val
+              # Coerced as the constructor coerces it, so a union's member records its tag
+              field = self.class.fields[name]
+              @data[name] = val.nil? || field.nil? ? val : Utils.coerce(field.type, val)
             end
           end
 

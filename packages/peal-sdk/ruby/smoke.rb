@@ -53,15 +53,34 @@ unless statuses.map(&:class) == [Peal::Types::ChannelStatusActive, Peal::Types::
 end
 
 # A union sent as its member's type goes out with its `_tag`, which the
-# stand-in checks, and the answer's comes back typed.
-signature = peal.posts.signatures.create(
-  name: "Studio",
-  text: "Sent with Peal",
-  scope: Peal::Types::SignatureScopeChannel.new(channel_id: "channel-1")
-)
+# stand-in checks, and the answer's comes back typed. The member is frozen,
+# and the caller's object stays as it was: the SDK tags a copy.
+scope = Peal::Types::SignatureScopeChannel.new(channel_id: "channel-1").freeze
+signature = peal.posts.signatures.create(name: "Studio", text: "Sent with Peal", scope: scope)
 
 unless signature.scope.is_a?(Peal::Types::SignatureScopeChannel) && signature.scope.channel_id == "channel-1"
   abort "Unexpected signature: #{signature.inspect}"
+end
+
+abort "The caller's scope changed: #{scope.to_h.inspect}" unless scope.to_h == { "channelId" => "channel-1" }
+
+# A union that is the request's whole body keeps its fields' API names,
+# discriminated (a chat, by `platform`) or not (a redelivery).
+chat = peal.channels.connect_chat(platform: "telegram", bot_token: "synthetic-telegram-bot-token", chat: "@studio")
+
+abort "Unexpected chat: #{chat.inspect}" unless chat.status.is_a?(Peal::Types::ChannelStatusActive)
+
+redelivery = peal.webhooks.redeliver_many(delivery_ids: ["delivery-1"])
+
+abort "Unexpected redelivery: #{redelivery.inspect}" unless redelivery.remaining.zero?
+
+# A member set after its model is built records its tag as one given to
+# the constructor does.
+options = Peal::Types::ChannelOptions.new(channel_id: "channel-1")
+options.options = Peal::Types::YouTubeOptions.new(title: "Launch")
+
+unless options.to_h == { "channelId" => "channel-1", "options" => { "title" => "Launch", "platform" => "youtube" } }
+  abort "Unexpected options: #{options.to_h.inspect}"
 end
 
 begin

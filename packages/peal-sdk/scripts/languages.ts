@@ -61,10 +61,11 @@ export interface Language {
   readonly test: string;
   /**
    * The smoke test also lists the channels, whose statuses are tagged
-   * unions in a list, some with no field beside their tag, and creates a
-   * signature, sending a tagged union and decoding the one answered.
-   * scripts/test.ts fails the run when it made neither call, or sent the
-   * union without its `_tag`.
+   * unions in a list, some with no field beside their tag; creates a
+   * signature, sending a tagged union and decoding the one answered; and
+   * connects a chat and redelivers webhooks, whose whole bodies are unions.
+   * scripts/test.ts fails the run when it missed a call, or sent a body
+   * other than the one the API reads.
    */
   readonly testsUnions?: true;
   readonly version: string;

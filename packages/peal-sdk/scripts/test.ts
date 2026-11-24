@@ -6,8 +6,9 @@
 // naming the version of the API the SDK was generated against, and none
 // naming a workspace: the test's client is made without one, as a key's
 // client is, so its optional `Peal-Workspace` must stay unsent. A language
-// that `testsUnions` also lists the channels and creates a signature, and
-// must send the signature's scope with its `_tag`.
+// that `testsUnions` also lists the channels, creates a signature, connects
+// a chat and redelivers webhooks, and must send each body as the API reads
+// it (`unionRequests`): unions with their tag and their fields' API names.
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
@@ -62,15 +63,54 @@ const channels = [
 /** The scope the smoke test gives its new signature, as the API reads it. */
 const signatureScope = { _tag: "channel", channelId: "channel-1" };
 
-const SignatureRequestSchema = Schema.Struct({
-  name: Schema.String,
-  scope: Schema.optional(Schema.Json),
-  text: Schema.String,
-});
+/**
+ * The requests a language that `testsUnions` sends with a union in their
+ * body, each with the body the API reads and the answer it gets: a
+ * signature whose scope is a member given as its own type, and two whole
+ * bodies that are unions, one discriminated by `platform` (a chat), one
+ * not (a redelivery), whose fields must keep their API names.
+ */
+const unionRequests = {
+  chat: {
+    answer: channel("channel-4", { _tag: "active" }),
+    body: {
+      botToken: "synthetic-telegram-bot-token",
+      chat: "@studio",
+      platform: "telegram",
+    },
+    path: "/api/v1/channels/chats",
+    status: 200,
+  },
+  redelivery: {
+    answer: { redelivered: [], remaining: 0, skipped: [] },
+    body: { deliveryIds: ["delivery-1"] },
+    path: "/api/v1/webhooks/deliveries/redeliver",
+    status: 202,
+  },
+  signature: {
+    // The answer holds the scope as the API would, whatever was sent: the
+    // SDK's decoding is checked apart from its encoding.
+    answer: {
+      createdAt: "2026-11-24T09:00:00.000Z",
+      id: "signature-1",
+      isDefault: false,
+      name: "Studio",
+      scope: signatureScope,
+      text: "Sent with Peal",
+    },
+    body: { name: "Studio", scope: signatureScope, text: "Sent with Peal" },
+    path: "/api/v1/posts/signatures",
+    status: 201,
+  },
+} as const;
 
-const decodeSignatureRequest = Schema.decodeUnknownSync(
-  Schema.fromJsonString(SignatureRequestSchema)
+type UnionRequest = keyof typeof unionRequests;
+
+const unionRequestNames = Object.keys(unionRequests).filter(
+  (name): name is UnionRequest => name in unionRequests
 );
+
+const decodeBody = Schema.decodeUnknownSync(Schema.fromJsonString(Schema.Json));
 
 /**
  * The version of the API the SDKs were generated from: the day of the
@@ -96,8 +136,10 @@ const info = {
 
 const seen = {
   channels: false,
+  chat: false,
   credential: false,
   health: false,
+  redelivery: false,
   signature: false,
 };
 
@@ -107,8 +149,8 @@ const versions: (string | null)[] = [];
 /** What each call the stand-in counted sent as its workspace. */
 const workspaces: (string | null)[] = [];
 
-/** The scope each signature the smoke test created was sent with. */
-const sentScopes: Schema.Json[] = [];
+/** The bodies each request with a union was sent with. */
+const sentBodies: { name: UnionRequest; body: Schema.Json }[] = [];
 
 /** Counts the call, with the version and the workspace it named. */
 const count = (request: Request, call: keyof typeof seen): void => {
@@ -153,34 +195,24 @@ const server = Bun.serve({
       return Response.json(channels);
     }
 
-    if (request.method === "POST" && pathname === "/api/v1/posts/signatures") {
+    const unionRequest = unionRequestNames.find(
+      (name) => unionRequests[name].path === pathname
+    );
+
+    if (request.method === "POST" && unionRequest !== undefined) {
       if (!authorized(request)) {
         return unauthenticated();
       }
 
-      count(request, "signature");
+      count(request, unionRequest);
+      sentBodies.push({
+        body: decodeBody(await request.text()),
+        name: unionRequest,
+      });
 
-      const {
-        name,
-        scope = null,
-        text,
-      } = decodeSignatureRequest(await request.text());
+      const { answer, status } = unionRequests[unionRequest];
 
-      sentScopes.push(scope);
-
-      // The answer holds the scope as the API would, whatever was sent:
-      // the SDK's decoding is checked apart from its encoding.
-      return Response.json(
-        {
-          createdAt: "2026-11-24T09:00:00.000Z",
-          id: "signature-1",
-          isDefault: false,
-          name,
-          scope: signatureScope,
-          text,
-        },
-        { status: 201 }
-      );
+      return Response.json(answer, { status });
     }
 
     return new Response(null, { status: 404 });
@@ -219,19 +251,26 @@ if (!seen.health || !seen.credential) {
 }
 
 if (language.testsUnions === true) {
-  if (!seen.channels || !seen.signature) {
+  const missing = [
+    ...(seen.channels ? [] : ["GET /api/v1/channels"]),
+    ...unionRequestNames
+      .filter((name) => !seen[name])
+      .map((name) => `POST ${unionRequests[name].path}`),
+  ];
+
+  if (missing.length > 0) {
     throw new Error(
-      `The ${language.name} SDK's smoke test passed without calling ${seen.channels ? "" : "GET /api/v1/channels "}${seen.signature ? "" : "POST /api/v1/posts/signatures"}.`
+      `The ${language.name} SDK's smoke test passed without calling ${missing.join(", ")}.`
     );
   }
 
-  const wrongScope = sentScopes.find(
-    (scope) => !isDeepStrictEqual(scope, signatureScope)
+  const wrong = sentBodies.find(
+    ({ body, name }) => !isDeepStrictEqual(body, unionRequests[name].body)
   );
 
-  if (wrongScope !== undefined) {
+  if (wrong !== undefined) {
     throw new Error(
-      `The ${language.name} SDK must send a tagged union with its _tag: it sent the scope ${JSON.stringify(wrongScope)}, where the API reads ${JSON.stringify(signatureScope)}.`
+      `The ${language.name} SDK must send a union as the API reads it, with its tag and its fields' API names: it sent ${JSON.stringify(wrong.body)} to ${unionRequests[wrong.name].path}, where the API reads ${JSON.stringify(unionRequests[wrong.name].body)}.`
     );
   }
 }
