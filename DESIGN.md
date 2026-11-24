@@ -1369,14 +1369,16 @@ thing over a period of its own.
   and, where it may show one, Channel, each a page of its values, a
   channel with its platform's mark) and the ghost **…**
   (Duplicate, Rename, then Remove in destructive text). Remove and Reset layout say so in a toast with
-  **Undo**. A grip just outside the card's start edge, beside its name
-  (no border, `muted-foreground`), shown on hover and focus, picks it
+  **Undo**. A grip in the gap at the card's start edge, centred in it,
+  beside its name (no border, `muted-foreground`), shown on hover and
+  focus, picks it
   up: it follows the pointer in any direction, lifted (2 %
   larger, a deep shadow), while the others glide aside and a dashed
   `muted` slot shows where it lands; let go, it settles into the slot; Space picks it up from the keyboard, the arrows carry
-  it and Space puts it down. Every edge and corner resizes it: a pill
-  centred on each edge, shown on hover and focus, and the corners under
-  the pointer alone; pulled from its start or top, its other side stays
+  it and Space puts it down. Every edge and corner resizes it: the
+  pointer finds each edge along its length and each corner, and only
+  the edge under it, focused or being pulled shows its pill (none
+  otherwise); pulled from its start or top, its other side stays
   put: the card follows the pointer to the pixel, over its
   neighbours, with a 2 px `brand` ring and a shadow, what it shows
   blurred and its chart stretching; let go, it snaps to whole columns

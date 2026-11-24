@@ -153,9 +153,12 @@ const SortableWidget = ({
           type="button"
           aria-label={dragLabel}
           title={dragLabel}
-          className="text-muted-foreground hover:text-foreground hover:bg-muted focus-visible:ring-ring absolute top-6 right-full z-10 mr-1 hidden cursor-grab touch-none rounded-sm p-0.5 opacity-0 transition-opacity outline-none select-none group-hover/widget:opacity-100 group-data-[dragging]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 active:cursor-grabbing sm:block"
+          className="group/grip focus-visible:ring-ring absolute top-6 right-full z-10 hidden w-6 cursor-grab touch-none justify-center rounded-sm opacity-0 transition-opacity outline-none select-none group-hover/widget:opacity-100 group-data-[dragging]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 active:cursor-grabbing sm:flex"
         >
-          <GripVerticalIcon aria-hidden className="size-4" />
+          <GripVerticalIcon
+            aria-hidden
+            className="text-muted-foreground group-hover/grip:text-foreground size-4"
+          />
         </button>
       }
     />
@@ -531,15 +534,14 @@ type Pull = keyof typeof pulls;
 // Where each handle sits and which cursor it shows. The edges' pills
 // show on hover; the corners are reached by the pointer alone.
 const handlePlaces: Readonly<Record<Pull, string>> = {
-  bottom:
-    "bottom-0 left-1/2 h-3 w-12 -translate-x-1/2 translate-y-1/2 cursor-ns-resize",
+  bottom: "right-4 bottom-0 left-4 h-3 translate-y-1/2 cursor-ns-resize",
   bottomEnd: "right-0 bottom-0 size-4 translate-1/2 cursor-nwse-resize",
   bottomStart:
     "bottom-0 left-0 size-4 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize",
-  end: "top-1/2 right-0 h-12 w-3 translate-x-1/2 -translate-y-1/2 cursor-ew-resize",
-  start:
-    "top-1/2 left-0 h-12 w-3 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize",
-  top: "top-0 left-1/2 h-3 w-12 -translate-1/2 cursor-ns-resize",
+  end: "top-4 right-0 bottom-4 w-3 translate-x-1/2 cursor-ew-resize",
+  // Below the grip, which sits beside the name at the start edge.
+  start: "top-16 bottom-4 left-0 w-3 -translate-x-1/2 cursor-ew-resize",
+  top: "top-0 right-4 left-4 h-3 -translate-y-1/2 cursor-ns-resize",
   topEnd:
     "top-0 right-0 size-4 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize",
   topStart: "top-0 left-0 size-4 -translate-1/2 cursor-nwse-resize",
@@ -701,8 +703,12 @@ export const AnalyticsBoard = ({
   const grid = useRef<HTMLUListElement>(null);
   const [adding, setAdding] = useState(false);
   const [renaming, setRenaming] = useState<Widget | null>(null);
+
   // The widget being resized, while the pointer holds its edge.
-  const [resizing, setResizing] = useState<string | null>(null);
+  const [resizing, setResizing] = useState<{
+    readonly id: string;
+    readonly pull: Pull;
+  } | null>(null);
 
   // A widget takes its new size: every widget's place is noted, the board
   // lays out anew at once, and each glides there from where it was.
@@ -865,7 +871,7 @@ export const AnalyticsBoard = ({
     };
 
     paint();
-    setResizing(widget.id);
+    setResizing({ id: widget.id, pull });
     handle.addEventListener("pointermove", move);
     handle.addEventListener("pointerup", end);
     handle.addEventListener("pointercancel", end);
@@ -952,7 +958,7 @@ export const AnalyticsBoard = ({
         name={name}
         width={room.width}
         height={room.height}
-        resizing={resizing === widget.id}
+        resizing={resizing?.id === widget.id}
         subtitle={
           channel === undefined
             ? periodText
@@ -998,12 +1004,17 @@ export const AnalyticsBoard = ({
                       keyResize(event, widget, own);
                     }
                   }}
-                  className={`group/edge focus-visible:ring-ring absolute z-10 hidden touch-none items-center justify-center rounded-full opacity-0 outline-none group-hover/widget:opacity-100 group-data-[resizing]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 sm:flex ${handlePlaces[pull]}`}
+                  data-pulled={
+                    resizing?.id === widget.id && resizing.pull === pull
+                      ? ""
+                      : undefined
+                  }
+                  className={`group/edge absolute z-10 hidden touch-none items-center justify-center outline-none sm:flex ${handlePlaces[pull]}`}
                 >
                   {pill === null ? null : (
                     <span
                       aria-hidden="true"
-                      className={`bg-border group-hover/edge:bg-muted-foreground rounded-full transition-colors ${pill}`}
+                      className={`bg-muted-foreground group-focus-visible/edge:ring-ring rounded-full opacity-0 transition-opacity group-hover/edge:opacity-100 group-focus-visible/edge:opacity-100 group-focus-visible/edge:ring-3 group-data-[pulled]/edge:opacity-100 ${pill}`}
                     />
                   )}
                 </button>
