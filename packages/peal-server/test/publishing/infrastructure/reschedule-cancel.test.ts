@@ -5,11 +5,11 @@ import { TestClock } from "effect/testing";
 import { PostRepository } from "#publishing/application/post-repository.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { PublicationScheduler } from "#publishing/application/publication-scheduler.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { FakePlatform } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import { RateLimited } from "#shared/domain/rate-limited.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";
 import { actorIn } from "#test/publishing/support.ts";
 

@@ -2,6 +2,7 @@ import { DateTime, Effect, Layer, Option, Ref } from "effect";
 import { MessageStorage, ShardingConfig } from "effect/cluster";
 import { SqlClient } from "effect/sql";
 
+import { UnreadComments } from "#channels/container.ts";
 import { ChannelUnreadable } from "#engagement/application/channel-unreadable.ts";
 import { CommentRules } from "#engagement/application/comment-rules.ts";
 import { EngagementPrivateReplies } from "#engagement/application/engagement-private-replies.ts";
@@ -30,7 +31,6 @@ import { DrizzleEngagementStore } from "#engagement/infrastructure/drizzle-engag
 import { DrizzleMessageStore } from "#engagement/infrastructure/drizzle-message-store.ts";
 import { DrizzlePrivateReplyStore } from "#engagement/infrastructure/drizzle-private-reply-store.ts";
 import { PublishingReplyLimits } from "#engagement/infrastructure/publishing-reply-limits.ts";
-import { UnreadComments } from "#publishing/container.ts";
 import { CurrentInboxMessages } from "#shared/application/current-inbox-messages.ts";
 import { CurrentInboxPlatforms } from "#shared/application/current-inbox-platforms.ts";
 import { newId } from "#shared/application/ids.ts";

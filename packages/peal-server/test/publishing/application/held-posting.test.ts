@@ -13,10 +13,10 @@ import type { SendPostRequest } from "#publishing/application/post-scheduling.ts
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { PostPart } from "#publishing/domain/post-part.ts";
 import { isDropped } from "#publishing/domain/post-target.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { newId } from "#shared/application/ids.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, PostId, WorkspaceId } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import {
   FakeApprovalGate,

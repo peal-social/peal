@@ -1,5 +1,6 @@
 import { DateTime, Schema } from "effect";
 
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import {
   addDays,
@@ -10,8 +11,6 @@ import {
   WeekdaySchema,
 } from "#shared/domain/wall-clock.ts";
 import type { LocalDate } from "#shared/domain/wall-clock.ts";
-
-import { Schedule } from "./schedule.ts";
 
 const DailySchema = Schema.TaggedStruct("daily", {
   time: LocalTimeSchema,

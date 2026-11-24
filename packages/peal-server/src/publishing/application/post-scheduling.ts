@@ -52,7 +52,6 @@ import type { ReshuffleMove } from "#publishing/domain/queue-reshuffle.ts";
 import { sameTimetable } from "#publishing/domain/queue.ts";
 import type { Queue } from "#publishing/domain/queue.ts";
 import type { ScheduleInPast } from "#publishing/domain/schedule-in-past.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
 import {
   dropTarget as dropTargetOf,
@@ -70,6 +69,7 @@ import { PostIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, PostId } from "#shared/domain/ids.ts";
 import { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import type { TimeZoneId } from "#shared/domain/time-zone.ts";
 
 import type { AccountRules } from "./account-rules.ts";

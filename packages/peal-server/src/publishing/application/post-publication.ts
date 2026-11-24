@@ -23,15 +23,13 @@ import {
   targetOutcomeOf,
 } from "#publishing/domain/publication-claims.ts";
 import { decide } from "#publishing/domain/publication-policy.ts";
-import type {
-  AttemptOutcome,
-  PublicationDecision,
-} from "#publishing/domain/publication-policy.ts";
-import type { Schedule as PostSchedule } from "#publishing/domain/schedule.ts";
+import type { PublicationDecision } from "#publishing/domain/publication-policy.ts";
 import { needsReconnect } from "#publishing/domain/target-settlement.ts";
 import type { TargetSettlement } from "#publishing/domain/target-settlement.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
+import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import type { ChannelId, PostId } from "#shared/domain/ids.ts";
+import type { Schedule as PostSchedule } from "#shared/domain/schedule.ts";
 
 import { ChannelHealth } from "./channel-health.ts";
 import { OperatorAlerts } from "./operator-alerts.ts";

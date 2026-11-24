@@ -9,11 +9,9 @@ import type {
   RecordedAttempt,
 } from "#publishing/application/publication-journal.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
-import {
-  AttemptOutcomeSchema,
-  earlierRefusalsOf,
-} from "#publishing/domain/publication-policy.ts";
+import { earlierRefusalsOf } from "#publishing/domain/publication-policy.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
+import { AttemptOutcomeSchema } from "#shared/domain/attempt-outcome.ts";
 import { Drizzle } from "#shared/infrastructure/database.ts";
 
 import {

@@ -1,16 +1,16 @@
 import { describe, expect, it } from "@effect/vitest";
 import { DateTime, Duration, Option, Result } from "effect";
 
-import { parseFeedAddress } from "#publishing/domain/feed-address.ts";
-import { FeedEntry } from "#publishing/domain/feed-entry.ts";
-import { FeedIdSchema } from "#publishing/domain/feed-id.ts";
-import { newItems } from "#publishing/domain/feed-items.ts";
+import { parseFeedAddress } from "#publishing/domain/feeds/feed-address.ts";
+import { FeedEntry } from "#publishing/domain/feeds/feed-entry.ts";
+import { FeedIdSchema } from "#publishing/domain/feeds/feed-id.ts";
+import { newItems } from "#publishing/domain/feeds/feed-items.ts";
 import {
   defaultTemplate,
   maxTemplateLength,
   parseTemplate,
   writtenFrom,
-} from "#publishing/domain/feed-template.ts";
+} from "#publishing/domain/feeds/feed-template.ts";
 import {
   feedCheckInterval,
   maxItemsPerDay,
@@ -21,10 +21,10 @@ import {
   readSucceeded,
   resumeFeed,
   startFeed,
-} from "#publishing/domain/feed.ts";
-import type { NewFeed } from "#publishing/domain/feed.ts";
-import { ItemDigestSchema } from "#publishing/domain/item-digest.ts";
-import type { ItemDigest } from "#publishing/domain/item-digest.ts";
+} from "#publishing/domain/feeds/feed.ts";
+import type { NewFeed } from "#publishing/domain/feeds/feed.ts";
+import { ItemDigestSchema } from "#publishing/domain/feeds/item-digest.ts";
+import type { ItemDigest } from "#publishing/domain/feeds/item-digest.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 
 const utc = (text: string) => DateTime.makeUnsafe(text);

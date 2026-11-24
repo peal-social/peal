@@ -3,11 +3,11 @@ import type { DateTime, Duration, Effect, Option } from "effect";
 
 import type { PostTargetId } from "#publishing/domain/post-target-id.ts";
 import type {
-  AttemptOutcome,
   EarlierRefusals,
   PublicationDecision,
 } from "#publishing/domain/publication-policy.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
+import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import type { PostId } from "#shared/domain/ids.ts";
 
 /**

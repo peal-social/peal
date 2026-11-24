@@ -1,0 +1,285 @@
+[
+  {
+    "_tag": "draft"
+  },
+  {
+    "_tag": "scheduled",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "publishing",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    },
+    "since": "2026-06-15T08:00:01.000Z"
+  },
+  {
+    "_tag": "published",
+    "platformPostId": "4271",
+    "publishedAt": "2026-06-15T08:00:05.000Z",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "published",
+    "editedAt": "2026-06-16T09:30:00.000Z",
+    "permalink": "https://site.example/2026/06/15/an-article/",
+    "platformPostId": "4271",
+    "publishedAt": "2026-06-15T08:00:05.000Z",
+    "removedAt": "2026-06-17T10:45:00.000Z",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "contentRejected",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "rest_cannot_create",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "contentRejected",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "channelDisconnected",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "channelDisconnected",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "channelDisconnected",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "channelDisabled",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "channelDisabled",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "channelDisabled",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "mediaRemoved",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "mediaUnavailable",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "mediaRemoved",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "mediaRejected",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "rest_upload_sideload_error",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "mediaRejected",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "missed",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "site_code",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "missed",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "rateLimited",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "site_code",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "rateLimited",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "tokenExpired",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "site_code",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "tokenExpired",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "unavailable",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "site_code",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "unavailable",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "planLimit",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "failed",
+    "code": "planLimit",
+    "failedAt": "2026-06-15T08:00:05.000Z",
+    "reason": "planLimit",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "unconfirmed",
+    "attemptedAt": "2026-06-15T08:00:01.000Z",
+    "reason": "noResponse",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "unconfirmed",
+    "attemptedAt": "2026-06-15T08:00:01.000Z",
+    "reason": "unreadableResponse",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "unconfirmed",
+    "attemptedAt": "2026-06-15T08:00:01.000Z",
+    "reason": "interrupted",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "unconfirmed",
+    "attemptedAt": "2026-06-15T08:00:01.000Z",
+    "reason": "adapterFailure",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "unconfirmed",
+    "attemptedAt": "2026-06-15T08:00:01.000Z",
+    "reason": "searchRefused",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  },
+  {
+    "_tag": "unconfirmed",
+    "attemptedAt": "2026-06-15T08:00:01.000Z",
+    "reason": "severalOnSite",
+    "schedule": {
+      "at": "2026-06-15T08:00:00.000Z",
+      "timeZone": "Europe/Paris"
+    }
+  }
+]

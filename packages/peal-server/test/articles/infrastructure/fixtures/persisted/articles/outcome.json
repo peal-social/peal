@@ -1,0 +1,80 @@
+[
+  {
+    "_tag": "published",
+    "platformPostId": "4271"
+  },
+  {
+    "_tag": "published",
+    "permalink": "https://site.example/2026/06/15/an-article/",
+    "platformPostId": "4271"
+  },
+  {
+    "_tag": "unconfirmed",
+    "reason": "noResponse"
+  },
+  {
+    "_tag": "unconfirmed",
+    "reason": "unreadableResponse"
+  },
+  {
+    "_tag": "unconfirmed",
+    "reason": "interrupted"
+  },
+  {
+    "_tag": "unconfirmed",
+    "reason": "adapterFailure"
+  },
+  {
+    "_tag": "unconfirmed",
+    "reason": "searchRefused"
+  },
+  {
+    "_tag": "unconfirmed",
+    "reason": "severalOnSite"
+  },
+  {
+    "_tag": "BadRequest",
+    "code": "channelDisconnected"
+  },
+  {
+    "_tag": "BadRequest",
+    "code": "channelDisabled"
+  },
+  {
+    "_tag": "BadRequest",
+    "code": "planLimit"
+  },
+  {
+    "_tag": "BadRequest",
+    "code": "sitePlanRequired"
+  },
+  {
+    "_tag": "BadRequest",
+    "code": "rest_cannot_create"
+  },
+  {
+    "_tag": "BadRequest",
+    "code": "devto422"
+  },
+  {
+    "_tag": "MediaRejected",
+    "code": "mediaUnavailable"
+  },
+  {
+    "_tag": "MediaRejected",
+    "code": "rest_upload_sideload_error"
+  },
+  {
+    "_tag": "PlatformUnavailable"
+  },
+  {
+    "_tag": "RateLimited"
+  },
+  {
+    "_tag": "RateLimited",
+    "retryAfter": 30000
+  },
+  {
+    "_tag": "TokenExpired"
+  }
+]

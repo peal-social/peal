@@ -1,12 +1,12 @@
 import { Option } from "effect";
 import type { DateTime } from "effect";
 
-import { maxFeedUrlLength } from "#publishing/domain/feed-address.ts";
+import { maxFeedUrlLength } from "#publishing/domain/feeds/feed-address.ts";
 import {
   maxFeedTitleLength,
   maxItemsRead,
   maxSummaryLength,
-} from "#publishing/domain/feed.ts";
+} from "#publishing/domain/feeds/feed.ts";
 import { textOfHtml } from "#shared/domain/html-text.ts";
 import { storableLine, storableText } from "#shared/domain/platform-text.ts";
 

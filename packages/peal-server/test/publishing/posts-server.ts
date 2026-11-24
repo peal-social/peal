@@ -2,31 +2,30 @@ import { Duration, Effect, Layer, Option } from "effect";
 import type { Scope } from "effect";
 import { MessageStorage } from "effect/cluster";
 
+import { publishingWorkers } from "#app/publishing-workers.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ListChannels } from "#channels/application/list-channels.ts";
+import { UnreadComments, UnreadMetrics } from "#channels/container.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
 import type { AttachableMedia } from "#publishing/application/attachable-media.ts";
-import type { FeedNotices } from "#publishing/application/feed-notices.ts";
-import type { FeedPictures } from "#publishing/application/feed-pictures.ts";
-import type { FeedSource } from "#publishing/application/feed-source.ts";
-import type { FollowUpChannels } from "#publishing/application/follow-up-channels.ts";
-import type { FollowUpCounts } from "#publishing/application/follow-up-counts.ts";
-import type { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import { FollowUpPublisher } from "#publishing/application/follow-up-publisher.ts";
+import type { FeedNotices } from "#publishing/application/feeds/feed-notices.ts";
+import type { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
+import type { FeedSource } from "#publishing/application/feeds/feed-source.ts";
+import type { FollowUpChannels } from "#publishing/application/follow-ups/follow-up-channels.ts";
+import type { FollowUpCounts } from "#publishing/application/follow-ups/follow-up-counts.ts";
+import type { FollowUpNotices } from "#publishing/application/follow-ups/follow-up-notices.ts";
+import { FollowUpPublisher } from "#publishing/application/follow-ups/follow-up-publisher.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
 import type { RecyclingActors } from "#publishing/application/recycling-actors.ts";
-import type { RecyclingNotices } from "#publishing/application/recycling-notices.ts";
+import type { RecyclingNotices } from "#publishing/application/recycling/recycling-notices.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
 import {
   FeedsUnused,
   FollowUpsUnused,
   publishingBehind,
-  publishingWorkers,
   RecyclingUnused,
-  UnreadComments,
 } from "#publishing/container.ts";
-import { UnreadMetrics } from "#publishing/infrastructure/channel-gate.ts";
 import { FakePlatformPublisher } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { ListedWorkspaceChannels } from "#publishing/infrastructure/listed-workspace-channels.ts";
 import type { MediaAssetId, WorkspaceId } from "#shared/domain/ids.ts";

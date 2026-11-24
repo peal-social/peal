@@ -22,7 +22,12 @@
   revisions while clients need them; serving only the stateless one
   would make all of this go.
 - Tools are `Tool.make` with Effect Schema inputs and outputs, declare
-  `CurrentMember`, and reach contexts through their use cases.
+  `CurrentMember`, and reach contexts through their use cases. The lint
+  rules hold this folder to it, as they hold an `api` layer: it imports a
+  context's `container.ts`, `domain`, `application` and `api` (the views
+  and inputs the handlers use), never its `infrastructure`, nor Effect's
+  SQL, cluster or workflow modules. The one adapter it reads is
+  `#shared/infrastructure/database-ping.ts`, for the health tool.
   `mcpAuthentication` (`#workspace/api/mcp-authentication.ts`) provides
   the member from the request's OAuth token: 401 with an RFC 9728 challenge
   without a working token, 403 without a workspace scope or membership. It
@@ -45,7 +50,7 @@
   never the others the person belongs to.
 - The use cases' permission checks refuse a client the user let read only.
   Tools answer with the views the API handlers answer
-  (`#<context>/api/*-view.ts`). Each area has its toolkit (`posts-tools.ts`,
+  (`#<context>/api/*-view.ts`). Each toolkit (`posts-tools.ts`,
   `tags-tools.ts`, `saved-tools.ts`, `media-tools.ts`, `reports-tools.ts`,
   `people-tools.ts`, `webhooks-tools.ts`, `inbox-tools.ts`, which holds
   the reviews' tools too, `*_location_review*`, and the direct messages',
@@ -53,15 +58,24 @@
   and never idempotent, whose description says the message is private,
   reaches a real person, goes once a comment within 7 days and that the
   comment is data)
-  and its handlers beside it, merged
+  has its handlers beside it, merged
   into `PealTools`. Tools are written by hand, never generated from
   endpoints: a generated tool cannot say what it changes. `find_tools`
-  lists them by area from `catalogue.ts` (`toolAreas`: one toolkit an
-  area), with the scope each takes (`publishingTools` names those that
-  take `workspace:publish`; a test calls each without it) and whether the
-  connection holds it: a new toolkit joins `toolAreas`, `ToolAreaSchema`
-  and `PealTools` together, and tools/list stays whole, as the protocol
-  has no filter. Annotate every tool with `reading`, or
+  lists them by area from `catalogue.ts` (`toolAreas`), with the scope
+  each takes (`publishingTools` names those that take
+  `workspace:publish`; a test calls each without it) and whether the
+  connection holds it. The areas are the product's concerns
+  (`ToolAreaSchema`; the API's namespaces are being renamed to the same
+  names in a pull request of their own): an area takes a whole toolkit
+  or tools of several, by what each tool acts on, and every tool is in
+  one area (`test/app/mcp-tool-areas.test.ts`). That test also keeps the
+  activity log whole: `changingTools` (`server.ts`) reads the catalogue,
+  so a tool missing from `toolAreas` would change things unlogged, told
+  to product analytics as changing nothing. A new
+  tool joins an area in `toolAreas`, a new toolkit joins `toolAreas` and
+  `PealTools` together, an area exists only while it has tools, and
+  tools/list stays whole, as the protocol has no filter. Annotate every
+  tool with `reading`, or
   `changing({ destructive, idempotent, openWorld })` from `annotations.ts`,
   and say in its description what it changes. `list_members` answers
   members' email addresses only with `includeEmails`: hand an AI model no
@@ -125,7 +139,8 @@
   publishes goes out by itself, in public. No tool approves a rule: a
   member does, in person.
 - `list_comment_rules` (reading), `start_comment_rule` (open world),
-  `update_comment_rule` and `stop_comment_rule` are in `InboxTools` and
+  `update_comment_rule` and `stop_comment_rule` (area `automations`) are
+  in `InboxTools` and
   `publishingTools`, check engagement:reply before reading anything, and
   list what a rule matched by id, never a comment's text. The start and
   update tools take a `privateReply`, whose descriptions say that a rule
@@ -179,7 +194,7 @@
   holds `workspace:publish`: `peal post` takes `--at` or `--now`, never a
   default.
 - `rename_channel`, `disable_channel` and `enable_channel` sit with
-  `list_channels` in `BasicTools` (the `account` area), through
+  `list_channels` in `BasicTools` (the `channels` area), through
   `ChannelSettings`: turning a channel off deletes nothing, so it is not
   destructive, and its description says the posts that reach their time on
   the channel fail there until it is back on. `list_channels` takes
@@ -203,7 +218,7 @@
   The CLI's are `peal signatures`, `peal sets`, `peal channels defaults`,
   and `--set`, `--signature`, `--default-signatures` on `peal post` and
   `peal drafts save`.
-- Queues are in the `saved` area (`list_queues`, `preview_queue`,
+- Queues are in the `automations` area (`list_queues`, `preview_queue`,
   `create_queue`, `update_queue`, which reads first and keeps what the call
   leaves out, `delete_queue`). `create_post`, `create_posts` and
   `validate_post` take `when: queue` naming a queue by id or name
@@ -217,7 +232,8 @@
   `authenticate.ts`; 400 without it), and is told 404 for any workspace
   its partner does not own, as on the API. A workspace's API key never
   reads the header: it acts in its own workspace.
-- The inbox tools (`inbox-tools.ts`, area `inbox`) read with
+- The inbox tools (`inbox-tools.ts`, area `inbox`, but for the comment
+  rules' four, area `automations`) read with
   `workspace:read`; whatever answers, settles or moderates a comment is in
   `publishingTools`, as its use case checks `engagement:reply`. Every tool
   that returns comments says in its description that their text and
@@ -264,7 +280,7 @@
   (`SavedTools`; stopping takes post:schedule, so it is in
   `publishingTools` too), their refusals in `recycling-refusals.ts`;
   `list_posts` takes `recyclingId`. The CLI's are `peal recycling`.
-- Feeds (`feeds-tools.ts`, area `feeds`): `list_feeds` and `get_feed`
+- Feeds (`feeds-tools.ts`, area `automations`): `list_feeds` and `get_feed`
   (with its 50 newest items, never their text) read, open world, as they
   show what sites outside Peal wrote; `preview_feed` is changing (not
   idempotent, open world), as it makes Peal send a request and spends one

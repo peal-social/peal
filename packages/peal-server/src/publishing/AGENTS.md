@@ -192,141 +192,8 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   (`lockRounds` and `lockOpen` with a channel, `lockFollowUpCalls`),
   held in the caller's transaction: a channel moving to another
   workspace waits for no scheduled post, and for no call but its own.
-- An article (`domain/article.ts`, `Articles`, `publishing.articles`) is
-  a sibling of a post, never one: a title, a body, an excerpt, tags,
-  categories, a cover, for one website's channel (`SiteChannels`,
-  `isSitePlatform`), and how it lands there (`siteStatus`: `publish`,
-  `draft`, or `future`, which the site publishes itself at the article's
-  time, Peal sending it at once: `sendAt`). Its body is the composer's
-  editor document kept to an allow-list (`domain/article-body.ts`: what
-  does not decode is refused, `bodyInvalid` in the contract), and its
-  HTML is written by `domain/article-html.ts` alone, every text and
-  attribute escaped. It takes the posts' permissions (`post:create`,
-  `post:update`, `post:delete`, `post:schedule`, `post:publish` for a
-  change on the site, `post:read`) and counts in no month's posts. Articles
-  have no approval yet: wherever `ApprovalGate.holds` the actor, what
-  would put one on its site or change it there (create with a time,
-  schedule, retry, edit while scheduled, update on the site) is refused
-  (`ArticleRejected` `approvalRequired`); unpublishing is not. A workspace
-  over its plan (`withinPlan`) schedules and sends none. Every write
-  re-reads the article under its row lock (`ArticleStore.lock`) and
-  decides again on what it finds, and `ArticleStore.update` writes only
-  over the state, revision and round it was read with, so a member and a
-  job never change it at once. `articleViolations` checks it when it is
-  scheduled, all at once (`ArticleRejected`), never while a draft, and
-  its files are looked up in the library again then. Its title and
-  excerpt reach the site escaped: plain text, as a member typed it.
-  `media_ids` lists the library's files it shows: a scheduled or
-  publishing article keeps one from deletion (`MediaInPosts`).
-- `PublishArticleV1` (`workflows/publish-article.ts`, persisted contract:
-  payload `{ articleId, revision, round, at }`, key
-  `<articleId>:<revision>:<round>`, activities `claim`, `send/<n>`,
-  `settle`, clocks `send-at`, `retry/<n>`) sleeps until `at`, claims the
-  article for its revision and round (`claimed`: missed past an hour),
-  decides each attempt with the posts' `decide`, and settles it, telling
-  `ArticleEvents` (the webhooks' `article.published`, `article.failed`)
-  in that transaction. Each attempt's row (`publishing.article_calls`) is
-  written and committed before the site is called, and marked
-  (`committed_at`, `SitePublishRequest.committing`) just before the call
-  that makes the post: a row found without it is made again, one with it
-  resumed (`SitePublisher.resume`), never sent blindly. A schedule raises
-  `revision`, a retry `round`, so a job of an earlier one is superseded.
-  It calls the site directly, not through a channel's gate, but in the
-  channel's turn (`ArticleSendTurns`, an advisory lock): the attempt and
-  the journal's record of the post it made end before another attempt of
-  the channel looks for its own. An attempt waits for its turn (one
-  taken, or none of the process's two left) by asking again every two to
-  five seconds, holding no connection, for 30 minutes, longer than an
-  attempt holds one; then it writes nothing and answers a retry a minute
-  later, and gives up a day past the article's time. Each attempt, once
-  in its turn, first takes up what an earlier attempt of the round left
-  unfinished: a call that never reached the site is dropped, and the post
-  of one that may have is looked for, never made again. An attempt the
-  journal says ended answers what it recorded, outside any turn; one
-  whose call may have reached the site is looked for before the plan is
-  checked. A call that may have reached the site ends only published or
-  unconfirmed (to check): a search that fails, or cannot start, and the
-  day's deadline both settle it to check, never failed. Each try of an
-  article opens a new round, a failed article scheduled again included,
-  and a new round's attempt first looks once more for the post of an
-  earlier round's call left to check (`ArticleJournal.toCheckBefore`,
-  `SitePublisher.find`), adopting it when found. A turn that cannot be
-  asked, the database failing, counts as taken: the attempt keeps
-  waiting. `drop` forgets only a call that never left, and `committing`
-  fails, so the post's call is not made, when its row is gone. An
-  attempt the database keeps from running, past its retries, is made
-  again a minute later (`retryingDatabaseOr`), and an attempt, in its
-  turn, first answers what an earlier attempt of its round ended with
-  when that was published or to check (`ArticleJournal.endedBefore`);
-  the round's refusals are read only for an outcome they decide. A
-  search for a post looks at the user's posts of its title made or
-  changed within a day of the call, page by page; several are to check,
-  never sent, and a search the site refuses leaves the article to check
-  (`searchRefused`). WordPress
-  drops a featured image its library lost and answers `featured_media`
-  0: the cover alone is then sent once more, over that post, and one the
-  site drops again is not offered any more
-  (`article_files.featured_refused`).
-- WordPress's adapter (`platforms/wordpress/wordpress-articles.ts`)
-  sends each file the article shows to `/wp/v2/media` (the bytes as the
-  body, `Content-Disposition` naming the file, streamed), finds tags and
-  categories by name whatever their case (WordPress answers names with
-  `&`, `<` and `>` encoded, and a name it has answers `term_exists` with
-  its id) or makes them, then makes the
-  post with one `POST /wp/v2/posts`, the commit. WordPress keeps no
-  idempotency key: an answer lost (no answer, or a 5xx) is looked for
-  among the user's posts changed since the attempt began a minute early,
-  by title, and adopted only when exactly one matches that no other
-  article of the channel holds or its call answered
-  (`ArticleStore.recordedOn`), else unconfirmed. A request the guard
-  refused never left: a name that did not resolve for now is the site
-  unavailable, any other refusal a failure. Only a 401 with WordPress's
-  own error is a refused
-  credential; nothing renews one, so the channel is marked to reconnect.
-  Unpublishing is `DELETE` without `force` (the site's trash; gone
-  already is done), an update `POST /wp/v2/posts/{id}` without status or
-  date, but with an empty excerpt and `featured_media` 0 when Peal has
-  none: both run in the request, the article saved after. A file the site
-  took for the article (`publishing.article_files`, `ArticleJournal`) is
-  never sent again, across attempts and updates. Only an http or https
-  `link` is kept as the permalink.
-- `SitePublisher` is `routedSitePublisher`: it reads the article and
-  the channel's credential once, then calls the `SiteAdapter` of the
-  channel's platform. WordPress's adapter serves `wordpress` and
-  `wordpressCom` (`siteRouteUrl`, `withSiteToken`: WordPress.com's
-  `/wp/v2/sites/{id}/` with a bearer token). DEV's (`devto/`, Forem's API
-  v1) and Hashnode's (`hashnode/`, GraphQL, refusals in `errors` with a 200) take Markdown written by `domain/article-markdown.ts` alone, where
-  a member's text stays text: ASCII punctuation escaped, `& < >` as
-  entities, `[` escaped (no link or embed). Hashnode reads CommonMark
-  (`{ }` as entities too); DEV Forem's dialect (`"forem"`): Redcarpet,
-  then a sanitiser that decodes entities, then Liquid over the HTML, so
-  each `{` is Liquid's own text `{{ '{' }}`, only what Redcarpet
-  un-escapes is escaped (not `$`), a hard break is two spaces, and a word
-  joiner follows an `@` Forem would mention (none after a word character, whose `@` is `&#64;`), `:` is escaped (no autolink) and a backtick is `&#96;` (out of Forem's code pass). In both, a mark beside a letter
-  is HTML, a paragraph's leading spaces go, and two lists of a kind are
-  an HTML comment apart. Titles go as plain text, which both escape. Each
-  adapter keeps the journal's rules: files sent once (`article_files`, id
-  0 where the site gives none), the commit after `committing`, a lost
-  answer looked for, never sent again. DEV's is found by its body (DEV
-  rewrites titles, `normalize_title`; a title is compared by its letters
-  and digits, and one of the title with another body is `several`),
-  among drafts, published articles, or all for one scheduled there; every
-  write to DEV in the process goes one at a time, a second apart (DEV
-  limits writes by address; an upload holds the turn to its start only),
-  a short `Retry-After` waited out holding nothing;
-  DEV deletes nothing (unpublishing sets `published` false) and refuses a
-  `published_at` past, left out once gone by. Hashnode's is found among
-  the latest posts or drafts (a draft's id `draft:<id>`); its reads may
-  come from a cache, so `find` waits a minute past the earlier call; a
-  commit answered with an undocumented code is looked for; it cannot
-  publish at a time (`siteStatusNotTaken`) and refuses all without its
-  Pro plan (`platformRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
-  `domain/site-rules.ts`, checked by `articleViolations` with the
-  channel's rules. Tests set the fakes' addresses on
-  `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.
-- Erasing a workspace erases its articles (`ArticleRecords`, refused
-  while a call to a site is in flight, `PostsPublishing`), the export
-  holds them, and a member who leaves is forgotten as their author.
+- Articles, which go to a workspace's websites, are the articles
+  context's: [`../articles/AGENTS.md`](../articles/AGENTS.md).
 - A post keeps how it was created and last scheduled (`PostAttribution`,
   `#publishing/domain/post-origin.ts`): in the web app, with an API key or
   through an OAuth application (`Actor.subject.clientId`), with the key's or
@@ -506,12 +373,20 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   `publishingBehind` give scheduling `PostMeter.unmetered`; the server's
   `PublishingLive` gives it `MeteredXPostsLive`.
 - Platform calls go through the `PlatformPublisher` port, one at a time per
-  channel through `ChannelGate`, whose calls are volatile: post content never
-  lands in the cluster tables. The gates run `RoutedPlatformPublisher`, which
-  reads the post, takes its text on the channel and hands it to the
-  platform's `PlatformClient`; tests use `FakePlatformPublisher`. A whole
-  publish runs inside the gate: uploads, processing waits, token renewal,
-  the post and its confirmation.
+  channel through the channels context's `ChannelGate`, whose calls are
+  volatile: post content never lands in the cluster tables. The channels
+  guide's "The channel gate" says how the gate runs and how its protocol
+  may change; publishing's infrastructure never imports it, and
+  `PublishingWorkersLive` takes the gated `PlatformPublisher`,
+  `LivePostClients` and `FollowUpPublisher` from the composition root
+  (`src/app/publishing-workers.ts`). The workflows take the gated ports,
+  never the direct adapters, which would publish without the channel's
+  order, and `src/app/publishing-workers.ts` is the one place that
+  provides them. The gates run `RoutedPlatformPublisher`
+  (`PlatformsLive`), which reads the post, takes its text on the channel
+  and hands it to the platform's `PlatformClient`; tests use
+  `FakePlatformPublisher`. A whole publish runs inside the gate: uploads,
+  processing waits, token renewal, the post and its confirmation.
 - A post's `shortenLinks` (`posts.shorten_links`, carried by `copyOf`,
   kept by an update only when the request names it) is decided when the
   post is made: a new post that does not say (`PostDrafts.create` and
@@ -538,7 +413,7 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
 - Platform adapters live in `publishing/infrastructure/platforms/<platform>/`
   (Mastodon, Bluesky, LinkedIn, X, TikTok, YouTube, Pinterest and Google
   Business Profile, and Threads, Instagram and Facebook Pages in `meta/`),
-  beside `ChannelGate`, and implement the steps of
+  and implement the steps of
   `publishing/application/publication-steps.ts`, which `sequenced` runs:
   `prepare` uploads the media (safe to repeat: media alone shows nowhere),
   `poll` waits while the platform processes it (15 minutes at most),
@@ -1285,157 +1160,9 @@ publishing's schema, naming nobody: each goes with its workspace
 - `PostDrafts.duplicate` copies a post, whatever its status, into a new
   draft of whoever asked, every part included: what the workspace no
   longer has (a channel, a media, a tag) is left out rather than refused.
-- A recycling rule (`domain/recycling-rule.ts`, `Recycling`,
-  `publishing.recycling_rules`) makes a source post (scheduled, publishing
-  or finished, unpublished since or not) repeat. Its due instants count
-  from the source's time (`anchorAt`) in its zone (`recycling-interval.ts`:
-  `dueAt`, a month shorter than the day on its last day), never from the
-  step before; a missed one is skipped (`plannedAt`). The next post is
-  made once the latest one's time (`lastDueAt`) passed: one ahead. Each
-  occurrence is a new post (`posts.recycling_id` and `occurrence`, unique
-  together), copied with `copyOf` (`post-copies.ts`, which `duplicate`
-  shares) and sent by `PostScheduling.sendOccurrence`: no preset, signature
-  or default option filled in, `remember` instead of the duplicate refusal,
-  a queue's slot at or after the due instant (from a millisecond before),
-  the rule's lock (`claimed`) first in the transaction and the rule written
-  after the insert (`made`), so a send that rolls back leaves the rule as
-  it was. It acts as the starter now (`RecyclingActors`, backed by the
-  workspace context's `ActorsNow`): gone, or no longer able to ask, ends
-  the rule `starterGone`; `lockedOut` waits. Any other refusal ends it with
-  its reason and `RecyclingNotices` (`RecyclingEnded`, keyed by the rule
-  and its `resumptions`), in one transaction under the rule's lock.
-  `makeDue` (cron `publishing.recycling`, every ten minutes from 4) pages
-  by `(last_due_at, id)`, makes one occurrence a rule a run, skips a rule
-  another run holds (`FOR UPDATE SKIP LOCKED`), and the cron sets
-  `peal.publishing.recycling.overdue` (active rules whose latest time, a
-  queue's slot included, passed over 30 minutes ago, less those the run
-  left to wait: a starter locked out, a source awaiting approval), which
-  an alert watches. Lock order: the rule's row, then the queue, the
-  post's row, the gate, the month and the duplicate guard's advisory lock;
-  nothing locks a rule after those. Deleting a queue leaves its rules
-  alone: the next run ends them `queueGone`. Erasure deletes rules before
-  posts; `forgetAuthor` clears `started_by`, and the next run ends the
-  rule.
-- A follow-up rule (`domain/follow-up-rule.ts`, `FollowUpRules`,
-  `publishing.follow_up_rules`) acts on one post, or on every post a
-  channel publishes after it started, once it has `likes` likes: its
-  `comment` under the post, a repost, or both, once each a target
-  (`follow_ups` unique on target and kind but for those `cancelled`,
-  whatever rules act on it: a rule stopped leaves the kind to the next,
-  and a post rule another rule already follows up in full is refused
-  `alreadyFollowedUp`),
-  within `followUpWindow` (7 days) of the post going live there,
-  `maxFollowUpsPerChannelDay` (10) a channel and UTC day. What each
-  platform carries is `followUpSupport` (`domain/follow-up-support.ts`,
-  from each platform's pages: LinkedIn's terms forbid both), and a
-  channel's own abilities `followUpsOn` (the operator's X threads, the
-  Bluesky repost scope from `ChannelGrants`, which sign-in never asks:
-  a repost rule on a channel without it says `reconnect`, and the
-  reconnect with `reposts=true` asks it, as chat's; analytics' coverage):
-  `FollowUpNotPossible` refuses a rule no channel can carry, or whose
-  comment is too long for one that could. `FollowUps.arm` arms a target
-  in the transaction that settles it (`armedOutcomes`, around
-  `PublicationOutcomes.settled`), and `armPublished` a post already out
-  when its rule starts or a change gives it a kind. The `publishing.follow-ups` cron (every ten
-  minutes from 9) reads the likes analytics last counted
-  (`FollowUpCounts`, analytics' `PostLikes`: never a platform call, so a
-  rule never makes a read happen, X's paid ones included; a resumed X
-  comment does list the account's recent posts, `client.resume`, Peal's
-  own unmetered cost as for posts), expires what
-  its window passed with why, and triggers the rest one transaction each
-  under the follow-up's lock (`FOR UPDATE SKIP LOCKED`), as the starter
-  is now (`RecyclingActors`: gone ends the rule `starterGone`), only when
-  the rule is approved or the starter's posts need no approval
-  (`mayAct`, `ApprovalGate.holds`: a rule the policy comes to hold waits
-  for `approve`, which approves any rule not approved, and expires
-  `notApproved`; a change by a member in person who approves posts and
-  is not held approves it), on a post still live, the channel still
-  able, the channel's day counted under its lock (`claimChannelDay`).
-  A channel's rule whose channel was disconnected ends `channelGone`, and a kind a channel carries only once connected again (`reconnect`: a Bluesky repost before the account granted reposts) is kept `waiting`; the run arms it once the channel carries it (`armMissing`, `grantFollowUp`), or expires it `notGranted` with its window, and a post's rule does not complete while one waits. Only that case: a kind added to a channel's rule arms the channel's posts from then on, and a cancelled follow-up is never armed again but by a new rule's arming. A rule on a post with nothing left to publish completes even if it armed nothing (`settledPostRules`). A follow-up a platform put off waits until `notBefore`: what the platform asked (`retryAfter`), and at least `followUpPutOffFirst` (10 minutes) doubled each attempt, `followUpPutOffMost` (6 hours) at most of its own, longer when the platform asks; one put off until its window ends expires `windowEnded`. Members are told through `FollowUpNotices` (`NotifiedFollowUpNotices`): a rule ending `starterGone` or `channelGone` (`FollowUpRuleStopped`, key `follow-up-rule:<id>:stopped`) in the transaction that ends it; a follow-up that ends `failed`, `unconfirmed` or expired `windowEnded`, `notGranted` or `notApproved` (`notSentReasonOf`) is marked `notice_due` as it is written, and the start of each run tells each rule's together (`FollowUpsNotSent`, a count and the reasons, key `follow-ups-not-sent:<rule>:<UTC day>`) under the rule's lock, unless the rule's `not_sent_told_at` is today: those wait for the next day, but the `unconfirmed`, which ask for a check, are told at once (`atOnce`, key `follow-ups-unconfirmed:<rule>:<first id>`). A rule whose notice fails is logged and told at a later run; the run goes on. A `starterGone` end goes to every member who may act, the starter following it (`everyoneWhoMayAct`). A follow-up `SendFollowUp` holds back as its rule may no longer act is armed again `heldBack` (no platform put it off): its window ending says what held it (`expiryOf`), never `windowEnded`.
-  Staff acting as a member start and change none. `SendFollowUpV1`
-  (payload `followUpId` and `attempt`, keyed by both, so a follow-up
-  armed again runs as a new execution; activity `send`, persisted
-  contract) checks `mayAct` again just before the call, putting it off
-  as a passing refusal when it no longer holds, then sends it as
-  engagement sends a reply: the row is the
-  journal (`attemptedAt` committed before the call), a resume never sends
-  blindly, and the gate (`SendFollowUp`, `ResumeFollowUp`, ids only)
-  claims the call first (`claimCall`). `RoutedFollowUpPublisher` hands a
-  comment to the platform's `PlatformClient` as the post's next part
-  (`replyTo` the last live part and the first, the follow-up's id as the
-  idempotency key, with `:<attempt>` after the first, X's claimed on
-  `PostMeter`), a repost to
-  `PlatformReposts` (`platforms/platform-reposts-live.ts`: Bluesky's
-  `app.bsky.feed.repost` record under a key from the attempt, read back
-  on a resume; Mastodon's reblog, which Mastodon answers once). A refusal
-  that passes (the platform unreachable, a rate limit) arms it again; any
-  other fails it with the platform's code. A follow-up still `sending`
-  an hour on is handed over by the cron (`settleStranded`). The account
-  export holds the rules with their follow-ups, never who started or
-  approved one; erasing a member clears `started_by` and the approval's
-  `approvedBy`. Erasure deletes the rules with what they armed; a call already under way when
-  its workspace is erased may still go out (a gate claims no call for a
-  row gone, so the window is the call itself).
-- A feed (`domain/feed.ts`, `Feeds`, `publishing.feeds`) is a web feed a
-  workspace follows: RSS 2.0, Atom 1.0 or JSON Feed 1.1, told from the
-  body (never the content type), read through `FeedSource`
-  (`infrastructure/feeds/http-feed-source.ts`: `publicHttpClientWith`, a
-  byte past `maxFeedBytes` read so a longer answer is `tooLarge`, three
-  redirects followed here, each through the guard, 20 seconds for the
-  whole read, no credentials, its spans off and logs by host only, the
-  validators of the last read sent back, a 304 `notModified`). XML is
-  parsed by sax in strict mode (`feeds/xml-tree.ts`): it never expands an
-  entity a DOCTYPE declares nor fetches an external one, an unknown entity
-  fails the parse, and depth and element bounds stop a hostile document;
-  each format's mapping is a pure function tested on fixtures. What an
-  item says is made storable (`storableLine`, `textOfHtml` then
-  `storableText`), its addresses absolute and HTTP(S) only, and its
-  identity kept as its SHA-256 (`feed_items`, unique per feed), never the
-  text: no log, trace, notice, webhook or cluster table holds what a feed
-  says. Adding a feed, moving it or resuming it reads it at once and
-  records what it holds as `skipped` `existing`, and `since` keeps an
-  item dated before from being made. Each read of an address a member
-  gives takes one of `feedReadsPerHour` (`FeedReads`, `feed_reads`).
-- `Feeds.poll` (cron `publishing.feeds`, every ten minutes from 6) pages
-  the due feeds by `(next_check_at, id)`, four at once, starts no read
-  past `runBudget` (eight minutes) and says what it left; it takes each
-  feed with a lease (`leaseFeed`: `next_check_at` moved `readLease` on
-  under `FOR UPDATE SKIP LOCKED`), so no transaction is held over a read.
-  The starter is resolved as a recycling rule's is (`RecyclingActors`,
-  `mayChangeStarted` in `started-by.ts`): gone stops the feed
-  `starterGone`, locked out keeps the last validators so the items come
-  back. New items (`newItems`: unseen, oldest first, `maxItemsPerRun` a
-  run, `maxItemsPerDay` a UTC day, the rest `tooMany`) become, in draft
-  mode, a draft (`PostDrafts.create`, in one transaction with the item's
-  record; a channel gone makes a draft for none), in queue mode a post
-  sent by `PostScheduling.send` after its item is recorded `claimed` in a
-  statement of its own, keyed `feed:<feed id>:<digest>` (key and
-  fingerprint), so a run that finds a claim younger than `claimLifetime`
-  (23 hours) sends it again and is answered the first post; an older claim
-  is `abandoned`. What `send` refuses becomes a draft (`heldBack` with the
-  reason); a queue gone does too, and stops the feed `queueGone`. A failed
-  read postpones the feed (the host's `Retry-After`, else as long as it
-  has failed, an hour to a day); a 410 stops it `gone`, seven days of
-  failing `unreachable` or `notAFeed`. Stopping tells `FeedStopped`
-  (`FeedNotices`, keyed by the feed and when it stopped) in the
-  transaction that stops it; the cron sets `peal.publishing.feeds.overdue`,
-  which an alert watches. A feed keeps its 500 newest items: the
-  idempotency retention's run prunes the rest and read counts a day old.
-  Erasure deletes feeds before posts; `forgetAuthor` clears `started_by`.
-- Feeds and the guard: a name that resolves to a public address when the
-  guard checks it and to another when fetch connects is not caught (the
-  guard says so). Pinning the connection to the checked address while
-  keeping the Host and SNI is not done: Bun's fetch and Node's (where the
-  tests run) take no common option for it, and Peal reaches every host
-  through the one fetch client. HTTPS on port 443 with certificate
-  validation narrows it to a host holding a valid certificate for the
-  outside name.
-- With `attachPicture`, an item's picture is imported through
-  `FeedPictures` (`LibraryFeedPictures`, the media context's
-  `MediaLibrary.importMedia`, as the starter, who needs media:upload)
-  before the item's transaction, and attached, described by the item's
-  title, only when it is a ready image; anything else leaves the post
-  without it and writes `feed_items.picture_skipped`. The import takes
-  `kinds: ["image"]`, so a video or a document is refused from its first
-  bytes and never stored. A crash after the import leaves an asset
-  unattached in the library: accepted. A claim sent again imports again.
+- Recycling is a module of publishing (`<layer>/recycling/`): its rules
+  are in [`application/recycling/AGENTS.md`](application/recycling/AGENTS.md).
+- Follow-ups are a module of publishing (`<layer>/follow-ups/`): their
+  rules are in [`application/follow-ups/AGENTS.md`](application/follow-ups/AGENTS.md).
+- Feeds are a module of publishing (`<layer>/feeds/`): their rules are in
+  [`application/feeds/AGENTS.md`](application/feeds/AGENTS.md).

@@ -4,10 +4,10 @@ import { Digest } from "effect/crypto";
 import { FetchHttpClient } from "effect/http";
 import { TestClock } from "effect/testing";
 
-import { FeedSource } from "#publishing/application/feed-source.ts";
-import { FeedAddressSchema } from "#publishing/domain/feed-address.ts";
-import { maxFeedBytes } from "#publishing/domain/feed.ts";
-import type { FeedValidators } from "#publishing/domain/feed.ts";
+import { FeedSource } from "#publishing/application/feeds/feed-source.ts";
+import { FeedAddressSchema } from "#publishing/domain/feeds/feed-address.ts";
+import { maxFeedBytes } from "#publishing/domain/feeds/feed.ts";
+import type { FeedValidators } from "#publishing/domain/feeds/feed.ts";
 import { HttpFeedSource } from "#publishing/infrastructure/feeds/http-feed-source.ts";
 import {
   answering,

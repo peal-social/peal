@@ -1,16 +1,16 @@
 import { DateTime, Effect, Layer, Option, Ref } from "effect";
 
-import { FeedNotices } from "#publishing/application/feed-notices.ts";
-import { FeedPictures } from "#publishing/application/feed-pictures.ts";
-import type { FeedPicture } from "#publishing/application/feed-pictures.ts";
-import { FeedReadFailed } from "#publishing/application/feed-read-failed.ts";
-import { FeedSource } from "#publishing/application/feed-source.ts";
-import type { FeedRead } from "#publishing/application/feed-source.ts";
-import { FeedDocument } from "#publishing/domain/feed-document.ts";
-import { FeedEntry } from "#publishing/domain/feed-entry.ts";
-import type { FeedReadFailure } from "#publishing/domain/feed-read-failure.ts";
-import type { FeedStopReason } from "#publishing/domain/feed-stop-reason.ts";
-import { ItemDigestSchema } from "#publishing/domain/item-digest.ts";
+import { FeedNotices } from "#publishing/application/feeds/feed-notices.ts";
+import { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
+import type { FeedPicture } from "#publishing/application/feeds/feed-pictures.ts";
+import { FeedReadFailed } from "#publishing/application/feeds/feed-read-failed.ts";
+import { FeedSource } from "#publishing/application/feeds/feed-source.ts";
+import type { FeedRead } from "#publishing/application/feeds/feed-source.ts";
+import { FeedDocument } from "#publishing/domain/feeds/feed-document.ts";
+import { FeedEntry } from "#publishing/domain/feeds/feed-entry.ts";
+import type { FeedReadFailure } from "#publishing/domain/feeds/feed-read-failure.ts";
+import type { FeedStopReason } from "#publishing/domain/feeds/feed-stop-reason.ts";
+import { ItemDigestSchema } from "#publishing/domain/feeds/item-digest.ts";
 
 // Feeds as a test serves them, by address, read in memory; and the stops
 // they told, as the notifications would key them. The state is the
