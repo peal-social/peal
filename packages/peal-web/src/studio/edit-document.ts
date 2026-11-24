@@ -15,19 +15,6 @@ export type StudioClip = components["schemas"]["Clip"];
 
 export type StudioTrack = components["schemas"]["Track"];
 
-export type StudioOutput = components["schemas"]["Output"];
-
-/** A clip's changes: a field set to undefined is taken off the clip. */
-export type ClipChanges = {
-  readonly [Field in keyof StudioClip]?: StudioClip[Field] | undefined;
-};
-
-/** A clip's asset of one kind, as Shotstack's schema has it. */
-export type AssetOf<Kind extends StudioClip["asset"]["type"]> = Extract<
-  StudioClip["asset"],
-  { readonly type: Kind }
->;
-
 /** The prefix of a library file's name in a document. */
 export const mediaRefPrefix = "peal:media/";
 
@@ -116,17 +103,39 @@ export const clipPreviewOf = (
   }),
 });
 
+// The SDK's size menu writes a size, where the server takes one of three
+// aspects at a resolution: the sizes it offers, as those.
+const outputs: ReadonlyMap<
+  string,
+  Pick<StudioEdit["output"], "aspectRatio" | "resolution">
+> = new Map([
+  ["1080x1080", { aspectRatio: "1:1", resolution: "1080" }],
+  ["1080x1920", { aspectRatio: "9:16", resolution: "1080" }],
+  ["1280x720", { aspectRatio: "16:9", resolution: "hd" }],
+  ["1920x1080", { aspectRatio: "16:9", resolution: "1080" }],
+]);
+
+// The output with its size as an aspect and a resolution; a size the
+// server has no word for stays, and the server says so.
+const sizedOutput = (output: StudioEdit["output"]): StudioEdit["output"] => {
+  const { size, ...rest } = output;
+  const named = outputs.get(`${size?.width}x${size?.height}`);
+
+  return named === undefined ? output : { ...rest, ...named };
+};
+
 /**
  * The document as it is stored and sent: each library file's address
- * swapped back for its name, each relayed address back to its host's. An
- * address the editor did not hand out stays.
+ * swapped back for its name, each relayed address back to its host's, and
+ * the size chosen as the server names it. An address the editor did not
+ * hand out stays.
  */
 export const storedOf = (
   edit: StudioEdit,
   mediaIdOf: (address: string) => string | null,
   origin: string
-): StudioEdit =>
-  withSources(edit, (src) => {
+): StudioEdit => {
+  const stored = withSources(edit, (src) => {
     const mediaId = mediaIdOf(src);
 
     return mediaId === null
@@ -134,61 +143,13 @@ export const storedOf = (
       : mediaRefOf(mediaId);
   });
 
-/** The video's shape: Shotstack's aspect ratios the server renders. */
-export const editAspects = ["9:16", "16:9", "1:1"] as const;
+  return { ...stored, output: sizedOutput(stored.output) };
+};
 
-export type EditAspect = (typeof editAspects)[number];
-
-/** The resolutions the server renders, smallest first. */
-export const editResolutions = ["sd", "hd", "1080"] as const;
-
-export type EditResolution = (typeof editResolutions)[number];
-
-/** The frame rates offered. */
-export const editFrameRates = [24, 25, 30] as const;
-
-/** The video's settings as the editor offers them, each with its default. */
-export interface EditSettings {
-  readonly aspectRatio: EditAspect;
-  readonly background: string;
-  readonly fps: number;
-  readonly resolution: EditResolution;
-}
-
-/** The document's settings, those the editor does not offer read as its defaults. */
-export const settingsOf = (edit: StudioEdit): EditSettings => ({
-  aspectRatio:
-    editAspects.find((each) => each === edit.output.aspectRatio) ?? "9:16",
-  background: edit.timeline.background ?? "#000000",
-  fps: editFrameRates.find((each) => each === edit.output.fps) ?? 25,
-  resolution:
-    editResolutions.find((each) => each === edit.output.resolution) ?? "1080",
-});
-
-/**
- * Fonts the text tools offer: in the Studio SDK's catalogue, so the
- * preview draws them, and Google's, so the render has them.
- */
-export const editFonts = [
-  "Geist",
-  "Inter",
-  "Montserrat",
-  "Open Sans",
-  "Roboto",
-  "Poppins",
-  "DM Sans",
-  "Work Sans",
-  "Oswald",
-  "Bebas Neue",
-  "Playfair Display",
-  "Lora",
-  "Permanent Marker",
-] as const;
-
-/** A new edit: one empty track, in the shape and resolution given. */
-export const emptyEdit = (aspect: EditAspect = "9:16"): StudioEdit => ({
-  output: { aspectRatio: aspect, format: "mp4", fps: 25, resolution: "1080" },
-  timeline: { background: "#000000", tracks: [{ clips: [] }] },
+/** A new portrait edit of these clips, on one track. */
+export const emptyEdit = (clips: readonly StudioClip[]): StudioEdit => ({
+  output: { aspectRatio: "9:16", format: "mp4", fps: 25, resolution: "1080" },
+  timeline: { background: "#000000", tracks: [{ clips: [...clips] }] },
 });
 
 // How long a still or a text shows when it is added.
@@ -226,6 +187,8 @@ export const clipOfMedia = (
   return clips[media.kind];
 };
 
+const isSeconds = Schema.is(Schema.Finite);
+
 /** Library files as clips one after the other from `start`, documents left out. */
 export const laidEnd = (
   files: readonly Pick<Media, "durationMs" | "id" | "kind">[],
@@ -240,7 +203,10 @@ export const laidEnd = (
       return [];
     }
 
-    at = Math.round((at + timingOf(clip.length, stillSeconds)) * 10) / 10;
+    at =
+      Math.round(
+        (at + (isSeconds(clip.length) ? clip.length : stillSeconds)) * 10
+      ) / 10;
 
     return [clip];
   });
@@ -263,100 +229,6 @@ export const textClipOf = (text: string, start: number): StudioClip => ({
   start,
   width: 900,
 });
-
-/** What a clip holds, as the timeline names and draws it. */
-export type ClipKind =
-  | "audio"
-  | "drawing"
-  | "image"
-  | "other"
-  | "text"
-  | "video";
-
-// What Shotstack's assets show, as the timeline draws them; any other
-// (an HTML page, a luma matte) is a clip of its own kind.
-const kinds: ReadonlyMap<StudioAsset["type"], ClipKind> = new Map([
-  ["audio", "audio"],
-  ["caption", "text"],
-  ["html", "text"],
-  ["image", "image"],
-  ["image-to-video", "video"],
-  ["rich-caption", "text"],
-  ["rich-text", "text"],
-  ["shape", "drawing"],
-  ["svg", "image"],
-  ["text", "text"],
-  ["text-to-image", "image"],
-  ["text-to-speech", "audio"],
-  ["title", "text"],
-  ["video", "video"],
-]);
-
-const kindOf = (clip: StudioClip): ClipKind =>
-  kinds.get(clip.asset.type) ?? "other";
-
-/** A clip as the timeline lays it out. */
-export interface ClipView {
-  /** The SDK's stable id, which every change names. */
-  readonly id: string;
-  readonly kind: ClipKind;
-  readonly length: number;
-  /** The library file it shows, when it shows one. */
-  readonly mediaId: string | null;
-  readonly start: number;
-  /** The words it shows, for a text. */
-  readonly text: string | null;
-  readonly trackIndex: number;
-}
-
-// A clip's timing in seconds: a number as written, else where it falls
-// (after the clip before it, or the length a file or a still has).
-const isSeconds = Schema.is(Schema.Finite);
-
-const timingOf = (value: number | string, fallback: number): number =>
-  isSeconds(value) ? value : fallback;
-
-const textOf = ({ asset }: StudioClip): string | null =>
-  "text" in asset && asset.text !== undefined ? asset.text : null;
-
-const mediaOf = ({ asset }: StudioClip): string | null =>
-  "src" in asset && asset.src !== undefined ? mediaIdOfRef(asset.src) : null;
-
-/**
- * The document's tracks as the timeline draws them, the first track on
- * top as Shotstack layers them. Clips need the ids the SDK gives
- * (`getEdit({ includeIds: true })`); one without is left out.
- */
-export const tracksOf = (edit: StudioEdit): readonly (readonly ClipView[])[] =>
-  edit.timeline.tracks.map((track, trackIndex) => {
-    let end = 0;
-
-    return track.clips.flatMap((clip) => {
-      const { id } = clip;
-      const start = timingOf(clip.start, end);
-      const length = timingOf(clip.length, stillSeconds);
-
-      end = start + length;
-
-      return id === undefined
-        ? []
-        : [
-            {
-              id,
-              kind: kindOf(clip),
-              length,
-              mediaId: mediaOf(clip),
-              start,
-              text: textOf(clip),
-              trackIndex,
-            },
-          ];
-    });
-  });
-
-/** Where the video ends: the latest end of any clip. */
-export const endOf = (tracks: readonly (readonly ClipView[])[]): number =>
-  Math.max(0, ...tracks.flat().map(({ length, start }) => start + length));
 
 /** Every library file the document names, in order, each once. */
 export const mediaIdsOf = (edit: StudioEdit): readonly string[] => {

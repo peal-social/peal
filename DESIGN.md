@@ -861,58 +861,28 @@ drafts and the posts that need an approval are tabs of Posts. Home keeps "Write 
 ### The editor
 
 Studio's **Editor** makes a video of the library's pictures, videos and
-sounds and of texts, on tracks. Shotstack's Studio SDK is its engine
-(the document, every change, undo and redo, the playback and the
-preview's canvas); every control around it is Peal's, built from peal-ui
-and ui-sdk's behaviours (toolbar, listbox, slider, select), in Peal's
-look: the SDK's own timeline, toolbars and theme are never loaded. Its
-export is the workspace's own Shotstack account, as slide videos are. It
-shows only to members who may compose one (assistant:use and
-media:upload).
+sounds and of texts, on tracks. It is Shotstack's Studio SDK, its own
+interface included: Peal changes how it looks through CSS alone
+(`studio.css`), never its layout, its controls or its behaviour, so it
+keeps costing little and can be taken out whole. It is the one part of the
+app not built from peal-ui, and the SDK's words are in English in every
+language. Its export is the workspace's own Shotstack account, as slide
+videos are. It shows only to members who may compose one (assistant:use
+and media:upload).
 
-- The panel's header holds **Export video** (a small ghost button, its
-  icon first), disabled until there is a clip.
-- The **toolbar** above the stage, one tab stop with arrow keys between
-  its controls: **Add files** (the library's picker), **Add text**, then
-  Undo and Redo (icon buttons), **Duplicate** and **Delete** for the
-  chosen clip, and **Start over**, in small ghost buttons with a hairline
-  between groups.
+- The panel's header holds **Add files** (the library's picker), **Start
+  over** and **Export video**.
 - The **stage**, on `muted` with a hairline, `{rounded.lg}`, 48 % of the
-  window's height: the SDK's canvas, fitted to it. Before the first clip,
-  it says to add a file or a text.
-- The **transport** under it: back to the previous edge, play or pause,
-  on to the next edge (a toolbar of ghost icon buttons), then the
-  playhead as a slider along the whole width (a 4 px rail, the played
-  part in `primary`, a round thumb with a `primary` edge), then the time
-  in mono figures, "0:04.3 / 0:12.0". Under it, in small muted text,
-  where an export goes and how many are left today, and a refusal above
-  it.
-- The **inspector** beside the stage, 20 rem, as tall as the stage and
-  the transport and scrolling inside: the chosen clip's sections under
-  small headings (its timing; its sound: volume, what it skips, fades;
-  its words and style: font among Peal's offered fonts, size, weight,
-  colour, alignment, background and box; its layout: fit, position,
-  offset, scale, opacity; its motion, how it comes in and goes out, and
-  its filter), then the video's (shape, resolution, frame rate,
-  backdrop). A number applies when it is left or on Enter, a slider when
-  it is let go, a choice at once: each is one undo. On a phone it goes
-  under the stage.
-- The **timeline**, a bordered card under them, its header naming it
-  with zoom out and in: a ruler that seeks where it is pressed, then one
-  row per track, the first on top as the video layers them, each named
-  in a muted column with its delete button. Clips sit where they start,
-  as wide as they last, tinted by what they hold (pictures
-  `brand-tint`, texts lavender, videos a lighter lavender, sounds a sun
-  tint), with their icon and name; the chosen one is ringed in
-  `primary`. Dragging a clip moves it, up or down to another track;
-  dragging its edges trims it; both snap to the playhead, the start and
-  the other clips' edges. The clips are one listbox, arrow keys between
-  them; with one chosen, Alt and an arrow moves it, with ⌘ or Ctrl
-  changes its length, Shift for whole seconds, Delete removes it. The
-  playhead is a 2 px `primary` line across the tracks. A muted line at
-  the foot says the keys.
-- Space plays or pauses, ⌘Z or Ctrl+Z undoes and with Shift redoes,
-  outside a field.
+  window's height: the SDK's preview, its toolbars beside it on `popover`
+  with a hairline, the chosen clip's over it on `primary`. A new video
+  starts with one text.
+- The **timeline** under it, in a bordered box on `card`: the playhead and
+  the play button in `primary`, texts tinted lavender, sounds sun, the rest
+  `brand-tint`.
+- Sizes and frame rates the server does not render are hidden from the
+  SDK's menus.
+- Under the timeline, in small muted text, where an export goes and how
+  many are left today, and a refusal above it.
 - Exports on their way show under the timeline as the library's
   placeholders do, and a toast says when one lands in Media or why it
   failed.
