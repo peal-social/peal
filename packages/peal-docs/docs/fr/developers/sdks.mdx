@@ -5,7 +5,7 @@ sidebar:
   icon: package
 ---
 
-Les SDK de Peal appellent l’[API](/developers) depuis huit langages. Ils sont générés à partir du même contrat que le serveur : chaque méthode porte le nom d’une opération de l’API (`posts.send`, `media.importFromUrl`), et chaque type celui d’un schéma. Contrairement au reste de Peal, ce sont des logiciels libres, sous licence Apache 2.0.
+Les SDK de Peal appellent l’[API](/developers) depuis huit langages. Ils sont générés à partir du même contrat que le serveur : chaque méthode porte le nom d’une opération de l’API (`posts.create`, `inbox.messages.send`, `media.importFromUrl`), et chaque type celui d’un schéma. Contrairement au reste de Peal, ce sont des logiciels libres, sous licence Apache 2.0.
 
 ## Installer [#install]
 
@@ -303,7 +303,7 @@ if (!check.valid) {
 
 // 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 // 24 heures renvoie cette publication, sans en créer une deuxième.
-const sent = await peal.posts.send({
+const sent = await peal.posts.create({
   ...post,
   "idempotency-key": randomUUID(),
   wait: "30",
@@ -354,7 +354,7 @@ if not check.valid:
 
 # 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 # 24 heures renvoie cette publication, sans en créer une deuxième.
-sent = peal.posts.send(**post, idempotency_key=str(uuid.uuid4()), wait="30")
+sent = peal.posts.create(**post, idempotency_key=str(uuid.uuid4()), wait="30")
 
 # 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
 # résultat.
@@ -428,7 +428,7 @@ func main() {
 
 	// 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans
 	// les 24 heures renvoie cette publication, sans en créer une deuxième.
-	sent, err := client.Posts.Send(ctx, &peal.NewPost{
+	sent, err := client.Posts.Create(ctx, &peal.NewPost{
 		ChannelIDs:     channelIDs,
 		Content:        content,
 		When:           now,
@@ -492,7 +492,7 @@ raise check.violations.inspect unless check.valid
 
 # 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 # 24 heures renvoie cette publication, sans en créer une deuxième.
-sent = peal.posts.send_(**post, idempotency_key: SecureRandom.uuid, wait: "30")
+sent = peal.posts.create(**post, idempotency_key: SecureRandom.uuid, wait: "30")
 
 # 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
 # résultat.
@@ -558,7 +558,7 @@ if (!check.getValid()) {
 
 // 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 // 24 heures renvoie cette publication, sans en créer une deuxième.
-Post sent = peal.posts().send(NewPost.builder()
+Post sent = peal.posts().create(NewPost.builder()
     .content(content)
     .when(now)
     .channelIds(channelIds)
@@ -625,7 +625,7 @@ if (!$check->valid) {
 
 // 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 // 24 heures renvoie cette publication, sans en créer une deuxième.
-$sent = $peal->posts->send(new NewPost([
+$sent = $peal->posts->create(new NewPost([
     'channelIds' => $channelIds,
     'content' => $content,
     'when' => $now,
@@ -684,7 +684,7 @@ if (!check.Valid)
 
 // 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 // 24 heures renvoie cette publication, sans en créer une deuxième.
-var sent = await peal.Posts.SendAsync(new NewPost
+var sent = await peal.Posts.CreateAsync(new NewPost
 {
     ChannelIds = channelIds,
     Content = content,
@@ -772,7 +772,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // de la requête.
     let sent = peal
         .posts
-        .send(
+        .create(
             &NewPost::builder()
                 .channel_ids(channel_ids)
                 .content(content)
@@ -805,16 +805,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 Chaque SDK nomme les étapes à sa façon :
 
-| Étape                  | Python                          | Go                              | Ruby                              | Java                              | PHP                              | .NET                                 | Rust                                                             |
-| ---------------------- | ------------------------------- | ------------------------------- | --------------------------------- | --------------------------------- | -------------------------------- | ------------------------------------ | ---------------------------------------------------------------- |
-| Vérifier l’identifiant | `credential.get`                | `Credential.Get`                | `credential.get`                  | `credential().get`                | `credential->get`                | `Credential.GetAsync`                | `credential.get`                                                 |
-| Lister les canaux      | `channels.list`                 | `Channels.List`                 | `channels.list`                   | `channels().list`                 | `channels->list`                 | `Channels.ListAsync`                 | `channels.list`                                                  |
-| Importer un média      | `media.import_from_url`         | `Media.ImportFromURL`           | `media.import_from_url`           | `media().importFromUrl`           | `media->importFromUrl`           | `Media.ImportFromUrlAsync`           | `media.import_from_url`                                          |
-| Valider                | `posts.validate`                | `Posts.Validate`                | `posts.validate`                  | `posts().validate`                | `posts->validate`                | `Posts.ValidateAsync`                | `posts.validate`                                                 |
-| Envoyer, avec une clé  | `posts.send(idempotency_key=…)` | `Posts.Send` (`IdempotencyKey`) | `posts.send_(idempotency_key: …)` | `posts().send` (`idempotencyKey`) | `posts->send` (`idempotencyKey`) | `Posts.SendAsync` (`IdempotencyKey`) | `posts.send`, l’en-tête dans `RequestOptions::additional_header` |
-| Lire le résultat       | `posts.outcome`                 | `Posts.Outcome`                 | `posts.outcome`                   | `posts().outcome`                 | `posts->outcome`                 | `Posts.OutcomeAsync`                 | `posts.outcome`                                                  |
+| Étape                  | Python                            | Go                                | Ruby                               | Java                                | PHP                                | .NET                                   | Rust                                                               |
+| ---------------------- | --------------------------------- | --------------------------------- | ---------------------------------- | ----------------------------------- | ---------------------------------- | -------------------------------------- | ------------------------------------------------------------------ |
+| Vérifier l’identifiant | `credential.get`                  | `Credential.Get`                  | `credential.get`                   | `credential().get`                  | `credential->get`                  | `Credential.GetAsync`                  | `credential.get`                                                   |
+| Lister les canaux      | `channels.list`                   | `Channels.List`                   | `channels.list`                    | `channels().list`                   | `channels->list`                   | `Channels.ListAsync`                   | `channels.list`                                                    |
+| Importer un média      | `media.import_from_url`           | `Media.ImportFromURL`             | `media.import_from_url`            | `media().importFromUrl`             | `media->importFromUrl`             | `Media.ImportFromUrlAsync`             | `media.import_from_url`                                            |
+| Valider                | `posts.validate`                  | `Posts.Validate`                  | `posts.validate`                   | `posts().validate`                  | `posts->validate`                  | `Posts.ValidateAsync`                  | `posts.validate`                                                   |
+| Envoyer, avec une clé  | `posts.create(idempotency_key=…)` | `Posts.Create` (`IdempotencyKey`) | `posts.create(idempotency_key: …)` | `posts().create` (`idempotencyKey`) | `posts->create` (`idempotencyKey`) | `Posts.CreateAsync` (`IdempotencyKey`) | `posts.create`, l’en-tête dans `RequestOptions::additional_header` |
+| Lire le résultat       | `posts.outcome`                   | `Posts.Outcome`                   | `posts.outcome`                    | `posts().outcome`                   | `posts->outcome`                   | `Posts.OutcomeAsync`                   | `posts.outcome`                                                    |
 
-Ruby appelle `send` `send_`, parce que tout objet Ruby a déjà une méthode `send`. Le `NewPost` de Rust n’a pas de champ pour la clé : vous envoyez l’en-tête `Idempotency-Key` par les options de la requête.
+Ruby appelle `inbox.messages.send` `inbox.messages.send_`, parce que tout objet Ruby a déjà une méthode `send`. Le `NewPost` de Rust n’a pas de champ pour la clé : vous envoyez l’en-tête `Idempotency-Key` par les options de la requête.
 
 ## Erreurs et nouvelles tentatives [#errors]
 
@@ -833,7 +833,7 @@ Une clé peut envoyer {{api-with-fr}} requêtes par minute, ou {{api-without-fr}
 
 ## Pages [#paging]
 
-Les listes qui grandissent sans fin se lisent page par page. Passez `limit` et `cursor`, puis passez le `nextCursor` de la réponse comme `cursor` suivant, jusqu’à ce qu’il vaille `null` ([Pagination](/developers/conventions/paging#paging)). Les listes de l’API partenaire (`/api/v1/partner/workspaces`, `/api/v1/partner/usage`, `/api/v1/partner/overview`) prennent `before` à la place, et répondent `next`.
+Les listes qui grandissent sans fin se lisent page par page. Passez `limit` et `cursor`, puis passez le `nextCursor` de la réponse comme `cursor` suivant, jusqu’à ce qu’il vaille `null` ([Pagination](/developers/conventions/paging#paging)). Les listes de l’API partenaire (`/api/v1/partner/workspaces`, `/api/v1/partner/customer-usage`, `/api/v1/partner/overview`) prennent `before` à la place, et répondent `next`.
 
 Les SDK passent les deux tels quels. Aucun n’a d’aide qui lise toutes les pages pour vous, c’est donc à vous d’écrire la boucle :
 

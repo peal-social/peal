@@ -9,7 +9,7 @@ Vous pouvez retrouver les publications qui ont échoué la semaine dernière, to
 
 ## Filtrer les publications [#search]
 
-`GET …/posts/search` liste les publications de l’espace de travail, quel que soit leur état, une page à la fois. Une page contient 20 publications sauf si `limit` en décide autrement, et 100 au plus. Quand vous donnez plusieurs filtres, une publication doit les satisfaire tous. L’[outil MCP](/developers/mcp/tools#tools) `list_posts` prend les mêmes filtres, et `peal posts list` liste les mêmes publications ([Ligne de commande](/developers/cli/posts#posts)).
+`GET …/posts` liste les publications de l’espace de travail, quel que soit leur état, une page à la fois. Une page contient 20 publications sauf si `limit` en décide autrement, et 100 au plus. Quand vous donnez plusieurs filtres, une publication doit les satisfaire tous. L’[outil MCP](/developers/mcp/tools#tools) `list_posts` prend les mêmes filtres, et `peal posts list` liste les mêmes publications ([Ligne de commande](/developers/cli/posts#posts)).
 
 La requête prend ces paramètres :
 
@@ -39,7 +39,7 @@ import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
-const page = await peal.posts.search({
+const page = await peal.posts.list({
   status: "finished",
   outcome: "failed",
   platform: "bluesky",
@@ -55,7 +55,7 @@ from peal import Peal
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
-page = peal.posts.search(
+page = peal.posts.list(
     status="finished",
     outcome="failed",
     platform="bluesky",
@@ -76,7 +76,7 @@ import (
 
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
-page, err := client.Posts.Search(context.TODO(), &peal.SearchPostsRequest{
+page, err := client.Posts.List(context.TODO(), &peal.ListPostsRequest{
 	Status:   peal.PostStatusFinished.Ptr(),
 	Outcome:  peal.PostOutcomeFailed.Ptr(),
 	Platform: peal.PlatformBluesky.Ptr(),
@@ -90,7 +90,7 @@ require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
-page = peal.posts.search(
+page = peal.posts.list(
   status: "finished",
   outcome: "failed",
   platform: "bluesky",
@@ -101,15 +101,15 @@ page = peal.posts.search(
 
 ```java Java
 import social.peal.PealClient;
-import social.peal.resources.posts.requests.SearchPostsRequest;
+import social.peal.resources.posts.requests.ListPostsRequest;
 import social.peal.types.*;
 
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
 
-PostPage page = peal.posts().search(
-    SearchPostsRequest.builder()
+PostPage page = peal.posts().list(
+    ListPostsRequest.builder()
         .status(PostStatus.FINISHED)
         .outcome(PostOutcome.FAILED)
         .platform(Platform.BLUESKY)
@@ -121,11 +121,11 @@ PostPage page = peal.posts().search(
 ```php PHP
 <?php
 use Peal\PealClient;
-use Peal\Posts\Requests\SearchPostsRequest;
+use Peal\Posts\Requests\ListPostsRequest;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
-$page = $peal->posts->search(new SearchPostsRequest([
+$page = $peal->posts->list(new ListPostsRequest([
     'status' => 'finished',
     'outcome' => 'failed',
     'platform' => 'bluesky',
@@ -139,7 +139,7 @@ using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
-var page = await peal.Posts.SearchAsync(new SearchPostsRequest
+var page = await peal.Posts.ListAsync(new ListPostsRequest
 {
     Status = PostStatus.Finished,
     Outcome = PostOutcome.Failed,
@@ -159,8 +159,8 @@ let peal = PealClient::new(ClientConfig {
 
 let page = peal
     .posts
-    .search(
-        &SearchQueryRequest::builder()
+    .list(
+        &PostsListQueryRequest::builder()
             .status(PostStatus::Finished)
             .outcome(PostOutcome::Failed)
             .platform(Platform::Bluesky)
@@ -173,7 +173,7 @@ let page = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/v1/posts/search?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
+curl "https://api.example.com/api/v1/posts?status=finished&outcome=failed&platform=bluesky&sort=scheduledDesc&limit=50" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -233,7 +233,7 @@ Un curseur marque l’endroit où sa page s’est arrêtée. Les publications cr
   type="info"
   title="Un calendrier peut lire une période entière en une requête"
 >
-  `GET …/posts?from=…&to=…` existe toujours. Il liste en une seule réponse les
-  publications programmées entre deux instants, séparés de 62 jours au plus, par
-  instant programmé. Les brouillons n’en font pas partie.
+  `GET …/posts/calendar?from=…&to=…` liste en une seule réponse les publications
+  programmées entre deux instants, séparés de 62 jours au plus, par instant
+  programmé. Les brouillons n’en font pas partie.
 </Callout>

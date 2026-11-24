@@ -182,15 +182,15 @@ Peal conserve le nom que vous avez donné, avec vos commentaires et décisions, 
 
 L’[API](/developers) a les mêmes opérations, sous `/api/v1` :
 
-| Chemin                                                             | À quoi il sert                 |
-| ------------------------------------------------------------------ | ------------------------------ |
-| `review/settings`                                                  | La politique                   |
-| `approvals`                                                        | Les publications qui attendent |
-| `review`, `comments`, `approve`, `request-changes`, `review-links` | La relecture d’une publication |
+| Chemin                                                                                | À quoi il sert                 |
+| ------------------------------------------------------------------------------------- | ------------------------------ |
+| `approvals/settings`                                                                  | La politique                   |
+| `approvals`                                                                           | Les publications qui attendent |
+| `approvals/{postId}`, et `comments`, `approve`, `request-changes`, `links` en dessous | La relecture d’une publication |
 
 Une publication qui attend répond `"status": "awaitingApproval"` partout où des publications sont listées. Programmer une publication qui a besoin d’une approbation répond la publication, en attente, au lieu d’une erreur. Vérifiez donc son `status`.
 
-`review` répond la publication telle que chaque canal la recevra, avec l’approbation qui attend. `approve` et `request-changes` prennent l’`id` de cette approbation (`approvalId`) et son `subjectHash`, l’empreinte de ce que la publication disait alors. Si la publication a été redemandée ou dit autre chose depuis, ils répondent `ApprovalChanged` (409) et ne décident rien. Relisez `review`, puis décidez.
+`approvals/{postId}` répond la publication telle que chaque canal la recevra, avec l’approbation qui attend. `approve` et `request-changes` prennent l’`id` de cette approbation (`approvalId`) et son `subjectHash`, l’empreinte de ce que la publication disait alors. Si la publication a été redemandée ou dit autre chose depuis, ils répondent `ApprovalChanged` (409) et ne décident rien. Relisez `approvals/{postId}`, puis décidez.
 
 La [ligne de commande](/developers/cli/posts#review) a `peal approvals` et `peal review`. Les [assistants IA](/developers/mcp/tools#tools) ont `list_approvals`, `get_post_review`, `approve_post` et `request_changes`.
 

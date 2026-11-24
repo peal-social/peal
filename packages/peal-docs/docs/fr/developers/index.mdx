@@ -42,7 +42,7 @@ Chaque point d’accès demande de quoi s’authentifier, sauf les sondes de san
 | Jeton d’accès OAuth | `Authorization: Bearer …`              | La [ligne de commande](/developers/cli) et les [clients MCP](/developers/mcp), qui l’obtiennent quand vous les connectez | Il agit en votre nom, dans la limite des scopes que vous avez acceptés (ci-dessous).                                                                                                                                                                                                                                                                                            |
 | Cookie de session   | Le cookie de l’application web         | L’application web elle-même                                                                                              | Une requête qui change quelque chose avec lui doit venir de l’origine même de l’application web.                                                                                                                                                                                                                                                                                |
 
-Les membres qui peuvent gérer les clés (propriétaires et administrateurs) en créent une avec `POST /api/v1/api-keys` une fois connectés. La clé n’apparaît que dans cette réponse.
+Les membres qui peuvent gérer les clés (propriétaires et administrateurs) en créent une avec `POST /api/v1/workspace/api-keys` une fois connectés. La clé n’apparaît que dans cette réponse.
 
 Un jeton OAuth est limité à ses scopes ([Ce que permet chaque permission](/developers/agents#scopes)) :
 
@@ -153,7 +153,7 @@ curl https://api.example.com/api/v1/credential \
 
 ## Espaces de travail [#workspaces]
 
-Les ressources d’un espace de travail se trouvent sous `/api/v1/` : `channels`, `posts`, `media`, `assistant`, `analytics`, `billing`, `usage`, `webhooks`, `activity` et `api-keys`. `DELETE /api/v1/workspace` supprime l’espace de travail lui-même, avec tout son contenu ([Espaces de travail et compte](/guides/workspace#delete-workspace)). Une clé d’API, et une application liée à un espace de travail, agissent dans leur propre espace de travail. Tout autre moyen d’authentification nomme l’espace de travail dans l’en-tête `Peal-Workspace` ([L’espace de travail d’une requête](/developers/conventions#workspace)). La référence de chaque point d’accès nomme la permission qu’il demande, comme `post:schedule` ou `channel:connect`.
+Les ressources d’un espace de travail se trouvent sous `/api/v1/` : `posts`, `approvals`, `channels`, `media`, `inbox`, `automations`, `analytics`, `links`, `webhooks`, `assistant` et `workspace`, qui contient ses membres, ses clés d’API, sa facturation, son utilisation et son activité. `DELETE /api/v1/workspace` supprime l’espace de travail lui-même, avec tout son contenu ([Espaces de travail et compte](/guides/workspace#delete-workspace)). Une clé d’API, et une application liée à un espace de travail, agissent dans leur propre espace de travail. Tout autre moyen d’authentification nomme l’espace de travail dans l’en-tête `Peal-Workspace` ([L’espace de travail d’une requête](/developers/conventions#workspace)). La référence de chaque point d’accès nomme la permission qu’il demande, comme `post:schedule` ou `channel:connect`.
 
 Quand l’identifiant ne passe pas, vous recevez l’un de ces codes :
 
@@ -165,19 +165,19 @@ Quand l’identifiant ne passe pas, vous recevez l’un de ces codes :
 
 Voici les requêtes qu’un script utilise le plus :
 
-| Requête                                        | Ce qu’elle fait                                                                                                                 | Montrée dans                                         |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| `POST /api/v1/posts/send`                      | Crée une publication et l’envoie en une seule requête, maintenant ou à un instant                                               | [Publier depuis un agent IA](/developers/agents#api) |
-| `POST /api/v1/media/import`                    | Fait récupérer au serveur une image ou une vidéo à une adresse HTTPS publique, pour l’ajouter aux médias de l’espace de travail | [Publier depuis un agent IA](/developers/agents#api) |
-| `POST …/posts/validate`                        | Vérifie une publication sans la créer                                                                                           | [Publier par l’API](/developers/posting)             |
-| `send?wait=30`, `GET …/posts/{postId}/outcome` | Attend le résultat d’une publication qui part maintenant                                                                        | [Publier par l’API](/developers/posting)             |
-| `POST …/posts/bulk`                            | Envoie jusqu’à 50 publications en une requête                                                                                   | [Publier par l’API](/developers/posting)             |
-| `POST …/posts/import`                          | Importe des publications depuis un fichier CSV                                                                                  | [Publier par l’API](/developers/posting)             |
-| `GET …/posts/search`                           | Liste les publications avec des filtres                                                                                         | [Publier par l’API](/developers/posting)             |
+| Requête                                                | Ce qu’elle fait                                                                                                                 | Montrée dans                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `POST /api/v1/posts`                                   | Crée une publication et l’envoie en une seule requête, maintenant ou à un instant                                               | [Publier depuis un agent IA](/developers/agents#api) |
+| `POST /api/v1/media/import`                            | Fait récupérer au serveur une image ou une vidéo à une adresse HTTPS publique, pour l’ajouter aux médias de l’espace de travail | [Publier depuis un agent IA](/developers/agents#api) |
+| `POST …/posts/validate`                                | Vérifie une publication sans la créer                                                                                           | [Publier par l’API](/developers/posting)             |
+| `POST …/posts?wait=30`, `GET …/posts/{postId}/outcome` | Attend le résultat d’une publication qui part maintenant                                                                        | [Publier par l’API](/developers/posting)             |
+| `POST …/posts/bulk`                                    | Envoie jusqu’à 50 publications en une requête                                                                                   | [Publier par l’API](/developers/posting)             |
+| `POST …/posts/import`                                  | Importe des publications depuis un fichier CSV                                                                                  | [Publier par l’API](/developers/posting)             |
+| `GET …/posts`                                          | Liste les publications avec des filtres                                                                                         | [Publier par l’API](/developers/posting)             |
 
 ### Envoyer deux fois [#send-twice]
 
-Avec un en-tête `Idempotency-Key`, vous pouvez renvoyer une requête `send` sans risque. Dans les 24 heures, la même clé avec le même corps répond la publication créée par la première requête. Un autre corps répond 409 `IdempotencyKeyReused`.
+Avec un en-tête `Idempotency-Key`, vous pouvez renvoyer une requête `create` sans risque. Dans les 24 heures, la même clé avec le même corps répond la publication créée par la première requête. Un autre corps répond 409 `IdempotencyKeyReused`.
 
 Une publication créée en un seul appel est refusée avec 409 `DuplicatePost` quand son contenu part déjà sur l’un de ses canaux à moins de 23 heures de son heure. Indiquez `allowDuplicate: true` pour l’envoyer quand même.
 
@@ -199,7 +199,7 @@ Chaque erreur répond un corps JSON d’un seul format :
 | 502                    | Les points d’accès de l’assistant de rédaction, quand le fournisseur n’a donné aucune réponse que l’assistant puisse utiliser.                                                                                                                                                                                                                                                                                     |
 | 402 `PlanLimitReached` | Sur une instance qui facture, connecter un canal, programmer une publication ou commencer un envoi pour lesquels l’abonnement de l’espace de travail n’a plus de place. L’erreur nomme la limite (`limit` : `channels`, `members`, `scheduledPosts`, `assistantRequests` ou `mediaStorage`, en octets) et ce que l’abonnement permet (`allowed`) ([Abonnements et facturation](/guides/workspace/billing#limits)). |
 
-`GET /api/v1/billing` montre l’abonnement, ce qu’il permet et ce que l’espace de travail en utilise. `GET /api/v1/usage` montre ce qu’il a utilisé jour par jour, en jours UTC ([Utilisation](/guides/workspace/billing#usage)).
+`GET /api/v1/workspace/billing` montre l’abonnement, ce qu’il permet et ce que l’espace de travail en utilise. `GET /api/v1/workspace/usage` montre ce qu’il a utilisé jour par jour, en jours UTC ([Utilisation](/guides/workspace/billing#usage)).
 
 ## Comptes partenaires [#partner]
 
@@ -207,13 +207,13 @@ Un compte partenaire possède un espace de travail pour chaque client d’un pro
 
 - `/api/v1/partner` ne répond qu’à ses clés partenaires. `GET /api/v1/partner` lit le compte et ce qu’il détient, et `/api/v1/partner/workspaces` crée, liste, retrouve par `externalId`, modifie et supprime ses espaces de travail.
 - Une clé partenaire appelle ensuite `/api/v1/…` pour un espace que son compte possède, en le nommant dans l’en-tête `Peal-Workspace`, et reçoit 404 pour tout autre.
-- `POST /api/v1/connect-links` répond un lien hébergé, à usage unique. Le propriétaire d’un compte social l’y connecte sans compte Peal.
+- `POST /api/v1/channels/connect-links` répond un lien hébergé, à usage unique. Le propriétaire d’un compte social l’y connecte sans compte Peal.
 
 ## Ce qu’un canal accepte [#capabilities]
 
 Chaque plateforme a ses règles : la longueur d’une publication et la façon de la compter, les images et les vidéos qu’elle accepte, et des options qui lui sont propres, comme le titre d’une vidéo YouTube. Peal répond les règles qu’il vérifie quand une publication est programmée, pour que vous n’ayez pas à les apprendre dans la documentation de chaque plateforme. Il existe deux descriptions :
 
-- `GET /api/v1/platforms/capabilities` décrit chaque plateforme, que l’espace de travail y ait un canal ou non.
+- `GET /api/v1/channels/capabilities` décrit chaque plateforme, que l’espace de travail y ait un canal ou non.
 - `GET /api/v1/channels/{channelId}/capabilities` décrit un canal. Vous obtenez ce qu’accepte sa plateforme, et sous `account` ce que le compte lui-même restreint, lu sur la plateforme à ce moment-là.
 
 Un compte peut restreindre beaucoup. Un compte TikTok n’offre que certaines audiences, peut avoir désactivé les commentaires, les Duos ou les Collages, et a une durée de vidéo maximale. Quand la plateforme ne peut pas être interrogée, `account` vaut `unread` avec la raison, et vous obtenez ce qu’accepte la plateforme seul.
@@ -223,37 +223,37 @@ Les deux demandent `channel:read`. Une clé d’API ou une application autorisé
 <CodeGroup>
 
 ```ts Node.js
-const capabilities = await peal.capabilities.channel({
+const capabilities = await peal.channels.capabilities.get({
   channelId,
 });
 ```
 
 ```python Python
-capabilities = peal.capabilities.channel(channel_id=channel_id)
+capabilities = peal.channels.capabilities.get(channel_id=channel_id)
 ```
 
 ```go Go
-capabilities, err := client.Capabilities.Channel(ctx, &peal.ChannelCapabilitiesRequest{
+capabilities, err := client.Channels.Capabilities.Get(ctx, &channels.GetCapabilitiesRequest{
 	ChannelID: channelID,
 })
 ```
 
 ```ruby Ruby
-capabilities = peal.capabilities.channel(channel_id: channel_id)
+capabilities = peal.channels.capabilities.get(channel_id: channel_id)
 ```
 
 ```java Java
 import social.peal.types.ChannelCapabilities;
 
-ChannelCapabilities capabilities = peal.capabilities().channel(channelId);
+ChannelCapabilities capabilities = peal.channels().capabilities().get(channelId);
 ```
 
 ```php PHP
-$capabilities = $peal->capabilities->channel($channelId);
+$capabilities = $peal->channels->capabilities->get($channelId);
 ```
 
 ```csharp .NET
-var capabilities = await peal.Capabilities.ChannelAsync(new ChannelCapabilitiesRequest
+var capabilities = await peal.Channels.Capabilities.GetAsync(new GetCapabilitiesRequest
 {
     ChannelId = channelId,
 });
@@ -261,8 +261,9 @@ var capabilities = await peal.Capabilities.ChannelAsync(new ChannelCapabilitiesR
 
 ```rust Rust
 let capabilities = peal
+    .channels
     .capabilities
-    .channel(channel_id, None)
+    .get(channel_id, None)
     .await?;
 ```
 
@@ -304,7 +305,7 @@ Celle-ci liste les catégories de vidéos de YouTube en France :
 <CodeGroup>
 
 ```ts Node.js
-const categories = await peal.lookups.run({
+const categories = await peal.channels.lookups.run({
   channelId,
   name: "youtubeVideoCategories",
   regionCode: "FR",
@@ -312,7 +313,7 @@ const categories = await peal.lookups.run({
 ```
 
 ```python Python
-categories = peal.lookups.run(
+categories = peal.channels.lookups.run(
     channel_id=channel_id,
     name="youtubeVideoCategories",
     region_code="FR",
@@ -320,7 +321,7 @@ categories = peal.lookups.run(
 ```
 
 ```go Go
-categories, err := client.Lookups.Run(ctx, &peal.LookupInput{
+categories, err := client.Channels.Lookups.Run(ctx, &channels.LookupInput{
 	ChannelID:  channelID,
 	Name:       "youtubeVideoCategories",
 	RegionCode: peal.String("FR"),
@@ -328,7 +329,7 @@ categories, err := client.Lookups.Run(ctx, &peal.LookupInput{
 ```
 
 ```ruby Ruby
-categories = peal.lookups.run(
+categories = peal.channels.lookups.run(
   channel_id: channel_id,
   name: "youtubeVideoCategories",
   region_code: "FR"
@@ -336,23 +337,23 @@ categories = peal.lookups.run(
 ```
 
 ```java Java
-import social.peal.resources.lookups.requests.LookupInput;
+import social.peal.resources.channels.lookups.requests.LookupInput;
 import social.peal.types.LookupResult;
 
-LookupResult categories = peal.lookups().run(channelId, "youtubeVideoCategories",
+LookupResult categories = peal.channels().lookups().run(channelId, "youtubeVideoCategories",
     LookupInput.builder().regionCode("FR").build());
 ```
 
 ```php PHP
-use Peal\Lookups\Requests\LookupInput;
+use Peal\Channels\Lookups\Requests\LookupInput;
 
-$categories = $peal->lookups->run($channelId, 'youtubeVideoCategories', new LookupInput([
+$categories = $peal->channels->lookups->run($channelId, 'youtubeVideoCategories', new LookupInput([
     'regionCode' => 'FR',
 ]));
 ```
 
 ```csharp .NET
-var categories = await peal.Lookups.RunAsync(new LookupInput
+var categories = await peal.Channels.Lookups.RunAsync(new LookupInput
 {
     ChannelId = channelId,
     Name = "youtubeVideoCategories",
@@ -362,6 +363,7 @@ var categories = await peal.Lookups.RunAsync(new LookupInput
 
 ```rust Rust
 let categories = peal
+    .channels
     .lookups
     .run(
         channel_id,
@@ -433,7 +435,7 @@ Les membres qui peuvent gérer les webhooks (propriétaires et administrateurs),
 
 ## Le journal d’activité [#activity]
 
-`GET /api/v1/activity` liste les requêtes qui ont demandé à changer quelque chose dans l’espace de travail. Chaque entrée dit qui a demandé, par quelle clé ou quelle application, quelle opération, et ce qui a été répondu. Il demande `activity:read`, que portent les propriétaires ([Le journal d’activité](/guides/workspace#activity)).
+`GET /api/v1/workspace/activity` liste les requêtes qui ont demandé à changer quelque chose dans l’espace de travail. Chaque entrée dit qui a demandé, par quelle clé ou quelle application, quelle opération, et ce qui a été répondu. Il demande `activity:read`, que portent les propriétaires ([Le journal d’activité](/guides/workspace#activity)).
 
 ## Votre compte [#me]
 

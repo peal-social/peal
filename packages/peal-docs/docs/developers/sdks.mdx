@@ -5,7 +5,7 @@ sidebar:
   icon: package
 ---
 
-Peal's SDKs call the [API](/developers) from eight languages. They're generated from the same contract as the server, so each method is named after an API operation (`posts.send`, `media.importFromUrl`) and each type after an API schema. Unlike the rest of Peal, they're free software under the Apache License 2.0.
+Peal's SDKs call the [API](/developers) from eight languages. They're generated from the same contract as the server, so each method is named after an API operation (`posts.create`, `inbox.messages.send`, `media.importFromUrl`) and each type after an API schema. Unlike the rest of Peal, they're free software under the Apache License 2.0.
 
 ## Install [#install]
 
@@ -303,7 +303,7 @@ if (!check.valid) {
 
 // 4. Sent under a key: a retry with the same key within 24 hours
 // answers this post and makes no second one.
-const sent = await peal.posts.send({
+const sent = await peal.posts.create({
   ...post,
   "idempotency-key": randomUUID(),
   wait: "30",
@@ -353,7 +353,7 @@ if not check.valid:
 
 # 4. Sent under a key: a retry with the same key within 24 hours
 # answers this post and makes no second one.
-sent = peal.posts.send(**post, idempotency_key=str(uuid.uuid4()), wait="30")
+sent = peal.posts.create(**post, idempotency_key=str(uuid.uuid4()), wait="30")
 
 # 5. How it went on each channel, once every channel has its result.
 outcome = peal.posts.outcome(post_id=sent.id)
@@ -426,7 +426,7 @@ func main() {
 
 	// 4. Sent under a key: a retry with the same key within 24 hours
 	// answers this post and makes no second one.
-	sent, err := client.Posts.Send(ctx, &peal.NewPost{
+	sent, err := client.Posts.Create(ctx, &peal.NewPost{
 		ChannelIDs:     channelIDs,
 		Content:        content,
 		When:           now,
@@ -489,7 +489,7 @@ raise check.violations.inspect unless check.valid
 
 # 4. Sent under a key: a retry with the same key within 24 hours
 # answers this post and makes no second one.
-sent = peal.posts.send_(**post, idempotency_key: SecureRandom.uuid, wait: "30")
+sent = peal.posts.create(**post, idempotency_key: SecureRandom.uuid, wait: "30")
 
 # 5. How it went on each channel, once every channel has its result.
 outcome = peal.posts.outcome(post_id: sent.id)
@@ -554,7 +554,7 @@ if (!check.getValid()) {
 
 // 4. Sent under a key: a retry with the same key within 24 hours
 // answers this post and makes no second one.
-Post sent = peal.posts().send(NewPost.builder()
+Post sent = peal.posts().create(NewPost.builder()
     .content(content)
     .when(now)
     .channelIds(channelIds)
@@ -620,7 +620,7 @@ if (!$check->valid) {
 
 // 4. Sent under a key: a retry with the same key within 24 hours
 // answers this post and makes no second one.
-$sent = $peal->posts->send(new NewPost([
+$sent = $peal->posts->create(new NewPost([
     'channelIds' => $channelIds,
     'content' => $content,
     'when' => $now,
@@ -678,7 +678,7 @@ if (!check.Valid)
 
 // 4. Sent under a key: a retry with the same key within 24 hours
 // answers this post and makes no second one.
-var sent = await peal.Posts.SendAsync(new NewPost
+var sent = await peal.Posts.CreateAsync(new NewPost
 {
     ChannelIds = channelIds,
     Content = content,
@@ -764,7 +764,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // for the key, so it goes in the request's headers.
     let sent = peal
         .posts
-        .send(
+        .create(
             &NewPost::builder()
                 .channel_ids(channel_ids)
                 .content(content)
@@ -796,16 +796,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 Each SDK names the steps its own way:
 
-| Step                 | Python                          | Go                              | Ruby                              | Java                              | PHP                              | .NET                                 | Rust                                                            |
-| -------------------- | ------------------------------- | ------------------------------- | --------------------------------- | --------------------------------- | -------------------------------- | ------------------------------------ | --------------------------------------------------------------- |
-| Check the credential | `credential.get`                | `Credential.Get`                | `credential.get`                  | `credential().get`                | `credential->get`                | `Credential.GetAsync`                | `credential.get`                                                |
-| List the channels    | `channels.list`                 | `Channels.List`                 | `channels.list`                   | `channels().list`                 | `channels->list`                 | `Channels.ListAsync`                 | `channels.list`                                                 |
-| Import a media       | `media.import_from_url`         | `Media.ImportFromURL`           | `media.import_from_url`           | `media().importFromUrl`           | `media->importFromUrl`           | `Media.ImportFromUrlAsync`           | `media.import_from_url`                                         |
-| Validate             | `posts.validate`                | `Posts.Validate`                | `posts.validate`                  | `posts().validate`                | `posts->validate`                | `Posts.ValidateAsync`                | `posts.validate`                                                |
-| Send, with a key     | `posts.send(idempotency_key=…)` | `Posts.Send` (`IdempotencyKey`) | `posts.send_(idempotency_key: …)` | `posts().send` (`idempotencyKey`) | `posts->send` (`idempotencyKey`) | `Posts.SendAsync` (`IdempotencyKey`) | `posts.send`, the header in `RequestOptions::additional_header` |
-| Read the outcome     | `posts.outcome`                 | `Posts.Outcome`                 | `posts.outcome`                   | `posts().outcome`                 | `posts->outcome`                 | `Posts.OutcomeAsync`                 | `posts.outcome`                                                 |
+| Step                 | Python                            | Go                                | Ruby                               | Java                                | PHP                                | .NET                                   | Rust                                                              |
+| -------------------- | --------------------------------- | --------------------------------- | ---------------------------------- | ----------------------------------- | ---------------------------------- | -------------------------------------- | ----------------------------------------------------------------- |
+| Check the credential | `credential.get`                  | `Credential.Get`                  | `credential.get`                   | `credential().get`                  | `credential->get`                  | `Credential.GetAsync`                  | `credential.get`                                                  |
+| List the channels    | `channels.list`                   | `Channels.List`                   | `channels.list`                    | `channels().list`                   | `channels->list`                   | `Channels.ListAsync`                   | `channels.list`                                                   |
+| Import a media       | `media.import_from_url`           | `Media.ImportFromURL`             | `media.import_from_url`            | `media().importFromUrl`             | `media->importFromUrl`             | `Media.ImportFromUrlAsync`             | `media.import_from_url`                                           |
+| Validate             | `posts.validate`                  | `Posts.Validate`                  | `posts.validate`                   | `posts().validate`                  | `posts->validate`                  | `Posts.ValidateAsync`                  | `posts.validate`                                                  |
+| Send, with a key     | `posts.create(idempotency_key=…)` | `Posts.Create` (`IdempotencyKey`) | `posts.create(idempotency_key: …)` | `posts().create` (`idempotencyKey`) | `posts->create` (`idempotencyKey`) | `Posts.CreateAsync` (`IdempotencyKey`) | `posts.create`, the header in `RequestOptions::additional_header` |
+| Read the outcome     | `posts.outcome`                   | `Posts.Outcome`                   | `posts.outcome`                    | `posts().outcome`                   | `posts->outcome`                   | `Posts.OutcomeAsync`                   | `posts.outcome`                                                   |
 
-Ruby calls `send` `send_`, because every Ruby object already has a `send` method. Rust's `NewPost` has no field for the key, so you send the `Idempotency-Key` header through the request's options.
+Ruby calls `inbox.messages.send` `inbox.messages.send_`, because every Ruby object already has a `send` method. Rust's `NewPost` has no field for the key, so you send the `Idempotency-Key` header through the request's options.
 
 ## Errors and retries [#errors]
 
@@ -824,7 +824,7 @@ A key can send {{api-with-en}} requests a minute, or {{api-without-en}} on a bil
 
 ## Pages [#paging]
 
-You read lists that grow without end a page at a time. Pass `limit` and `cursor`, then pass the answer's `nextCursor` as the next `cursor` until it's `null` ([Paging](/developers/conventions/paging#paging)). The partner API's lists (`/api/v1/partner/workspaces`, `/api/v1/partner/usage`, `/api/v1/partner/overview`) take `before` instead, and answer `next`.
+You read lists that grow without end a page at a time. Pass `limit` and `cursor`, then pass the answer's `nextCursor` as the next `cursor` until it's `null` ([Paging](/developers/conventions/paging#paging)). The partner API's lists (`/api/v1/partner/workspaces`, `/api/v1/partner/customer-usage`, `/api/v1/partner/overview`) take `before` instead, and answer `next`.
 
 The SDKs pass both as they are. None of them has a helper that reads every page for you, so you write the loop:
 

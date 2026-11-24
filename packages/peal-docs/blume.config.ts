@@ -106,7 +106,86 @@ const moved: [string, string][] = [
   ],
 ];
 
-const redirects = moved.flatMap(([from, to]) => [
+// The API reference's sections before the API named each group by its
+// namespace (the old section and its pages' prefix, then the new ones). A
+// page there moved to the one with the same ending: /reference/tags/tags-list
+// is /reference/posts/posts-tags-list.
+const movedReferenceSections: [string, string][] = [
+  ["account/account", "me/me-account"],
+  ["notices/notices", "me/me-notices"],
+  [
+    "notification-preferences/notification-preferences",
+    "me/me-notification-preferences",
+  ],
+  ["browser-analytics/browser-analytics", "me/me-browser-analytics"],
+  ["connected-apps/connected-apps", "me/me-connected-apps"],
+  ["api-keys/api-keys", "workspace/workspace-api-keys"],
+  ["workspaces/workspaces", "workspace/workspace"],
+  ["members/members", "workspace/workspace-members"],
+  ["invitations/invitations", "workspace/workspace-invitations"],
+  ["billing/billing", "workspace/workspace-billing"],
+  ["billing-actions/billing-actions", "workspace/workspace-billing-actions"],
+  ["usage/usage", "workspace/workspace-usage"],
+  ["activity/activity", "workspace/workspace-activity"],
+  ["video-generations/video-generations", "media/media-videos"],
+  ["slideshows/slideshows", "media/media-slideshows"],
+  ["capabilities/capabilities", "channels/channels-capabilities"],
+  ["lookups/lookups", "channels/channels-lookups"],
+  ["connect-links/connect-links", "channels/channels-connect-links"],
+  ["channel-sets/channel-sets", "channels/channels-sets"],
+  ["channel-defaults/channel-defaults", "channels/channels-default-options"],
+  ["tags/tags", "posts/posts-tags"],
+  ["signatures/signatures", "posts/posts-signatures"],
+  ["review/review", "approvals/approvals"],
+  ["inbox-messages/inbox-messages", "inbox/inbox-messages"],
+  ["queues/queues", "automations/automations-queues"],
+  ["recycling/recycling", "automations/automations-recycling"],
+  ["follow-ups/follow-ups", "automations/automations-follow-ups"],
+  ["feeds/feeds", "automations/automations-feeds"],
+  ["short-links/short-links", "links/links"],
+  ["partner-account/partner-account", "partner/partner-account"],
+];
+
+// The reference's pages whose ending changed too, in those sections or in
+// sections of one page. An exact redirect wins over a section's pattern.
+const movedReferencePages: [string, string][] = [
+  ["session/session-me", "me/me-get"],
+  ["tiktok/tiktok-creator", "channels/channels-tiktok-creator-get"],
+  ["partner-usage/partner-usage-get", "partner/partner-customer-usage-get"],
+  ["capabilities/capabilities-channel", "channels/channels-capabilities-get"],
+  ["review/review-pending", "approvals/approvals-list"],
+  ["review/review-thread", "approvals/approvals-get"],
+  ["review/review-links", "approvals/approvals-list-links"],
+  ["inbox-messages/inbox-messages-send-message", "inbox/inbox-messages-send"],
+  [
+    "inbox-messages/inbox-messages-get-message-settings",
+    "inbox/inbox-messages-get-settings",
+  ],
+  [
+    "inbox-messages/inbox-messages-set-channel-messages",
+    "inbox/inbox-messages-set-channel",
+  ],
+  [
+    "inbox-messages/inbox-messages-set-message-application",
+    "inbox/inbox-messages-set-application",
+  ],
+  [
+    "inbox-messages/inbox-messages-confirm-message",
+    "inbox/inbox-messages-confirm",
+  ],
+];
+
+const redirects = [
+  ...moved,
+  ...movedReferencePages.map(([from, to]): [string, string] => [
+    `/reference/${from}`,
+    `/reference/${to}`,
+  ]),
+  ...movedReferenceSections.map(([from, to]): [string, string] => [
+    `/reference/${from}-*`,
+    `/reference/${to}-*`,
+  ]),
+].flatMap(([from, to]) => [
   { from, to },
   { from: `/fr${from}`, to: to.startsWith("/") ? `/fr${to}` : to },
 ]);

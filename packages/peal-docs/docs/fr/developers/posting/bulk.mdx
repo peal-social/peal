@@ -9,7 +9,7 @@ Vous pouvez envoyer jusqu’à 50 publications en une requête, ou en importer j
 
 ## Envoyer plusieurs publications en une requête [#bulk]
 
-`POST …/posts/bulk` crée et envoie jusqu’à 50 publications, chacune comme le ferait `send`. Chaque élément est une publication, avec ses propres canaux, son contenu, ses options et son heure. Le même contenu à deux heures fait donc deux éléments, tout comme une publication qui part à une heure différente sur chaque canal.
+`POST …/posts/bulk` crée et envoie jusqu’à 50 publications, chacune comme le ferait `create`. Chaque élément est une publication, avec ses propres canaux, son contenu, ses options et son heure. Le même contenu à deux heures fait donc deux éléments, tout comme une publication qui part à une heure différente sur chaque canal.
 
 <CodeGroup>
 
@@ -372,7 +372,7 @@ Peal traite les éléments dans l’ordre, un à la fois, et chacun pour lui-mê
 La réponse est 200 dès que Peal a pu lire la requête, même s’il a refusé tous les éléments. `items` donne un résultat par élément, repéré par sa place dans la requête (`index`, à partir de 0) :
 
 - `created`, avec sa publication.
-- `refused`, avec ce que `send` aurait répondu pour cet élément seul, sous forme de données : les violations de son contenu, des canaux ou médias inconnus, une heure passée, la limite de l’abonnement ou un doublon.
+- `refused`, avec ce que `create` aurait répondu pour cet élément seul, sous forme de données : les violations de son contenu, des canaux ou médias inconnus, une heure passée, la limite de l’abonnement ou un doublon.
 
 Une requête que Peal ne peut pas lire du tout (mal formée, sans élément, ou avec plus de 50) répond 400 et ne crée rien.
 
@@ -402,7 +402,7 @@ La première ligne du fichier nomme les colonnes, dans n’importe quel ordre :
 | `allow_duplicate` | non         | `true` ou `false` ([Publications en double](/developers/posting#duplicates))                                                                                      |
 | `idempotency_key` | non         | La clé d’idempotence propre à la ligne                                                                                                                            |
 
-Une ligne est une publication seule, avec un seul texte pour tous ses canaux. Un [fil](/guides/posts#threads), un texte différent sur un canal ou les options d’une plateforme ne tiennent pas dans une cellule : envoyez-les par `send` ou `bulk`. Un fichier qui nomme une autre colonne est refusé en entier.
+Une ligne est une publication seule, avec un seul texte pour tous ses canaux. Un [fil](/guides/posts#threads), un texte différent sur un canal ou les options d’une plateforme ne tiennent pas dans une cellule : envoyez-les par `create` ou `bulk`. Un fichier qui nomme une autre colonne est refusé en entier.
 
 ### Écrire le fichier [#csv]
 
@@ -543,7 +543,7 @@ Peal vérifie d’abord chaque ligne, comme `validate` vérifie une publication,
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `created`    | La publication de la ligne a été créée. `post` la contient, et `replayed` dit si sa clé d’idempotence a répondu une publication créée avant.                                                                                                                                                                                                                                                                     |
 | `valid`      | La ligne a été vérifiée sans être créée, lors d’un essai à blanc ou parce qu’une autre ligne a empêché l’import du fichier.                                                                                                                                                                                                                                                                                      |
-| `refused`    | `refusal` contient ce que `send` aurait répondu pour elle. Une ligne qui avait passé la vérification est aussi refusée quand quelque chose a changé depuis, ou quand elle répète une ligne précédente.                                                                                                                                                                                                           |
+| `refused`    | `refusal` contient ce que `create` aurait répondu pour elle. Une ligne qui avait passé la vérification est aussi refusée quand quelque chose a changé depuis, ou quand elle répète une ligne précédente.                                                                                                                                                                                                         |
 | `unreadable` | `problems` nomme les cellules en cause : chaque `column`, `missing` quand la ligne en a besoin, ou `invalid` pour ce qu’elle contient. Une ligne avec plus ou moins de cellules que n’en nomme la première ligne n’est pas lue du tout, et `cells` dit combien étaient attendues (`expected`) et trouvées (`found`). Une virgule dans un texte qui n’est pas entre guillemets doubles suffit à en provoquer une. |
 
 ```json

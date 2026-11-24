@@ -9,7 +9,7 @@ You can send up to 50 posts in one request, or import up to 100 from a CSV file,
 
 ## Send several posts in one request [#bulk]
 
-`POST …/posts/bulk` creates and sends up to 50 posts, each as `send` would. Each item is one post, with its own channels, content, options and time. So the same content at two times is two items, and so is a post that goes out at a different time on each channel.
+`POST …/posts/bulk` creates and sends up to 50 posts, each as `create` would. Each item is one post, with its own channels, content, options and time. So the same content at two times is two items, and so is a post that goes out at a different time on each channel.
 
 <CodeGroup>
 
@@ -372,7 +372,7 @@ Peal takes the items in order, one at a time, and each stands on its own. A refu
 The answer is 200 as long as Peal could read the request, even if it refused every item. `items` gives one result per item, by its place in the request (`index`, from 0):
 
 - `created`, with its post.
-- `refused`, with what `send` would have answered for that item alone, as data: its content's violations, unknown channels or media, a time that has passed, the plan's limit or a duplicate.
+- `refused`, with what `create` would have answered for that item alone, as data: its content's violations, unknown channels or media, a time that has passed, the plan's limit or a duplicate.
 
 A request Peal can't read at all (malformed, with no item, or with more than 50) answers 400 and makes nothing.
 
@@ -402,7 +402,7 @@ The file's first line names the columns, in any order:
 | `allow_duplicate` | no       | `true` or `false` ([Duplicate posts](/developers/posting#duplicates))                                                                                     |
 | `idempotency_key` | no       | The row's own idempotency key                                                                                                                             |
 
-A row is a single post, with one text for all its channels. A [thread](/guides/posts#threads), a different text on one channel or a platform's options don't fit in a cell, so send those through `send` or `bulk`. A file that names any other column is refused whole.
+A row is a single post, with one text for all its channels. A [thread](/guides/posts#threads), a different text on one channel or a platform's options don't fit in a cell, so send those through `create` or `bulk`. A file that names any other column is refused whole.
 
 ### Write the file [#csv]
 
@@ -543,7 +543,7 @@ Peal checks every row first, the way `validate` checks a post, and then checks t
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `created`    | The row's post was made. `post` holds it, and `replayed` says whether its idempotency key answered a post made before.                                                                                                                                                                                                 |
 | `valid`      | The row was checked and not made, either in a dry run or because another row kept the file from being imported.                                                                                                                                                                                                        |
-| `refused`    | `refusal` holds what `send` would have answered for it. A row that passed the check is also refused when something changed since, or when it repeats an earlier row.                                                                                                                                                   |
+| `refused`    | `refusal` holds what `create` would have answered for it. A row that passed the check is also refused when something changed since, or when it repeats an earlier row.                                                                                                                                                 |
 | `unreadable` | `problems` names the cells at fault: each `column`, `missing` when the row needs it, or `invalid` for what it holds. A row with more or fewer cells than the first line names isn't read at all, and `cells` says how many were `expected` and `found`. A comma in a text that isn't between double quotes causes one. |
 
 ```json

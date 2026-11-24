@@ -26,7 +26,7 @@ Add the Peal API to this project, following Peal's API quickstart.
 2. Call `GET /api/v1/credential` to check the key. It answers the key's workspace and permissions. The key acts in that workspace, so no request names it.
 3. List the channels with `GET /api/v1/channels` and ask me which ones to post to.
 4. Check the post with `POST /api/v1/posts/validate`. If `valid` is false, show me every violation and stop.
-5. Send the same body to `POST /api/v1/posts/send`, with an `Idempotency-Key` header holding a new UUID.
+5. Send the same body to `POST /api/v1/posts`, with an `Idempotency-Key` header holding a new UUID.
 6. Create a webhook endpoint with `POST /api/v1/webhooks` for `post.published` and `post.failed`, and store its signing secret, which is shown once.
 
 What goes out reaches the platforms' public and can't be taken back from Peal. Show me the post and wait for my OK before sending it. Stop and ask me if any call returns an error.
@@ -457,23 +457,23 @@ peal post "Hello from the API" --channel 0190f3a0-0000-7000-8000-00000000c001 \
 
 </CodeGroup>
 
-When it answers `"valid": true`, send the same body to `POST …/posts/send`. With an `Idempotency-Key`, you can send it again after a timeout without posting twice ([Idempotency](/developers/conventions/idempotency)).
+When it answers `"valid": true`, send the same body to `POST …/posts`. With an `Idempotency-Key`, you can send it again after a timeout without posting twice ([Idempotency](/developers/conventions/idempotency)).
 
 <CodeGroup>
 
 ```ts Node.js
-const sent = await peal.posts.send({
+const sent = await peal.posts.create({
   ...post,
   "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
 });
 ```
 
 ```python Python
-sent = peal.posts.send(**post, idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
+sent = peal.posts.create(**post, idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
 ```
 
 ```go Go
-sent, err := client.Posts.Send(ctx, &peal.NewPost{
+sent, err := client.Posts.Create(ctx, &peal.NewPost{
 	ChannelIDs:     channelIDs,
 	Content:        content,
 	When:           when,
@@ -482,14 +482,14 @@ sent, err := client.Posts.Send(ctx, &peal.NewPost{
 ```
 
 ```ruby Ruby
-sent = peal.posts.send_(**post, idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
+sent = peal.posts.create(**post, idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90")
 ```
 
 ```java Java
 import social.peal.resources.posts.requests.NewPost;
 import social.peal.types.Post;
 
-Post sent = peal.posts().send(NewPost.builder()
+Post sent = peal.posts().create(NewPost.builder()
     .content(content)
     .when(when)
     .channelIds(channelIds)
@@ -500,7 +500,7 @@ Post sent = peal.posts().send(NewPost.builder()
 ```php PHP
 use Peal\Posts\Requests\NewPost;
 
-$sent = $peal->posts->send(new NewPost([
+$sent = $peal->posts->create(new NewPost([
     'channelIds' => $channelIds,
     'content' => $content,
     'when' => $when,
@@ -509,7 +509,7 @@ $sent = $peal->posts->send(new NewPost([
 ```
 
 ```csharp .NET
-var sent = await peal.Posts.SendAsync(new NewPost
+var sent = await peal.Posts.CreateAsync(new NewPost
 {
     ChannelIds = channelIds,
     Content = content,
@@ -522,7 +522,7 @@ var sent = await peal.Posts.SendAsync(new NewPost
 // NewPost has no field for the key: it goes in the request's headers.
 let sent = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(channel_ids)
             .content(content)
@@ -537,7 +537,7 @@ let sent = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/posts/send \
+curl -X POST https://api.example.com/api/v1/posts \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90" \

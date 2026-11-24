@@ -20,26 +20,26 @@ Chaque requête demande ces permissions :
 | Requête                        | Ce qu’elle fait                                           | Demande                                      |
 | ------------------------------ | --------------------------------------------------------- | -------------------------------------------- |
 | `POST …/posts/validate`        | Vérifie une publication, sans rien créer                  | `post:read`, `channel:read`                  |
-| `POST …/posts/send`            | Crée une publication et l’envoie, maintenant ou plus tard | `post:schedule`, `channel:read`              |
+| `POST …/posts`                 | Crée une publication et l’envoie, maintenant ou plus tard | `post:schedule`, `channel:read`              |
 | `GET …/posts/{postId}/outcome` | Attend qu’une publication soit partie                     | `post:read`                                  |
 | `POST …/posts/bulk`            | Crée et envoie jusqu’à 50 publications                    | `post:schedule`, `channel:read`              |
 | `POST …/posts/import`          | Crée et envoie les publications d’un fichier CSV          | `post:schedule`, `post:read`, `channel:read` |
-| `GET …/posts/search`           | Liste les publications de l’espace de travail, filtrées   | `post:read`, `channel:read`                  |
+| `GET …/posts`                  | Liste les publications de l’espace de travail, filtrées   | `post:read`, `channel:read`                  |
 
-Une publication qui montre des médias demande aussi `media:read`. Un jeton d’accès OAuth a besoin du scope `workspace:publish` pour `send`, `bulk` et `import` ([Ce que permet chaque permission](/developers/agents#scopes)).
+Une publication qui montre des médias demande aussi `media:read`. Un jeton d’accès OAuth a besoin du scope `workspace:publish` pour `create`, `bulk` et `import` ([Ce que permet chaque permission](/developers/agents#scopes)).
 
 <Callout
   type="warning"
   title="Peal ne peut pas reprendre une publication une fois partie"
 >
-  Ce que publient `send`, `bulk` et `import` atteint le public des plateformes,
-  et vous ne pouvez plus le reprendre depuis Peal une fois parti. Avant son
-  heure, vous pouvez encore annuler ou déprogrammer une publication.
+  Ce que publient `create`, `bulk` et `import` atteint le public des
+  plateformes, et vous ne pouvez plus le reprendre depuis Peal une fois parti.
+  Avant son heure, vous pouvez encore annuler ou déprogrammer une publication.
 </Callout>
 
 ## Vérifier une publication sans la créer [#validate]
 
-`POST …/posts/validate` prend le même corps que `send`, ou celui d’un brouillon, qui n’a pas de `when`. Il n’écrit rien. La réponse est 200, que la publication puisse passer ou non, avec `valid` et toutes les raisons qui la feraient refuser, d’un coup.
+`POST …/posts/validate` prend le même corps que `create`, ou celui d’un brouillon, qui n’a pas de `when`. Il n’écrit rien. La réponse est 200, que la publication puisse passer ou non, avec `valid` et toutes les raisons qui la feraient refuser, d’un coup.
 
 <CodeGroup>
 
@@ -354,12 +354,12 @@ Sans `when`, la requête est vérifiée comme un brouillon : ni l’heure, ni l
 
 ## Publier maintenant et attendre le résultat [#wait]
 
-`POST …/posts/send` répond dès que la publication est créée, pendant qu’elle se publie encore. Ajoutez `wait`, un nombre de secondes de 0 à 60, et une publication qui part maintenant reçoit sa réponse une fois que chaque canal a son résultat. Avec l’en-tête `Idempotency-Key`, vous pouvez renvoyer la requête sans risque si la réponse se perd ([Idempotence](/developers/conventions/idempotency#idempotency)).
+`POST …/posts` répond dès que la publication est créée, pendant qu’elle se publie encore. Ajoutez `wait`, un nombre de secondes de 0 à 60, et une publication qui part maintenant reçoit sa réponse une fois que chaque canal a son résultat. Avec l’en-tête `Idempotency-Key`, vous pouvez renvoyer la requête sans risque si la réponse se perd ([Idempotence](/developers/conventions/idempotency#idempotency)).
 
 <CodeGroup>
 
 ```ts Node.js
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   wait: "30",
   "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
   channelIds: [
@@ -378,7 +378,7 @@ const post = await peal.posts.send({
 ```python Python
 from peal import PostTiming_Now
 
-post = peal.posts.send(
+post = peal.posts.create(
     wait="30",
     idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
     channel_ids=[
@@ -395,7 +395,7 @@ post = peal.posts.send(
 ```
 
 ```go Go
-post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
+post, err := client.Posts.Create(context.TODO(), &peal.NewPost{
 	Wait:           peal.String("30"),
 	IdempotencyKey: peal.String("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90"),
 	ChannelIDs: []string{
@@ -412,7 +412,7 @@ post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
 ```
 
 ```ruby Ruby
-post = peal.posts.send_(
+post = peal.posts.create(
   wait: "30",
   idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
   channel_ids: [
@@ -429,7 +429,7 @@ post = peal.posts.send_(
 ```
 
 ```java Java
-Post post = peal.posts().send(
+Post post = peal.posts().create(
     NewPost.builder()
         .content(PostContent.builder()
             .text("Our spring catalogue is out. Read it at https://example.com/spring")
@@ -447,7 +447,7 @@ Post post = peal.posts().send(
 use Peal\Posts\Requests\NewPost;
 use Peal\Types\PostTimingNow;
 
-$post = $peal->posts->send(new NewPost([
+$post = $peal->posts->create(new NewPost([
     'wait' => '30',
     'idempotencyKey' => '5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90',
     'channelIds' => [
@@ -464,7 +464,7 @@ $post = $peal->posts->send(new NewPost([
 ```
 
 ```csharp .NET
-var post = await peal.Posts.SendAsync(new NewPost
+var post = await peal.Posts.CreateAsync(new NewPost
 {
     Wait = "30",
     IdempotencyKey = "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
@@ -485,7 +485,7 @@ var post = await peal.Posts.SendAsync(new NewPost
 // NewPost n’a pas de champ pour la clé : elle passe dans les en-têtes de la requête.
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec![
                 "0190f3a0-0000-7000-8000-00000000c001".to_string(),
@@ -510,7 +510,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST "https://api.example.com/api/v1/posts/send?wait=30" \
+curl -X POST "https://api.example.com/api/v1/posts?wait=30" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90" \
@@ -695,13 +695,13 @@ Peal refuse une publication quand une autre publication de l’espace de travail
 
 `duplicates` nomme chaque canal qui reçoit déjà le contenu, avec la première publication qui l’y envoie dans cet intervalle. La vérification suit ces règles :
 
-| Règle              | Détail                                                                                                                                                                                                                                         |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Le même contenu    | Le texte que reçoit le canal, et les mêmes médias dans le même ordre.                                                                                                                                                                          |
-| 23 heures          | La journée la plus courte d’un fuseau horaire, si bien qu’une publication qui se répète chaque jour à la même heure locale n’est jamais refusée.                                                                                               |
-| Ce qui compte      | Les publications qui vont partir ou sont parties, y compris celles qui attendent une approbation, puisqu’elles partent une fois approuvées. Les brouillons, les publications annulées et un canal où la publication a échoué ne comptent pas.  |
-| Ce qui est vérifié | `send`, chaque élément de `bulk`, chaque ligne d’`import`, les outils MCP `create_post` et `create_posts`, et `peal post`. Programmer un brouillon existant, déplacer une publication et republier là où elle a échoué ne sont jamais refusés. |
-| Quand c’est voulu  | Renvoyez la requête avec `allowDuplicate: true` sur la publication ou l’élément de `bulk`, ou avec `allow_duplicate` à `true` sur la ligne du CSV.                                                                                             |
+| Règle              | Détail                                                                                                                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Le même contenu    | Le texte que reçoit le canal, et les mêmes médias dans le même ordre.                                                                                                                                                                            |
+| 23 heures          | La journée la plus courte d’un fuseau horaire, si bien qu’une publication qui se répète chaque jour à la même heure locale n’est jamais refusée.                                                                                                 |
+| Ce qui compte      | Les publications qui vont partir ou sont parties, y compris celles qui attendent une approbation, puisqu’elles partent une fois approuvées. Les brouillons, les publications annulées et un canal où la publication a échoué ne comptent pas.    |
+| Ce qui est vérifié | `create`, chaque élément de `bulk`, chaque ligne d’`import`, les outils MCP `create_post` et `create_posts`, et `peal post`. Programmer un brouillon existant, déplacer une publication et republier là où elle a échoué ne sont jamais refusés. |
+| Quand c’est voulu  | Renvoyez la requête avec `allowDuplicate: true` sur la publication ou l’élément de `bulk`, ou avec `allow_duplicate` à `true` sur la ligne du CSV.                                                                                               |
 
 `validate` vous le dit à l’avance, dans `duplicates`.
 
@@ -869,20 +869,20 @@ Un commentaire peut échouer après la mise en ligne de la publication. Celle-ci
 
 Chaque requête a un outil MCP ou une commande, ou les deux :
 
-| Requête                                      | Outil MCP                         | Commande                                         |
-| -------------------------------------------- | --------------------------------- | ------------------------------------------------ |
-| `POST …/posts/validate`                      | `validate_post`                   | `peal post … --dry-run`                          |
-| `POST …/posts/send?wait=…`                   | `create_post`, avec `waitSeconds` | `peal post … --now --wait <seconds>`             |
-| `GET …/posts/{postId}/outcome`               | `await_post`                      | `peal posts wait <post-id>`                      |
-| `POST …/posts/bulk`                          | `create_posts`                    |                                                  |
-| `POST …/posts/import`                        |                                   | `peal posts import <file.csv>`                   |
-| `GET …/posts/search`                         | `list_posts`                      | `peal posts list`                                |
-| `POST …/posts/{postId}/queue`                | `queue_post`                      | `peal posts queue <post-id>`                     |
-| `POST …/posts/{postId}/unpublish`            | `unpublish_post`                  | `peal posts unpublish <post-id>`                 |
-| `POST …/targets/{targetId}/edit`             | `edit_published_post`             | `peal posts edit <post-id>`                      |
-| `GET …/posts/{postId}/changes`               | `list_post_changes`               | `peal posts changes <post-id>`                   |
-| `DELETE …/posts/{postId}/targets/{targetId}` | `remove_post_target`              | `peal posts remove-target <post-id> <target-id>` |
-| `GET …/queues/{queueId}/slots`               | `preview_queue`                   | `peal queues preview <queue>`                    |
-| `POST …/queues/{queueId}/reshuffle`          | `reshuffle_queue`                 | `peal queues reshuffle <queue>`                  |
+| Requête                                         | Outil MCP                         | Commande                                         |
+| ----------------------------------------------- | --------------------------------- | ------------------------------------------------ |
+| `POST …/posts/validate`                         | `validate_post`                   | `peal post … --dry-run`                          |
+| `POST …/posts?wait=…`                           | `create_post`, avec `waitSeconds` | `peal post … --now --wait <seconds>`             |
+| `GET …/posts/{postId}/outcome`                  | `await_post`                      | `peal posts wait <post-id>`                      |
+| `POST …/posts/bulk`                             | `create_posts`                    |                                                  |
+| `POST …/posts/import`                           |                                   | `peal posts import <file.csv>`                   |
+| `GET …/posts`                                   | `list_posts`                      | `peal posts list`                                |
+| `POST …/posts/{postId}/queue`                   | `queue_post`                      | `peal posts queue <post-id>`                     |
+| `POST …/posts/{postId}/unpublish`               | `unpublish_post`                  | `peal posts unpublish <post-id>`                 |
+| `POST …/targets/{targetId}/edit`                | `edit_published_post`             | `peal posts edit <post-id>`                      |
+| `GET …/posts/{postId}/changes`                  | `list_post_changes`               | `peal posts changes <post-id>`                   |
+| `DELETE …/posts/{postId}/targets/{targetId}`    | `remove_post_target`              | `peal posts remove-target <post-id> <target-id>` |
+| `GET …/automations/queues/{queueId}/slots`      | `preview_queue`                   | `peal queues preview <queue>`                    |
+| `POST …/automations/queues/{queueId}/reshuffle` | `reshuffle_queue`                 | `peal queues reshuffle <queue>`                  |
 
 [Connecter un client MCP](/developers/mcp/tools#tools) décrit les outils, et [Ligne de commande](/developers/cli/posts#post) les commandes.

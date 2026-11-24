@@ -11,7 +11,7 @@ When a request times out or the connection drops, you can't tell whether Peal cr
 
 The key is any text you pick, 255 characters at most, such as a UUID. Use a new one for each post. Keys are kept per workspace.
 
-On `POST …/posts/send`, which creates a post and sends it, a key works like this:
+On `POST …/posts`, which creates a post and sends it, a key works like this:
 
 - Within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other.
 - The same key with another body answers 409 `idempotency_key_reused`, and makes nothing.
@@ -25,7 +25,7 @@ import { PealClient } from "peal-sdk";
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
 // Keep the key with the post, and send it again under the same key.
-const post = await peal.posts.send({
+const post = await peal.posts.create({
   "idempotency-key": "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -45,7 +45,7 @@ from peal import Peal, PostContent, PostTiming_At
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
 # Keep the key with the post, and send it again under the same key.
-post = peal.posts.send(
+post = peal.posts.create(
     idempotency_key="7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     channel_ids=["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
     content=PostContent(
@@ -72,7 +72,7 @@ import (
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
 // Keep the key with the post, and send it again under the same key.
-post, err := client.Posts.Send(context.Background(), &peal.NewPost{
+post, err := client.Posts.Create(context.Background(), &peal.NewPost{
 	IdempotencyKey: peal.String("7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44"),
 	ChannelIDs:     []string{"019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"},
 	Content: &peal.PostContent{
@@ -92,7 +92,7 @@ require "peal"
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
 # Keep the key with the post, and send it again under the same key.
-post = peal.posts.send_(
+post = peal.posts.create(
   idempotency_key: "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channel_ids: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -118,7 +118,7 @@ PealClient peal = PealClient.builder()
     .build();
 
 // Keep the key with the post, and send it again under the same key.
-Post post = peal.posts().send(NewPost.builder()
+Post post = peal.posts().create(NewPost.builder()
     .content(PostContent.builder()
         .text("Our spring catalogue is out. Read it at https://example.com/spring")
         .build())
@@ -142,7 +142,7 @@ use Peal\Types\PostTimingAt;
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
 // Keep the key with the post, and send it again under the same key.
-$post = $peal->posts->send(new NewPost([
+$post = $peal->posts->create(new NewPost([
     'idempotencyKey' => '7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44',
     'channelIds' => ['019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11'],
     'content' => new PostContent([
@@ -163,7 +163,7 @@ using Peal;
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
 // Keep the key with the post, and send it again under the same key.
-var post = await peal.Posts.SendAsync(new NewPost
+var post = await peal.Posts.CreateAsync(new NewPost
 {
     IdempotencyKey = "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     ChannelIds = new List<string> { "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11" },
@@ -193,7 +193,7 @@ let peal = PealClient::new(ClientConfig {
 // Keep the key with the post, and send it again under the same key.
 let post = peal
     .posts
-    .send(
+    .create(
         &NewPost::builder()
             .channel_ids(vec!["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11".to_string()])
             .content(PostContent {
@@ -215,7 +215,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/v1/posts/send \
+curl -X POST https://api.example.com/api/v1/posts \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44" \
@@ -264,7 +264,7 @@ These requests take a key:
 
 | Request                                     | The key                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST …/posts/send`                         | Optional, as above.                                                                                                                                                                                                                                                                                                                                                                      |
+| `POST …/posts`                              | Optional, as above.                                                                                                                                                                                                                                                                                                                                                                      |
 | `POST …/posts/bulk`, `POST …/posts/import`  | Optional, for the whole request, and each of their items or rows may carry a key of its own ([Posting through the API](/developers/posting)).                                                                                                                                                                                                                                            |
 | Creating a customer's workspace             | Optional, through the partner API ([Embedding Peal](/developers/embedding)).                                                                                                                                                                                                                                                                                                             |
 | `POST …/inbox/comments/{commentId}/replies` | Optional. It answers a comment in public. Within 24 hours, the same key with the same comment and text answers the reply the first request made, however it stands, and writes no other. With another comment or text it answers 409 `idempotency_key_reused`. Without a key, a second request is refused (409 `reply_pending`) only while the first reply is on its way or unconfirmed. |
