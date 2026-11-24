@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "addCaptions": "Add captions",
+    "captionsNeedVoice": "Add a video or a sound first: captions are made from its voice.",
     "fullScreen": "Full screen",
     "exitFullScreen": "Exit full screen",
     "export": "Export video",

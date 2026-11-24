@@ -962,7 +962,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   …/media/slideshows/edits`) nor its `./internal` entry. Peal restyles it
   in `studio.css` alone (colours, type, radius, and hiding what the server
   does not render) and builds no control of its own over it, so leaving
-  Shotstack removes one folder. It opens over the whole window
+  Shotstack removes one folder. Its buttons beside the
+  preview are `studio-tools.ts` (text, captions, which the SDK links to a
+  sound or a film by itself). It opens over the whole window
   (`useFullWindow`, which `FrameView` answers by hiding the sidebar and
   the bottom bar, never remounting the page). The document is Shotstack's Edit
   (`#studio/edit-document.ts`, tested), library files named
