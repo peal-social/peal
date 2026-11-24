@@ -5,6 +5,7 @@ import { FailureReasonSchema as ContractFailureReasonSchema } from "peal-contrac
 import {
   ArticleDecisionSchema,
   ArticleFailureReasonSchema,
+  postReasonsReadAsContentRejected,
 } from "#publishing/domain/article-failure.ts";
 import {
   articleDecide,
@@ -173,6 +174,18 @@ describe("an article's attempt", () => {
       expect(FailureReasonSchema.literals).toContain(reason);
       expect(ContractFailureReasonSchema.literals).toContain(reason);
     }
+  });
+
+  // A reason posts gain later fails this until someone decides what an
+  // article stored with it reads as.
+  it("reads every other reason posts know, and only those, as the content refused", () => {
+    const own = new Set<string>(ArticleFailureReasonSchema.literals);
+
+    expect([...postReasonsReadAsContentRejected].toSorted()).toStrictEqual(
+      FailureReasonSchema.literals
+        .filter((reason) => !own.has(reason))
+        .toSorted()
+    );
   });
 
   it("reads Peal's own refusals by the codes posts are refused with", () => {

@@ -226,7 +226,14 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   article for its revision and round (`claimed`: missed past an hour),
   decides each attempt with `articleDecide` (`domain/article-policy.ts`,
   the posts' figures for what a site can answer, on articles' own ten
-  failure reasons and `articleRefusalCodes`), and settles it, telling
+  failure reasons and `articleRefusalCodes`; a stored reason of posts
+  outside the ten, which articles were failed with before they had their
+  own and which the release before still writes when a site answers a
+  code posts read as Peal's own, reads as `contentRejected` with its code
+  kept: `ArticleStoredFailureReasonSchema`, over the list
+  `postReasonsReadAsContentRejected` in `domain/article-failure.ts`, which
+  `test/publishing/domain/article-policy.test.ts` keeps equal to the
+  posts' reasons less the ten; only the ten are written), and settles it, telling
   `ArticleEvents` (the webhooks' `article.published`, `article.failed`)
   in that transaction. Each attempt's row (`publishing.article_calls`) is
   written and committed before the site is called, and marked
