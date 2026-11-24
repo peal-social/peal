@@ -371,6 +371,17 @@ and no socket, for tests.
   durable sleep (a retry's delay of minutes) is reached by moving the clock
   to the wake-up it stored (`untilWokenLater`,
   `test/publishing/article-support.ts`), not a second a round.
+- Suites share the database while they run, and keep what a killed run
+  left: a test that sweeps everything due (a feeds poll, a purge) counts
+  only its own rows, or clears what an earlier run left in its years
+  first, and one that runs on the real clock a job reaching every row (the
+  daily usage snapshot) runs on a database of its own (`ownDatabase`,
+  `#test/shared/own-database.ts`). A test that starts cluster jobs on the
+  shared tables forgets them however it ends (`forgettingJobs`,
+  `test/app/cluster.test.ts`), and a cron it counts on the real clock is
+  stopped before it counts. A fake server reads a body through
+  `receivedBody` (`#test/shared/received-body.ts`), so a client gone
+  before its body leaves no rejection behind.
 
 ### Test shards
 
