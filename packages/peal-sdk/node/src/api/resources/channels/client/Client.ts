@@ -9,6 +9,12 @@ import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
 import * as Peal from "../../../index.js";
+import { CapabilitiesClient } from "../resources/capabilities/client/Client.js";
+import { ConnectLinksClient } from "../resources/connectLinks/client/Client.js";
+import { DefaultOptionsClient } from "../resources/defaultOptions/client/Client.js";
+import { LookupsClient } from "../resources/lookups/client/Client.js";
+import { SetsClient } from "../resources/sets/client/Client.js";
+import { TiktokCreatorClient } from "../resources/tiktokCreator/client/Client.js";
 
 export declare namespace ChannelsClient {
     export type Options = BaseClientOptions;
@@ -17,12 +23,45 @@ export declare namespace ChannelsClient {
     }
 }
 
+/**
+ * The accounts and websites a workspace posts to, what each takes, and their default options.
+ */
 export class ChannelsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<ChannelsClient.Options>;
+    protected _capabilities: CapabilitiesClient | undefined;
+    protected _defaultOptions: DefaultOptionsClient | undefined;
+    protected _lookups: LookupsClient | undefined;
+    protected _sets: SetsClient | undefined;
+    protected _connectLinks: ConnectLinksClient | undefined;
+    protected _tiktokCreator: TiktokCreatorClient | undefined;
 
     constructor(options: ChannelsClient.Options = {}) {
 
         this._options = normalizeClientOptionsWithAuth(options);
+    }
+
+    public get capabilities(): CapabilitiesClient {
+        return (this._capabilities ??= new CapabilitiesClient(this._options));
+    }
+
+    public get defaultOptions(): DefaultOptionsClient {
+        return (this._defaultOptions ??= new DefaultOptionsClient(this._options));
+    }
+
+    public get lookups(): LookupsClient {
+        return (this._lookups ??= new LookupsClient(this._options));
+    }
+
+    public get sets(): SetsClient {
+        return (this._sets ??= new SetsClient(this._options));
+    }
+
+    public get connectLinks(): ConnectLinksClient {
+        return (this._connectLinks ??= new ConnectLinksClient(this._options));
+    }
+
+    public get tiktokCreator(): TiktokCreatorClient {
+        return (this._tiktokCreator ??= new TiktokCreatorClient(this._options));
     }
 
     /**

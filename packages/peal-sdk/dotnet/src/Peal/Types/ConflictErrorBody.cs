@@ -19,20 +19,29 @@ public record ConflictErrorBody
     }
 
     /// <summary>
-    /// Create an instance of ConflictErrorBody with <see cref="ConflictErrorBody.FollowUpRuleTaken"/>.
+    /// Create an instance of ConflictErrorBody with <see cref="ConflictErrorBody.ChannelAccountTaken"/>.
     /// </summary>
-    public ConflictErrorBody(ConflictErrorBody.FollowUpRuleTaken value)
+    public ConflictErrorBody(ConflictErrorBody.ChannelAccountTaken value)
     {
-        Type = "FollowUpRuleTaken";
+        Type = "ChannelAccountTaken";
         Value = value.Value;
     }
 
     /// <summary>
-    /// Create an instance of ConflictErrorBody with <see cref="ConflictErrorBody.TooManyFollowUpRules"/>.
+    /// Create an instance of ConflictErrorBody with <see cref="ConflictErrorBody.IdempotencyKeyReused"/>.
     /// </summary>
-    public ConflictErrorBody(ConflictErrorBody.TooManyFollowUpRules value)
+    public ConflictErrorBody(ConflictErrorBody.IdempotencyKeyReused value)
     {
-        Type = "TooManyFollowUpRules";
+        Type = "IdempotencyKeyReused";
+        Value = value.Value;
+    }
+
+    /// <summary>
+    /// Create an instance of ConflictErrorBody with <see cref="ConflictErrorBody.WorkspaceBusy"/>.
+    /// </summary>
+    public ConflictErrorBody(ConflictErrorBody.WorkspaceBusy value)
+    {
+        Type = "WorkspaceBusy";
         Value = value.Value;
     }
 
@@ -48,64 +57,84 @@ public record ConflictErrorBody
     public object? Value { get; internal set; }
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "FollowUpRuleTaken"
+    /// Returns true if <see cref="Type"/> is "ChannelAccountTaken"
     /// </summary>
-    public bool IsFollowUpRuleTaken => Type == "FollowUpRuleTaken";
+    public bool IsChannelAccountTaken => Type == "ChannelAccountTaken";
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "TooManyFollowUpRules"
+    /// Returns true if <see cref="Type"/> is "IdempotencyKeyReused"
     /// </summary>
-    public bool IsTooManyFollowUpRules => Type == "TooManyFollowUpRules";
+    public bool IsIdempotencyKeyReused => Type == "IdempotencyKeyReused";
 
     /// <summary>
-    /// Returns the value as a <see cref="Peal.FollowUpRuleTakenEncoded"/> if <see cref="Type"/> is 'FollowUpRuleTaken', otherwise throws an exception.
+    /// Returns true if <see cref="Type"/> is "WorkspaceBusy"
     /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'FollowUpRuleTaken'.</exception>
-    public Peal.FollowUpRuleTakenEncoded AsFollowUpRuleTaken() =>
-        IsFollowUpRuleTaken
-            ? (Peal.FollowUpRuleTakenEncoded)Value!
+    public bool IsWorkspaceBusy => Type == "WorkspaceBusy";
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.ChannelAccountTakenEncoded"/> if <see cref="Type"/> is 'ChannelAccountTaken', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'ChannelAccountTaken'.</exception>
+    public Peal.ChannelAccountTakenEncoded AsChannelAccountTaken() =>
+        IsChannelAccountTaken
+            ? (Peal.ChannelAccountTakenEncoded)Value!
             : throw new global::System.Exception(
-                "ConflictErrorBody.Type is not 'FollowUpRuleTaken'"
+                "ConflictErrorBody.Type is not 'ChannelAccountTaken'"
             );
 
     /// <summary>
-    /// Returns the value as a <see cref="Peal.TooManyFollowUpRulesEncoded"/> if <see cref="Type"/> is 'TooManyFollowUpRules', otherwise throws an exception.
+    /// Returns the value as a <see cref="Peal.IdempotencyKeyReusedEncoded"/> if <see cref="Type"/> is 'IdempotencyKeyReused', otherwise throws an exception.
     /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'TooManyFollowUpRules'.</exception>
-    public Peal.TooManyFollowUpRulesEncoded AsTooManyFollowUpRules() =>
-        IsTooManyFollowUpRules
-            ? (Peal.TooManyFollowUpRulesEncoded)Value!
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'IdempotencyKeyReused'.</exception>
+    public Peal.IdempotencyKeyReusedEncoded AsIdempotencyKeyReused() =>
+        IsIdempotencyKeyReused
+            ? (Peal.IdempotencyKeyReusedEncoded)Value!
             : throw new global::System.Exception(
-                "ConflictErrorBody.Type is not 'TooManyFollowUpRules'"
+                "ConflictErrorBody.Type is not 'IdempotencyKeyReused'"
             );
+
+    /// <summary>
+    /// Returns the value as a <see cref="Peal.WorkspaceBusyEncoded"/> if <see cref="Type"/> is 'WorkspaceBusy', otherwise throws an exception.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'WorkspaceBusy'.</exception>
+    public Peal.WorkspaceBusyEncoded AsWorkspaceBusy() =>
+        IsWorkspaceBusy
+            ? (Peal.WorkspaceBusyEncoded)Value!
+            : throw new global::System.Exception("ConflictErrorBody.Type is not 'WorkspaceBusy'");
 
     public T Match<T>(
-        Func<Peal.FollowUpRuleTakenEncoded, T> onFollowUpRuleTaken,
-        Func<Peal.TooManyFollowUpRulesEncoded, T> onTooManyFollowUpRules,
+        Func<Peal.ChannelAccountTakenEncoded, T> onChannelAccountTaken,
+        Func<Peal.IdempotencyKeyReusedEncoded, T> onIdempotencyKeyReused,
+        Func<Peal.WorkspaceBusyEncoded, T> onWorkspaceBusy,
         Func<string, object?, T> onUnknown_
     )
     {
         return Type switch
         {
-            "FollowUpRuleTaken" => onFollowUpRuleTaken(AsFollowUpRuleTaken()),
-            "TooManyFollowUpRules" => onTooManyFollowUpRules(AsTooManyFollowUpRules()),
+            "ChannelAccountTaken" => onChannelAccountTaken(AsChannelAccountTaken()),
+            "IdempotencyKeyReused" => onIdempotencyKeyReused(AsIdempotencyKeyReused()),
+            "WorkspaceBusy" => onWorkspaceBusy(AsWorkspaceBusy()),
             _ => onUnknown_(Type, Value),
         };
     }
 
     public void Visit(
-        Action<Peal.FollowUpRuleTakenEncoded> onFollowUpRuleTaken,
-        Action<Peal.TooManyFollowUpRulesEncoded> onTooManyFollowUpRules,
+        Action<Peal.ChannelAccountTakenEncoded> onChannelAccountTaken,
+        Action<Peal.IdempotencyKeyReusedEncoded> onIdempotencyKeyReused,
+        Action<Peal.WorkspaceBusyEncoded> onWorkspaceBusy,
         Action<string, object?> onUnknown_
     )
     {
         switch (Type)
         {
-            case "FollowUpRuleTaken":
-                onFollowUpRuleTaken(AsFollowUpRuleTaken());
+            case "ChannelAccountTaken":
+                onChannelAccountTaken(AsChannelAccountTaken());
                 break;
-            case "TooManyFollowUpRules":
-                onTooManyFollowUpRules(AsTooManyFollowUpRules());
+            case "IdempotencyKeyReused":
+                onIdempotencyKeyReused(AsIdempotencyKeyReused());
+                break;
+            case "WorkspaceBusy":
+                onWorkspaceBusy(AsWorkspaceBusy());
                 break;
             default:
                 onUnknown_(Type, Value);
@@ -114,13 +143,13 @@ public record ConflictErrorBody
     }
 
     /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.FollowUpRuleTakenEncoded"/> and returns true if successful.
+    /// Attempts to cast the value to a <see cref="Peal.ChannelAccountTakenEncoded"/> and returns true if successful.
     /// </summary>
-    public bool TryAsFollowUpRuleTaken(out Peal.FollowUpRuleTakenEncoded? value)
+    public bool TryAsChannelAccountTaken(out Peal.ChannelAccountTakenEncoded? value)
     {
-        if (Type == "FollowUpRuleTaken")
+        if (Type == "ChannelAccountTaken")
         {
-            value = (Peal.FollowUpRuleTakenEncoded)Value!;
+            value = (Peal.ChannelAccountTakenEncoded)Value!;
             return true;
         }
         value = null;
@@ -128,13 +157,27 @@ public record ConflictErrorBody
     }
 
     /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.TooManyFollowUpRulesEncoded"/> and returns true if successful.
+    /// Attempts to cast the value to a <see cref="Peal.IdempotencyKeyReusedEncoded"/> and returns true if successful.
     /// </summary>
-    public bool TryAsTooManyFollowUpRules(out Peal.TooManyFollowUpRulesEncoded? value)
+    public bool TryAsIdempotencyKeyReused(out Peal.IdempotencyKeyReusedEncoded? value)
     {
-        if (Type == "TooManyFollowUpRules")
+        if (Type == "IdempotencyKeyReused")
         {
-            value = (Peal.TooManyFollowUpRulesEncoded)Value!;
+            value = (Peal.IdempotencyKeyReusedEncoded)Value!;
+            return true;
+        }
+        value = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to cast the value to a <see cref="Peal.WorkspaceBusyEncoded"/> and returns true if successful.
+    /// </summary>
+    public bool TryAsWorkspaceBusy(out Peal.WorkspaceBusyEncoded? value)
+    {
+        if (Type == "WorkspaceBusy")
+        {
+            value = (Peal.WorkspaceBusyEncoded)Value!;
             return true;
         }
         value = null;
@@ -143,12 +186,16 @@ public record ConflictErrorBody
 
     public override string ToString() => JsonUtils.Serialize(this);
 
-    public static implicit operator ConflictErrorBody(ConflictErrorBody.FollowUpRuleTaken value) =>
-        new(value);
+    public static implicit operator ConflictErrorBody(
+        ConflictErrorBody.ChannelAccountTaken value
+    ) => new(value);
 
     public static implicit operator ConflictErrorBody(
-        ConflictErrorBody.TooManyFollowUpRules value
+        ConflictErrorBody.IdempotencyKeyReused value
     ) => new(value);
+
+    public static implicit operator ConflictErrorBody(ConflictErrorBody.WorkspaceBusy value) =>
+        new(value);
 
     [Serializable]
     internal sealed class JsonConverter : JsonConverter<ConflictErrorBody>
@@ -191,16 +238,18 @@ public record ConflictErrorBody
 
             var value = discriminator switch
             {
-                "FollowUpRuleTaken" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.FollowUpRuleTakenEncoded?>(options)
+                "ChannelAccountTaken" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.ChannelAccountTakenEncoded?>(options)
                         ?? throw new JsonException(
-                            "Failed to deserialize Peal.FollowUpRuleTakenEncoded"
+                            "Failed to deserialize Peal.ChannelAccountTakenEncoded"
                         ),
-                "TooManyFollowUpRules" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.TooManyFollowUpRulesEncoded?>(options)
+                "IdempotencyKeyReused" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.IdempotencyKeyReusedEncoded?>(options)
                         ?? throw new JsonException(
-                            "Failed to deserialize Peal.TooManyFollowUpRulesEncoded"
+                            "Failed to deserialize Peal.IdempotencyKeyReusedEncoded"
                         ),
+                "WorkspaceBusy" => json.Deserialize<Peal.WorkspaceBusyEncoded?>(options)
+                    ?? throw new JsonException("Failed to deserialize Peal.WorkspaceBusyEncoded"),
                 _ => json.Deserialize<object?>(options),
             };
             return new ConflictErrorBody(discriminator, value);
@@ -215,8 +264,9 @@ public record ConflictErrorBody
             JsonNode json =
                 value.Type switch
                 {
-                    "FollowUpRuleTaken" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "TooManyFollowUpRules" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "ChannelAccountTaken" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "IdempotencyKeyReused" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "WorkspaceBusy" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["_tag"] = value.Type;
@@ -246,42 +296,62 @@ public record ConflictErrorBody
     }
 
     /// <summary>
-    /// Discriminated union type for FollowUpRuleTaken
+    /// Discriminated union type for ChannelAccountTaken
     /// </summary>
     [Serializable]
-    public struct FollowUpRuleTaken
+    public struct ChannelAccountTaken
     {
-        public FollowUpRuleTaken(Peal.FollowUpRuleTakenEncoded value)
+        public ChannelAccountTaken(Peal.ChannelAccountTakenEncoded value)
         {
             Value = value;
         }
 
-        internal Peal.FollowUpRuleTakenEncoded Value { get; set; }
+        internal Peal.ChannelAccountTakenEncoded Value { get; set; }
 
         public override string ToString() => Value.ToString() ?? "null";
 
-        public static implicit operator ConflictErrorBody.FollowUpRuleTaken(
-            Peal.FollowUpRuleTakenEncoded value
+        public static implicit operator ConflictErrorBody.ChannelAccountTaken(
+            Peal.ChannelAccountTakenEncoded value
         ) => new(value);
     }
 
     /// <summary>
-    /// Discriminated union type for TooManyFollowUpRules
+    /// Discriminated union type for IdempotencyKeyReused
     /// </summary>
     [Serializable]
-    public struct TooManyFollowUpRules
+    public struct IdempotencyKeyReused
     {
-        public TooManyFollowUpRules(Peal.TooManyFollowUpRulesEncoded value)
+        public IdempotencyKeyReused(Peal.IdempotencyKeyReusedEncoded value)
         {
             Value = value;
         }
 
-        internal Peal.TooManyFollowUpRulesEncoded Value { get; set; }
+        internal Peal.IdempotencyKeyReusedEncoded Value { get; set; }
 
         public override string ToString() => Value.ToString() ?? "null";
 
-        public static implicit operator ConflictErrorBody.TooManyFollowUpRules(
-            Peal.TooManyFollowUpRulesEncoded value
+        public static implicit operator ConflictErrorBody.IdempotencyKeyReused(
+            Peal.IdempotencyKeyReusedEncoded value
+        ) => new(value);
+    }
+
+    /// <summary>
+    /// Discriminated union type for WorkspaceBusy
+    /// </summary>
+    [Serializable]
+    public struct WorkspaceBusy
+    {
+        public WorkspaceBusy(Peal.WorkspaceBusyEncoded value)
+        {
+            Value = value;
+        }
+
+        internal Peal.WorkspaceBusyEncoded Value { get; set; }
+
+        public override string ToString() => Value.ToString() ?? "null";
+
+        public static implicit operator ConflictErrorBody.WorkspaceBusy(
+            Peal.WorkspaceBusyEncoded value
         ) => new(value);
     }
 }

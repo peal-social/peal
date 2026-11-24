@@ -1,0 +1,182 @@
+use crate::api::*;
+use crate::{ApiError, ClientConfig, HttpClient, RequestOptions};
+use reqwest::Method;
+
+pub struct DefaultOptionsClient {
+    pub http_client: HttpClient,
+}
+
+impl DefaultOptionsClient {
+    pub fn new(config: ClientConfig) -> Result<Self, ApiError> {
+        Ok(Self {
+            http_client: HttpClient::new(config.clone())?,
+        })
+    }
+
+    /// Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .channels
+    ///         .default_options
+    ///         .get(&"channelId".to_string(), None)
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn get(
+        &self,
+        channel_id: &str,
+        options: Option<RequestOptions>,
+    ) -> Result<ChannelDefaults, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::GET,
+                &format!("api/v1/channels/{}/default-options", channel_id),
+                None,
+                None,
+                options,
+            )
+            .await
+    }
+
+    /// Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (`TargetOptions`), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// JSON response from the API
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .channels
+    ///         .default_options
+    ///         .set(
+    ///             &"channelId".to_string(),
+    ///             &NewChannelDefaults {
+    ///                 options: TargetOptions::Youtube {
+    ///                     data: YouTubeOptions {
+    ///                         ..Default::default()
+    ///                     },
+    ///                 },
+    ///             },
+    ///             None,
+    ///         )
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn set(
+        &self,
+        channel_id: &str,
+        request: &NewChannelDefaults,
+        options: Option<RequestOptions>,
+    ) -> Result<ChannelDefaults, ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::PUT,
+                &format!("api/v1/channels/{}/default-options", channel_id),
+                Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
+                None,
+                options,
+            )
+            .await
+    }
+
+    /// Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
+    ///
+    /// # Arguments
+    ///
+    /// * `options` - Additional request options such as headers, timeout, etc.
+    ///
+    /// # Returns
+    ///
+    /// Empty response
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use peal_sdk::prelude::*;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let config = ClientConfig {
+    ///         token: Some("<token>".to_string()),
+    ///         ..Default::default()
+    ///     };
+    ///     let client = PealClient::new(config).expect("Failed to build client");
+    ///     client
+    ///         .channels
+    ///         .default_options
+    ///         .clear(&"channelId".to_string(), None)
+    ///         .await;
+    /// }
+    /// ```
+    pub async fn clear(
+        &self,
+        channel_id: &str,
+        options: Option<RequestOptions>,
+    ) -> Result<(), ApiError> {
+        let options = {
+            let mut o = options.unwrap_or_default();
+            o.additional_headers
+                .entry("Peal-Version".to_string())
+                .or_insert_with(|| "2026-11-09".to_string());
+            Some(o)
+        };
+        self.http_client
+            .execute_request(
+                Method::DELETE,
+                &format!("api/v1/channels/{}/default-options", channel_id),
+                None,
+                None,
+                options,
+            )
+            .await
+    }
+}

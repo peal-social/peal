@@ -7,7 +7,7 @@ const baseUrl = process.env.PEAL_API_URL;
 const peal = new PealClient({ baseUrl, token: "peal_test" });
 
 await peal.system.health();
-const me = await peal.session.me();
+const me = await peal.me.get();
 
 if (
   me.user.email !== "ada@example.test" ||
@@ -19,7 +19,7 @@ if (
 }
 
 try {
-  await new PealClient({ baseUrl, token: "refused" }).session.me();
+  await new PealClient({ baseUrl, token: "refused" }).me.get();
   throw new Error("A refused token got an answer");
 } catch (error) {
   if (!(error instanceof PealError) || error.statusCode !== 401) {

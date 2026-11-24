@@ -17,6 +17,9 @@ export declare namespace ArticlesClient {
     }
 }
 
+/**
+ * Articles published to the websites connected as channels.
+ */
 export class ArticlesClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<ArticlesClient.Options>;
 

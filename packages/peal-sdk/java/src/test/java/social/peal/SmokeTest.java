@@ -21,7 +21,7 @@ class SmokeTest {
         PealClient peal = PealClient.builder().url(BASE_URL).token("peal_test").build();
 
         peal.system().health();
-        Me me = peal.session().me();
+        Me me = peal.me().get();
 
         assertEquals("ada@example.test", me.getUser().getEmail());
         assertFalse(me.getImpersonatedBy().isPresent());
@@ -30,7 +30,7 @@ class SmokeTest {
 
         PealClient refused = PealClient.builder().url(BASE_URL).token("refused").build();
         PealClientApiException error =
-                assertThrows(PealClientApiException.class, () -> refused.session().me());
+                assertThrows(PealClientApiException.class, () -> refused.me().get());
         assertEquals(401, error.statusCode());
     }
 }

@@ -16,6 +16,9 @@ export declare namespace SystemClient {
     }
 }
 
+/**
+ * Health checks and the API's changelog.
+ */
 export class SystemClient {
     protected readonly _options: NormalizedClientOptions<SystemClient.Options>;
 

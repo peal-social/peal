@@ -829,6 +829,36 @@ module Peal
           raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
         end
       end
+
+      # @return [Peal::Capabilities::Client]
+      def capabilities
+        @capabilities ||= Peal::Channels::Capabilities::Client.new(client: @client)
+      end
+
+      # @return [Peal::DefaultOptions::Client]
+      def default_options
+        @default_options ||= Peal::Channels::DefaultOptions::Client.new(client: @client)
+      end
+
+      # @return [Peal::Lookups::Client]
+      def lookups
+        @lookups ||= Peal::Channels::Lookups::Client.new(client: @client)
+      end
+
+      # @return [Peal::Sets::Client]
+      def sets
+        @sets ||= Peal::Channels::Sets::Client.new(client: @client)
+      end
+
+      # @return [Peal::ConnectLinks::Client]
+      def connect_links
+        @connect_links ||= Peal::Channels::ConnectLinks::Client.new(client: @client)
+      end
+
+      # @return [Peal::TiktokCreator::Client]
+      def tiktok_creator
+        @tiktok_creator ||= Peal::Channels::TiktokCreator::Client.new(client: @client)
+      end
     end
   end
 end

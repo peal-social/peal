@@ -3,15 +3,20 @@
 import * as Peal from "../index.js";
 
 export type ConflictErrorBody = 
-    | Peal.ConflictErrorBody.FollowUpRuleTaken
-    | Peal.ConflictErrorBody.TooManyFollowUpRules;
+    | Peal.ConflictErrorBody.ChannelAccountTaken
+    | Peal.ConflictErrorBody.IdempotencyKeyReused
+    | Peal.ConflictErrorBody.WorkspaceBusy;
 
 export namespace ConflictErrorBody {
-    export interface FollowUpRuleTaken extends Peal.FollowUpRuleTakenEncoded {
-        _tag: "FollowUpRuleTaken";
+    export interface ChannelAccountTaken extends Peal.ChannelAccountTakenEncoded {
+        _tag: "ChannelAccountTaken";
     }
 
-    export interface TooManyFollowUpRules extends Peal.TooManyFollowUpRulesEncoded {
-        _tag: "TooManyFollowUpRules";
+    export interface IdempotencyKeyReused extends Peal.IdempotencyKeyReusedEncoded {
+        _tag: "IdempotencyKeyReused";
+    }
+
+    export interface WorkspaceBusy extends Peal.WorkspaceBusyEncoded {
+        _tag: "WorkspaceBusy";
     }
 }

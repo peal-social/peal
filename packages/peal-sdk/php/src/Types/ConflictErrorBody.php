@@ -9,8 +9,9 @@ class ConflictErrorBody extends JsonSerializableType
 {
     /**
      * @var (
-     *    'FollowUpRuleTaken'
-     *   |'TooManyFollowUpRules'
+     *    'ChannelAccountTaken'
+     *   |'IdempotencyKeyReused'
+     *   |'WorkspaceBusy'
      *   |'_unknown'
      * ) $type
      */
@@ -18,8 +19,9 @@ class ConflictErrorBody extends JsonSerializableType
 
     /**
      * @var (
-     *    FollowUpRuleTakenEncoded
-     *   |TooManyFollowUpRulesEncoded
+     *    ChannelAccountTakenEncoded
+     *   |IdempotencyKeyReusedEncoded
+     *   |WorkspaceBusyEncoded
      *   |mixed
      * ) $value
      */
@@ -28,13 +30,15 @@ class ConflictErrorBody extends JsonSerializableType
     /**
      * @param array{
      *   type: (
-     *    'FollowUpRuleTaken'
-     *   |'TooManyFollowUpRules'
+     *    'ChannelAccountTaken'
+     *   |'IdempotencyKeyReused'
+     *   |'WorkspaceBusy'
      *   |'_unknown'
      * ),
      *   value: (
-     *    FollowUpRuleTakenEncoded
-     *   |TooManyFollowUpRulesEncoded
+     *    ChannelAccountTakenEncoded
+     *   |IdempotencyKeyReusedEncoded
+     *   |WorkspaceBusyEncoded
      *   |mixed
      * ),
      * } $values
@@ -47,45 +51,57 @@ class ConflictErrorBody extends JsonSerializableType
     }
 
     /**
-     * @param FollowUpRuleTakenEncoded $followUpRuleTaken
+     * @param ChannelAccountTakenEncoded $channelAccountTaken
      * @return ConflictErrorBody
      */
-    public static function followUpRuleTaken(FollowUpRuleTakenEncoded $followUpRuleTaken): ConflictErrorBody
+    public static function channelAccountTaken(ChannelAccountTakenEncoded $channelAccountTaken): ConflictErrorBody
     {
         return new ConflictErrorBody([
-            'type' => 'FollowUpRuleTaken',
-            'value' => $followUpRuleTaken,
+            'type' => 'ChannelAccountTaken',
+            'value' => $channelAccountTaken,
         ]);
     }
 
     /**
-     * @param TooManyFollowUpRulesEncoded $tooManyFollowUpRules
+     * @param IdempotencyKeyReusedEncoded $idempotencyKeyReused
      * @return ConflictErrorBody
      */
-    public static function tooManyFollowUpRules(TooManyFollowUpRulesEncoded $tooManyFollowUpRules): ConflictErrorBody
+    public static function idempotencyKeyReused(IdempotencyKeyReusedEncoded $idempotencyKeyReused): ConflictErrorBody
     {
         return new ConflictErrorBody([
-            'type' => 'TooManyFollowUpRules',
-            'value' => $tooManyFollowUpRules,
+            'type' => 'IdempotencyKeyReused',
+            'value' => $idempotencyKeyReused,
+        ]);
+    }
+
+    /**
+     * @param WorkspaceBusyEncoded $workspaceBusy
+     * @return ConflictErrorBody
+     */
+    public static function workspaceBusy(WorkspaceBusyEncoded $workspaceBusy): ConflictErrorBody
+    {
+        return new ConflictErrorBody([
+            'type' => 'WorkspaceBusy',
+            'value' => $workspaceBusy,
         ]);
     }
 
     /**
      * @return bool
      */
-    public function isFollowUpRuleTaken(): bool
+    public function isChannelAccountTaken(): bool
     {
-        return $this->value instanceof FollowUpRuleTakenEncoded && $this->type === 'FollowUpRuleTaken';
+        return $this->value instanceof ChannelAccountTakenEncoded && $this->type === 'ChannelAccountTaken';
     }
 
     /**
-     * @return FollowUpRuleTakenEncoded
+     * @return ChannelAccountTakenEncoded
      */
-    public function asFollowUpRuleTaken(): FollowUpRuleTakenEncoded
+    public function asChannelAccountTaken(): ChannelAccountTakenEncoded
     {
-        if (!($this->value instanceof FollowUpRuleTakenEncoded && $this->type === 'FollowUpRuleTaken')) {
+        if (!($this->value instanceof ChannelAccountTakenEncoded && $this->type === 'ChannelAccountTaken')) {
             throw new Exception(
-                "Expected FollowUpRuleTaken; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected ChannelAccountTaken; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -95,19 +111,41 @@ class ConflictErrorBody extends JsonSerializableType
     /**
      * @return bool
      */
-    public function isTooManyFollowUpRules(): bool
+    public function isIdempotencyKeyReused(): bool
     {
-        return $this->value instanceof TooManyFollowUpRulesEncoded && $this->type === 'TooManyFollowUpRules';
+        return $this->value instanceof IdempotencyKeyReusedEncoded && $this->type === 'IdempotencyKeyReused';
     }
 
     /**
-     * @return TooManyFollowUpRulesEncoded
+     * @return IdempotencyKeyReusedEncoded
      */
-    public function asTooManyFollowUpRules(): TooManyFollowUpRulesEncoded
+    public function asIdempotencyKeyReused(): IdempotencyKeyReusedEncoded
     {
-        if (!($this->value instanceof TooManyFollowUpRulesEncoded && $this->type === 'TooManyFollowUpRules')) {
+        if (!($this->value instanceof IdempotencyKeyReusedEncoded && $this->type === 'IdempotencyKeyReused')) {
             throw new Exception(
-                "Expected TooManyFollowUpRules; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected IdempotencyKeyReused; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isWorkspaceBusy(): bool
+    {
+        return $this->value instanceof WorkspaceBusyEncoded && $this->type === 'WorkspaceBusy';
+    }
+
+    /**
+     * @return WorkspaceBusyEncoded
+     */
+    public function asWorkspaceBusy(): WorkspaceBusyEncoded
+    {
+        if (!($this->value instanceof WorkspaceBusyEncoded && $this->type === 'WorkspaceBusy')) {
+            throw new Exception(
+                "Expected WorkspaceBusy; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -134,12 +172,16 @@ class ConflictErrorBody extends JsonSerializableType
         $result = array_merge($base, $result);
 
         switch ($this->type) {
-            case 'FollowUpRuleTaken':
-                $value = $this->asFollowUpRuleTaken()->jsonSerialize();
+            case 'ChannelAccountTaken':
+                $value = $this->asChannelAccountTaken()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
-            case 'TooManyFollowUpRules':
-                $value = $this->asTooManyFollowUpRules()->jsonSerialize();
+            case 'IdempotencyKeyReused':
+                $value = $this->asIdempotencyKeyReused()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'WorkspaceBusy':
+                $value = $this->asWorkspaceBusy()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -178,11 +220,14 @@ class ConflictErrorBody extends JsonSerializableType
 
         $args['type'] = $type;
         switch ($type) {
-            case 'FollowUpRuleTaken':
-                $args['value'] = FollowUpRuleTakenEncoded::jsonDeserialize($data);
+            case 'ChannelAccountTaken':
+                $args['value'] = ChannelAccountTakenEncoded::jsonDeserialize($data);
                 break;
-            case 'TooManyFollowUpRules':
-                $args['value'] = TooManyFollowUpRulesEncoded::jsonDeserialize($data);
+            case 'IdempotencyKeyReused':
+                $args['value'] = IdempotencyKeyReusedEncoded::jsonDeserialize($data);
+                break;
+            case 'WorkspaceBusy':
+                $args['value'] = WorkspaceBusyEncoded::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

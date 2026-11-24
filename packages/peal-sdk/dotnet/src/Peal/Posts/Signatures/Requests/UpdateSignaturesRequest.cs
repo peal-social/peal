@@ -1,0 +1,21 @@
+using global::System.Text.Json.Serialization;
+using Peal;
+using Peal.Core;
+
+namespace Peal.Posts;
+
+[Serializable]
+public record UpdateSignaturesRequest
+{
+    [JsonIgnore]
+    public required string SignatureId { get; set; }
+
+    [JsonIgnore]
+    public required SignatureDetails Body { get; set; }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return JsonUtils.Serialize(this);
+    }
+}

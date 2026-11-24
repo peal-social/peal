@@ -9,13 +9,9 @@ module Peal
 
       discriminant :type
 
-      member -> { Peal::Types::FeedAddressRefusedEncoded }, key: "FEED_ADDRESS_REFUSED"
+      member -> { Peal::Types::AiCapabilityNotOfferedEncoded }, key: "AI_CAPABILITY_NOT_OFFERED"
 
-      member -> { Peal::Types::FeedTemplateInvalidEncoded }, key: "FEED_TEMPLATE_INVALID"
-
-      member -> { Peal::Types::FeedUnreadableEncoded }, key: "FEED_UNREADABLE"
-
-      member -> { Peal::Types::UnknownChannelsEncoded }, key: "UNKNOWN_CHANNELS"
+      member -> { Peal::Types::AiModelRequiredEncoded }, key: "AI_MODEL_REQUIRED"
     end
   end
 end

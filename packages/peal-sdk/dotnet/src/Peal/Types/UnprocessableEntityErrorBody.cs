@@ -19,38 +19,20 @@ public record UnprocessableEntityErrorBody
     }
 
     /// <summary>
-    /// Create an instance of UnprocessableEntityErrorBody with <see cref="UnprocessableEntityErrorBody.FeedAddressRefused"/>.
+    /// Create an instance of UnprocessableEntityErrorBody with <see cref="UnprocessableEntityErrorBody.AiCapabilityNotOffered"/>.
     /// </summary>
-    public UnprocessableEntityErrorBody(UnprocessableEntityErrorBody.FeedAddressRefused value)
+    public UnprocessableEntityErrorBody(UnprocessableEntityErrorBody.AiCapabilityNotOffered value)
     {
-        Type = "FeedAddressRefused";
+        Type = "AiCapabilityNotOffered";
         Value = value.Value;
     }
 
     /// <summary>
-    /// Create an instance of UnprocessableEntityErrorBody with <see cref="UnprocessableEntityErrorBody.FeedTemplateInvalid"/>.
+    /// Create an instance of UnprocessableEntityErrorBody with <see cref="UnprocessableEntityErrorBody.AiModelRequired"/>.
     /// </summary>
-    public UnprocessableEntityErrorBody(UnprocessableEntityErrorBody.FeedTemplateInvalid value)
+    public UnprocessableEntityErrorBody(UnprocessableEntityErrorBody.AiModelRequired value)
     {
-        Type = "FeedTemplateInvalid";
-        Value = value.Value;
-    }
-
-    /// <summary>
-    /// Create an instance of UnprocessableEntityErrorBody with <see cref="UnprocessableEntityErrorBody.FeedUnreadable"/>.
-    /// </summary>
-    public UnprocessableEntityErrorBody(UnprocessableEntityErrorBody.FeedUnreadable value)
-    {
-        Type = "FeedUnreadable";
-        Value = value.Value;
-    }
-
-    /// <summary>
-    /// Create an instance of UnprocessableEntityErrorBody with <see cref="UnprocessableEntityErrorBody.UnknownChannels"/>.
-    /// </summary>
-    public UnprocessableEntityErrorBody(UnprocessableEntityErrorBody.UnknownChannels value)
-    {
-        Type = "UnknownChannels";
+        Type = "AiModelRequired";
         Value = value.Value;
     }
 
@@ -66,108 +48,64 @@ public record UnprocessableEntityErrorBody
     public object? Value { get; internal set; }
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "FeedAddressRefused"
+    /// Returns true if <see cref="Type"/> is "AiCapabilityNotOffered"
     /// </summary>
-    public bool IsFeedAddressRefused => Type == "FeedAddressRefused";
+    public bool IsAiCapabilityNotOffered => Type == "AiCapabilityNotOffered";
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "FeedTemplateInvalid"
+    /// Returns true if <see cref="Type"/> is "AiModelRequired"
     /// </summary>
-    public bool IsFeedTemplateInvalid => Type == "FeedTemplateInvalid";
+    public bool IsAiModelRequired => Type == "AiModelRequired";
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "FeedUnreadable"
+    /// Returns the value as a <see cref="Peal.AiCapabilityNotOfferedEncoded"/> if <see cref="Type"/> is 'AiCapabilityNotOffered', otherwise throws an exception.
     /// </summary>
-    public bool IsFeedUnreadable => Type == "FeedUnreadable";
-
-    /// <summary>
-    /// Returns true if <see cref="Type"/> is "UnknownChannels"
-    /// </summary>
-    public bool IsUnknownChannels => Type == "UnknownChannels";
-
-    /// <summary>
-    /// Returns the value as a <see cref="Peal.FeedAddressRefusedEncoded"/> if <see cref="Type"/> is 'FeedAddressRefused', otherwise throws an exception.
-    /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'FeedAddressRefused'.</exception>
-    public Peal.FeedAddressRefusedEncoded AsFeedAddressRefused() =>
-        IsFeedAddressRefused
-            ? (Peal.FeedAddressRefusedEncoded)Value!
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'AiCapabilityNotOffered'.</exception>
+    public Peal.AiCapabilityNotOfferedEncoded AsAiCapabilityNotOffered() =>
+        IsAiCapabilityNotOffered
+            ? (Peal.AiCapabilityNotOfferedEncoded)Value!
             : throw new global::System.Exception(
-                "UnprocessableEntityErrorBody.Type is not 'FeedAddressRefused'"
+                "UnprocessableEntityErrorBody.Type is not 'AiCapabilityNotOffered'"
             );
 
     /// <summary>
-    /// Returns the value as a <see cref="Peal.FeedTemplateInvalidEncoded"/> if <see cref="Type"/> is 'FeedTemplateInvalid', otherwise throws an exception.
+    /// Returns the value as a <see cref="Peal.AiModelRequiredEncoded"/> if <see cref="Type"/> is 'AiModelRequired', otherwise throws an exception.
     /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'FeedTemplateInvalid'.</exception>
-    public Peal.FeedTemplateInvalidEncoded AsFeedTemplateInvalid() =>
-        IsFeedTemplateInvalid
-            ? (Peal.FeedTemplateInvalidEncoded)Value!
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'AiModelRequired'.</exception>
+    public Peal.AiModelRequiredEncoded AsAiModelRequired() =>
+        IsAiModelRequired
+            ? (Peal.AiModelRequiredEncoded)Value!
             : throw new global::System.Exception(
-                "UnprocessableEntityErrorBody.Type is not 'FeedTemplateInvalid'"
-            );
-
-    /// <summary>
-    /// Returns the value as a <see cref="Peal.FeedUnreadableEncoded"/> if <see cref="Type"/> is 'FeedUnreadable', otherwise throws an exception.
-    /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'FeedUnreadable'.</exception>
-    public Peal.FeedUnreadableEncoded AsFeedUnreadable() =>
-        IsFeedUnreadable
-            ? (Peal.FeedUnreadableEncoded)Value!
-            : throw new global::System.Exception(
-                "UnprocessableEntityErrorBody.Type is not 'FeedUnreadable'"
-            );
-
-    /// <summary>
-    /// Returns the value as a <see cref="Peal.UnknownChannelsEncoded"/> if <see cref="Type"/> is 'UnknownChannels', otherwise throws an exception.
-    /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'UnknownChannels'.</exception>
-    public Peal.UnknownChannelsEncoded AsUnknownChannels() =>
-        IsUnknownChannels
-            ? (Peal.UnknownChannelsEncoded)Value!
-            : throw new global::System.Exception(
-                "UnprocessableEntityErrorBody.Type is not 'UnknownChannels'"
+                "UnprocessableEntityErrorBody.Type is not 'AiModelRequired'"
             );
 
     public T Match<T>(
-        Func<Peal.FeedAddressRefusedEncoded, T> onFeedAddressRefused,
-        Func<Peal.FeedTemplateInvalidEncoded, T> onFeedTemplateInvalid,
-        Func<Peal.FeedUnreadableEncoded, T> onFeedUnreadable,
-        Func<Peal.UnknownChannelsEncoded, T> onUnknownChannels,
+        Func<Peal.AiCapabilityNotOfferedEncoded, T> onAiCapabilityNotOffered,
+        Func<Peal.AiModelRequiredEncoded, T> onAiModelRequired,
         Func<string, object?, T> onUnknown_
     )
     {
         return Type switch
         {
-            "FeedAddressRefused" => onFeedAddressRefused(AsFeedAddressRefused()),
-            "FeedTemplateInvalid" => onFeedTemplateInvalid(AsFeedTemplateInvalid()),
-            "FeedUnreadable" => onFeedUnreadable(AsFeedUnreadable()),
-            "UnknownChannels" => onUnknownChannels(AsUnknownChannels()),
+            "AiCapabilityNotOffered" => onAiCapabilityNotOffered(AsAiCapabilityNotOffered()),
+            "AiModelRequired" => onAiModelRequired(AsAiModelRequired()),
             _ => onUnknown_(Type, Value),
         };
     }
 
     public void Visit(
-        Action<Peal.FeedAddressRefusedEncoded> onFeedAddressRefused,
-        Action<Peal.FeedTemplateInvalidEncoded> onFeedTemplateInvalid,
-        Action<Peal.FeedUnreadableEncoded> onFeedUnreadable,
-        Action<Peal.UnknownChannelsEncoded> onUnknownChannels,
+        Action<Peal.AiCapabilityNotOfferedEncoded> onAiCapabilityNotOffered,
+        Action<Peal.AiModelRequiredEncoded> onAiModelRequired,
         Action<string, object?> onUnknown_
     )
     {
         switch (Type)
         {
-            case "FeedAddressRefused":
-                onFeedAddressRefused(AsFeedAddressRefused());
+            case "AiCapabilityNotOffered":
+                onAiCapabilityNotOffered(AsAiCapabilityNotOffered());
                 break;
-            case "FeedTemplateInvalid":
-                onFeedTemplateInvalid(AsFeedTemplateInvalid());
-                break;
-            case "FeedUnreadable":
-                onFeedUnreadable(AsFeedUnreadable());
-                break;
-            case "UnknownChannels":
-                onUnknownChannels(AsUnknownChannels());
+            case "AiModelRequired":
+                onAiModelRequired(AsAiModelRequired());
                 break;
             default:
                 onUnknown_(Type, Value);
@@ -176,13 +114,13 @@ public record UnprocessableEntityErrorBody
     }
 
     /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.FeedAddressRefusedEncoded"/> and returns true if successful.
+    /// Attempts to cast the value to a <see cref="Peal.AiCapabilityNotOfferedEncoded"/> and returns true if successful.
     /// </summary>
-    public bool TryAsFeedAddressRefused(out Peal.FeedAddressRefusedEncoded? value)
+    public bool TryAsAiCapabilityNotOffered(out Peal.AiCapabilityNotOfferedEncoded? value)
     {
-        if (Type == "FeedAddressRefused")
+        if (Type == "AiCapabilityNotOffered")
         {
-            value = (Peal.FeedAddressRefusedEncoded)Value!;
+            value = (Peal.AiCapabilityNotOfferedEncoded)Value!;
             return true;
         }
         value = null;
@@ -190,41 +128,13 @@ public record UnprocessableEntityErrorBody
     }
 
     /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.FeedTemplateInvalidEncoded"/> and returns true if successful.
+    /// Attempts to cast the value to a <see cref="Peal.AiModelRequiredEncoded"/> and returns true if successful.
     /// </summary>
-    public bool TryAsFeedTemplateInvalid(out Peal.FeedTemplateInvalidEncoded? value)
+    public bool TryAsAiModelRequired(out Peal.AiModelRequiredEncoded? value)
     {
-        if (Type == "FeedTemplateInvalid")
+        if (Type == "AiModelRequired")
         {
-            value = (Peal.FeedTemplateInvalidEncoded)Value!;
-            return true;
-        }
-        value = null;
-        return false;
-    }
-
-    /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.FeedUnreadableEncoded"/> and returns true if successful.
-    /// </summary>
-    public bool TryAsFeedUnreadable(out Peal.FeedUnreadableEncoded? value)
-    {
-        if (Type == "FeedUnreadable")
-        {
-            value = (Peal.FeedUnreadableEncoded)Value!;
-            return true;
-        }
-        value = null;
-        return false;
-    }
-
-    /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.UnknownChannelsEncoded"/> and returns true if successful.
-    /// </summary>
-    public bool TryAsUnknownChannels(out Peal.UnknownChannelsEncoded? value)
-    {
-        if (Type == "UnknownChannels")
-        {
-            value = (Peal.UnknownChannelsEncoded)Value!;
+            value = (Peal.AiModelRequiredEncoded)Value!;
             return true;
         }
         value = null;
@@ -234,19 +144,11 @@ public record UnprocessableEntityErrorBody
     public override string ToString() => JsonUtils.Serialize(this);
 
     public static implicit operator UnprocessableEntityErrorBody(
-        UnprocessableEntityErrorBody.FeedAddressRefused value
+        UnprocessableEntityErrorBody.AiCapabilityNotOffered value
     ) => new(value);
 
     public static implicit operator UnprocessableEntityErrorBody(
-        UnprocessableEntityErrorBody.FeedTemplateInvalid value
-    ) => new(value);
-
-    public static implicit operator UnprocessableEntityErrorBody(
-        UnprocessableEntityErrorBody.FeedUnreadable value
-    ) => new(value);
-
-    public static implicit operator UnprocessableEntityErrorBody(
-        UnprocessableEntityErrorBody.UnknownChannels value
+        UnprocessableEntityErrorBody.AiModelRequired value
     ) => new(value);
 
     [Serializable]
@@ -290,23 +192,18 @@ public record UnprocessableEntityErrorBody
 
             var value = discriminator switch
             {
-                "FeedAddressRefused" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.FeedAddressRefusedEncoded?>(options)
+                "AiCapabilityNotOffered" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.AiCapabilityNotOfferedEncoded?>(
+                        options
+                    )
                         ?? throw new JsonException(
-                            "Failed to deserialize Peal.FeedAddressRefusedEncoded"
+                            "Failed to deserialize Peal.AiCapabilityNotOfferedEncoded"
                         ),
-                "FeedTemplateInvalid" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.FeedTemplateInvalidEncoded?>(options)
+                "AiModelRequired" =>
+                    jsonWithoutDiscriminator.Deserialize<Peal.AiModelRequiredEncoded?>(options)
                         ?? throw new JsonException(
-                            "Failed to deserialize Peal.FeedTemplateInvalidEncoded"
+                            "Failed to deserialize Peal.AiModelRequiredEncoded"
                         ),
-                "FeedUnreadable" =>
-                    jsonWithoutDiscriminator.Deserialize<Peal.FeedUnreadableEncoded?>(options)
-                        ?? throw new JsonException(
-                            "Failed to deserialize Peal.FeedUnreadableEncoded"
-                        ),
-                "UnknownChannels" => json.Deserialize<Peal.UnknownChannelsEncoded?>(options)
-                    ?? throw new JsonException("Failed to deserialize Peal.UnknownChannelsEncoded"),
                 _ => json.Deserialize<object?>(options),
             };
             return new UnprocessableEntityErrorBody(discriminator, value);
@@ -321,10 +218,11 @@ public record UnprocessableEntityErrorBody
             JsonNode json =
                 value.Type switch
                 {
-                    "FeedAddressRefused" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "FeedTemplateInvalid" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "FeedUnreadable" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "UnknownChannels" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "AiCapabilityNotOffered" => JsonSerializer.SerializeToNode(
+                        value.Value,
+                        options
+                    ),
+                    "AiModelRequired" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["_tag"] = value.Type;
@@ -354,82 +252,42 @@ public record UnprocessableEntityErrorBody
     }
 
     /// <summary>
-    /// Discriminated union type for FeedAddressRefused
+    /// Discriminated union type for AiCapabilityNotOffered
     /// </summary>
     [Serializable]
-    public struct FeedAddressRefused
+    public struct AiCapabilityNotOffered
     {
-        public FeedAddressRefused(Peal.FeedAddressRefusedEncoded value)
+        public AiCapabilityNotOffered(Peal.AiCapabilityNotOfferedEncoded value)
         {
             Value = value;
         }
 
-        internal Peal.FeedAddressRefusedEncoded Value { get; set; }
+        internal Peal.AiCapabilityNotOfferedEncoded Value { get; set; }
 
         public override string ToString() => Value.ToString() ?? "null";
 
-        public static implicit operator UnprocessableEntityErrorBody.FeedAddressRefused(
-            Peal.FeedAddressRefusedEncoded value
+        public static implicit operator UnprocessableEntityErrorBody.AiCapabilityNotOffered(
+            Peal.AiCapabilityNotOfferedEncoded value
         ) => new(value);
     }
 
     /// <summary>
-    /// Discriminated union type for FeedTemplateInvalid
+    /// Discriminated union type for AiModelRequired
     /// </summary>
     [Serializable]
-    public struct FeedTemplateInvalid
+    public struct AiModelRequired
     {
-        public FeedTemplateInvalid(Peal.FeedTemplateInvalidEncoded value)
+        public AiModelRequired(Peal.AiModelRequiredEncoded value)
         {
             Value = value;
         }
 
-        internal Peal.FeedTemplateInvalidEncoded Value { get; set; }
+        internal Peal.AiModelRequiredEncoded Value { get; set; }
 
         public override string ToString() => Value.ToString() ?? "null";
 
-        public static implicit operator UnprocessableEntityErrorBody.FeedTemplateInvalid(
-            Peal.FeedTemplateInvalidEncoded value
-        ) => new(value);
-    }
-
-    /// <summary>
-    /// Discriminated union type for FeedUnreadable
-    /// </summary>
-    [Serializable]
-    public struct FeedUnreadable
-    {
-        public FeedUnreadable(Peal.FeedUnreadableEncoded value)
-        {
-            Value = value;
-        }
-
-        internal Peal.FeedUnreadableEncoded Value { get; set; }
-
-        public override string ToString() => Value.ToString() ?? "null";
-
-        public static implicit operator UnprocessableEntityErrorBody.FeedUnreadable(
-            Peal.FeedUnreadableEncoded value
-        ) => new(value);
-    }
-
-    /// <summary>
-    /// Discriminated union type for UnknownChannels
-    /// </summary>
-    [Serializable]
-    public struct UnknownChannels
-    {
-        public UnknownChannels(Peal.UnknownChannelsEncoded value)
-        {
-            Value = value;
-        }
-
-        internal Peal.UnknownChannelsEncoded Value { get; set; }
-
-        public override string ToString() => Value.ToString() ?? "null";
-
-        public static implicit operator UnprocessableEntityErrorBody.UnknownChannels(
-            Peal.UnknownChannelsEncoded value
+        public static implicit operator UnprocessableEntityErrorBody.AiModelRequired(
+            Peal.AiModelRequiredEncoded value
         ) => new(value);
     }
 }

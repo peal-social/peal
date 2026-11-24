@@ -9,10 +9,8 @@ class UnprocessableEntityErrorBody extends JsonSerializableType
 {
     /**
      * @var (
-     *    'FeedAddressRefused'
-     *   |'FeedTemplateInvalid'
-     *   |'FeedUnreadable'
-     *   |'UnknownChannels'
+     *    'AiCapabilityNotOffered'
+     *   |'AiModelRequired'
      *   |'_unknown'
      * ) $type
      */
@@ -20,10 +18,8 @@ class UnprocessableEntityErrorBody extends JsonSerializableType
 
     /**
      * @var (
-     *    FeedAddressRefusedEncoded
-     *   |FeedTemplateInvalidEncoded
-     *   |FeedUnreadableEncoded
-     *   |UnknownChannelsEncoded
+     *    AiCapabilityNotOfferedEncoded
+     *   |AiModelRequiredEncoded
      *   |mixed
      * ) $value
      */
@@ -32,17 +28,13 @@ class UnprocessableEntityErrorBody extends JsonSerializableType
     /**
      * @param array{
      *   type: (
-     *    'FeedAddressRefused'
-     *   |'FeedTemplateInvalid'
-     *   |'FeedUnreadable'
-     *   |'UnknownChannels'
+     *    'AiCapabilityNotOffered'
+     *   |'AiModelRequired'
      *   |'_unknown'
      * ),
      *   value: (
-     *    FeedAddressRefusedEncoded
-     *   |FeedTemplateInvalidEncoded
-     *   |FeedUnreadableEncoded
-     *   |UnknownChannelsEncoded
+     *    AiCapabilityNotOfferedEncoded
+     *   |AiModelRequiredEncoded
      *   |mixed
      * ),
      * } $values
@@ -55,69 +47,45 @@ class UnprocessableEntityErrorBody extends JsonSerializableType
     }
 
     /**
-     * @param FeedAddressRefusedEncoded $feedAddressRefused
+     * @param AiCapabilityNotOfferedEncoded $aiCapabilityNotOffered
      * @return UnprocessableEntityErrorBody
      */
-    public static function feedAddressRefused(FeedAddressRefusedEncoded $feedAddressRefused): UnprocessableEntityErrorBody
+    public static function aiCapabilityNotOffered(AiCapabilityNotOfferedEncoded $aiCapabilityNotOffered): UnprocessableEntityErrorBody
     {
         return new UnprocessableEntityErrorBody([
-            'type' => 'FeedAddressRefused',
-            'value' => $feedAddressRefused,
+            'type' => 'AiCapabilityNotOffered',
+            'value' => $aiCapabilityNotOffered,
         ]);
     }
 
     /**
-     * @param FeedTemplateInvalidEncoded $feedTemplateInvalid
+     * @param AiModelRequiredEncoded $aiModelRequired
      * @return UnprocessableEntityErrorBody
      */
-    public static function feedTemplateInvalid(FeedTemplateInvalidEncoded $feedTemplateInvalid): UnprocessableEntityErrorBody
+    public static function aiModelRequired(AiModelRequiredEncoded $aiModelRequired): UnprocessableEntityErrorBody
     {
         return new UnprocessableEntityErrorBody([
-            'type' => 'FeedTemplateInvalid',
-            'value' => $feedTemplateInvalid,
-        ]);
-    }
-
-    /**
-     * @param FeedUnreadableEncoded $feedUnreadable
-     * @return UnprocessableEntityErrorBody
-     */
-    public static function feedUnreadable(FeedUnreadableEncoded $feedUnreadable): UnprocessableEntityErrorBody
-    {
-        return new UnprocessableEntityErrorBody([
-            'type' => 'FeedUnreadable',
-            'value' => $feedUnreadable,
-        ]);
-    }
-
-    /**
-     * @param UnknownChannelsEncoded $unknownChannels
-     * @return UnprocessableEntityErrorBody
-     */
-    public static function unknownChannels(UnknownChannelsEncoded $unknownChannels): UnprocessableEntityErrorBody
-    {
-        return new UnprocessableEntityErrorBody([
-            'type' => 'UnknownChannels',
-            'value' => $unknownChannels,
+            'type' => 'AiModelRequired',
+            'value' => $aiModelRequired,
         ]);
     }
 
     /**
      * @return bool
      */
-    public function isFeedAddressRefused(): bool
+    public function isAiCapabilityNotOffered(): bool
     {
-        return $this->value instanceof FeedAddressRefusedEncoded && $this->type === 'FeedAddressRefused';
+        return $this->value instanceof AiCapabilityNotOfferedEncoded && $this->type === 'AiCapabilityNotOffered';
     }
 
     /**
-     * @return FeedAddressRefusedEncoded
+     * @return AiCapabilityNotOfferedEncoded
      */
-    public function asFeedAddressRefused(): FeedAddressRefusedEncoded
+    public function asAiCapabilityNotOffered(): AiCapabilityNotOfferedEncoded
     {
-        if (!($this->value instanceof FeedAddressRefusedEncoded && $this->type === 'FeedAddressRefused')) {
+        if (!($this->value instanceof AiCapabilityNotOfferedEncoded && $this->type === 'AiCapabilityNotOffered')) {
             throw new Exception(
-                "Expected FeedAddressRefused; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected AiCapabilityNotOffered; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -127,63 +95,19 @@ class UnprocessableEntityErrorBody extends JsonSerializableType
     /**
      * @return bool
      */
-    public function isFeedTemplateInvalid(): bool
+    public function isAiModelRequired(): bool
     {
-        return $this->value instanceof FeedTemplateInvalidEncoded && $this->type === 'FeedTemplateInvalid';
+        return $this->value instanceof AiModelRequiredEncoded && $this->type === 'AiModelRequired';
     }
 
     /**
-     * @return FeedTemplateInvalidEncoded
+     * @return AiModelRequiredEncoded
      */
-    public function asFeedTemplateInvalid(): FeedTemplateInvalidEncoded
+    public function asAiModelRequired(): AiModelRequiredEncoded
     {
-        if (!($this->value instanceof FeedTemplateInvalidEncoded && $this->type === 'FeedTemplateInvalid')) {
+        if (!($this->value instanceof AiModelRequiredEncoded && $this->type === 'AiModelRequired')) {
             throw new Exception(
-                "Expected FeedTemplateInvalid; got " . $this->type . " with value of type " . get_debug_type($this->value),
-            );
-        }
-
-        return $this->value;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isFeedUnreadable(): bool
-    {
-        return $this->value instanceof FeedUnreadableEncoded && $this->type === 'FeedUnreadable';
-    }
-
-    /**
-     * @return FeedUnreadableEncoded
-     */
-    public function asFeedUnreadable(): FeedUnreadableEncoded
-    {
-        if (!($this->value instanceof FeedUnreadableEncoded && $this->type === 'FeedUnreadable')) {
-            throw new Exception(
-                "Expected FeedUnreadable; got " . $this->type . " with value of type " . get_debug_type($this->value),
-            );
-        }
-
-        return $this->value;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isUnknownChannels(): bool
-    {
-        return $this->value instanceof UnknownChannelsEncoded && $this->type === 'UnknownChannels';
-    }
-
-    /**
-     * @return UnknownChannelsEncoded
-     */
-    public function asUnknownChannels(): UnknownChannelsEncoded
-    {
-        if (!($this->value instanceof UnknownChannelsEncoded && $this->type === 'UnknownChannels')) {
-            throw new Exception(
-                "Expected UnknownChannels; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected AiModelRequired; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -210,20 +134,12 @@ class UnprocessableEntityErrorBody extends JsonSerializableType
         $result = array_merge($base, $result);
 
         switch ($this->type) {
-            case 'FeedAddressRefused':
-                $value = $this->asFeedAddressRefused()->jsonSerialize();
+            case 'AiCapabilityNotOffered':
+                $value = $this->asAiCapabilityNotOffered()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
-            case 'FeedTemplateInvalid':
-                $value = $this->asFeedTemplateInvalid()->jsonSerialize();
-                $result = array_merge($value, $result);
-                break;
-            case 'FeedUnreadable':
-                $value = $this->asFeedUnreadable()->jsonSerialize();
-                $result = array_merge($value, $result);
-                break;
-            case 'UnknownChannels':
-                $value = $this->asUnknownChannels()->jsonSerialize();
+            case 'AiModelRequired':
+                $value = $this->asAiModelRequired()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -262,17 +178,11 @@ class UnprocessableEntityErrorBody extends JsonSerializableType
 
         $args['type'] = $type;
         switch ($type) {
-            case 'FeedAddressRefused':
-                $args['value'] = FeedAddressRefusedEncoded::jsonDeserialize($data);
+            case 'AiCapabilityNotOffered':
+                $args['value'] = AiCapabilityNotOfferedEncoded::jsonDeserialize($data);
                 break;
-            case 'FeedTemplateInvalid':
-                $args['value'] = FeedTemplateInvalidEncoded::jsonDeserialize($data);
-                break;
-            case 'FeedUnreadable':
-                $args['value'] = FeedUnreadableEncoded::jsonDeserialize($data);
-                break;
-            case 'UnknownChannels':
-                $args['value'] = UnknownChannelsEncoded::jsonDeserialize($data);
+            case 'AiModelRequired':
+                $args['value'] = AiModelRequiredEncoded::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

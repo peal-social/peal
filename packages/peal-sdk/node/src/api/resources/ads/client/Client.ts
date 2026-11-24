@@ -17,6 +17,9 @@ export declare namespace AdsClient {
     }
 }
 
+/**
+ * Connect ad accounts, read how ads did, and boost posts.
+ */
 export class AdsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<AdsClient.Options>;
 

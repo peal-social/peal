@@ -1,7 +1,16 @@
+using Peal.Channels;
+
 namespace Peal;
 
 public partial interface IChannelsClient
 {
+    public ICapabilitiesClient Capabilities { get; }
+    public IDefaultOptionsClient DefaultOptions { get; }
+    public ILookupsClient Lookups { get; }
+    public ISetsClient Sets { get; }
+    public IConnectLinksClient ConnectLinks { get; }
+    public ITiktokCreatorClient TiktokCreator { get; }
+
     /// <summary>
     /// Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
     /// </summary>

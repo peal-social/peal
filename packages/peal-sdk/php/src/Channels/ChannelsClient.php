@@ -2,6 +2,12 @@
 
 namespace Peal\Channels;
 
+use Peal\Channels\Capabilities\CapabilitiesClient;
+use Peal\Channels\DefaultOptions\DefaultOptionsClient;
+use Peal\Channels\Lookups\LookupsClient;
+use Peal\Channels\Sets\SetsClient;
+use Peal\Channels\ConnectLinks\ConnectLinksClient;
+use Peal\Channels\TiktokCreator\TiktokCreatorClient;
 use Psr\Http\Client\ClientInterface;
 use Peal\Core\Client\RawClient;
 use Peal\Types\Channel;
@@ -34,6 +40,36 @@ use Peal\Channels\Requests\ChannelUpdate;
 class ChannelsClient
 {
     /**
+     * @var CapabilitiesClient $capabilities
+     */
+    public CapabilitiesClient $capabilities;
+
+    /**
+     * @var DefaultOptionsClient $defaultOptions
+     */
+    public DefaultOptionsClient $defaultOptions;
+
+    /**
+     * @var LookupsClient $lookups
+     */
+    public LookupsClient $lookups;
+
+    /**
+     * @var SetsClient $sets
+     */
+    public SetsClient $sets;
+
+    /**
+     * @var ConnectLinksClient $connectLinks
+     */
+    public ConnectLinksClient $connectLinks;
+
+    /**
+     * @var TiktokCreatorClient $tiktokCreator
+     */
+    public TiktokCreatorClient $tiktokCreator;
+
+    /**
      * @var array{
      *   baseUrl?: string,
      *   client?: ClientInterface,
@@ -65,6 +101,12 @@ class ChannelsClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+        $this->capabilities = new CapabilitiesClient($this->client, $this->options);
+        $this->defaultOptions = new DefaultOptionsClient($this->client, $this->options);
+        $this->lookups = new LookupsClient($this->client, $this->options);
+        $this->sets = new SetsClient($this->client, $this->options);
+        $this->connectLinks = new ConnectLinksClient($this->client, $this->options);
+        $this->tiktokCreator = new TiktokCreatorClient($this->client, $this->options);
     }
 
     /**

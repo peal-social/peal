@@ -11,7 +11,7 @@ pub struct ListConversationsQueryRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub unread: Option<ListConversationsInboxMessagesRequestUnread>,
+    pub unread: Option<ListConversationsMessagesRequestUnread>,
 }
 
 impl ListConversationsQueryRequest {
@@ -26,7 +26,7 @@ pub struct ListConversationsQueryRequestBuilder {
     channel_id: Option<String>,
     cursor: Option<String>,
     limit: Option<String>,
-    unread: Option<ListConversationsInboxMessagesRequestUnread>,
+    unread: Option<ListConversationsMessagesRequestUnread>,
 }
 
 impl ListConversationsQueryRequestBuilder {
@@ -45,7 +45,7 @@ impl ListConversationsQueryRequestBuilder {
         self
     }
 
-    pub fn unread(mut self, value: ListConversationsInboxMessagesRequestUnread) -> Self {
+    pub fn unread(mut self, value: ListConversationsMessagesRequestUnread) -> Self {
         self.unread = Some(value);
         self
     }

@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+module Peal
+  module Posts
+    module Drafts
+      module Types
+        class DeleteDraftsRequest < Internal::Types::Model
+          field :post_id, -> { String }, optional: false, nullable: false, api_name: "postId"
+        end
+      end
+    end
+  end
+end

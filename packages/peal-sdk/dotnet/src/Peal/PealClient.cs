@@ -1,4 +1,7 @@
+using Peal.Automations;
 using Peal.Core;
+using Peal.Inbox;
+using Peal.Workspace;
 
 namespace Peal;
 
@@ -45,134 +48,56 @@ public partial class PealClient : IPealClient
             clientOptionsWithAuth.Headers["Peal-Workspace"] = workspace;
         }
         _client = new RawClient(clientOptionsWithAuth);
-        System = new SystemClient(_client);
-        Session = new SessionClient(_client);
-        Credential = new CredentialClient(_client);
-        ApiKeys = new ApiKeysClient(_client);
-        Channels = new ChannelsClient(_client);
         Posts = new PostsClient(_client);
-        Articles = new ArticlesClient(_client);
+        Approvals = new ApprovalsClient(_client);
+        Channels = new ChannelsClient(_client);
         Media = new MediaClient(_client);
-        MediaAudio = new MediaAudioClient(_client);
-        Notices = new NoticesClient(_client);
-        NotificationPreferences = new NotificationPreferencesClient(_client);
-        Assistant = new AssistantClient(_client);
-        VideoGenerations = new VideoGenerationsClient(_client);
-        Slideshows = new SlideshowsClient(_client);
-        Members = new MembersClient(_client);
-        Invitations = new InvitationsClient(_client);
-        Billing = new BillingClient(_client);
-        Usage = new UsageClient(_client);
         Analytics = new AnalyticsClient(_client);
-        Tiktok = new TiktokClient(_client);
-        Capabilities = new CapabilitiesClient(_client);
-        Lookups = new LookupsClient(_client);
-        Webhooks = new WebhooksClient(_client);
-        Inbox = new InboxClient(_client);
-        InboxReviews = new InboxReviewsClient(_client);
-        InboxMessages = new InboxMessagesClient(_client);
         Ads = new AdsClient(_client);
-        Activity = new ActivityClient(_client);
+        Articles = new ArticlesClient(_client);
+        Links = new LinksClient(_client);
+        Webhooks = new WebhooksClient(_client);
+        Assistant = new AssistantClient(_client);
         Partner = new PartnerClient(_client);
-        PartnerUsage = new PartnerUsageClient(_client);
-        PartnerAccount = new PartnerAccountClient(_client);
-        ConnectLinks = new ConnectLinksClient(_client);
-        Review = new ReviewClient(_client);
-        Tags = new TagsClient(_client);
-        Signatures = new SignaturesClient(_client);
-        ChannelSets = new ChannelSetsClient(_client);
-        Queues = new QueuesClient(_client);
-        Recycling = new RecyclingClient(_client);
-        FollowUps = new FollowUpsClient(_client);
-        InboxRules = new InboxRulesClient(_client);
-        Feeds = new FeedsClient(_client);
-        ChannelDefaults = new ChannelDefaultsClient(_client);
-        ShortLinks = new ShortLinksClient(_client);
+        Me = new MeClient(_client);
+        Credential = new CredentialClient(_client);
+        System = new SystemClient(_client);
+        Automations = new AutomationsClient(_client);
+        Inbox = new InboxClient(_client);
+        Workspace = new WorkspaceClient(_client);
     }
-
-    public ISystemClient System { get; }
-
-    public ISessionClient Session { get; }
-
-    public ICredentialClient Credential { get; }
-
-    public IApiKeysClient ApiKeys { get; }
-
-    public IChannelsClient Channels { get; }
 
     public IPostsClient Posts { get; }
 
-    public IArticlesClient Articles { get; }
+    public IApprovalsClient Approvals { get; }
+
+    public IChannelsClient Channels { get; }
 
     public IMediaClient Media { get; }
 
-    public IMediaAudioClient MediaAudio { get; }
-
-    public INoticesClient Notices { get; }
-
-    public INotificationPreferencesClient NotificationPreferences { get; }
-
-    public IAssistantClient Assistant { get; }
-
-    public IVideoGenerationsClient VideoGenerations { get; }
-
-    public ISlideshowsClient Slideshows { get; }
-
-    public IMembersClient Members { get; }
-
-    public IInvitationsClient Invitations { get; }
-
-    public IBillingClient Billing { get; }
-
-    public IUsageClient Usage { get; }
-
     public IAnalyticsClient Analytics { get; }
-
-    public ITiktokClient Tiktok { get; }
-
-    public ICapabilitiesClient Capabilities { get; }
-
-    public ILookupsClient Lookups { get; }
-
-    public IWebhooksClient Webhooks { get; }
-
-    public IInboxClient Inbox { get; }
-
-    public IInboxReviewsClient InboxReviews { get; }
-
-    public IInboxMessagesClient InboxMessages { get; }
 
     public IAdsClient Ads { get; }
 
-    public IActivityClient Activity { get; }
+    public IArticlesClient Articles { get; }
+
+    public ILinksClient Links { get; }
+
+    public IWebhooksClient Webhooks { get; }
+
+    public IAssistantClient Assistant { get; }
 
     public IPartnerClient Partner { get; }
 
-    public IPartnerUsageClient PartnerUsage { get; }
+    public IMeClient Me { get; }
 
-    public IPartnerAccountClient PartnerAccount { get; }
+    public ICredentialClient Credential { get; }
 
-    public IConnectLinksClient ConnectLinks { get; }
+    public ISystemClient System { get; }
 
-    public IReviewClient Review { get; }
+    public IAutomationsClient Automations { get; }
 
-    public ITagsClient Tags { get; }
+    public IInboxClient Inbox { get; }
 
-    public ISignaturesClient Signatures { get; }
-
-    public IChannelSetsClient ChannelSets { get; }
-
-    public IQueuesClient Queues { get; }
-
-    public IRecyclingClient Recycling { get; }
-
-    public IFollowUpsClient FollowUps { get; }
-
-    public IInboxRulesClient InboxRules { get; }
-
-    public IFeedsClient Feeds { get; }
-
-    public IChannelDefaultsClient ChannelDefaults { get; }
-
-    public IShortLinksClient ShortLinks { get; }
+    public IWorkspaceClient Workspace { get; }
 }

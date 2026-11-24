@@ -4,14 +4,14 @@ import * as Peal from "../index.js";
 
 export type BadRequestErrorBody = 
     | Peal.BadRequestErrorBody.InvalidDateRange
-    | Peal.BadRequestErrorBody.WorkspaceRequired;
+    | Peal.BadRequestErrorBody.BadRequest;
 
 export namespace BadRequestErrorBody {
     export interface InvalidDateRange extends Peal.InvalidDateRangeEncoded {
         _tag: "InvalidDateRange";
     }
 
-    export interface WorkspaceRequired extends Peal.WorkspaceRequiredEncoded {
-        _tag: "WorkspaceRequired";
+    export interface BadRequest extends Peal.EffectHttpApiErrorBadRequestEncoded {
+        _tag: "BadRequest";
     }
 }

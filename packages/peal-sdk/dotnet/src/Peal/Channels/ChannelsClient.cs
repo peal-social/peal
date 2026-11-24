@@ -1,4 +1,5 @@
 using global::System.Text.Json;
+using Peal.Channels;
 using Peal.Core;
 
 namespace Peal;
@@ -10,7 +11,25 @@ public partial class ChannelsClient : IChannelsClient
     internal ChannelsClient(RawClient client)
     {
         _client = client;
+        Capabilities = new CapabilitiesClient(_client);
+        DefaultOptions = new DefaultOptionsClient(_client);
+        Lookups = new LookupsClient(_client);
+        Sets = new SetsClient(_client);
+        ConnectLinks = new ConnectLinksClient(_client);
+        TiktokCreator = new TiktokCreatorClient(_client);
     }
+
+    public ICapabilitiesClient Capabilities { get; }
+
+    public IDefaultOptionsClient DefaultOptions { get; }
+
+    public ILookupsClient Lookups { get; }
+
+    public ISetsClient Sets { get; }
+
+    public IConnectLinksClient ConnectLinks { get; }
+
+    public ITiktokCreatorClient TiktokCreator { get; }
 
     private async Task<WithRawResponse<IEnumerable<Channel>>> ListAsyncCore(
         RequestOptions? options = null,

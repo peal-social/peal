@@ -1,48 +1,26 @@
+using Peal.Automations;
+using Peal.Inbox;
+using Peal.Workspace;
+
 namespace Peal;
 
 public partial interface IPealClient
 {
-    public ISystemClient System { get; }
-    public ISessionClient Session { get; }
-    public ICredentialClient Credential { get; }
-    public IApiKeysClient ApiKeys { get; }
-    public IChannelsClient Channels { get; }
     public IPostsClient Posts { get; }
-    public IArticlesClient Articles { get; }
+    public IApprovalsClient Approvals { get; }
+    public IChannelsClient Channels { get; }
     public IMediaClient Media { get; }
-    public IMediaAudioClient MediaAudio { get; }
-    public INoticesClient Notices { get; }
-    public INotificationPreferencesClient NotificationPreferences { get; }
-    public IAssistantClient Assistant { get; }
-    public IVideoGenerationsClient VideoGenerations { get; }
-    public ISlideshowsClient Slideshows { get; }
-    public IMembersClient Members { get; }
-    public IInvitationsClient Invitations { get; }
-    public IBillingClient Billing { get; }
-    public IUsageClient Usage { get; }
     public IAnalyticsClient Analytics { get; }
-    public ITiktokClient Tiktok { get; }
-    public ICapabilitiesClient Capabilities { get; }
-    public ILookupsClient Lookups { get; }
-    public IWebhooksClient Webhooks { get; }
-    public IInboxClient Inbox { get; }
-    public IInboxReviewsClient InboxReviews { get; }
-    public IInboxMessagesClient InboxMessages { get; }
     public IAdsClient Ads { get; }
-    public IActivityClient Activity { get; }
+    public IArticlesClient Articles { get; }
+    public ILinksClient Links { get; }
+    public IWebhooksClient Webhooks { get; }
+    public IAssistantClient Assistant { get; }
     public IPartnerClient Partner { get; }
-    public IPartnerUsageClient PartnerUsage { get; }
-    public IPartnerAccountClient PartnerAccount { get; }
-    public IConnectLinksClient ConnectLinks { get; }
-    public IReviewClient Review { get; }
-    public ITagsClient Tags { get; }
-    public ISignaturesClient Signatures { get; }
-    public IChannelSetsClient ChannelSets { get; }
-    public IQueuesClient Queues { get; }
-    public IRecyclingClient Recycling { get; }
-    public IFollowUpsClient FollowUps { get; }
-    public IInboxRulesClient InboxRules { get; }
-    public IFeedsClient Feeds { get; }
-    public IChannelDefaultsClient ChannelDefaults { get; }
-    public IShortLinksClient ShortLinks { get; }
+    public IMeClient Me { get; }
+    public ICredentialClient Credential { get; }
+    public ISystemClient System { get; }
+    public IAutomationsClient Automations { get; }
+    public IInboxClient Inbox { get; }
+    public IWorkspaceClient Workspace { get; }
 }

@@ -22,7 +22,6 @@ from ..errors.unprocessable_entity_error import UnprocessableEntityError
 from ..types.bulk_post import BulkPost
 from ..types.bulk_result import BulkResult
 from ..types.channel_options import ChannelOptions
-from ..types.draft_page import DraftPage
 from ..types.import_result import ImportResult
 from ..types.live_post_change import LivePostChange
 from ..types.live_post_changes import LivePostChanges
@@ -40,7 +39,7 @@ from ..types.post_validation import PostValidation
 from ..types.publication_attempt import PublicationAttempt
 from ..types.target_confirmation import TargetConfirmation
 from ..types.unauthenticated_encoded import UnauthenticatedEncoded
-from .types.search_posts_request_removed import SearchPostsRequestRemoved
+from .types.list_posts_request_removed import ListPostsRequestRemoved
 from pydantic import ValidationError
 
 # this is used as the default value for optional parameters
@@ -51,114 +50,7 @@ class RawPostsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def drafts(
-        self,
-        *,
-        cursor: typing.Optional[str] = None,
-        limit: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[DraftPage]:
-        """
-        Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Needs post:read.
-
-        Parameters
-        ----------
-        cursor : typing.Optional[str]
-
-        limit : typing.Optional[str]
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        HttpResponse[DraftPage]
-            DraftPage
-        """
-        _response = self._client_wrapper.httpx_client.request(
-            "api/v1/posts/drafts",
-            method="GET",
-            params={
-                "cursor": cursor,
-                "limit": limit,
-            },
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    DraftPage,
-                    parse_obj_as(
-                        type_=DraftPage,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return HttpResponse(response=_response, data=_data)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        UnauthenticatedEncoded,
-                        parse_obj_as(
-                            type_=UnauthenticatedEncoded,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 404:
-                raise NotFoundError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    def list(
+    def calendar(
         self, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[Post]]:
         """
@@ -179,7 +71,7 @@ class RawPostsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            "api/v1/posts",
+            "api/v1/posts/calendar",
             method="GET",
             params={
                 "from": from_,
@@ -261,157 +153,7 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def create(
-        self,
-        *,
-        channel_ids: typing.Sequence[str],
-        content: PostContent,
-        channel_sets: typing.Optional[typing.Sequence[str]] = OMIT,
-        default_signatures: typing.Optional[bool] = OMIT,
-        options: typing.Optional[typing.Sequence[ChannelOptions]] = OMIT,
-        shorten_links: typing.Optional[bool] = OMIT,
-        signature_id: typing.Optional[str] = OMIT,
-        tag_ids: typing.Optional[typing.Sequence[str]] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[Post]:
-        """
-        Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (`TargetOptions`, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (`channelSets`, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (`warnings`). A channel on which it gives no options takes the channel's default options, if it has some. With `defaultSignatures`, each channel's default signature goes under its text, and `signatureId` puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. `shortenLinks: true` sends its links shortened where the server has short links (`shortLinks.status`), `false` as written; left out, the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
-
-        Parameters
-        ----------
-        channel_ids : typing.Sequence[str]
-
-        content : PostContent
-
-        channel_sets : typing.Optional[typing.Sequence[str]]
-
-        default_signatures : typing.Optional[bool]
-
-        options : typing.Optional[typing.Sequence[ChannelOptions]]
-
-        shorten_links : typing.Optional[bool]
-
-        signature_id : typing.Optional[str]
-
-        tag_ids : typing.Optional[typing.Sequence[str]]
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        HttpResponse[Post]
-            Post
-        """
-        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
-            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
-        )
-        _response = self._client_wrapper.httpx_client.request(
-            "api/v1/posts",
-            method="POST",
-            json={
-                "channelIds": channel_ids,
-                "channelSets": channel_sets,
-                "content": convert_and_respect_annotation_metadata(
-                    object_=content, annotation=PostContent, direction="write"
-                ),
-                "defaultSignatures": default_signatures,
-                "options": convert_and_respect_annotation_metadata(
-                    object_=options, annotation=typing.Sequence[ChannelOptions], direction="write"
-                ),
-                "shortenLinks": shorten_links,
-                "signatureId": signature_id,
-                "tagIds": tag_ids,
-            },
-            request_options=_request_options_with_retries_disabled,
-            omit=OMIT,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    Post,
-                    parse_obj_as(
-                        type_=Post,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return HttpResponse(response=_response, data=_data)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        UnauthenticatedEncoded,
-                        parse_obj_as(
-                            type_=UnauthenticatedEncoded,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 404:
-                raise NotFoundError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 422:
-                raise UnprocessableEntityError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    def search(
+    def list(
         self,
         *,
         author_id: typing.Optional[str] = None,
@@ -424,7 +166,7 @@ class RawPostsClient:
         platform: typing.Optional[Platform] = None,
         queue_id: typing.Optional[str] = None,
         recycling_id: typing.Optional[str] = None,
-        removed: typing.Optional[SearchPostsRequestRemoved] = None,
+        removed: typing.Optional[ListPostsRequestRemoved] = None,
         sort: typing.Optional[PostSort] = None,
         status: typing.Optional[PostStatus] = None,
         tag_id: typing.Optional[str] = None,
@@ -456,7 +198,7 @@ class RawPostsClient:
 
         recycling_id : typing.Optional[str]
 
-        removed : typing.Optional[SearchPostsRequestRemoved]
+        removed : typing.Optional[ListPostsRequestRemoved]
 
         sort : typing.Optional[PostSort]
 
@@ -475,7 +217,7 @@ class RawPostsClient:
             PostPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            "api/v1/posts/search",
+            "api/v1/posts",
             method="GET",
             params={
                 "authorId": author_id,
@@ -570,7 +312,7 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def send(
+    def create(
         self,
         *,
         channel_ids: typing.Sequence[str],
@@ -628,7 +370,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            "api/v1/posts/send",
+            "api/v1/posts",
             method="POST",
             params={
                 "wait": wait,
@@ -1413,104 +1155,6 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def discard(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
-        """
-        Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-
-        Parameters
-        ----------
-        post_id : str
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        HttpResponse[None]
-        """
-        _response = self._client_wrapper.httpx_client.request(
-            f"api/v1/posts/{encode_path_param(post_id)}",
-            method="DELETE",
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                return HttpResponse(response=_response, data=None)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        UnauthenticatedEncoded,
-                        parse_obj_as(
-                            type_=UnauthenticatedEncoded,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 404:
-                raise NotFoundError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 409:
-                raise ConflictError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
     def outcome(
         self,
         post_id: str,
@@ -1714,7 +1358,7 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def tag(
+    def set_tags(
         self, post_id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Post]:
         """
@@ -3545,114 +3189,7 @@ class AsyncRawPostsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def drafts(
-        self,
-        *,
-        cursor: typing.Optional[str] = None,
-        limit: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[DraftPage]:
-        """
-        Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Needs post:read.
-
-        Parameters
-        ----------
-        cursor : typing.Optional[str]
-
-        limit : typing.Optional[str]
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        AsyncHttpResponse[DraftPage]
-            DraftPage
-        """
-        _response = await self._client_wrapper.httpx_client.request(
-            "api/v1/posts/drafts",
-            method="GET",
-            params={
-                "cursor": cursor,
-                "limit": limit,
-            },
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    DraftPage,
-                    parse_obj_as(
-                        type_=DraftPage,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return AsyncHttpResponse(response=_response, data=_data)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        UnauthenticatedEncoded,
-                        parse_obj_as(
-                            type_=UnauthenticatedEncoded,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 404:
-                raise NotFoundError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    async def list(
+    async def calendar(
         self, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[Post]]:
         """
@@ -3673,7 +3210,7 @@ class AsyncRawPostsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "api/v1/posts",
+            "api/v1/posts/calendar",
             method="GET",
             params={
                 "from": from_,
@@ -3755,157 +3292,7 @@ class AsyncRawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def create(
-        self,
-        *,
-        channel_ids: typing.Sequence[str],
-        content: PostContent,
-        channel_sets: typing.Optional[typing.Sequence[str]] = OMIT,
-        default_signatures: typing.Optional[bool] = OMIT,
-        options: typing.Optional[typing.Sequence[ChannelOptions]] = OMIT,
-        shorten_links: typing.Optional[bool] = OMIT,
-        signature_id: typing.Optional[str] = OMIT,
-        tag_ids: typing.Optional[typing.Sequence[str]] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[Post]:
-        """
-        Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (`TargetOptions`, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (`channelSets`, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (`warnings`). A channel on which it gives no options takes the channel's default options, if it has some. With `defaultSignatures`, each channel's default signature goes under its text, and `signatureId` puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. `shortenLinks: true` sends its links shortened where the server has short links (`shortLinks.status`), `false` as written; left out, the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
-
-        Parameters
-        ----------
-        channel_ids : typing.Sequence[str]
-
-        content : PostContent
-
-        channel_sets : typing.Optional[typing.Sequence[str]]
-
-        default_signatures : typing.Optional[bool]
-
-        options : typing.Optional[typing.Sequence[ChannelOptions]]
-
-        shorten_links : typing.Optional[bool]
-
-        signature_id : typing.Optional[str]
-
-        tag_ids : typing.Optional[typing.Sequence[str]]
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        AsyncHttpResponse[Post]
-            Post
-        """
-        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (
-            {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
-        )
-        _response = await self._client_wrapper.httpx_client.request(
-            "api/v1/posts",
-            method="POST",
-            json={
-                "channelIds": channel_ids,
-                "channelSets": channel_sets,
-                "content": convert_and_respect_annotation_metadata(
-                    object_=content, annotation=PostContent, direction="write"
-                ),
-                "defaultSignatures": default_signatures,
-                "options": convert_and_respect_annotation_metadata(
-                    object_=options, annotation=typing.Sequence[ChannelOptions], direction="write"
-                ),
-                "shortenLinks": shorten_links,
-                "signatureId": signature_id,
-                "tagIds": tag_ids,
-            },
-            request_options=_request_options_with_retries_disabled,
-            omit=OMIT,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                _data = typing.cast(
-                    Post,
-                    parse_obj_as(
-                        type_=Post,  # type: ignore
-                        object_=_response.json(),
-                    ),
-                )
-                return AsyncHttpResponse(response=_response, data=_data)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        UnauthenticatedEncoded,
-                        parse_obj_as(
-                            type_=UnauthenticatedEncoded,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 404:
-                raise NotFoundError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 422:
-                raise UnprocessableEntityError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
-    async def search(
+    async def list(
         self,
         *,
         author_id: typing.Optional[str] = None,
@@ -3918,7 +3305,7 @@ class AsyncRawPostsClient:
         platform: typing.Optional[Platform] = None,
         queue_id: typing.Optional[str] = None,
         recycling_id: typing.Optional[str] = None,
-        removed: typing.Optional[SearchPostsRequestRemoved] = None,
+        removed: typing.Optional[ListPostsRequestRemoved] = None,
         sort: typing.Optional[PostSort] = None,
         status: typing.Optional[PostStatus] = None,
         tag_id: typing.Optional[str] = None,
@@ -3950,7 +3337,7 @@ class AsyncRawPostsClient:
 
         recycling_id : typing.Optional[str]
 
-        removed : typing.Optional[SearchPostsRequestRemoved]
+        removed : typing.Optional[ListPostsRequestRemoved]
 
         sort : typing.Optional[PostSort]
 
@@ -3969,7 +3356,7 @@ class AsyncRawPostsClient:
             PostPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "api/v1/posts/search",
+            "api/v1/posts",
             method="GET",
             params={
                 "authorId": author_id,
@@ -4064,7 +3451,7 @@ class AsyncRawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def send(
+    async def create(
         self,
         *,
         channel_ids: typing.Sequence[str],
@@ -4122,7 +3509,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            "api/v1/posts/send",
+            "api/v1/posts",
             method="POST",
             params={
                 "wait": wait,
@@ -4909,106 +4296,6 @@ class AsyncRawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def discard(
-        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[None]:
-        """
-        Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-
-        Parameters
-        ----------
-        post_id : str
-
-        request_options : typing.Optional[RequestOptions]
-            Request-specific configuration.
-
-        Returns
-        -------
-        AsyncHttpResponse[None]
-        """
-        _response = await self._client_wrapper.httpx_client.request(
-            f"api/v1/posts/{encode_path_param(post_id)}",
-            method="DELETE",
-            request_options=request_options,
-        )
-        try:
-            if 200 <= _response.status_code < 300:
-                return AsyncHttpResponse(response=_response, data=None)
-            if _response.status_code == 400:
-                raise BadRequestError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 401:
-                raise UnauthorizedError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        UnauthenticatedEncoded,
-                        parse_obj_as(
-                            type_=UnauthenticatedEncoded,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 403:
-                raise ForbiddenError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 404:
-                raise NotFoundError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 409:
-                raise ConflictError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            if _response.status_code == 429:
-                raise TooManyRequestsError(
-                    headers=dict(_response.headers),
-                    body=typing.cast(
-                        typing.Any,
-                        parse_obj_as(
-                            type_=typing.Any,  # type: ignore
-                            object_=_response.json(),
-                        ),
-                    ),
-                )
-            _response_json = _response.json()
-        except JSONDecodeError:
-            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
-        except ValidationError as e:
-            raise ParsingError(
-                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
-            )
-        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
-
     async def outcome(
         self,
         post_id: str,
@@ -5212,7 +4499,7 @@ class AsyncRawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def tag(
+    async def set_tags(
         self, post_id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """

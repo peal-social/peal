@@ -1,5 +1,6 @@
 using global::System.Text.Json;
 using Peal.Core;
+using Peal.Media_;
 
 namespace Peal;
 
@@ -10,7 +11,22 @@ public partial class MediaClient : IMediaClient
     internal MediaClient(RawClient client)
     {
         _client = client;
+        Images = new ImagesClient(_client);
+        Voiceovers = new VoiceoversClient(_client);
+        Transcriptions = new TranscriptionsClient(_client);
+        Videos = new VideosClient(_client);
+        Slideshows = new SlideshowsClient(_client);
     }
+
+    public IImagesClient Images { get; }
+
+    public IVoiceoversClient Voiceovers { get; }
+
+    public ITranscriptionsClient Transcriptions { get; }
+
+    public IVideosClient Videos { get; }
+
+    public ISlideshowsClient Slideshows { get; }
 
     private async Task<WithRawResponse<MediaPage>> ListAsyncCore(
         ListMediaRequest request,

@@ -6,8 +6,8 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .search_posts_request_removed import SearchPostsRequestRemoved
-_dynamic_imports: typing.Dict[str, str] = {"SearchPostsRequestRemoved": ".search_posts_request_removed"}
+    from .list_posts_request_removed import ListPostsRequestRemoved
+_dynamic_imports: typing.Dict[str, str] = {"ListPostsRequestRemoved": ".list_posts_request_removed"}
 
 
 def __getattr__(attr_name: str) -> typing.Any:
@@ -31,4 +31,4 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["SearchPostsRequestRemoved"]
+__all__ = ["ListPostsRequestRemoved"]

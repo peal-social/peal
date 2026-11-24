@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+module Peal
+  module Media
+    module Transcriptions
+      module Types
+        class TranscriptionRequest < Internal::Types::Model
+          field :media_id, -> { String }, optional: false, nullable: false, api_name: "mediaId"
+
+          field :save_as_description, -> { Internal::Types::Boolean }, optional: true, nullable: false, api_name: "saveAsDescription"
+        end
+      end
+    end
+  end
+end

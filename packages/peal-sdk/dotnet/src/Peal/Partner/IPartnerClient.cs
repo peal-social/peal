@@ -1,11 +1,16 @@
+using Peal.Partner_;
+
 namespace Peal;
 
 public partial interface IPartnerClient
 {
+    public IAccountClient Account { get; }
+    public ICustomerUsageClient CustomerUsage { get; }
+
     /// <summary>
     /// The partner account the key belongs to, with what it holds: the workspaces it owns and the channels connected across them and its home workspace, now and at the end of each of the last 35 days (UTC). Takes a partner key (`Authorization: Bearer peal_partner_…`): any other credential answers 403.
     /// </summary>
-    WithRawResponseTask<PartnerOverview> AccountAsync(
+    WithRawResponseTask<PartnerOverview> GetAsync(
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

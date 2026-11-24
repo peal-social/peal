@@ -26,16 +26,24 @@ public final class TooManyRequestsErrorBody {
         return value.visit(visitor);
     }
 
-    public static TooManyRequestsErrorBody feedReadsLimited(FeedReadsLimitedEncoded value) {
-        return new TooManyRequestsErrorBody(new FeedReadsLimitedValue(value));
+    public static TooManyRequestsErrorBody ownTextLimitReached(OwnTextLimitReachedEncoded value) {
+        return new TooManyRequestsErrorBody(new OwnTextLimitReachedValue(value));
+    }
+
+    public static TooManyRequestsErrorBody textProviderBusy(TextProviderBusyEncoded value) {
+        return new TooManyRequestsErrorBody(new TextProviderBusyValue(value));
     }
 
     public static TooManyRequestsErrorBody tooManyRequests(TooManyRequestsEncoded value) {
         return new TooManyRequestsErrorBody(new TooManyRequestsValue(value));
     }
 
-    public boolean isFeedReadsLimited() {
-        return value instanceof FeedReadsLimitedValue;
+    public boolean isOwnTextLimitReached() {
+        return value instanceof OwnTextLimitReachedValue;
+    }
+
+    public boolean isTextProviderBusy() {
+        return value instanceof TextProviderBusyValue;
     }
 
     public boolean isTooManyRequests() {
@@ -46,9 +54,16 @@ public final class TooManyRequestsErrorBody {
         return value instanceof _UnknownValue;
     }
 
-    public Optional<FeedReadsLimitedEncoded> getFeedReadsLimited() {
-        if (isFeedReadsLimited()) {
-            return Optional.of(((FeedReadsLimitedValue) value).value);
+    public Optional<OwnTextLimitReachedEncoded> getOwnTextLimitReached() {
+        if (isOwnTextLimitReached()) {
+            return Optional.of(((OwnTextLimitReachedValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<TextProviderBusyEncoded> getTextProviderBusy() {
+        if (isTextProviderBusy()) {
+            return Optional.of(((TextProviderBusyValue) value).value);
         }
         return Optional.empty();
     }
@@ -89,7 +104,9 @@ public final class TooManyRequestsErrorBody {
     }
 
     public interface Visitor<T> {
-        T visitFeedReadsLimited(FeedReadsLimitedEncoded feedReadsLimited);
+        T visitOwnTextLimitReached(OwnTextLimitReachedEncoded ownTextLimitReached);
+
+        T visitTextProviderBusy(TextProviderBusyEncoded textProviderBusy);
 
         T visitTooManyRequests(TooManyRequestsEncoded tooManyRequests);
 
@@ -97,38 +114,82 @@ public final class TooManyRequestsErrorBody {
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_tag", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({@JsonSubTypes.Type(FeedReadsLimitedValue.class), @JsonSubTypes.Type(TooManyRequestsValue.class)})
+    @JsonSubTypes({
+        @JsonSubTypes.Type(OwnTextLimitReachedValue.class),
+        @JsonSubTypes.Type(TextProviderBusyValue.class),
+        @JsonSubTypes.Type(TooManyRequestsValue.class)
+    })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
         <T> T visit(Visitor<T> visitor);
     }
 
-    @JsonTypeName("FeedReadsLimited")
+    @JsonTypeName("OwnTextLimitReached")
     @JsonIgnoreProperties("_tag")
-    private static final class FeedReadsLimitedValue implements Value {
+    private static final class OwnTextLimitReachedValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private FeedReadsLimitedEncoded value;
+        private OwnTextLimitReachedEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private FeedReadsLimitedValue() {}
+        private OwnTextLimitReachedValue() {}
 
-        private FeedReadsLimitedValue(FeedReadsLimitedEncoded value) {
+        private OwnTextLimitReachedValue(OwnTextLimitReachedEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitFeedReadsLimited(value);
+            return visitor.visitOwnTextLimitReached(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof FeedReadsLimitedValue && equalTo((FeedReadsLimitedValue) other);
+            return other instanceof OwnTextLimitReachedValue && equalTo((OwnTextLimitReachedValue) other);
         }
 
-        private boolean equalTo(FeedReadsLimitedValue other) {
+        private boolean equalTo(OwnTextLimitReachedValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "TooManyRequestsErrorBody{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("TextProviderBusy")
+    @JsonIgnoreProperties("_tag")
+    private static final class TextProviderBusyValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private TextProviderBusyEncoded value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private TextProviderBusyValue() {}
+
+        private TextProviderBusyValue(TextProviderBusyEncoded value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitTextProviderBusy(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof TextProviderBusyValue && equalTo((TextProviderBusyValue) other);
+        }
+
+        private boolean equalTo(TextProviderBusyValue other) {
             return value.equals(other.value);
         }
 

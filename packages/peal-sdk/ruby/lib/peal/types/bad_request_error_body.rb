@@ -11,7 +11,7 @@ module Peal
 
       member -> { Peal::Types::InvalidDateRangeEncoded }, key: "INVALID_DATE_RANGE"
 
-      member -> { Peal::Types::WorkspaceRequiredEncoded }, key: "WORKSPACE_REQUIRED"
+      member -> { Peal::Types::EffectHttpApiErrorBadRequestEncoded }, key: "BAD_REQUEST"
     end
   end
 end

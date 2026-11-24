@@ -39,37 +39,15 @@ require_relative "peal/internal/iterators/cursor_page_iterator"
 require_relative "peal/internal/iterators/offset_page_iterator"
 require_relative "peal/errors/connection_error"
 require_relative "peal/client"
-require_relative "peal/system/client"
-require_relative "peal/session/client"
-require_relative "peal/credential/client"
-require_relative "peal/api_keys/client"
-require_relative "peal/api_keys/types/new_api_key"
-require_relative "peal/api_keys/types/revoke_api_keys_request"
-require_relative "peal/channels/client"
-require_relative "peal/channels/types/find_channels_request"
-require_relative "peal/channels/types/connect_site"
-require_relative "peal/channels/types/connect_site_with_key"
-require_relative "peal/channels/types/start_site_sign_in"
-require_relative "peal/channels/types/site_sign_in_callback"
-require_relative "peal/channels/types/connect_channel"
-require_relative "peal/channels/types/connect_callback"
-require_relative "peal/channels/types/choose_accounts"
-require_relative "peal/channels/types/reconnect_channels_request"
-require_relative "peal/channels/types/disconnect_channels_request"
-require_relative "peal/channels/types/channel_update"
-require_relative "peal/channels/types/disable_channels_request"
-require_relative "peal/channels/types/enable_channels_request"
 require_relative "peal/posts/client"
-require_relative "peal/posts/types/drafts_posts_request"
+require_relative "peal/posts/types/calendar_posts_request"
 require_relative "peal/posts/types/list_posts_request"
-require_relative "peal/posts/types/search_posts_request"
 require_relative "peal/posts/types/new_post"
 require_relative "peal/posts/types/bulk_posts"
 require_relative "peal/posts/types/post_import"
 require_relative "peal/posts/types/post_to_validate"
 require_relative "peal/posts/types/get_posts_request"
 require_relative "peal/posts/types/update_posts_request"
-require_relative "peal/posts/types/discard_posts_request"
 require_relative "peal/posts/types/outcome_posts_request"
 require_relative "peal/posts/types/attempts_posts_request"
 require_relative "peal/posts/types/post_tags"
@@ -87,17 +65,29 @@ require_relative "peal/posts/types/live_post_edit"
 require_relative "peal/posts/types/unpublish_posts_request"
 require_relative "peal/posts/types/changes_posts_request"
 require_relative "peal/posts/types/cancel_posts_request"
-require_relative "peal/articles/client"
-require_relative "peal/articles/types/list_articles_request"
-require_relative "peal/articles/types/new_article"
-require_relative "peal/articles/types/get_articles_request"
-require_relative "peal/articles/types/delete_articles_request"
-require_relative "peal/articles/types/update_articles_request"
-require_relative "peal/articles/types/schedule_articles_request"
-require_relative "peal/articles/types/unschedule_articles_request"
-require_relative "peal/articles/types/retry_articles_request"
-require_relative "peal/articles/types/unpublish_articles_request"
-require_relative "peal/articles/types/update_on_site_articles_request"
+require_relative "peal/approvals/client"
+require_relative "peal/approvals/types/get_approvals_request"
+require_relative "peal/approvals/types/new_comment"
+require_relative "peal/approvals/types/resolve_approvals_request"
+require_relative "peal/approvals/types/approval_decision"
+require_relative "peal/approvals/types/changes_request"
+require_relative "peal/approvals/types/list_links_approvals_request"
+require_relative "peal/approvals/types/new_review_link"
+require_relative "peal/approvals/types/revoke_link_approvals_request"
+require_relative "peal/channels/client"
+require_relative "peal/channels/types/find_channels_request"
+require_relative "peal/channels/types/connect_site"
+require_relative "peal/channels/types/connect_site_with_key"
+require_relative "peal/channels/types/start_site_sign_in"
+require_relative "peal/channels/types/site_sign_in_callback"
+require_relative "peal/channels/types/connect_channel"
+require_relative "peal/channels/types/connect_callback"
+require_relative "peal/channels/types/choose_accounts"
+require_relative "peal/channels/types/reconnect_channels_request"
+require_relative "peal/channels/types/disconnect_channels_request"
+require_relative "peal/channels/types/channel_update"
+require_relative "peal/channels/types/disable_channels_request"
+require_relative "peal/channels/types/enable_channels_request"
 require_relative "peal/media/client"
 require_relative "peal/media/types/list_media_request"
 require_relative "peal/media/types/new_upload"
@@ -107,41 +97,6 @@ require_relative "peal/media/types/delete_media_request"
 require_relative "peal/media/types/media_description"
 require_relative "peal/media/types/complete_media_request"
 require_relative "peal/media/types/usage_media_request"
-require_relative "peal/media_audio/client"
-require_relative "peal/media_audio/types/voiceover_request"
-require_relative "peal/media_audio/types/transcription_request"
-require_relative "peal/notices/client"
-require_relative "peal/notices/types/list_notices_request"
-require_relative "peal/notices/types/mark_notices_read"
-require_relative "peal/notification_preferences/client"
-require_relative "peal/notification_preferences/types/notification_preferences_change"
-require_relative "peal/assistant/client"
-require_relative "peal/assistant/types/suggestion_request"
-require_relative "peal/assistant/types/image_request"
-require_relative "peal/assistant/types/image_provider_change"
-require_relative "peal/assistant/types/text_provider_change"
-require_relative "peal/assistant/types/ai_provider_connection_change"
-require_relative "peal/assistant/types/disconnect_provider_assistant_request"
-require_relative "peal/assistant/types/ai_provider_test"
-require_relative "peal/assistant/types/ai_capability_model_change"
-require_relative "peal/assistant/types/unset_model_assistant_request"
-require_relative "peal/video_generations/client"
-require_relative "peal/video_generations/types/list_video_generations_request"
-require_relative "peal/video_generations/types/video_generation_request"
-require_relative "peal/video_generations/types/get_video_generations_request"
-require_relative "peal/slideshows/client"
-require_relative "peal/slideshows/types/list_slideshows_request"
-require_relative "peal/slideshows/types/slideshow_request"
-require_relative "peal/slideshows/types/edit_render_request"
-require_relative "peal/slideshows/types/get_slideshows_request"
-require_relative "peal/members/client"
-require_relative "peal/invitations/client"
-require_relative "peal/invitations/types/new_invitation"
-require_relative "peal/invitations/types/revoke_invitations_request"
-require_relative "peal/billing/client"
-require_relative "peal/usage/client"
-require_relative "peal/usage/types/get_usage_request"
-require_relative "peal/usage/types/partner_usage_request"
 require_relative "peal/analytics/client"
 require_relative "peal/analytics/types/summary_analytics_request"
 require_relative "peal/analytics/types/dashboard_analytics_request"
@@ -149,49 +104,6 @@ require_relative "peal/analytics/types/channel_analytics_request"
 require_relative "peal/analytics/types/export_analytics_request"
 require_relative "peal/analytics/types/best_times_analytics_request"
 require_relative "peal/analytics/types/post_analytics_request"
-require_relative "peal/tiktok/client"
-require_relative "peal/tiktok/types/creator_tiktok_request"
-require_relative "peal/capabilities/client"
-require_relative "peal/capabilities/types/channel_capabilities_request"
-require_relative "peal/lookups/client"
-require_relative "peal/lookups/types/list_lookups_request"
-require_relative "peal/lookups/types/lookup_input"
-require_relative "peal/webhooks/client"
-require_relative "peal/webhooks/types/new_webhook_endpoint"
-require_relative "peal/webhooks/types/search_deliveries_webhooks_request"
-require_relative "peal/webhooks/types/get_webhooks_request"
-require_relative "peal/webhooks/types/delete_webhooks_request"
-require_relative "peal/webhooks/types/webhook_endpoint_change"
-require_relative "peal/webhooks/types/rotate_secret_webhooks_request"
-require_relative "peal/webhooks/types/send_test_webhooks_request"
-require_relative "peal/webhooks/types/list_deliveries_webhooks_request"
-require_relative "peal/webhooks/types/redeliver_webhooks_request"
-require_relative "peal/inbox/client"
-require_relative "peal/inbox/types/list_threads_inbox_request"
-require_relative "peal/inbox/types/get_thread_inbox_request"
-require_relative "peal/inbox/types/get_abilities_inbox_request"
-require_relative "peal/inbox/types/new_inbox_reply"
-require_relative "peal/inbox/types/set_answered_inbox_request"
-require_relative "peal/inbox/types/moderate_inbox_request"
-require_relative "peal/inbox/types/confirm_reply_inbox_request"
-require_relative "peal/inbox/types/withdraw_reply_inbox_request"
-require_relative "peal/inbox_reviews/client"
-require_relative "peal/inbox_reviews/types/list_review_threads_inbox_reviews_request"
-require_relative "peal/inbox_reviews/types/get_review_thread_inbox_reviews_request"
-require_relative "peal/inbox_reviews/types/new_inbox_review_reply"
-require_relative "peal/inbox_reviews/types/withdraw_review_reply_inbox_reviews_request"
-require_relative "peal/inbox_reviews/types/set_review_answered_inbox_reviews_request"
-require_relative "peal/inbox_messages/client"
-require_relative "peal/inbox_messages/types/list_conversations_inbox_messages_request"
-require_relative "peal/inbox_messages/types/get_conversation_inbox_messages_request"
-require_relative "peal/inbox_messages/types/new_inbox_message"
-require_relative "peal/inbox_messages/types/new_inbox_private_reply"
-require_relative "peal/inbox_messages/types/get_private_reply_inbox_messages_request"
-require_relative "peal/inbox_messages/types/confirm_private_reply_inbox_messages_request"
-require_relative "peal/inbox_messages/types/set_conversation_read_inbox_messages_request"
-require_relative "peal/inbox_messages/types/set_channel_messages_inbox_messages_request"
-require_relative "peal/inbox_messages/types/set_message_application_inbox_messages_request"
-require_relative "peal/inbox_messages/types/confirm_message_inbox_messages_request"
 require_relative "peal/ads/client"
 require_relative "peal/ads/types/connect_ads_request"
 require_relative "peal/ads/types/ad_sign_in_callback"
@@ -212,8 +124,40 @@ require_relative "peal/ads/types/pause_boost_ads_request"
 require_relative "peal/ads/types/resume_boost_ads_request"
 require_relative "peal/ads/types/stop_boost_ads_request"
 require_relative "peal/ads/types/audit_trail_ads_request"
-require_relative "peal/activity/client"
-require_relative "peal/activity/types/list_activity_request"
+require_relative "peal/articles/client"
+require_relative "peal/articles/types/list_articles_request"
+require_relative "peal/articles/types/new_article"
+require_relative "peal/articles/types/get_articles_request"
+require_relative "peal/articles/types/delete_articles_request"
+require_relative "peal/articles/types/update_articles_request"
+require_relative "peal/articles/types/schedule_articles_request"
+require_relative "peal/articles/types/unschedule_articles_request"
+require_relative "peal/articles/types/retry_articles_request"
+require_relative "peal/articles/types/unpublish_articles_request"
+require_relative "peal/articles/types/update_on_site_articles_request"
+require_relative "peal/links/client"
+require_relative "peal/links/types/short_link_settings"
+require_relative "peal/links/types/list_links_request"
+require_relative "peal/links/types/get_links_request"
+require_relative "peal/webhooks/client"
+require_relative "peal/webhooks/types/new_webhook_endpoint"
+require_relative "peal/webhooks/types/search_deliveries_webhooks_request"
+require_relative "peal/webhooks/types/get_webhooks_request"
+require_relative "peal/webhooks/types/delete_webhooks_request"
+require_relative "peal/webhooks/types/webhook_endpoint_change"
+require_relative "peal/webhooks/types/rotate_secret_webhooks_request"
+require_relative "peal/webhooks/types/send_test_webhooks_request"
+require_relative "peal/webhooks/types/list_deliveries_webhooks_request"
+require_relative "peal/webhooks/types/redeliver_webhooks_request"
+require_relative "peal/assistant/client"
+require_relative "peal/assistant/types/suggestion_request"
+require_relative "peal/assistant/types/image_provider_change"
+require_relative "peal/assistant/types/text_provider_change"
+require_relative "peal/assistant/types/ai_provider_connection_change"
+require_relative "peal/assistant/types/disconnect_provider_assistant_request"
+require_relative "peal/assistant/types/ai_provider_test"
+require_relative "peal/assistant/types/ai_capability_model_change"
+require_relative "peal/assistant/types/unset_model_assistant_request"
 require_relative "peal/partner/client"
 require_relative "peal/partner/types/overview_partner_request"
 require_relative "peal/partner/types/list_workspaces_partner_request"
@@ -222,82 +166,157 @@ require_relative "peal/partner/types/get_workspace_partner_request"
 require_relative "peal/partner/types/delete_workspace_partner_request"
 require_relative "peal/partner/types/customer_workspace_change"
 require_relative "peal/partner/types/channel_move"
-require_relative "peal/partner_usage/client"
-require_relative "peal/partner_usage/types/get_partner_usage_request"
-require_relative "peal/partner_account/client"
-require_relative "peal/partner_account/types/open_partner"
-require_relative "peal/partner_account/types/partner_change"
-require_relative "peal/partner_account/types/new_partner_key"
-require_relative "peal/partner_account/types/revoke_key_partner_account_request"
-require_relative "peal/partner_account/types/overview_partner_account_request"
-require_relative "peal/partner_account/types/list_workspaces_partner_account_request"
-require_relative "peal/connect_links/client"
-require_relative "peal/connect_links/types/new_connect_link"
-require_relative "peal/connect_links/types/get_connect_links_request"
-require_relative "peal/connect_links/types/revoke_connect_links_request"
-require_relative "peal/review/client"
-require_relative "peal/review/types/thread_review_request"
-require_relative "peal/review/types/new_comment"
-require_relative "peal/review/types/resolve_review_request"
-require_relative "peal/review/types/approval_decision"
-require_relative "peal/review/types/changes_request"
-require_relative "peal/review/types/links_review_request"
-require_relative "peal/review/types/new_review_link"
-require_relative "peal/review/types/revoke_link_review_request"
-require_relative "peal/tags/client"
-require_relative "peal/tags/types/delete_tags_request"
-require_relative "peal/tags/types/update_tags_request"
-require_relative "peal/signatures/client"
-require_relative "peal/signatures/types/update_signatures_request"
-require_relative "peal/signatures/types/delete_signatures_request"
-require_relative "peal/channel_sets/client"
-require_relative "peal/channel_sets/types/update_channel_sets_request"
-require_relative "peal/channel_sets/types/delete_channel_sets_request"
-require_relative "peal/queues/client"
-require_relative "peal/queues/types/get_queues_request"
-require_relative "peal/queues/types/update_queues_request"
-require_relative "peal/queues/types/delete_queues_request"
-require_relative "peal/queues/types/slots_queues_request"
-require_relative "peal/queues/types/reshuffle_queues_request"
-require_relative "peal/recycling/client"
-require_relative "peal/recycling/types/list_recycling_request"
-require_relative "peal/recycling/types/new_recycling_rule"
-require_relative "peal/recycling/types/get_recycling_request"
-require_relative "peal/recycling/types/delete_recycling_request"
-require_relative "peal/recycling/types/recycling_rule_change"
-require_relative "peal/recycling/types/recycling_resume"
-require_relative "peal/follow_ups/client"
-require_relative "peal/follow_ups/types/list_follow_ups_request"
-require_relative "peal/follow_ups/types/new_follow_up_rule"
-require_relative "peal/follow_ups/types/get_follow_ups_request"
-require_relative "peal/follow_ups/types/delete_follow_ups_request"
-require_relative "peal/follow_ups/types/follow_up_rule_change"
-require_relative "peal/follow_ups/types/approve_follow_ups_request"
-require_relative "peal/inbox_rules/client"
-require_relative "peal/inbox_rules/types/list_comment_rules_inbox_rules_request"
-require_relative "peal/inbox_rules/types/new_comment_rule"
-require_relative "peal/inbox_rules/types/get_comment_rule_inbox_rules_request"
-require_relative "peal/inbox_rules/types/delete_comment_rule_inbox_rules_request"
-require_relative "peal/inbox_rules/types/comment_rule_change"
-require_relative "peal/feeds/client"
-require_relative "peal/feeds/types/list_feeds_request"
-require_relative "peal/feeds/types/new_feed"
-require_relative "peal/feeds/types/feed_preview_request"
-require_relative "peal/feeds/types/get_feeds_request"
-require_relative "peal/feeds/types/delete_feeds_request"
-require_relative "peal/feeds/types/feed_change"
-require_relative "peal/feeds/types/items_feeds_request"
-require_relative "peal/channel_defaults/client"
-require_relative "peal/channel_defaults/types/get_channel_defaults_request"
-require_relative "peal/channel_defaults/types/new_channel_defaults"
-require_relative "peal/channel_defaults/types/clear_channel_defaults_request"
-require_relative "peal/short_links/client"
-require_relative "peal/short_links/types/short_link_settings"
-require_relative "peal/short_links/types/list_short_links_request"
-require_relative "peal/short_links/types/get_short_links_request"
+require_relative "peal/me/client"
+require_relative "peal/credential/client"
+require_relative "peal/system/client"
+require_relative "peal/automations/client"
+require_relative "peal/automations/comment_rules/client"
+require_relative "peal/automations/comment_rules/types/list_comment_rules_request"
+require_relative "peal/automations/comment_rules/types/new_comment_rule"
+require_relative "peal/automations/comment_rules/types/get_comment_rules_request"
+require_relative "peal/automations/comment_rules/types/delete_comment_rules_request"
+require_relative "peal/automations/comment_rules/types/comment_rule_change"
+require_relative "peal/automations/queues/client"
+require_relative "peal/automations/queues/types/get_queues_request"
+require_relative "peal/automations/queues/types/update_queues_request"
+require_relative "peal/automations/queues/types/delete_queues_request"
+require_relative "peal/automations/queues/types/slots_queues_request"
+require_relative "peal/automations/queues/types/reshuffle_queues_request"
+require_relative "peal/automations/recycling/client"
+require_relative "peal/automations/recycling/types/list_recycling_request"
+require_relative "peal/automations/recycling/types/new_recycling_rule"
+require_relative "peal/automations/recycling/types/get_recycling_request"
+require_relative "peal/automations/recycling/types/delete_recycling_request"
+require_relative "peal/automations/recycling/types/recycling_rule_change"
+require_relative "peal/automations/recycling/types/recycling_resume"
+require_relative "peal/automations/follow_ups/client"
+require_relative "peal/automations/follow_ups/types/list_follow_ups_request"
+require_relative "peal/automations/follow_ups/types/new_follow_up_rule"
+require_relative "peal/automations/follow_ups/types/get_follow_ups_request"
+require_relative "peal/automations/follow_ups/types/delete_follow_ups_request"
+require_relative "peal/automations/follow_ups/types/follow_up_rule_change"
+require_relative "peal/automations/follow_ups/types/approve_follow_ups_request"
+require_relative "peal/automations/feeds/client"
+require_relative "peal/automations/feeds/types/list_feeds_request"
+require_relative "peal/automations/feeds/types/new_feed"
+require_relative "peal/automations/feeds/types/feed_preview_request"
+require_relative "peal/automations/feeds/types/get_feeds_request"
+require_relative "peal/automations/feeds/types/delete_feeds_request"
+require_relative "peal/automations/feeds/types/feed_change"
+require_relative "peal/automations/feeds/types/items_feeds_request"
+require_relative "peal/channels/capabilities/client"
+require_relative "peal/channels/capabilities/types/get_capabilities_request"
+require_relative "peal/channels/default_options/client"
+require_relative "peal/channels/default_options/types/get_default_options_request"
+require_relative "peal/channels/default_options/types/new_channel_defaults"
+require_relative "peal/channels/default_options/types/clear_default_options_request"
+require_relative "peal/channels/lookups/client"
+require_relative "peal/channels/lookups/types/list_lookups_request"
+require_relative "peal/channels/lookups/types/lookup_input"
+require_relative "peal/channels/sets/client"
+require_relative "peal/channels/sets/types/update_sets_request"
+require_relative "peal/channels/sets/types/delete_sets_request"
+require_relative "peal/channels/connect_links/client"
+require_relative "peal/channels/connect_links/types/new_connect_link"
+require_relative "peal/channels/connect_links/types/get_connect_links_request"
+require_relative "peal/channels/connect_links/types/revoke_connect_links_request"
+require_relative "peal/channels/tiktok_creator/client"
+require_relative "peal/channels/tiktok_creator/types/get_tiktok_creator_request"
+require_relative "peal/inbox/client"
+require_relative "peal/inbox/comments/client"
+require_relative "peal/inbox/comments/types/list_threads_comments_request"
+require_relative "peal/inbox/comments/types/get_thread_comments_request"
+require_relative "peal/inbox/comments/types/get_abilities_comments_request"
+require_relative "peal/inbox/comments/types/new_inbox_reply"
+require_relative "peal/inbox/comments/types/set_answered_comments_request"
+require_relative "peal/inbox/comments/types/moderate_comments_request"
+require_relative "peal/inbox/comments/types/confirm_reply_comments_request"
+require_relative "peal/inbox/comments/types/withdraw_reply_comments_request"
+require_relative "peal/inbox/messages/client"
+require_relative "peal/inbox/messages/types/list_conversations_messages_request"
+require_relative "peal/inbox/messages/types/get_conversation_messages_request"
+require_relative "peal/inbox/messages/types/new_inbox_message"
+require_relative "peal/inbox/messages/types/new_inbox_private_reply"
+require_relative "peal/inbox/messages/types/get_private_reply_messages_request"
+require_relative "peal/inbox/messages/types/confirm_private_reply_messages_request"
+require_relative "peal/inbox/messages/types/set_conversation_read_messages_request"
+require_relative "peal/inbox/messages/types/set_channel_messages_request"
+require_relative "peal/inbox/messages/types/set_application_messages_request"
+require_relative "peal/inbox/messages/types/confirm_messages_request"
+require_relative "peal/inbox/reviews/client"
+require_relative "peal/inbox/reviews/types/list_threads_reviews_request"
+require_relative "peal/inbox/reviews/types/get_thread_reviews_request"
+require_relative "peal/inbox/reviews/types/new_inbox_review_reply"
+require_relative "peal/inbox/reviews/types/withdraw_reply_reviews_request"
+require_relative "peal/inbox/reviews/types/set_answered_reviews_request"
+require_relative "peal/me/notices/client"
+require_relative "peal/me/notices/types/list_notices_request"
+require_relative "peal/me/notices/types/mark_notices_read"
+require_relative "peal/me/notification_preferences/client"
+require_relative "peal/me/notification_preferences/types/notification_preferences_change"
+require_relative "peal/media/images/client"
+require_relative "peal/media/images/types/image_request"
+require_relative "peal/media/voiceovers/client"
+require_relative "peal/media/voiceovers/types/voiceover_request"
+require_relative "peal/media/transcriptions/client"
+require_relative "peal/media/transcriptions/types/transcription_request"
+require_relative "peal/media/videos/client"
+require_relative "peal/media/videos/types/list_videos_request"
+require_relative "peal/media/videos/types/video_generation_request"
+require_relative "peal/media/videos/types/get_videos_request"
+require_relative "peal/media/slideshows/client"
+require_relative "peal/media/slideshows/types/list_slideshows_request"
+require_relative "peal/media/slideshows/types/slideshow_request"
+require_relative "peal/media/slideshows/types/edit_render_request"
+require_relative "peal/media/slideshows/types/get_slideshows_request"
+require_relative "peal/partner/account/client"
+require_relative "peal/partner/account/types/open_partner"
+require_relative "peal/partner/account/types/partner_change"
+require_relative "peal/partner/account/types/new_partner_key"
+require_relative "peal/partner/account/types/revoke_key_account_request"
+require_relative "peal/partner/account/types/overview_account_request"
+require_relative "peal/partner/account/types/list_workspaces_account_request"
+require_relative "peal/partner/customer_usage/client"
+require_relative "peal/partner/customer_usage/types/get_customer_usage_request"
+require_relative "peal/posts/drafts/client"
+require_relative "peal/posts/drafts/types/list_drafts_request"
+require_relative "peal/posts/drafts/types/delete_drafts_request"
+require_relative "peal/posts/tags/client"
+require_relative "peal/posts/tags/types/delete_tags_request"
+require_relative "peal/posts/tags/types/update_tags_request"
+require_relative "peal/posts/signatures/client"
+require_relative "peal/posts/signatures/types/update_signatures_request"
+require_relative "peal/posts/signatures/types/delete_signatures_request"
+require_relative "peal/workspace/client"
+require_relative "peal/workspace/activity/client"
+require_relative "peal/workspace/activity/types/list_activity_request"
+require_relative "peal/workspace/api_keys/client"
+require_relative "peal/workspace/api_keys/types/new_api_key"
+require_relative "peal/workspace/api_keys/types/revoke_api_keys_request"
+require_relative "peal/workspace/members/client"
+require_relative "peal/workspace/invitations/client"
+require_relative "peal/workspace/invitations/types/new_invitation"
+require_relative "peal/workspace/invitations/types/revoke_invitations_request"
+require_relative "peal/workspace/billing/client"
+require_relative "peal/workspace/usage/client"
+require_relative "peal/workspace/usage/types/get_usage_request"
+require_relative "peal/workspace/usage/types/partner_usage_request"
 require_relative "peal/environment"
 
 module Peal
+  module Posts
+    module Types
+      autoload :ListPostsRequestRemoved, ::File.join(__dir__, "peal/posts/types/list_posts_request_removed")
+    end
+  end
+
+  module Approvals
+    module Types
+      autoload :NewCommentAnchorSelection, ::File.join(__dir__, "peal/approvals/types/new_comment_anchor_selection")
+      autoload :NewCommentAnchor, ::File.join(__dir__, "peal/approvals/types/new_comment_anchor")
+    end
+  end
+
   module Channels
     module Types
       autoload :ReconnectChannelsRequestMessages, ::File.join(__dir__, "peal/channels/types/reconnect_channels_request_messages")
@@ -305,58 +324,59 @@ module Peal
     end
   end
 
-  module Posts
-    module Types
-      autoload :SearchPostsRequestRemoved, ::File.join(__dir__, "peal/posts/types/search_posts_request_removed")
-    end
-  end
-
-  module NotificationPreferences
-    module Types
-      autoload :NotificationPreferencesChangeEmail, ::File.join(__dir__, "peal/notification_preferences/types/notification_preferences_change_email")
+  module Automations
+    module Feeds
+      module Types
+        autoload :FeedChangeStatus, ::File.join(__dir__, "peal/automations/feeds/types/feed_change_status")
+      end
     end
   end
 
   module Inbox
-    module Types
-      autoload :ListThreadsInboxRequestUnanswered, ::File.join(__dir__, "peal/inbox/types/list_threads_inbox_request_unanswered")
+    module Comments
+      module Types
+        autoload :ListThreadsCommentsRequestUnanswered, ::File.join(__dir__, "peal/inbox/comments/types/list_threads_comments_request_unanswered")
+      end
+    end
+
+    module Messages
+      module Types
+        autoload :ListConversationsMessagesRequestUnread, ::File.join(__dir__, "peal/inbox/messages/types/list_conversations_messages_request_unread")
+      end
+    end
+
+    module Reviews
+      module Types
+        autoload :ListThreadsReviewsRequestUnanswered, ::File.join(__dir__, "peal/inbox/reviews/types/list_threads_reviews_request_unanswered")
+      end
     end
   end
 
-  module InboxReviews
-    module Types
-      autoload :ListReviewThreadsInboxReviewsRequestUnanswered, ::File.join(__dir__, "peal/inbox_reviews/types/list_review_threads_inbox_reviews_request_unanswered")
-    end
-  end
-
-  module InboxMessages
-    module Types
-      autoload :ListConversationsInboxMessagesRequestUnread, ::File.join(__dir__, "peal/inbox_messages/types/list_conversations_inbox_messages_request_unread")
-    end
-  end
-
-  module Review
-    module Types
-      autoload :NewCommentAnchorSelection, ::File.join(__dir__, "peal/review/types/new_comment_anchor_selection")
-      autoload :NewCommentAnchor, ::File.join(__dir__, "peal/review/types/new_comment_anchor")
-    end
-  end
-
-  module Feeds
-    module Types
-      autoload :FeedChangeStatus, ::File.join(__dir__, "peal/feeds/types/feed_change_status")
+  module Me
+    module NotificationPreferences
+      module Types
+        autoload :NotificationPreferencesChangeEmail, ::File.join(__dir__, "peal/me/notification_preferences/types/notification_preferences_change_email")
+      end
     end
   end
 
   module Types
-    autoload :ShortLinkNotFoundEncoded, ::File.join(__dir__, "peal/types/short_link_not_found_encoded")
+    autoload :InvalidDateRangeEncoded, ::File.join(__dir__, "peal/types/invalid_date_range_encoded")
+    autoload :EffectHttpApiErrorBadRequestEncodedTag, ::File.join(__dir__, "peal/types/effect_http_api_error_bad_request_encoded_tag")
+    autoload :EffectHttpApiErrorBadRequestEncoded, ::File.join(__dir__, "peal/types/effect_http_api_error_bad_request_encoded")
+    autoload :BadRequestErrorBody, ::File.join(__dir__, "peal/types/bad_request_error_body")
+    autoload :PartnerNotFoundEncoded, ::File.join(__dir__, "peal/types/partner_not_found_encoded")
     autoload :WorkspaceNotFoundEncodedTag, ::File.join(__dir__, "peal/types/workspace_not_found_encoded_tag")
     autoload :WorkspaceNotFoundEncoded, ::File.join(__dir__, "peal/types/workspace_not_found_encoded")
     autoload :NotFoundErrorBody, ::File.join(__dir__, "peal/types/not_found_error_body")
-    autoload :InvalidDateRangeEncoded, ::File.join(__dir__, "peal/types/invalid_date_range_encoded")
-    autoload :WorkspaceRequiredEncodedTag, ::File.join(__dir__, "peal/types/workspace_required_encoded_tag")
-    autoload :WorkspaceRequiredEncoded, ::File.join(__dir__, "peal/types/workspace_required_encoded")
-    autoload :BadRequestErrorBody, ::File.join(__dir__, "peal/types/bad_request_error_body")
+    autoload :ChannelAccountTakenEncoded, ::File.join(__dir__, "peal/types/channel_account_taken_encoded")
+    autoload :IdempotencyKeyReusedEncoded, ::File.join(__dir__, "peal/types/idempotency_key_reused_encoded")
+    autoload :WorkspaceBusyEncodedTag, ::File.join(__dir__, "peal/types/workspace_busy_encoded_tag")
+    autoload :WorkspaceBusyEncoded, ::File.join(__dir__, "peal/types/workspace_busy_encoded")
+    autoload :ConflictErrorBody, ::File.join(__dir__, "peal/types/conflict_error_body")
+    autoload :AiCapabilityNotOfferedEncoded, ::File.join(__dir__, "peal/types/ai_capability_not_offered_encoded")
+    autoload :AiModelRequiredEncoded, ::File.join(__dir__, "peal/types/ai_model_required_encoded")
+    autoload :UnprocessableEntityErrorBody, ::File.join(__dir__, "peal/types/unprocessable_entity_error_body")
     autoload :CompositionNeedsPaymentEncoded, ::File.join(__dir__, "peal/types/composition_needs_payment_encoded")
     autoload :PaidPlan, ::File.join(__dir__, "peal/types/paid_plan")
     autoload :Plan, ::File.join(__dir__, "peal/types/plan")
@@ -364,23 +384,12 @@ module Peal
     autoload :PlanLimitReachedEncodedTag, ::File.join(__dir__, "peal/types/plan_limit_reached_encoded_tag")
     autoload :PlanLimitReachedEncoded, ::File.join(__dir__, "peal/types/plan_limit_reached_encoded")
     autoload :PaymentRequiredErrorBody, ::File.join(__dir__, "peal/types/payment_required_error_body")
-    autoload :FeedAddressRefusedEncodedReason, ::File.join(__dir__, "peal/types/feed_address_refused_encoded_reason")
-    autoload :FeedAddressRefusedEncoded, ::File.join(__dir__, "peal/types/feed_address_refused_encoded")
-    autoload :FeedTemplateInvalidEncodedReason, ::File.join(__dir__, "peal/types/feed_template_invalid_encoded_reason")
-    autoload :FeedTemplateInvalidEncoded, ::File.join(__dir__, "peal/types/feed_template_invalid_encoded")
-    autoload :FeedUnreadableEncodedReason, ::File.join(__dir__, "peal/types/feed_unreadable_encoded_reason")
-    autoload :FeedUnreadableEncoded, ::File.join(__dir__, "peal/types/feed_unreadable_encoded")
-    autoload :UnknownChannelsEncodedTag, ::File.join(__dir__, "peal/types/unknown_channels_encoded_tag")
-    autoload :UnknownChannelsEncoded, ::File.join(__dir__, "peal/types/unknown_channels_encoded")
-    autoload :UnprocessableEntityErrorBody, ::File.join(__dir__, "peal/types/unprocessable_entity_error_body")
-    autoload :FeedReadsLimitedEncoded, ::File.join(__dir__, "peal/types/feed_reads_limited_encoded")
+    autoload :OwnTextLimitReachedEncoded, ::File.join(__dir__, "peal/types/own_text_limit_reached_encoded")
+    autoload :TextProviderBusyEncoded, ::File.join(__dir__, "peal/types/text_provider_busy_encoded")
     autoload :TooManyRequestsEncodedTag, ::File.join(__dir__, "peal/types/too_many_requests_encoded_tag")
     autoload :TooManyRequestsEncodedPolicy, ::File.join(__dir__, "peal/types/too_many_requests_encoded_policy")
     autoload :TooManyRequestsEncoded, ::File.join(__dir__, "peal/types/too_many_requests_encoded")
     autoload :TooManyRequestsErrorBody, ::File.join(__dir__, "peal/types/too_many_requests_error_body")
-    autoload :FollowUpRuleTakenEncoded, ::File.join(__dir__, "peal/types/follow_up_rule_taken_encoded")
-    autoload :TooManyFollowUpRulesEncoded, ::File.join(__dir__, "peal/types/too_many_follow_up_rules_encoded")
-    autoload :ConflictErrorBody, ::File.join(__dir__, "peal/types/conflict_error_body")
     autoload :AssistantFailedEncodedReason, ::File.join(__dir__, "peal/types/assistant_failed_encoded_reason")
     autoload :AssistantFailedEncoded, ::File.join(__dir__, "peal/types/assistant_failed_encoded")
     autoload :TextProviderRefusedEncodedReason, ::File.join(__dir__, "peal/types/text_provider_refused_encoded_reason")
@@ -467,9 +476,7 @@ module Peal
     autoload :AiProvider, ::File.join(__dir__, "peal/types/ai_provider")
     autoload :AiCapabilityModel, ::File.join(__dir__, "peal/types/ai_capability_model")
     autoload :AiCapabilityModels, ::File.join(__dir__, "peal/types/ai_capability_models")
-    autoload :AiCapabilityNotOfferedEncoded, ::File.join(__dir__, "peal/types/ai_capability_not_offered_encoded")
     autoload :AiImageProvider, ::File.join(__dir__, "peal/types/ai_image_provider")
-    autoload :AiModelRequiredEncoded, ::File.join(__dir__, "peal/types/ai_model_required_encoded")
     autoload :ImageProviderAddressRefusal, ::File.join(__dir__, "peal/types/image_provider_address_refusal")
     autoload :AiProviderAddressRefusedEncoded, ::File.join(__dir__, "peal/types/ai_provider_address_refused_encoded")
     autoload :AiProviderConnection, ::File.join(__dir__, "peal/types/ai_provider_connection")
@@ -751,7 +758,6 @@ module Peal
     autoload :ContentViolation, ::File.join(__dir__, "peal/types/content_violation")
     autoload :DuplicateOnChannel, ::File.join(__dir__, "peal/types/duplicate_on_channel")
     autoload :DuplicatePostEncoded, ::File.join(__dir__, "peal/types/duplicate_post_encoded")
-    autoload :IdempotencyKeyReusedEncoded, ::File.join(__dir__, "peal/types/idempotency_key_reused_encoded")
     autoload :InvalidTimeZoneEncodedTag, ::File.join(__dir__, "peal/types/invalid_time_zone_encoded_tag")
     autoload :InvalidTimeZoneEncoded, ::File.join(__dir__, "peal/types/invalid_time_zone_encoded")
     autoload :PostContentInvalidEncodedTag, ::File.join(__dir__, "peal/types/post_content_invalid_encoded_tag")
@@ -763,6 +769,8 @@ module Peal
     autoload :QueueNotFoundEncoded, ::File.join(__dir__, "peal/types/queue_not_found_encoded")
     autoload :ScheduleInPastEncoded, ::File.join(__dir__, "peal/types/schedule_in_past_encoded")
     autoload :SignatureNotFoundEncoded, ::File.join(__dir__, "peal/types/signature_not_found_encoded")
+    autoload :UnknownChannelsEncodedTag, ::File.join(__dir__, "peal/types/unknown_channels_encoded_tag")
+    autoload :UnknownChannelsEncoded, ::File.join(__dir__, "peal/types/unknown_channels_encoded")
     autoload :UnknownMediaEncoded, ::File.join(__dir__, "peal/types/unknown_media_encoded")
     autoload :UnknownTagsEncodedTag, ::File.join(__dir__, "peal/types/unknown_tags_encoded_tag")
     autoload :UnknownTagsEncoded, ::File.join(__dir__, "peal/types/unknown_tags_encoded")
@@ -785,7 +793,6 @@ module Peal
     autoload :ChannelStatusRefreshNeeded, ::File.join(__dir__, "peal/types/channel_status_refresh_needed")
     autoload :ChannelStatus, ::File.join(__dir__, "peal/types/channel_status")
     autoload :Channel, ::File.join(__dir__, "peal/types/channel")
-    autoload :ChannelAccountTakenEncoded, ::File.join(__dir__, "peal/types/channel_account_taken_encoded")
     autoload :ChannelCannotPostEncodedTag, ::File.join(__dir__, "peal/types/channel_cannot_post_encoded_tag")
     autoload :ChannelCannotPostEncodedReason, ::File.join(__dir__, "peal/types/channel_cannot_post_encoded_reason")
     autoload :ChannelCannotPostEncoded, ::File.join(__dir__, "peal/types/channel_cannot_post_encoded")
@@ -926,6 +933,8 @@ module Peal
     autoload :Excess, ::File.join(__dir__, "peal/types/excess")
     autoload :ExternalIDTakenEncodedTag, ::File.join(__dir__, "peal/types/external_id_taken_encoded_tag")
     autoload :ExternalIDTakenEncoded, ::File.join(__dir__, "peal/types/external_id_taken_encoded")
+    autoload :FeedAddressRefusedEncodedReason, ::File.join(__dir__, "peal/types/feed_address_refused_encoded_reason")
+    autoload :FeedAddressRefusedEncoded, ::File.join(__dir__, "peal/types/feed_address_refused_encoded")
     autoload :FeedItemOutcome, ::File.join(__dir__, "peal/types/feed_item_outcome")
     autoload :FeedItemReason, ::File.join(__dir__, "peal/types/feed_item_reason")
     autoload :FeedPictureSkip, ::File.join(__dir__, "peal/types/feed_picture_skip")
@@ -935,7 +944,12 @@ module Peal
     autoload :FeedPage, ::File.join(__dir__, "peal/types/feed_page")
     autoload :FeedPreviewItem, ::File.join(__dir__, "peal/types/feed_preview_item")
     autoload :FeedPreview, ::File.join(__dir__, "peal/types/feed_preview")
+    autoload :FeedReadsLimitedEncoded, ::File.join(__dir__, "peal/types/feed_reads_limited_encoded")
     autoload :FeedStopReason, ::File.join(__dir__, "peal/types/feed_stop_reason")
+    autoload :FeedTemplateInvalidEncodedReason, ::File.join(__dir__, "peal/types/feed_template_invalid_encoded_reason")
+    autoload :FeedTemplateInvalidEncoded, ::File.join(__dir__, "peal/types/feed_template_invalid_encoded")
+    autoload :FeedUnreadableEncodedReason, ::File.join(__dir__, "peal/types/feed_unreadable_encoded_reason")
+    autoload :FeedUnreadableEncoded, ::File.join(__dir__, "peal/types/feed_unreadable_encoded")
     autoload :FollowUpKind, ::File.join(__dir__, "peal/types/follow_up_kind")
     autoload :FollowUpStatus, ::File.join(__dir__, "peal/types/follow_up_status")
     autoload :FollowUp, ::File.join(__dir__, "peal/types/follow_up")
@@ -951,6 +965,7 @@ module Peal
     autoload :FollowUpRuleEndedEncoded, ::File.join(__dir__, "peal/types/follow_up_rule_ended_encoded")
     autoload :FollowUpRuleNotFoundEncoded, ::File.join(__dir__, "peal/types/follow_up_rule_not_found_encoded")
     autoload :FollowUpRulePage, ::File.join(__dir__, "peal/types/follow_up_rule_page")
+    autoload :FollowUpRuleTakenEncoded, ::File.join(__dir__, "peal/types/follow_up_rule_taken_encoded")
     autoload :ImageProvider, ::File.join(__dir__, "peal/types/image_provider")
     autoload :ImageProviderAddressRefusedEncoded, ::File.join(__dir__, "peal/types/image_provider_address_refused_encoded")
     autoload :ImageProviderKeyRequiredEncoded, ::File.join(__dir__, "peal/types/image_provider_key_required_encoded")
@@ -1145,7 +1160,6 @@ module Peal
     autoload :OAuthSitePlatform, ::File.join(__dir__, "peal/types/o_auth_site_platform")
     autoload :OrganicCounts, ::File.join(__dir__, "peal/types/organic_counts")
     autoload :OwnImageLimitReachedEncoded, ::File.join(__dir__, "peal/types/own_image_limit_reached_encoded")
-    autoload :OwnTextLimitReachedEncoded, ::File.join(__dir__, "peal/types/own_text_limit_reached_encoded")
     autoload :Partner, ::File.join(__dir__, "peal/types/partner")
     autoload :PartnerDetailField, ::File.join(__dir__, "peal/types/partner_detail_field")
     autoload :PartnerDetailsInvalidEncodedTag, ::File.join(__dir__, "peal/types/partner_details_invalid_encoded_tag")
@@ -1154,7 +1168,6 @@ module Peal
     autoload :PartnerHealth, ::File.join(__dir__, "peal/types/partner_health")
     autoload :PartnerHoldings, ::File.join(__dir__, "peal/types/partner_holdings")
     autoload :PartnerKeyNotFoundEncoded, ::File.join(__dir__, "peal/types/partner_key_not_found_encoded")
-    autoload :PartnerNotFoundEncoded, ::File.join(__dir__, "peal/types/partner_not_found_encoded")
     autoload :PartnerUsageDay, ::File.join(__dir__, "peal/types/partner_usage_day")
     autoload :PartnerUsage, ::File.join(__dir__, "peal/types/partner_usage")
     autoload :PartnerOverview, ::File.join(__dir__, "peal/types/partner_overview")
@@ -1242,6 +1255,7 @@ module Peal
     autoload :Role, ::File.join(__dir__, "peal/types/role")
     autoload :ShortLink, ::File.join(__dir__, "peal/types/short_link")
     autoload :ShortLinkDay, ::File.join(__dir__, "peal/types/short_link_day")
+    autoload :ShortLinkNotFoundEncoded, ::File.join(__dir__, "peal/types/short_link_not_found_encoded")
     autoload :ShortLinkPeriod, ::File.join(__dir__, "peal/types/short_link_period")
     autoload :ShortLinkPage, ::File.join(__dir__, "peal/types/short_link_page")
     autoload :ShortLinkReport, ::File.join(__dir__, "peal/types/short_link_report")
@@ -1287,7 +1301,6 @@ module Peal
     autoload :TextProviderKind, ::File.join(__dir__, "peal/types/text_provider_kind")
     autoload :TextProvider, ::File.join(__dir__, "peal/types/text_provider")
     autoload :TextProviderAddressRefusedEncoded, ::File.join(__dir__, "peal/types/text_provider_address_refused_encoded")
-    autoload :TextProviderBusyEncoded, ::File.join(__dir__, "peal/types/text_provider_busy_encoded")
     autoload :TextProviderKeyRequiredEncoded, ::File.join(__dir__, "peal/types/text_provider_key_required_encoded")
     autoload :TextProviderNotFoundEncoded, ::File.join(__dir__, "peal/types/text_provider_not_found_encoded")
     autoload :TextProviderSetting, ::File.join(__dir__, "peal/types/text_provider_setting")
@@ -1297,6 +1310,7 @@ module Peal
     autoload :TooManyConnectLinksEncoded, ::File.join(__dir__, "peal/types/too_many_connect_links_encoded")
     autoload :TooManyFeedsEncodedTag, ::File.join(__dir__, "peal/types/too_many_feeds_encoded_tag")
     autoload :TooManyFeedsEncoded, ::File.join(__dir__, "peal/types/too_many_feeds_encoded")
+    autoload :TooManyFollowUpRulesEncoded, ::File.join(__dir__, "peal/types/too_many_follow_up_rules_encoded")
     autoload :TooManyInvitationsEncoded, ::File.join(__dir__, "peal/types/too_many_invitations_encoded")
     autoload :TooManyQueuesEncoded, ::File.join(__dir__, "peal/types/too_many_queues_encoded")
     autoload :TooManyRecyclingRulesEncoded, ::File.join(__dir__, "peal/types/too_many_recycling_rules_encoded")
@@ -1365,11 +1379,9 @@ module Peal
     autoload :WebhookURLRefusedEncoded, ::File.join(__dir__, "peal/types/webhook_url_refused_encoded")
     autoload :WebhooksNotConfiguredEncodedTag, ::File.join(__dir__, "peal/types/webhooks_not_configured_encoded_tag")
     autoload :WebhooksNotConfiguredEncoded, ::File.join(__dir__, "peal/types/webhooks_not_configured_encoded")
-    autoload :WorkspaceBusyEncodedTag, ::File.join(__dir__, "peal/types/workspace_busy_encoded_tag")
-    autoload :WorkspaceBusyEncoded, ::File.join(__dir__, "peal/types/workspace_busy_encoded")
     autoload :WorkspaceMember, ::File.join(__dir__, "peal/types/workspace_member")
+    autoload :WorkspaceRequiredEncodedTag, ::File.join(__dir__, "peal/types/workspace_required_encoded_tag")
+    autoload :WorkspaceRequiredEncoded, ::File.join(__dir__, "peal/types/workspace_required_encoded")
     autoload :WorkspaceUsageReport, ::File.join(__dir__, "peal/types/workspace_usage_report")
-    autoload :EffectHttpApiErrorBadRequestEncodedTag, ::File.join(__dir__, "peal/types/effect_http_api_error_bad_request_encoded_tag")
-    autoload :EffectHttpApiErrorBadRequestEncoded, ::File.join(__dir__, "peal/types/effect_http_api_error_bad_request_encoded")
   end
 end

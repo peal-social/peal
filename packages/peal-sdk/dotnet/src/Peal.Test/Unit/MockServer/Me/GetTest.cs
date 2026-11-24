@@ -1,0 +1,135 @@
+using NUnit.Framework;
+using Peal.Test.Unit.MockServer;
+using Peal.Test.Utils;
+
+namespace Peal.Test.Unit.MockServer.Me;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class GetTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string mockResponse = """
+            {
+              "browserAnalytics": {
+                "token": "token",
+                "environment": "environment",
+                "consent": "undecided",
+                "decidedAt": "decidedAt",
+                "excludedWorkspaceIds": [
+                  "excludedWorkspaceIds",
+                  "excludedWorkspaceIds"
+                ]
+              },
+              "impersonatedBy": "impersonatedBy",
+              "supportChat": {
+                "emailSignature": "emailSignature"
+              },
+              "user": {
+                "email": "email",
+                "emailVerified": true,
+                "id": "id",
+                "image": "image",
+                "locale": "en",
+                "name": "name",
+                "hasPassword": true,
+                "twoStepEnabled": true
+              },
+              "workspaces": [
+                {
+                  "id": "id",
+                  "name": "name",
+                  "permissions": [
+                    "activity:read",
+                    "activity:read"
+                  ],
+                  "role": "role",
+                  "slug": "slug",
+                  "twoStepRequired": true
+                },
+                {
+                  "id": "id",
+                  "name": "name",
+                  "permissions": [
+                    "activity:read",
+                    "activity:read"
+                  ],
+                  "role": "role",
+                  "slug": "slug",
+                  "twoStepRequired": true
+                }
+              ]
+            }
+            """;
+
+        Server
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/me").UsingGet())
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Me.GetAsync();
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string mockResponse = """
+            {
+              "browserAnalytics": {
+                "token": "token",
+                "environment": "environment",
+                "consent": "undecided",
+                "decidedAt": "decidedAt",
+                "excludedWorkspaceIds": [
+                  "excludedWorkspaceIds"
+                ]
+              },
+              "impersonatedBy": "impersonatedBy",
+              "supportChat": {
+                "emailSignature": "emailSignature"
+              },
+              "user": {
+                "email": "email",
+                "emailVerified": true,
+                "id": "id",
+                "image": "image",
+                "locale": "en",
+                "name": "name",
+                "hasPassword": true,
+                "twoStepEnabled": true
+              },
+              "workspaces": [
+                {
+                  "id": "id",
+                  "name": "name",
+                  "permissions": [
+                    "activity:read"
+                  ],
+                  "role": "role",
+                  "slug": "slug",
+                  "twoStepRequired": true
+                }
+              ]
+            }
+            """;
+
+        Server
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/me").UsingGet())
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Me.GetAsync();
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

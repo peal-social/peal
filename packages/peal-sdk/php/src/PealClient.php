@@ -2,73 +2,37 @@
 
 namespace Peal;
 
-use Peal\System\SystemClient;
-use Peal\Session\SessionClient;
-use Peal\Credential\CredentialClient;
-use Peal\ApiKeys\ApiKeysClient;
-use Peal\Channels\ChannelsClient;
 use Peal\Posts\PostsClient;
-use Peal\Articles\ArticlesClient;
+use Peal\Approvals\ApprovalsClient;
+use Peal\Channels\ChannelsClient;
 use Peal\Media\MediaClient;
-use Peal\MediaAudio\MediaAudioClient;
-use Peal\Notices\NoticesClient;
-use Peal\NotificationPreferences\NotificationPreferencesClient;
-use Peal\Assistant\AssistantClient;
-use Peal\VideoGenerations\VideoGenerationsClient;
-use Peal\Slideshows\SlideshowsClient;
-use Peal\Members\MembersClient;
-use Peal\Invitations\InvitationsClient;
-use Peal\Billing\BillingClient;
-use Peal\Usage\UsageClient;
 use Peal\Analytics\AnalyticsClient;
-use Peal\Tiktok\TiktokClient;
-use Peal\Capabilities\CapabilitiesClient;
-use Peal\Lookups\LookupsClient;
-use Peal\Webhooks\WebhooksClient;
-use Peal\Inbox\InboxClient;
-use Peal\InboxReviews\InboxReviewsClient;
-use Peal\InboxMessages\InboxMessagesClient;
 use Peal\Ads\AdsClient;
-use Peal\Activity\ActivityClient;
+use Peal\Articles\ArticlesClient;
+use Peal\Links\LinksClient;
+use Peal\Webhooks\WebhooksClient;
+use Peal\Assistant\AssistantClient;
 use Peal\Partner\PartnerClient;
-use Peal\PartnerUsage\PartnerUsageClient;
-use Peal\PartnerAccount\PartnerAccountClient;
-use Peal\ConnectLinks\ConnectLinksClient;
-use Peal\Review\ReviewClient;
-use Peal\Tags\TagsClient;
-use Peal\Signatures\SignaturesClient;
-use Peal\ChannelSets\ChannelSetsClient;
-use Peal\Queues\QueuesClient;
-use Peal\Recycling\RecyclingClient;
-use Peal\FollowUps\FollowUpsClient;
-use Peal\InboxRules\InboxRulesClient;
-use Peal\Feeds\FeedsClient;
-use Peal\ChannelDefaults\ChannelDefaultsClient;
-use Peal\ShortLinks\ShortLinksClient;
+use Peal\Me\MeClient;
+use Peal\Credential\CredentialClient;
+use Peal\System\SystemClient;
+use Peal\Automations\AutomationsClient;
+use Peal\Inbox\InboxClient;
+use Peal\Workspace\WorkspaceClient;
 use Psr\Http\Client\ClientInterface;
 use Peal\Core\Client\RawClient;
 
 class PealClient
 {
     /**
-     * @var SystemClient $system
+     * @var PostsClient $posts
      */
-    public SystemClient $system;
+    public PostsClient $posts;
 
     /**
-     * @var SessionClient $session
+     * @var ApprovalsClient $approvals
      */
-    public SessionClient $session;
-
-    /**
-     * @var CredentialClient $credential
-     */
-    public CredentialClient $credential;
-
-    /**
-     * @var ApiKeysClient $apiKeys
-     */
-    public ApiKeysClient $apiKeys;
+    public ApprovalsClient $approvals;
 
     /**
      * @var ChannelsClient $channels
@@ -76,69 +40,9 @@ class PealClient
     public ChannelsClient $channels;
 
     /**
-     * @var PostsClient $posts
-     */
-    public PostsClient $posts;
-
-    /**
-     * @var ArticlesClient $articles
-     */
-    public ArticlesClient $articles;
-
-    /**
      * @var MediaClient $media
      */
     public MediaClient $media;
-
-    /**
-     * @var MediaAudioClient $mediaAudio
-     */
-    public MediaAudioClient $mediaAudio;
-
-    /**
-     * @var NoticesClient $notices
-     */
-    public NoticesClient $notices;
-
-    /**
-     * @var NotificationPreferencesClient $notificationPreferences
-     */
-    public NotificationPreferencesClient $notificationPreferences;
-
-    /**
-     * @var AssistantClient $assistant
-     */
-    public AssistantClient $assistant;
-
-    /**
-     * @var VideoGenerationsClient $videoGenerations
-     */
-    public VideoGenerationsClient $videoGenerations;
-
-    /**
-     * @var SlideshowsClient $slideshows
-     */
-    public SlideshowsClient $slideshows;
-
-    /**
-     * @var MembersClient $members
-     */
-    public MembersClient $members;
-
-    /**
-     * @var InvitationsClient $invitations
-     */
-    public InvitationsClient $invitations;
-
-    /**
-     * @var BillingClient $billing
-     */
-    public BillingClient $billing;
-
-    /**
-     * @var UsageClient $usage
-     */
-    public UsageClient $usage;
 
     /**
      * @var AnalyticsClient $analytics
@@ -146,19 +50,19 @@ class PealClient
     public AnalyticsClient $analytics;
 
     /**
-     * @var TiktokClient $tiktok
+     * @var AdsClient $ads
      */
-    public TiktokClient $tiktok;
+    public AdsClient $ads;
 
     /**
-     * @var CapabilitiesClient $capabilities
+     * @var ArticlesClient $articles
      */
-    public CapabilitiesClient $capabilities;
+    public ArticlesClient $articles;
 
     /**
-     * @var LookupsClient $lookups
+     * @var LinksClient $links
      */
-    public LookupsClient $lookups;
+    public LinksClient $links;
 
     /**
      * @var WebhooksClient $webhooks
@@ -166,29 +70,9 @@ class PealClient
     public WebhooksClient $webhooks;
 
     /**
-     * @var InboxClient $inbox
+     * @var AssistantClient $assistant
      */
-    public InboxClient $inbox;
-
-    /**
-     * @var InboxReviewsClient $inboxReviews
-     */
-    public InboxReviewsClient $inboxReviews;
-
-    /**
-     * @var InboxMessagesClient $inboxMessages
-     */
-    public InboxMessagesClient $inboxMessages;
-
-    /**
-     * @var AdsClient $ads
-     */
-    public AdsClient $ads;
-
-    /**
-     * @var ActivityClient $activity
-     */
-    public ActivityClient $activity;
+    public AssistantClient $assistant;
 
     /**
      * @var PartnerClient $partner
@@ -196,74 +80,34 @@ class PealClient
     public PartnerClient $partner;
 
     /**
-     * @var PartnerUsageClient $partnerUsage
+     * @var MeClient $me
      */
-    public PartnerUsageClient $partnerUsage;
+    public MeClient $me;
 
     /**
-     * @var PartnerAccountClient $partnerAccount
+     * @var CredentialClient $credential
      */
-    public PartnerAccountClient $partnerAccount;
+    public CredentialClient $credential;
 
     /**
-     * @var ConnectLinksClient $connectLinks
+     * @var SystemClient $system
      */
-    public ConnectLinksClient $connectLinks;
+    public SystemClient $system;
 
     /**
-     * @var ReviewClient $review
+     * @var AutomationsClient $automations
      */
-    public ReviewClient $review;
+    public AutomationsClient $automations;
 
     /**
-     * @var TagsClient $tags
+     * @var InboxClient $inbox
      */
-    public TagsClient $tags;
+    public InboxClient $inbox;
 
     /**
-     * @var SignaturesClient $signatures
+     * @var WorkspaceClient $workspace
      */
-    public SignaturesClient $signatures;
-
-    /**
-     * @var ChannelSetsClient $channelSets
-     */
-    public ChannelSetsClient $channelSets;
-
-    /**
-     * @var QueuesClient $queues
-     */
-    public QueuesClient $queues;
-
-    /**
-     * @var RecyclingClient $recycling
-     */
-    public RecyclingClient $recycling;
-
-    /**
-     * @var FollowUpsClient $followUps
-     */
-    public FollowUpsClient $followUps;
-
-    /**
-     * @var InboxRulesClient $inboxRules
-     */
-    public InboxRulesClient $inboxRules;
-
-    /**
-     * @var FeedsClient $feeds
-     */
-    public FeedsClient $feeds;
-
-    /**
-     * @var ChannelDefaultsClient $channelDefaults
-     */
-    public ChannelDefaultsClient $channelDefaults;
-
-    /**
-     * @var ShortLinksClient $shortLinks
-     */
-    public ShortLinksClient $shortLinks;
+    public WorkspaceClient $workspace;
 
     /**
      * @var array{
@@ -327,48 +171,22 @@ class PealClient
             options: $this->options,
         );
 
-        $this->system = new SystemClient($this->client, $this->options);
-        $this->session = new SessionClient($this->client, $this->options);
-        $this->credential = new CredentialClient($this->client, $this->options);
-        $this->apiKeys = new ApiKeysClient($this->client, $this->options);
-        $this->channels = new ChannelsClient($this->client, $this->options);
         $this->posts = new PostsClient($this->client, $this->options);
-        $this->articles = new ArticlesClient($this->client, $this->options);
+        $this->approvals = new ApprovalsClient($this->client, $this->options);
+        $this->channels = new ChannelsClient($this->client, $this->options);
         $this->media = new MediaClient($this->client, $this->options);
-        $this->mediaAudio = new MediaAudioClient($this->client, $this->options);
-        $this->notices = new NoticesClient($this->client, $this->options);
-        $this->notificationPreferences = new NotificationPreferencesClient($this->client, $this->options);
-        $this->assistant = new AssistantClient($this->client, $this->options);
-        $this->videoGenerations = new VideoGenerationsClient($this->client, $this->options);
-        $this->slideshows = new SlideshowsClient($this->client, $this->options);
-        $this->members = new MembersClient($this->client, $this->options);
-        $this->invitations = new InvitationsClient($this->client, $this->options);
-        $this->billing = new BillingClient($this->client, $this->options);
-        $this->usage = new UsageClient($this->client, $this->options);
         $this->analytics = new AnalyticsClient($this->client, $this->options);
-        $this->tiktok = new TiktokClient($this->client, $this->options);
-        $this->capabilities = new CapabilitiesClient($this->client, $this->options);
-        $this->lookups = new LookupsClient($this->client, $this->options);
-        $this->webhooks = new WebhooksClient($this->client, $this->options);
-        $this->inbox = new InboxClient($this->client, $this->options);
-        $this->inboxReviews = new InboxReviewsClient($this->client, $this->options);
-        $this->inboxMessages = new InboxMessagesClient($this->client, $this->options);
         $this->ads = new AdsClient($this->client, $this->options);
-        $this->activity = new ActivityClient($this->client, $this->options);
+        $this->articles = new ArticlesClient($this->client, $this->options);
+        $this->links = new LinksClient($this->client, $this->options);
+        $this->webhooks = new WebhooksClient($this->client, $this->options);
+        $this->assistant = new AssistantClient($this->client, $this->options);
         $this->partner = new PartnerClient($this->client, $this->options);
-        $this->partnerUsage = new PartnerUsageClient($this->client, $this->options);
-        $this->partnerAccount = new PartnerAccountClient($this->client, $this->options);
-        $this->connectLinks = new ConnectLinksClient($this->client, $this->options);
-        $this->review = new ReviewClient($this->client, $this->options);
-        $this->tags = new TagsClient($this->client, $this->options);
-        $this->signatures = new SignaturesClient($this->client, $this->options);
-        $this->channelSets = new ChannelSetsClient($this->client, $this->options);
-        $this->queues = new QueuesClient($this->client, $this->options);
-        $this->recycling = new RecyclingClient($this->client, $this->options);
-        $this->followUps = new FollowUpsClient($this->client, $this->options);
-        $this->inboxRules = new InboxRulesClient($this->client, $this->options);
-        $this->feeds = new FeedsClient($this->client, $this->options);
-        $this->channelDefaults = new ChannelDefaultsClient($this->client, $this->options);
-        $this->shortLinks = new ShortLinksClient($this->client, $this->options);
+        $this->me = new MeClient($this->client, $this->options);
+        $this->credential = new CredentialClient($this->client, $this->options);
+        $this->system = new SystemClient($this->client, $this->options);
+        $this->automations = new AutomationsClient($this->client, $this->options);
+        $this->inbox = new InboxClient($this->client, $this->options);
+        $this->workspace = new WorkspaceClient($this->client, $this->options);
     }
 }

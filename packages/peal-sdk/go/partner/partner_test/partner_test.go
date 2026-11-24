@@ -77,7 +77,7 @@ func VerifyRequestCount(
 	require.Equal(t, expected, len(result.Requests))
 }
 
-func TestPartnerAccountWithWireMock(
+func TestPartnerGetWithWireMock(
 	t *testing.T,
 ) {
 	WireMockBaseURL := os.Getenv("WIREMOCK_URL")
@@ -88,15 +88,15 @@ func TestPartnerAccountWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	_, invocationErr := client.Partner.Account(
+	_, invocationErr := client.Partner.Get(
 		context.TODO(),
 		option.WithHTTPHeader(
-			http.Header{"X-Test-Id": []string{"TestPartnerAccountWithWireMock"}},
+			http.Header{"X-Test-Id": []string{"TestPartnerGetWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountWithWireMock", "GET", "/api/v1/partner", nil, 1)
+	VerifyRequestCount(t, "TestPartnerGetWithWireMock", "GET", "/api/v1/partner", nil, 1)
 }
 
 func TestPartnerOverviewWithWireMock(

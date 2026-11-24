@@ -17,6 +17,9 @@ export declare namespace AssistantClient {
     }
 }
 
+/**
+ * Suggestions for a post's text, and the AI providers and models a workspace uses.
+ */
 export class AssistantClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<AssistantClient.Options>;
 
@@ -153,77 +156,6 @@ export class AssistantClient {
         }
 
         return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/assistant/suggestions");
-    }
-
-    /**
-     * Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked `aiGenerated` and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's `images.requestCost` of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached `paymentMethodRequired` without one, before anything is asked) and counts one of the month's images (`images.month`), billed past the allowance up to the account's ceiling (UsageAllowanceReached `ceilingReached`); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube `containsSyntheticMedia`, TikTok `aiGenerated`, X `madeWithAi`). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (`images.source`).
-     *
-     * @param {Peal.ImageRequest} request
-     * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.BadRequestError}
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.PaymentRequiredError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.UnprocessableEntityError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link Peal.BadGatewayError}
-     * @throws {@link Peal.ServiceUnavailableError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.assistant.generateImage({
-     *         aspect: "square",
-     *         prompt: "prompt"
-     *     })
-     */
-    public generateImage(request: Peal.ImageRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.Media> {
-        return core.HttpResponsePromise.fromPromise(this.__generateImage(request, requestOptions));
-    }
-
-    private async __generateImage(request: Peal.ImageRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.Media>> {
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/images"),
-            method: "POST",
-            headers: _headers,
-            contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            requestType: "json",
-            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: 0,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: _response.body as Peal.Media, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 422: throw new Peal.UnprocessableEntityError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                case 502: throw new Peal.BadGatewayError(_response.error.body as unknown, _response.rawResponse);
-                case 503: throw new Peal.ServiceUnavailableError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/assistant/images");
     }
 
     /**

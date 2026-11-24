@@ -3,7 +3,6 @@ export type { AiProviderConnectionChange } from "./AiProviderConnectionChange.js
 export type { AiProviderTest } from "./AiProviderTest.js";
 export type { DisconnectProviderAssistantRequest } from "./DisconnectProviderAssistantRequest.js";
 export type { ImageProviderChange } from "./ImageProviderChange.js";
-export type { ImageRequest } from "./ImageRequest.js";
 export type { SuggestionRequest } from "./SuggestionRequest.js";
 export type { TextProviderChange } from "./TextProviderChange.js";
 export type { UnsetModelAssistantRequest } from "./UnsetModelAssistantRequest.js";

@@ -33,7 +33,7 @@ base_url = "http://127.0.0.1:#{forwarder.addr[1]}"
 peal = Peal::Client.new(base_url: base_url, token: "peal_test")
 
 peal.system.health
-me = peal.session.me
+me = peal.me.get
 
 unless me.user.email == "ada@example.test" && me.impersonated_by.nil? && me.user.image.nil? &&
        me.workspaces[0].permissions.include?("post:schedule")
@@ -41,7 +41,7 @@ unless me.user.email == "ada@example.test" && me.impersonated_by.nil? && me.user
 end
 
 begin
-  Peal::Client.new(base_url: base_url, token: "refused").session.me
+  Peal::Client.new(base_url: base_url, token: "refused").me.get
   abort "A refused token got an answer"
 rescue Peal::Errors::UnauthorizedError
   # The 401 the stand-in answers a refused token.

@@ -9,6 +9,9 @@ import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
 import * as Peal from "../../../index.js";
+import { DraftsClient } from "../resources/drafts/client/Client.js";
+import { SignaturesClient } from "../resources/signatures/client/Client.js";
+import { TagsClient } from "../resources/tags/client/Client.js";
 
 export declare namespace PostsClient {
     export type Options = BaseClientOptions;
@@ -17,80 +20,36 @@ export declare namespace PostsClient {
     }
 }
 
+/**
+ * Posts, from draft to published, with their tags and signatures.
+ */
 export class PostsClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<PostsClient.Options>;
+    protected _drafts: DraftsClient | undefined;
+    protected _tags: TagsClient | undefined;
+    protected _signatures: SignaturesClient | undefined;
 
     constructor(options: PostsClient.Options = {}) {
 
         this._options = normalizeClientOptionsWithAuth(options);
     }
 
-    /**
-     * Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Needs post:read.
-     *
-     * @param {Peal.DraftsPostsRequest} request
-     * @param {PostsClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.BadRequestError}
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.posts.drafts()
-     */
-    public drafts(request: Peal.DraftsPostsRequest = {}, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.DraftPage> {
-        return core.HttpResponsePromise.fromPromise(this.__drafts(request, requestOptions));
+    public get drafts(): DraftsClient {
+        return (this._drafts ??= new DraftsClient(this._options));
     }
 
-    private async __drafts(request: Peal.DraftsPostsRequest = {}, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.DraftPage>> {
-        const { cursor, limit } = request;
-        const _queryParams: Record<string, unknown> = {
-            cursor,
-            limit
-        };
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts/drafts"),
-            method: "GET",
-            headers: _headers,
-            queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: _response.body as Peal.DraftPage, rawResponse: _response.rawResponse };
-        }
+    public get tags(): TagsClient {
+        return (this._tags ??= new TagsClient(this._options));
+    }
 
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/posts/drafts");
+    public get signatures(): SignaturesClient {
+        return (this._signatures ??= new SignaturesClient(this._options));
     }
 
     /**
      * Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
      *
-     * @param {Peal.ListPostsRequest} request
+     * @param {Peal.CalendarPostsRequest} request
      * @param {PostsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link Peal.BadRequestError}
@@ -102,16 +61,16 @@ export class PostsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.posts.list({
+     *     await client.posts.calendar({
      *         from: "from",
      *         to: "to"
      *     })
      */
-    public list(request: Peal.ListPostsRequest, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.Post[]> {
-        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
+    public calendar(request: Peal.CalendarPostsRequest, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.Post[]> {
+        return core.HttpResponsePromise.fromPromise(this.__calendar(request, requestOptions));
     }
 
-    private async __list(request: Peal.ListPostsRequest, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Post[]>> {
+    private async __calendar(request: Peal.CalendarPostsRequest, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Post[]>> {
         const { "from": from_, to } = request;
         const _queryParams: Record<string, unknown> = {
             from: from_,
@@ -120,7 +79,7 @@ export class PostsClient {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts"),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts/calendar"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -149,88 +108,13 @@ export class PostsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/posts");
-    }
-
-    /**
-     * Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (`TargetOptions`, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (`channelSets`, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (`warnings`). A channel on which it gives no options takes the channel's default options, if it has some. With `defaultSignatures`, each channel's default signature goes under its text, and `signatureId` puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. `shortenLinks: true` sends its links shortened where the server has short links (`shortLinks.status`), `false` as written; left out, the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
-     *
-     * @param {Peal.PostDraft} request
-     * @param {PostsClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.BadRequestError}
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.UnprocessableEntityError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.posts.create({
-     *         channelIds: ["channelIds"],
-     *         content: {
-     *             media: [{
-     *                     altText: "altText",
-     *                     mediaId: "mediaId"
-     *                 }],
-     *             overrides: [{
-     *                     channelId: "channelId",
-     *                     text: "text"
-     *                 }],
-     *             text: "text"
-     *         }
-     *     })
-     */
-    public create(request: Peal.PostDraft, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.Post> {
-        return core.HttpResponsePromise.fromPromise(this.__create(request, requestOptions));
-    }
-
-    private async __create(request: Peal.PostDraft, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Post>> {
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts"),
-            method: "POST",
-            headers: _headers,
-            contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            requestType: "json",
-            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: 0,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: _response.body as Peal.Post, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 422: throw new Peal.UnprocessableEntityError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/posts");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/posts/calendar");
     }
 
     /**
      * Lists the workspace's posts, whatever their state, a page at a time: 20 unless `limit` (at most 100) says otherwise. Every filter given must hold: `status` (draft, scheduled, publishing, finished, cancelled), `outcome` (how a finished post ended, such as `failed` or `partiallyPublished`), `channelId` (posts with a target on that channel), `platform` (posts with a target on a connected channel of that platform), `tagId` (posts filed under that tag), `queueId` (posts that queue placed), `recyclingId` (posts that recycling rule made), `removed` (`true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none), `from` (included) and `to` (excluded), on the scheduled instant, which leave out posts without a time, `createdVia` (`web`, `apiKey` or `application`) and `authorId`. `sort` orders them by creation (`createdDesc`, the default, or `createdAsc`) or by scheduled instant (`scheduledDesc`, `scheduledAsc`, which list only posts with a time). Pass the page's `nextCursor` as `cursor`, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and `channels` gives the platform of each channel the page names. Needs post:read and channel:read.
      *
-     * @param {Peal.SearchPostsRequest} request
+     * @param {Peal.ListPostsRequest} request
      * @param {PostsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
      * @throws {@link Peal.BadRequestError}
@@ -242,13 +126,13 @@ export class PostsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.posts.search()
+     *     await client.posts.list()
      */
-    public search(request: Peal.SearchPostsRequest = {}, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.PostPage> {
-        return core.HttpResponsePromise.fromPromise(this.__search(request, requestOptions));
+    public list(request: Peal.ListPostsRequest = {}, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.PostPage> {
+        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
     }
 
-    private async __search(request: Peal.SearchPostsRequest = {}, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.PostPage>> {
+    private async __list(request: Peal.ListPostsRequest = {}, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.PostPage>> {
         const { authorId, channelId, createdVia, cursor, "from": from_, limit, outcome, platform, queueId, recyclingId, removed, sort, status, tagId, to } = request;
         const _queryParams: Record<string, unknown> = {
             authorId,
@@ -270,7 +154,7 @@ export class PostsClient {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts/search"),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -299,7 +183,7 @@ export class PostsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/posts/search");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/posts");
     }
 
     /**
@@ -320,7 +204,7 @@ export class PostsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.posts.send({
+     *     await client.posts.create({
      *         channelIds: ["channelIds"],
      *         content: {
      *             media: [{
@@ -338,11 +222,11 @@ export class PostsClient {
      *         }
      *     })
      */
-    public send(request: Peal.NewPost, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.Post> {
-        return core.HttpResponsePromise.fromPromise(this.__send(request, requestOptions));
+    public create(request: Peal.NewPost, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.Post> {
+        return core.HttpResponsePromise.fromPromise(this.__create(request, requestOptions));
     }
 
-    private async __send(request: Peal.NewPost, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Post>> {
+    private async __create(request: Peal.NewPost, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Post>> {
         const { wait, "idempotency-key": idempotencyKey, ..._body } = request;
         const _queryParams: Record<string, unknown> = {
             wait
@@ -350,7 +234,7 @@ export class PostsClient {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts/send"),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/posts"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -385,7 +269,7 @@ export class PostsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/posts/send");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/posts");
     }
 
     /**
@@ -747,68 +631,6 @@ export class PostsClient {
     }
 
     /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     *
-     * @param {Peal.DiscardPostsRequest} request
-     * @param {PostsClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.BadRequestError}
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.ConflictError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.posts.discard({
-     *         postId: "postId"
-     *     })
-     */
-    public discard(request: Peal.DiscardPostsRequest, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<void> {
-        return core.HttpResponsePromise.fromPromise(this.__discard(request, requestOptions));
-    }
-
-    private async __discard(request: Peal.DiscardPostsRequest, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { postId } = request;
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/posts/${core.url.encodePathParam(postId, errors.PealError)}`),
-            method: "DELETE",
-            headers: _headers,
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: undefined, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 409: throw new Peal.ConflictError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/posts/{postId}");
-    }
-
-    /**
      * Answers with a post once it has gone out: it waits up to `wait` seconds (60 at most; none unless given) until every channel has its result, and answers the post then (`status` `finished`), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
      *
      * @param {Peal.OutcomePostsRequest} request
@@ -947,16 +769,16 @@ export class PostsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.posts.tag({
+     *     await client.posts.setTags({
      *         postId: "postId",
      *         tagIds: ["tagIds"]
      *     })
      */
-    public tag(request: Peal.PostTags, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.Post> {
-        return core.HttpResponsePromise.fromPromise(this.__tag(request, requestOptions));
+    public setTags(request: Peal.PostTags, requestOptions?: PostsClient.RequestOptions): core.HttpResponsePromise<Peal.Post> {
+        return core.HttpResponsePromise.fromPromise(this.__setTags(request, requestOptions));
     }
 
-    private async __tag(request: Peal.PostTags, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Post>> {
+    private async __setTags(request: Peal.PostTags, requestOptions?: PostsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Post>> {
         const { postId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);

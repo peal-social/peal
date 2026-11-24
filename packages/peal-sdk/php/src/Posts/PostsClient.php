@@ -2,22 +2,22 @@
 
 namespace Peal\Posts;
 
+use Peal\Posts\Drafts\DraftsClient;
+use Peal\Posts\Tags\TagsClient;
+use Peal\Posts\Signatures\SignaturesClient;
 use Psr\Http\Client\ClientInterface;
 use Peal\Core\Client\RawClient;
-use Peal\Posts\Requests\DraftsPostsRequest;
-use Peal\Types\DraftPage;
+use Peal\Posts\Requests\CalendarPostsRequest;
+use Peal\Types\Post;
 use Peal\Exceptions\PealException;
 use Peal\Exceptions\PealApiException;
 use Peal\Core\Json\JsonApiRequest;
 use Peal\Environments;
 use Peal\Core\Client\HttpMethod;
+use Peal\Core\Json\JsonDecoder;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
 use Peal\Posts\Requests\ListPostsRequest;
-use Peal\Types\Post;
-use Peal\Core\Json\JsonDecoder;
-use Peal\Types\PostDraft;
-use Peal\Posts\Requests\SearchPostsRequest;
 use Peal\Types\PostPage;
 use Peal\Posts\Requests\NewPost;
 use Peal\Posts\Requests\BulkPosts;
@@ -42,6 +42,21 @@ use Peal\Types\LivePostChanges;
 
 class PostsClient
 {
+    /**
+     * @var DraftsClient $drafts
+     */
+    public DraftsClient $drafts;
+
+    /**
+     * @var TagsClient $tags
+     */
+    public TagsClient $tags;
+
+    /**
+     * @var SignaturesClient $signatures
+     */
+    public SignaturesClient $signatures;
+
     /**
      * @var array{
      *   baseUrl?: string,
@@ -74,69 +89,9 @@ class PostsClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
-    }
-
-    /**
-     * Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Needs post:read.
-     *
-     * Example:
-     * ```php
-     * $client->posts->drafts(
-     *     new DraftsPostsRequest([]),
-     * );
-     * ```
-     *
-     * @param DraftsPostsRequest $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?DraftPage
-     * @throws PealException
-     * @throws PealApiException
-     */
-    public function drafts(DraftsPostsRequest $request = new DraftsPostsRequest(), ?array $options = null): ?DraftPage
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $query = [];
-        if ($request->cursor != null) {
-            $query['cursor'] = $request->cursor;
-        }
-        if ($request->limit != null) {
-            $query['limit'] = $request->limit;
-        }
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/v1/posts/drafts",
-                    method: HttpMethod::GET,
-                    query: $query,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return DraftPage::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new PealException(message: $e->getMessage(), previous: $e);
-        }
-        throw new PealApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
+        $this->drafts = new DraftsClient($this->client, $this->options);
+        $this->tags = new TagsClient($this->client, $this->options);
+        $this->signatures = new SignaturesClient($this->client, $this->options);
     }
 
     /**
@@ -144,15 +99,15 @@ class PostsClient
      *
      * Example:
      * ```php
-     * $client->posts->list(
-     *     new ListPostsRequest([
+     * $client->posts->calendar(
+     *     new CalendarPostsRequest([
      *         'from' => 'from',
      *         'to' => 'to',
      *     ]),
      * );
      * ```
      *
-     * @param ListPostsRequest $request
+     * @param CalendarPostsRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -165,7 +120,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(ListPostsRequest $request, ?array $options = null): ?array
+    public function calendar(CalendarPostsRequest $request, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -175,7 +130,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/v1/posts",
+                    path: "api/v1/posts/calendar",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -202,92 +157,16 @@ class PostsClient
     }
 
     /**
-     * Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (`TargetOptions`, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (`channelSets`, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (`warnings`). A channel on which it gives no options takes the channel's default options, if it has some. With `defaultSignatures`, each channel's default signature goes under its text, and `signatureId` puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. `shortenLinks: true` sends its links shortened where the server has short links (`shortLinks.status`), `false` as written; left out, the post takes the workspace's default (`byDefault`) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
-     *
-     * Example:
-     * ```php
-     * $client->posts->create(
-     *     new PostDraft([
-     *         'channelIds' => [
-     *             'channelIds',
-     *         ],
-     *         'content' => new PostContent([
-     *             'media' => [
-     *                 new MediaAttachment([
-     *                     'altText' => 'altText',
-     *                     'mediaId' => 'mediaId',
-     *                 ]),
-     *             ],
-     *             'overrides' => [
-     *                 new TextOverride([
-     *                     'channelId' => 'channelId',
-     *                     'text' => 'text',
-     *                 ]),
-     *             ],
-     *             'text' => 'text',
-     *         ]),
-     *     ]),
-     * );
-     * ```
-     *
-     * @param PostDraft $request
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @return ?Post
-     * @throws PealException
-     * @throws PealApiException
-     */
-    public function create(PostDraft $request, ?array $options = null): ?Post
-    {
-        $options = array_merge($this->options, $options ?? []);
-        $options['maxRetries'] = 0;
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/v1/posts",
-                    method: HttpMethod::POST,
-                    body: $request,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                $json = $response->getBody()->getContents();
-                if (empty($json)) {
-                    return null;
-                }
-                return Post::fromJson($json);
-            }
-        } catch (JsonException $e) {
-            throw new PealException(message: "Failed to deserialize response: {$e->getMessage()}", previous: $e);
-        } catch (ClientExceptionInterface $e) {
-            throw new PealException(message: $e->getMessage(), previous: $e);
-        }
-        throw new PealApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
      * Lists the workspace's posts, whatever their state, a page at a time: 20 unless `limit` (at most 100) says otherwise. Every filter given must hold: `status` (draft, scheduled, publishing, finished, cancelled), `outcome` (how a finished post ended, such as `failed` or `partiallyPublished`), `channelId` (posts with a target on that channel), `platform` (posts with a target on a connected channel of that platform), `tagId` (posts filed under that tag), `queueId` (posts that queue placed), `recyclingId` (posts that recycling rule made), `removed` (`true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none), `from` (included) and `to` (excluded), on the scheduled instant, which leave out posts without a time, `createdVia` (`web`, `apiKey` or `application`) and `authorId`. `sort` orders them by creation (`createdDesc`, the default, or `createdAsc`) or by scheduled instant (`scheduledDesc`, `scheduledAsc`, which list only posts with a time). Pass the page's `nextCursor` as `cursor`, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and `channels` gives the platform of each channel the page names. Needs post:read and channel:read.
      *
      * Example:
      * ```php
-     * $client->posts->search(
-     *     new SearchPostsRequest([]),
+     * $client->posts->list(
+     *     new ListPostsRequest([]),
      * );
      * ```
      *
-     * @param SearchPostsRequest $request
+     * @param ListPostsRequest $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -300,7 +179,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function search(SearchPostsRequest $request = new SearchPostsRequest(), ?array $options = null): ?PostPage
+    public function list(ListPostsRequest $request = new ListPostsRequest(), ?array $options = null): ?PostPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -353,7 +232,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/v1/posts/search",
+                    path: "api/v1/posts",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -384,7 +263,7 @@ class PostsClient
      *
      * Example:
      * ```php
-     * $client->posts->send(
+     * $client->posts->create(
      *     new NewPost([
      *         'channelIds' => [
      *             'channelIds',
@@ -422,7 +301,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function send(NewPost $request, ?array $options = null): ?Post
+    public function create(NewPost $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -438,7 +317,7 @@ class PostsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/v1/posts/send",
+                    path: "api/v1/posts",
                     method: HttpMethod::POST,
                     headers: $headers,
                     query: $query,
@@ -827,54 +706,6 @@ class PostsClient
     }
 
     /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     *
-     * Example:
-     * ```php
-     * $client->posts->discard(
-     *     'postId',
-     * );
-     * ```
-     *
-     * @param string $postId
-     * @param ?array{
-     *   baseUrl?: string,
-     *   maxRetries?: int,
-     *   timeout?: float,
-     *   headers?: array<string, string>,
-     *   queryParameters?: array<string, mixed>,
-     *   bodyProperties?: array<string, mixed>,
-     * } $options
-     * @throws PealException
-     * @throws PealApiException
-     */
-    public function discard(string $postId, ?array $options = null): void
-    {
-        $options = array_merge($this->options, $options ?? []);
-        try {
-            $response = $this->client->sendRequest(
-                new JsonApiRequest(
-                    baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/v1/posts/{$postId}",
-                    method: HttpMethod::DELETE,
-                ),
-                $options,
-            );
-            $statusCode = $response->getStatusCode();
-            if ($statusCode >= 200 && $statusCode < 400) {
-                return;
-            }
-        } catch (ClientExceptionInterface $e) {
-            throw new PealException(message: $e->getMessage(), previous: $e);
-        }
-        throw new PealApiException(
-            message: 'API request failed',
-            statusCode: $statusCode,
-            body: $response->getBody()->getContents(),
-        );
-    }
-
-    /**
      * Answers with a post once it has gone out: it waits up to `wait` seconds (60 at most; none unless given) until every channel has its result, and answers the post then (`status` `finished`), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
      *
      * Example:
@@ -996,7 +827,7 @@ class PostsClient
      *
      * Example:
      * ```php
-     * $client->posts->tag(
+     * $client->posts->setTags(
      *     'postId',
      *     new PostTags([
      *         'tagIds' => [
@@ -1020,7 +851,7 @@ class PostsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function tag(string $postId, PostTags $request, ?array $options = null): ?Post
+    public function setTags(string $postId, PostTags $request, ?array $options = null): ?Post
     {
         $options = array_merge($this->options, $options ?? []);
         try {

@@ -10,54 +10,6 @@ module Peal
         @client = client
       end
 
-      # Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50) says otherwise. Pass the
-      # page's `nextCursor` as `cursor` for the next one. Needs post:read.
-      #
-      # @param request_options [Hash]
-      # @param params [Hash]
-      # @option request_options [String] :base_url
-      # @option request_options [Hash{String => Object}] :additional_headers
-      # @option request_options [Hash{String => Object}] :additional_query_parameters
-      # @option request_options [Hash{String => Object}] :additional_body_parameters
-      # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String, nil] :cursor
-      # @option params [String, nil] :limit
-      #
-      # @example
-      #   client.posts.drafts
-      #
-      # @return [Peal::Types::DraftPage]
-      def drafts(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
-        query_params = {}
-        query_params["cursor"] = params[:cursor] if params.key?(:cursor)
-        query_params["limit"] = params[:limit] if params.key?(:limit)
-
-        request = Peal::Internal::JSON::Request.new(
-          base_url: request_options[:base_url],
-          method: "GET",
-          path: "api/v1/posts/drafts",
-          query: query_params,
-          request_options: request_options
-        )
-        begin
-          response = @client.send(request)
-        rescue Net::HTTPRequestTimeout
-          raise Peal::Errors::TimeoutError
-        end
-        code = response.code.to_i
-        if code.between?(200, 299)
-          (response.body.to_s.empty? ? nil : Peal::Types::DraftPage.load(response.body))
-        else
-          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
-          error_types = {
-            401 => Peal::Types::UnauthenticatedEncoded
-          }
-          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
-          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
-        end
-      end
-
       # Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 days apart, by scheduled
       # instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are,
       # with the time they had. Needs post:read.
@@ -73,13 +25,13 @@ module Peal
       # @option params [String] :to
       #
       # @example
-      #   client.posts.list(
+      #   client.posts.calendar(
       #     from: "from",
       #     to: "to"
       #   )
       #
       # @return [Array[Peal::Types::Post]]
-      def list(request_options: {}, **params)
+      def calendar(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         query_params = {}
         query_params["from"] = params[:from] if params.key?(:from)
@@ -88,7 +40,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/v1/posts",
+          path: "api/v1/posts/calendar",
           query: query_params,
           request_options: request_options
         )
@@ -100,71 +52,6 @@ module Peal
         code = response.code.to_i
         if code.between?(200, 299)
           Peal::Internal::Types::Utils.coerce(Internal::Types::Array[Peal::Types::Post], (response.body.to_s.empty? ? nil : JSON.parse(response.body, symbolize_names: true)))
-        else
-          error_class = Peal::Errors::ResponseError.subclass_for_code(code)
-          error_types = {
-            401 => Peal::Types::UnauthenticatedEncoded
-          }
-          error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
-          raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
-        end
-      end
-
-      # Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform
-      # takes them (`TargetOptions`, of the channel's platform). Its media must be the workspace's, and ready. Its text,
-      # media and options are checked against each platform's rules when it is scheduled, not before. It may name
-      # channel sets (`channelSets`, by id or name), whose connected channels it is for as well, with the options each
-      # set keeps; a channel of a set that is no longer connected is left out, and the answer says so (`warnings`). A
-      # channel on which it gives no options takes the channel's default options, if it has some. With
-      # `defaultSignatures`, each channel's default signature goes under its text, and `signatureId` puts one signature
-      # under it on every channel: a signature is then text of the post, never added under a text that already ends with
-      # it. `shortenLinks: true` sends its links shortened where the server has short links (`shortLinks.status`),
-      # `false` as written; left out, the post takes the workspace's default (`byDefault`) when it is made, and keeps
-      # it. Needs post:create, channel:read, and media:read when it shows media.
-      #
-      # @param request_options [Hash]
-      # @param params [Peal::Types::PostDraft]
-      # @option request_options [String] :base_url
-      # @option request_options [Hash{String => Object}] :additional_headers
-      # @option request_options [Hash{String => Object}] :additional_query_parameters
-      # @option request_options [Hash{String => Object}] :additional_body_parameters
-      # @option request_options [Integer] :timeout_in_seconds
-      #
-      # @example
-      #   client.posts.create(
-      #     channel_ids: ["channelIds"],
-      #     content: {
-      #       media: [{
-      #         altText: "altText",
-      #         mediaId: "mediaId"
-      #       }],
-      #       overrides: [{
-      #         channelId: "channelId",
-      #         text: "text"
-      #       }],
-      #       text: "text"
-      #     }
-      #   )
-      #
-      # @return [Peal::Types::Post]
-      def create(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request = Peal::Internal::JSON::Request.new(
-          base_url: request_options[:base_url],
-          method: "POST",
-          path: "api/v1/posts",
-          body: Peal::Types::PostDraft.new(params).to_h,
-          request_options: request_options,
-          max_retries: 0
-        )
-        begin
-          response = @client.send(request)
-        rescue Net::HTTPRequestTimeout
-          raise Peal::Errors::TimeoutError
-        end
-        code = response.code.to_i
-        if code.between?(200, 299)
-          (response.body.to_s.empty? ? nil : Peal::Types::Post.load(response.body))
         else
           error_class = Peal::Errors::ResponseError.subclass_for_code(code)
           error_types = {
@@ -207,17 +94,17 @@ module Peal
       # @option params [Peal::Types::Platform, nil] :platform
       # @option params [String, nil] :queue_id
       # @option params [String, nil] :recycling_id
-      # @option params [Peal::Posts::Types::SearchPostsRequestRemoved, nil] :removed
+      # @option params [Peal::Posts::Types::ListPostsRequestRemoved, nil] :removed
       # @option params [Peal::Types::PostSort, nil] :sort
       # @option params [Peal::Types::PostStatus, nil] :status
       # @option params [String, nil] :tag_id
       # @option params [String, nil] :to
       #
       # @example
-      #   client.posts.search
+      #   client.posts.list
       #
       # @return [Peal::Types::PostPage]
-      def search(request_options: {}, **params)
+      def list(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         query_params = {}
         query_params["authorId"] = params[:author_id] if params.key?(:author_id)
@@ -239,7 +126,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/v1/posts/search",
+          path: "api/v1/posts",
           query: query_params,
           request_options: request_options
         )
@@ -305,7 +192,7 @@ module Peal
       # @option params [String, nil] :idempotency_key
       #
       # @example
-      #   client.posts.send_(
+      #   client.posts.create(
       #     channel_ids: ["channelIds"],
       #     content: {
       #       media: [{
@@ -321,7 +208,7 @@ module Peal
       #   )
       #
       # @return [Peal::Types::Post]
-      def send_(request_options: {}, **params)
+      def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::NewPost.new(params).to_h
         non_body_param_names = %w[wait idempotency-key]
@@ -336,7 +223,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/v1/posts/send",
+          path: "api/v1/posts",
           headers: headers,
           query: query_params,
           body: body,
@@ -674,46 +561,6 @@ module Peal
         end
       end
 
-      # Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update
-      # for the user who created the draft.
-      #
-      # @param request_options [Hash]
-      # @param params [Hash]
-      # @option request_options [String] :base_url
-      # @option request_options [Hash{String => Object}] :additional_headers
-      # @option request_options [Hash{String => Object}] :additional_query_parameters
-      # @option request_options [Hash{String => Object}] :additional_body_parameters
-      # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :post_id
-      #
-      # @example
-      #   client.posts.discard(post_id: "postId")
-      #
-      # @return [untyped]
-      def discard(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request = Peal::Internal::JSON::Request.new(
-          base_url: request_options[:base_url],
-          method: "DELETE",
-          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
-          request_options: request_options
-        )
-        begin
-          response = @client.send(request)
-        rescue Net::HTTPRequestTimeout
-          raise Peal::Errors::TimeoutError
-        end
-        code = response.code.to_i
-        return if code.between?(200, 299)
-
-        error_class = Peal::Errors::ResponseError.subclass_for_code(code)
-        error_types = {
-          401 => Peal::Types::UnauthenticatedEncoded
-        }
-        error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
-        raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
-      end
-
       # Answers with a post once it has gone out: it waits up to `wait` seconds (60 at most; none unless given) until
       # every channel has its result, and answers the post then (`status` `finished`), or as it stands when the time
       # runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are
@@ -820,13 +667,13 @@ module Peal
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.tag(
+      #   client.posts.set_tags(
       #     post_id: "postId",
       #     tag_ids: ["tagIds"]
       #   )
       #
       # @return [Peal::Types::Post]
-      def tag(request_options: {}, **params)
+      def set_tags(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::PostTags.new(params).to_h
         non_body_param_names = %w[postId]
@@ -1584,6 +1431,21 @@ module Peal
           error_body = Peal::Errors::ResponseError.load_error_body(code, response.body, error_types)
           raise error_class.new(response.body, code: code, body: error_body, headers: response.to_hash)
         end
+      end
+
+      # @return [Peal::Drafts::Client]
+      def drafts
+        @drafts ||= Peal::Posts::Drafts::Client.new(client: @client)
+      end
+
+      # @return [Peal::Tags::Client]
+      def tags
+        @tags ||= Peal::Posts::Tags::Client.new(client: @client)
+      end
+
+      # @return [Peal::Signatures::Client]
+      def signatures
+        @signatures ||= Peal::Posts::Signatures::Client.new(client: @client)
       end
     end
   end

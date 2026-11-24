@@ -5,7 +5,7 @@ pub use crate::prelude::*;
 #[non_exhaustive]
 pub enum UnprocessableEntityErrorBody {
     #[non_exhaustive]
-    FeedAddressRefused {
+    AiCapabilityNotOffered {
         #[serde(skip_serializing_if = "Option::is_none")]
         code: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -13,11 +13,10 @@ pub enum UnprocessableEntityErrorBody {
         #[serde(rename = "requestId")]
         #[serde(skip_serializing_if = "Option::is_none")]
         request_id: Option<String>,
-        reason: FeedAddressRefusedEncodedReason,
     },
 
     #[non_exhaustive]
-    FeedTemplateInvalid {
+    AiModelRequired {
         #[serde(skip_serializing_if = "Option::is_none")]
         code: Option<String>,
         #[serde(skip_serializing_if = "Option::is_none")]
@@ -25,27 +24,6 @@ pub enum UnprocessableEntityErrorBody {
         #[serde(rename = "requestId")]
         #[serde(skip_serializing_if = "Option::is_none")]
         request_id: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        placeholder: Option<String>,
-        reason: FeedTemplateInvalidEncodedReason,
-    },
-
-    #[non_exhaustive]
-    FeedUnreadable {
-        #[serde(skip_serializing_if = "Option::is_none")]
-        code: Option<String>,
-        #[serde(skip_serializing_if = "Option::is_none")]
-        message: Option<String>,
-        #[serde(rename = "requestId")]
-        #[serde(skip_serializing_if = "Option::is_none")]
-        request_id: Option<String>,
-        reason: FeedUnreadableEncodedReason,
-    },
-
-    #[non_exhaustive]
-    UnknownChannels {
-        #[serde(flatten)]
-        data: UnknownChannelsEncoded,
     },
 
     /// Catch-all variant for unrecognized discriminant values.
@@ -56,183 +34,91 @@ pub enum UnprocessableEntityErrorBody {
 }
 
 impl UnprocessableEntityErrorBody {
-    pub fn feed_address_refused(reason: FeedAddressRefusedEncodedReason) -> Self {
-        Self::FeedAddressRefused {
+    pub fn ai_capability_not_offered() -> Self {
+        Self::AiCapabilityNotOffered {
             code: None,
             message: None,
             request_id: None,
-            reason,
         }
     }
 
-    pub fn feed_template_invalid(reason: FeedTemplateInvalidEncodedReason) -> Self {
-        Self::FeedTemplateInvalid {
+    pub fn ai_model_required() -> Self {
+        Self::AiModelRequired {
             code: None,
             message: None,
             request_id: None,
-            placeholder: None,
-            reason,
         }
     }
 
-    pub fn feed_unreadable(reason: FeedUnreadableEncodedReason) -> Self {
-        Self::FeedUnreadable {
-            code: None,
-            message: None,
-            request_id: None,
-            reason,
-        }
-    }
-
-    pub fn unknown_channels(data: UnknownChannelsEncoded) -> Self {
-        Self::UnknownChannels { data }
-    }
-
-    pub fn feed_address_refused_with_code(
+    pub fn ai_capability_not_offered_with_code(
         code: String,
         message: Option<String>,
         request_id: Option<String>,
-        reason: FeedAddressRefusedEncodedReason,
     ) -> Self {
-        Self::FeedAddressRefused {
+        Self::AiCapabilityNotOffered {
             code: Some(code),
             message,
             request_id,
-            reason,
         }
     }
 
-    pub fn feed_address_refused_with_message(
+    pub fn ai_capability_not_offered_with_message(
         code: Option<String>,
         message: String,
         request_id: Option<String>,
-        reason: FeedAddressRefusedEncodedReason,
     ) -> Self {
-        Self::FeedAddressRefused {
+        Self::AiCapabilityNotOffered {
             code,
             message: Some(message),
             request_id,
-            reason,
         }
     }
 
-    pub fn feed_address_refused_with_request_id(
+    pub fn ai_capability_not_offered_with_request_id(
         code: Option<String>,
         message: Option<String>,
         request_id: String,
-        reason: FeedAddressRefusedEncodedReason,
     ) -> Self {
-        Self::FeedAddressRefused {
+        Self::AiCapabilityNotOffered {
             code,
             message,
             request_id: Some(request_id),
-            reason,
         }
     }
 
-    pub fn feed_template_invalid_with_code(
+    pub fn ai_model_required_with_code(
         code: String,
         message: Option<String>,
         request_id: Option<String>,
-        placeholder: Option<String>,
-        reason: FeedTemplateInvalidEncodedReason,
     ) -> Self {
-        Self::FeedTemplateInvalid {
+        Self::AiModelRequired {
             code: Some(code),
             message,
             request_id,
-            placeholder,
-            reason,
         }
     }
 
-    pub fn feed_template_invalid_with_message(
+    pub fn ai_model_required_with_message(
         code: Option<String>,
         message: String,
         request_id: Option<String>,
-        placeholder: Option<String>,
-        reason: FeedTemplateInvalidEncodedReason,
     ) -> Self {
-        Self::FeedTemplateInvalid {
+        Self::AiModelRequired {
             code,
             message: Some(message),
             request_id,
-            placeholder,
-            reason,
         }
     }
 
-    pub fn feed_template_invalid_with_request_id(
+    pub fn ai_model_required_with_request_id(
         code: Option<String>,
         message: Option<String>,
         request_id: String,
-        placeholder: Option<String>,
-        reason: FeedTemplateInvalidEncodedReason,
     ) -> Self {
-        Self::FeedTemplateInvalid {
+        Self::AiModelRequired {
             code,
             message,
             request_id: Some(request_id),
-            placeholder,
-            reason,
-        }
-    }
-
-    pub fn feed_template_invalid_with_placeholder(
-        code: Option<String>,
-        message: Option<String>,
-        request_id: Option<String>,
-        placeholder: String,
-        reason: FeedTemplateInvalidEncodedReason,
-    ) -> Self {
-        Self::FeedTemplateInvalid {
-            code,
-            message,
-            request_id,
-            placeholder: Some(placeholder),
-            reason,
-        }
-    }
-
-    pub fn feed_unreadable_with_code(
-        code: String,
-        message: Option<String>,
-        request_id: Option<String>,
-        reason: FeedUnreadableEncodedReason,
-    ) -> Self {
-        Self::FeedUnreadable {
-            code: Some(code),
-            message,
-            request_id,
-            reason,
-        }
-    }
-
-    pub fn feed_unreadable_with_message(
-        code: Option<String>,
-        message: String,
-        request_id: Option<String>,
-        reason: FeedUnreadableEncodedReason,
-    ) -> Self {
-        Self::FeedUnreadable {
-            code,
-            message: Some(message),
-            request_id,
-            reason,
-        }
-    }
-
-    pub fn feed_unreadable_with_request_id(
-        code: Option<String>,
-        message: Option<String>,
-        request_id: String,
-        reason: FeedUnreadableEncodedReason,
-    ) -> Self {
-        Self::FeedUnreadable {
-            code,
-            message,
-            request_id: Some(request_id),
-            reason,
         }
     }
 

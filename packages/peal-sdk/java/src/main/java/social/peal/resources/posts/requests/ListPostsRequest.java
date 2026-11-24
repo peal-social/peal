@@ -9,35 +9,162 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import org.jetbrains.annotations.NotNull;
+import java.util.Optional;
 import social.peal.core.ObjectMappers;
+import social.peal.resources.posts.types.ListPostsRequestRemoved;
+import social.peal.types.Platform;
+import social.peal.types.PostOriginVia;
+import social.peal.types.PostOutcome;
+import social.peal.types.PostSort;
+import social.peal.types.PostStatus;
 
 @JsonInclude(JsonInclude.Include.NON_ABSENT)
 @JsonDeserialize(builder = ListPostsRequest.Builder.class)
 public final class ListPostsRequest {
-    private final String from;
+    private final Optional<String> authorId;
 
-    private final String to;
+    private final Optional<String> channelId;
+
+    private final Optional<PostOriginVia> createdVia;
+
+    private final Optional<String> cursor;
+
+    private final Optional<String> from;
+
+    private final Optional<String> limit;
+
+    private final Optional<PostOutcome> outcome;
+
+    private final Optional<Platform> platform;
+
+    private final Optional<String> queueId;
+
+    private final Optional<String> recyclingId;
+
+    private final Optional<ListPostsRequestRemoved> removed;
+
+    private final Optional<PostSort> sort;
+
+    private final Optional<PostStatus> status;
+
+    private final Optional<String> tagId;
+
+    private final Optional<String> to;
 
     private final Map<String, Object> additionalProperties;
 
-    private ListPostsRequest(String from, String to, Map<String, Object> additionalProperties) {
+    private ListPostsRequest(
+            Optional<String> authorId,
+            Optional<String> channelId,
+            Optional<PostOriginVia> createdVia,
+            Optional<String> cursor,
+            Optional<String> from,
+            Optional<String> limit,
+            Optional<PostOutcome> outcome,
+            Optional<Platform> platform,
+            Optional<String> queueId,
+            Optional<String> recyclingId,
+            Optional<ListPostsRequestRemoved> removed,
+            Optional<PostSort> sort,
+            Optional<PostStatus> status,
+            Optional<String> tagId,
+            Optional<String> to,
+            Map<String, Object> additionalProperties) {
+        this.authorId = authorId;
+        this.channelId = channelId;
+        this.createdVia = createdVia;
+        this.cursor = cursor;
         this.from = from;
+        this.limit = limit;
+        this.outcome = outcome;
+        this.platform = platform;
+        this.queueId = queueId;
+        this.recyclingId = recyclingId;
+        this.removed = removed;
+        this.sort = sort;
+        this.status = status;
+        this.tagId = tagId;
         this.to = to;
         this.additionalProperties = additionalProperties;
     }
 
+    @JsonProperty("authorId")
+    public Optional<String> getAuthorId() {
+        return authorId;
+    }
+
+    @JsonProperty("channelId")
+    public Optional<String> getChannelId() {
+        return channelId;
+    }
+
+    @JsonProperty("createdVia")
+    public Optional<PostOriginVia> getCreatedVia() {
+        return createdVia;
+    }
+
+    @JsonProperty("cursor")
+    public Optional<String> getCursor() {
+        return cursor;
+    }
+
     @JsonProperty("from")
-    public String getFrom() {
+    public Optional<String> getFrom() {
         return from;
     }
 
+    @JsonProperty("limit")
+    public Optional<String> getLimit() {
+        return limit;
+    }
+
+    @JsonProperty("outcome")
+    public Optional<PostOutcome> getOutcome() {
+        return outcome;
+    }
+
+    @JsonProperty("platform")
+    public Optional<Platform> getPlatform() {
+        return platform;
+    }
+
+    @JsonProperty("queueId")
+    public Optional<String> getQueueId() {
+        return queueId;
+    }
+
+    @JsonProperty("recyclingId")
+    public Optional<String> getRecyclingId() {
+        return recyclingId;
+    }
+
+    @JsonProperty("removed")
+    public Optional<ListPostsRequestRemoved> getRemoved() {
+        return removed;
+    }
+
+    @JsonProperty("sort")
+    public Optional<PostSort> getSort() {
+        return sort;
+    }
+
+    @JsonProperty("status")
+    public Optional<PostStatus> getStatus() {
+        return status;
+    }
+
+    @JsonProperty("tagId")
+    public Optional<String> getTagId() {
+        return tagId;
+    }
+
     @JsonProperty("to")
-    public String getTo() {
+    public Optional<String> getTo() {
         return to;
     }
 
@@ -53,12 +180,41 @@ public final class ListPostsRequest {
     }
 
     private boolean equalTo(ListPostsRequest other) {
-        return from.equals(other.from) && to.equals(other.to);
+        return authorId.equals(other.authorId)
+                && channelId.equals(other.channelId)
+                && createdVia.equals(other.createdVia)
+                && cursor.equals(other.cursor)
+                && from.equals(other.from)
+                && limit.equals(other.limit)
+                && outcome.equals(other.outcome)
+                && platform.equals(other.platform)
+                && queueId.equals(other.queueId)
+                && recyclingId.equals(other.recyclingId)
+                && removed.equals(other.removed)
+                && sort.equals(other.sort)
+                && status.equals(other.status)
+                && tagId.equals(other.tagId)
+                && to.equals(other.to);
     }
 
     @java.lang.Override
     public int hashCode() {
-        return Objects.hash(this.from, this.to);
+        return Objects.hash(
+                this.authorId,
+                this.channelId,
+                this.createdVia,
+                this.cursor,
+                this.from,
+                this.limit,
+                this.outcome,
+                this.platform,
+                this.queueId,
+                this.recyclingId,
+                this.removed,
+                this.sort,
+                this.status,
+                this.tagId,
+                this.to);
     }
 
     @java.lang.Override
@@ -66,79 +222,277 @@ public final class ListPostsRequest {
         return ObjectMappers.stringify(this);
     }
 
-    public static FromStage builder() {
+    public static Builder builder() {
         return new Builder();
     }
 
-    public interface FromStage {
-        ToStage from(@NotNull String from);
-
-        Builder from(ListPostsRequest other);
-    }
-
-    public interface ToStage {
-        _FinalStage to(@NotNull String to);
-    }
-
-    public interface _FinalStage {
-        ListPostsRequest build();
-
-        _FinalStage additionalProperty(String key, Object value);
-
-        _FinalStage additionalProperties(Map<String, Object> additionalProperties);
-    }
-
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static final class Builder implements FromStage, ToStage, _FinalStage {
-        private String from;
+    public static final class Builder {
+        private Optional<String> authorId = Optional.empty();
 
-        private String to;
+        private Optional<String> channelId = Optional.empty();
+
+        private Optional<PostOriginVia> createdVia = Optional.empty();
+
+        private Optional<String> cursor = Optional.empty();
+
+        private Optional<String> from = Optional.empty();
+
+        private Optional<String> limit = Optional.empty();
+
+        private Optional<PostOutcome> outcome = Optional.empty();
+
+        private Optional<Platform> platform = Optional.empty();
+
+        private Optional<String> queueId = Optional.empty();
+
+        private Optional<String> recyclingId = Optional.empty();
+
+        private Optional<ListPostsRequestRemoved> removed = Optional.empty();
+
+        private Optional<PostSort> sort = Optional.empty();
+
+        private Optional<PostStatus> status = Optional.empty();
+
+        private Optional<String> tagId = Optional.empty();
+
+        private Optional<String> to = Optional.empty();
 
         private Map<String, Object> additionalProperties = new HashMap<>();
 
         private Builder() {}
 
-        @java.lang.Override
         public Builder from(ListPostsRequest other) {
+            authorId(other.getAuthorId());
+            channelId(other.getChannelId());
+            createdVia(other.getCreatedVia());
+            cursor(other.getCursor());
             from(other.getFrom());
+            limit(other.getLimit());
+            outcome(other.getOutcome());
+            platform(other.getPlatform());
+            queueId(other.getQueueId());
+            recyclingId(other.getRecyclingId());
+            removed(other.getRemoved());
+            sort(other.getSort());
+            status(other.getStatus());
+            tagId(other.getTagId());
             to(other.getTo());
             return this;
         }
 
-        @java.lang.Override
-        @JsonSetter("from")
-        public ToStage from(@NotNull String from) {
-            this.from = Objects.requireNonNull(from, "from must not be null");
+        @JsonSetter(value = "authorId", nulls = Nulls.SKIP)
+        public Builder authorId(Optional<String> authorId) {
+            this.authorId = authorId;
             return this;
         }
 
-        @java.lang.Override
-        @JsonSetter("to")
-        public _FinalStage to(@NotNull String to) {
-            this.to = Objects.requireNonNull(to, "to must not be null");
+        public Builder authorId(String authorId) {
+            this.authorId = Optional.ofNullable(authorId);
             return this;
         }
 
-        @java.lang.Override
+        @JsonSetter(value = "channelId", nulls = Nulls.SKIP)
+        public Builder channelId(Optional<String> channelId) {
+            this.channelId = channelId;
+            return this;
+        }
+
+        public Builder channelId(String channelId) {
+            this.channelId = Optional.ofNullable(channelId);
+            return this;
+        }
+
+        @JsonSetter(value = "createdVia", nulls = Nulls.SKIP)
+        public Builder createdVia(Optional<PostOriginVia> createdVia) {
+            this.createdVia = createdVia;
+            return this;
+        }
+
+        public Builder createdVia(PostOriginVia createdVia) {
+            this.createdVia = Optional.ofNullable(createdVia);
+            return this;
+        }
+
+        @JsonSetter(value = "cursor", nulls = Nulls.SKIP)
+        public Builder cursor(Optional<String> cursor) {
+            this.cursor = cursor;
+            return this;
+        }
+
+        public Builder cursor(String cursor) {
+            this.cursor = Optional.ofNullable(cursor);
+            return this;
+        }
+
+        @JsonSetter(value = "from", nulls = Nulls.SKIP)
+        public Builder from(Optional<String> from) {
+            this.from = from;
+            return this;
+        }
+
+        public Builder from(String from) {
+            this.from = Optional.ofNullable(from);
+            return this;
+        }
+
+        @JsonSetter(value = "limit", nulls = Nulls.SKIP)
+        public Builder limit(Optional<String> limit) {
+            this.limit = limit;
+            return this;
+        }
+
+        public Builder limit(String limit) {
+            this.limit = Optional.ofNullable(limit);
+            return this;
+        }
+
+        @JsonSetter(value = "outcome", nulls = Nulls.SKIP)
+        public Builder outcome(Optional<PostOutcome> outcome) {
+            this.outcome = outcome;
+            return this;
+        }
+
+        public Builder outcome(PostOutcome outcome) {
+            this.outcome = Optional.ofNullable(outcome);
+            return this;
+        }
+
+        @JsonSetter(value = "platform", nulls = Nulls.SKIP)
+        public Builder platform(Optional<Platform> platform) {
+            this.platform = platform;
+            return this;
+        }
+
+        public Builder platform(Platform platform) {
+            this.platform = Optional.ofNullable(platform);
+            return this;
+        }
+
+        @JsonSetter(value = "queueId", nulls = Nulls.SKIP)
+        public Builder queueId(Optional<String> queueId) {
+            this.queueId = queueId;
+            return this;
+        }
+
+        public Builder queueId(String queueId) {
+            this.queueId = Optional.ofNullable(queueId);
+            return this;
+        }
+
+        @JsonSetter(value = "recyclingId", nulls = Nulls.SKIP)
+        public Builder recyclingId(Optional<String> recyclingId) {
+            this.recyclingId = recyclingId;
+            return this;
+        }
+
+        public Builder recyclingId(String recyclingId) {
+            this.recyclingId = Optional.ofNullable(recyclingId);
+            return this;
+        }
+
+        @JsonSetter(value = "removed", nulls = Nulls.SKIP)
+        public Builder removed(Optional<ListPostsRequestRemoved> removed) {
+            this.removed = removed;
+            return this;
+        }
+
+        public Builder removed(ListPostsRequestRemoved removed) {
+            this.removed = Optional.ofNullable(removed);
+            return this;
+        }
+
+        @JsonSetter(value = "sort", nulls = Nulls.SKIP)
+        public Builder sort(Optional<PostSort> sort) {
+            this.sort = sort;
+            return this;
+        }
+
+        public Builder sort(PostSort sort) {
+            this.sort = Optional.ofNullable(sort);
+            return this;
+        }
+
+        @JsonSetter(value = "status", nulls = Nulls.SKIP)
+        public Builder status(Optional<PostStatus> status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder status(PostStatus status) {
+            this.status = Optional.ofNullable(status);
+            return this;
+        }
+
+        @JsonSetter(value = "tagId", nulls = Nulls.SKIP)
+        public Builder tagId(Optional<String> tagId) {
+            this.tagId = tagId;
+            return this;
+        }
+
+        public Builder tagId(String tagId) {
+            this.tagId = Optional.ofNullable(tagId);
+            return this;
+        }
+
+        @JsonSetter(value = "to", nulls = Nulls.SKIP)
+        public Builder to(Optional<String> to) {
+            this.to = to;
+            return this;
+        }
+
+        public Builder to(String to) {
+            this.to = Optional.ofNullable(to);
+            return this;
+        }
+
         public ListPostsRequest build() {
-            return new ListPostsRequest(from, to, additionalProperties);
+            return new ListPostsRequest(
+                    authorId,
+                    channelId,
+                    createdVia,
+                    cursor,
+                    from,
+                    limit,
+                    outcome,
+                    platform,
+                    queueId,
+                    recyclingId,
+                    removed,
+                    sort,
+                    status,
+                    tagId,
+                    to,
+                    additionalProperties);
         }
 
         @JsonAnySetter
         private void putAdditionalPropertyFromJson(String key, Object value) {
-            if (key.equalsIgnoreCase("from") || key.equalsIgnoreCase("to")) {
+            if (key.equalsIgnoreCase("authorId")
+                    || key.equalsIgnoreCase("channelId")
+                    || key.equalsIgnoreCase("createdVia")
+                    || key.equalsIgnoreCase("cursor")
+                    || key.equalsIgnoreCase("from")
+                    || key.equalsIgnoreCase("limit")
+                    || key.equalsIgnoreCase("outcome")
+                    || key.equalsIgnoreCase("platform")
+                    || key.equalsIgnoreCase("queueId")
+                    || key.equalsIgnoreCase("recyclingId")
+                    || key.equalsIgnoreCase("removed")
+                    || key.equalsIgnoreCase("sort")
+                    || key.equalsIgnoreCase("status")
+                    || key.equalsIgnoreCase("tagId")
+                    || key.equalsIgnoreCase("to")) {
                 return;
             }
             this.additionalProperties.put(key, value);
         }
 
-        @java.lang.Override
         public Builder additionalProperty(String key, Object value) {
             this.additionalProperties.put(key, value);
             return this;
         }
 
-        @java.lang.Override
         public Builder additionalProperties(Map<String, Object> additionalProperties) {
             this.additionalProperties.putAll(additionalProperties);
             return this;

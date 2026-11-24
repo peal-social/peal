@@ -28,11 +28,11 @@ public record BadRequestErrorBody
     }
 
     /// <summary>
-    /// Create an instance of BadRequestErrorBody with <see cref="BadRequestErrorBody.WorkspaceRequired"/>.
+    /// Create an instance of BadRequestErrorBody with <see cref="BadRequestErrorBody.BadRequest"/>.
     /// </summary>
-    public BadRequestErrorBody(BadRequestErrorBody.WorkspaceRequired value)
+    public BadRequestErrorBody(BadRequestErrorBody.BadRequest value)
     {
-        Type = "WorkspaceRequired";
+        Type = "BadRequest";
         Value = value.Value;
     }
 
@@ -53,9 +53,9 @@ public record BadRequestErrorBody
     public bool IsInvalidDateRange => Type == "InvalidDateRange";
 
     /// <summary>
-    /// Returns true if <see cref="Type"/> is "WorkspaceRequired"
+    /// Returns true if <see cref="Type"/> is "BadRequest"
     /// </summary>
-    public bool IsWorkspaceRequired => Type == "WorkspaceRequired";
+    public bool IsBadRequest => Type == "BadRequest";
 
     /// <summary>
     /// Returns the value as a <see cref="Peal.InvalidDateRangeEncoded"/> if <see cref="Type"/> is 'InvalidDateRange', otherwise throws an exception.
@@ -69,33 +69,31 @@ public record BadRequestErrorBody
             );
 
     /// <summary>
-    /// Returns the value as a <see cref="Peal.WorkspaceRequiredEncoded"/> if <see cref="Type"/> is 'WorkspaceRequired', otherwise throws an exception.
+    /// Returns the value as a <see cref="Peal.EffectHttpApiErrorBadRequestEncoded"/> if <see cref="Type"/> is 'BadRequest', otherwise throws an exception.
     /// </summary>
-    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'WorkspaceRequired'.</exception>
-    public Peal.WorkspaceRequiredEncoded AsWorkspaceRequired() =>
-        IsWorkspaceRequired
-            ? (Peal.WorkspaceRequiredEncoded)Value!
-            : throw new global::System.Exception(
-                "BadRequestErrorBody.Type is not 'WorkspaceRequired'"
-            );
+    /// <exception cref="Exception">Thrown when <see cref="Type"/> is not 'BadRequest'.</exception>
+    public Peal.EffectHttpApiErrorBadRequestEncoded AsBadRequest() =>
+        IsBadRequest
+            ? (Peal.EffectHttpApiErrorBadRequestEncoded)Value!
+            : throw new global::System.Exception("BadRequestErrorBody.Type is not 'BadRequest'");
 
     public T Match<T>(
         Func<Peal.InvalidDateRangeEncoded, T> onInvalidDateRange,
-        Func<Peal.WorkspaceRequiredEncoded, T> onWorkspaceRequired,
+        Func<Peal.EffectHttpApiErrorBadRequestEncoded, T> onBadRequest,
         Func<string, object?, T> onUnknown_
     )
     {
         return Type switch
         {
             "InvalidDateRange" => onInvalidDateRange(AsInvalidDateRange()),
-            "WorkspaceRequired" => onWorkspaceRequired(AsWorkspaceRequired()),
+            "BadRequest" => onBadRequest(AsBadRequest()),
             _ => onUnknown_(Type, Value),
         };
     }
 
     public void Visit(
         Action<Peal.InvalidDateRangeEncoded> onInvalidDateRange,
-        Action<Peal.WorkspaceRequiredEncoded> onWorkspaceRequired,
+        Action<Peal.EffectHttpApiErrorBadRequestEncoded> onBadRequest,
         Action<string, object?> onUnknown_
     )
     {
@@ -104,8 +102,8 @@ public record BadRequestErrorBody
             case "InvalidDateRange":
                 onInvalidDateRange(AsInvalidDateRange());
                 break;
-            case "WorkspaceRequired":
-                onWorkspaceRequired(AsWorkspaceRequired());
+            case "BadRequest":
+                onBadRequest(AsBadRequest());
                 break;
             default:
                 onUnknown_(Type, Value);
@@ -128,13 +126,13 @@ public record BadRequestErrorBody
     }
 
     /// <summary>
-    /// Attempts to cast the value to a <see cref="Peal.WorkspaceRequiredEncoded"/> and returns true if successful.
+    /// Attempts to cast the value to a <see cref="Peal.EffectHttpApiErrorBadRequestEncoded"/> and returns true if successful.
     /// </summary>
-    public bool TryAsWorkspaceRequired(out Peal.WorkspaceRequiredEncoded? value)
+    public bool TryAsBadRequest(out Peal.EffectHttpApiErrorBadRequestEncoded? value)
     {
-        if (Type == "WorkspaceRequired")
+        if (Type == "BadRequest")
         {
-            value = (Peal.WorkspaceRequiredEncoded)Value!;
+            value = (Peal.EffectHttpApiErrorBadRequestEncoded)Value!;
             return true;
         }
         value = null;
@@ -147,9 +145,8 @@ public record BadRequestErrorBody
         BadRequestErrorBody.InvalidDateRange value
     ) => new(value);
 
-    public static implicit operator BadRequestErrorBody(
-        BadRequestErrorBody.WorkspaceRequired value
-    ) => new(value);
+    public static implicit operator BadRequestErrorBody(BadRequestErrorBody.BadRequest value) =>
+        new(value);
 
     [Serializable]
     internal sealed class JsonConverter : JsonConverter<BadRequestErrorBody>
@@ -197,9 +194,9 @@ public record BadRequestErrorBody
                         ?? throw new JsonException(
                             "Failed to deserialize Peal.InvalidDateRangeEncoded"
                         ),
-                "WorkspaceRequired" => json.Deserialize<Peal.WorkspaceRequiredEncoded?>(options)
+                "BadRequest" => json.Deserialize<Peal.EffectHttpApiErrorBadRequestEncoded?>(options)
                     ?? throw new JsonException(
-                        "Failed to deserialize Peal.WorkspaceRequiredEncoded"
+                        "Failed to deserialize Peal.EffectHttpApiErrorBadRequestEncoded"
                     ),
                 _ => json.Deserialize<object?>(options),
             };
@@ -216,7 +213,7 @@ public record BadRequestErrorBody
                 value.Type switch
                 {
                     "InvalidDateRange" => JsonSerializer.SerializeToNode(value.Value, options),
-                    "WorkspaceRequired" => JsonSerializer.SerializeToNode(value.Value, options),
+                    "BadRequest" => JsonSerializer.SerializeToNode(value.Value, options),
                     _ => JsonSerializer.SerializeToNode(value.Value, options),
                 } ?? new JsonObject();
             json["_tag"] = value.Type;
@@ -266,22 +263,22 @@ public record BadRequestErrorBody
     }
 
     /// <summary>
-    /// Discriminated union type for WorkspaceRequired
+    /// Discriminated union type for BadRequest
     /// </summary>
     [Serializable]
-    public struct WorkspaceRequired
+    public struct BadRequest
     {
-        public WorkspaceRequired(Peal.WorkspaceRequiredEncoded value)
+        public BadRequest(Peal.EffectHttpApiErrorBadRequestEncoded value)
         {
             Value = value;
         }
 
-        internal Peal.WorkspaceRequiredEncoded Value { get; set; }
+        internal Peal.EffectHttpApiErrorBadRequestEncoded Value { get; set; }
 
         public override string ToString() => Value.ToString() ?? "null";
 
-        public static implicit operator BadRequestErrorBody.WorkspaceRequired(
-            Peal.WorkspaceRequiredEncoded value
+        public static implicit operator BadRequestErrorBody.BadRequest(
+            Peal.EffectHttpApiErrorBadRequestEncoded value
         ) => new(value);
     }
 }

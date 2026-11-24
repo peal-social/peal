@@ -9,6 +9,8 @@ import * as environments from "../../../../environments.js";
 import { handleNonStatusCodeError } from "../../../../errors/handleNonStatusCodeError.js";
 import * as errors from "../../../../errors/index.js";
 import * as Peal from "../../../index.js";
+import { AccountClient } from "../resources/account/client/Client.js";
+import { CustomerUsageClient } from "../resources/customerUsage/client/Client.js";
 
 export declare namespace PartnerClient {
     export type Options = BaseClientOptions;
@@ -17,12 +19,25 @@ export declare namespace PartnerClient {
     }
 }
 
+/**
+ * A partner's customer workspaces, its usage, and the partner account itself.
+ */
 export class PartnerClient {
     protected readonly _options: NormalizedClientOptionsWithAuth<PartnerClient.Options>;
+    protected _account: AccountClient | undefined;
+    protected _customerUsage: CustomerUsageClient | undefined;
 
     constructor(options: PartnerClient.Options = {}) {
 
         this._options = normalizeClientOptionsWithAuth(options);
+    }
+
+    public get account(): AccountClient {
+        return (this._account ??= new AccountClient(this._options));
+    }
+
+    public get customerUsage(): CustomerUsageClient {
+        return (this._customerUsage ??= new CustomerUsageClient(this._options));
     }
 
     /**
@@ -37,13 +52,13 @@ export class PartnerClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.partner.account()
+     *     await client.partner.get()
      */
-    public account(requestOptions?: PartnerClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerOverview> {
-        return core.HttpResponsePromise.fromPromise(this.__account(requestOptions));
+    public get(requestOptions?: PartnerClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerOverview> {
+        return core.HttpResponsePromise.fromPromise(this.__get(requestOptions));
     }
 
-    private async __account(requestOptions?: PartnerClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerOverview>> {
+    private async __get(requestOptions?: PartnerClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerOverview>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
         let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({

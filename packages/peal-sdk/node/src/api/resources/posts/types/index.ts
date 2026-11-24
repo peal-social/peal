@@ -1,1 +1,1 @@
-export * from "./SearchPostsRequestRemoved.js";
+export * from "./ListPostsRequestRemoved.js";

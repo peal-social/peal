@@ -9,7 +9,8 @@ class TooManyRequestsErrorBody extends JsonSerializableType
 {
     /**
      * @var (
-     *    'FeedReadsLimited'
+     *    'OwnTextLimitReached'
+     *   |'TextProviderBusy'
      *   |'TooManyRequests'
      *   |'_unknown'
      * ) $type
@@ -18,7 +19,8 @@ class TooManyRequestsErrorBody extends JsonSerializableType
 
     /**
      * @var (
-     *    FeedReadsLimitedEncoded
+     *    OwnTextLimitReachedEncoded
+     *   |TextProviderBusyEncoded
      *   |TooManyRequestsEncoded
      *   |mixed
      * ) $value
@@ -28,12 +30,14 @@ class TooManyRequestsErrorBody extends JsonSerializableType
     /**
      * @param array{
      *   type: (
-     *    'FeedReadsLimited'
+     *    'OwnTextLimitReached'
+     *   |'TextProviderBusy'
      *   |'TooManyRequests'
      *   |'_unknown'
      * ),
      *   value: (
-     *    FeedReadsLimitedEncoded
+     *    OwnTextLimitReachedEncoded
+     *   |TextProviderBusyEncoded
      *   |TooManyRequestsEncoded
      *   |mixed
      * ),
@@ -47,14 +51,26 @@ class TooManyRequestsErrorBody extends JsonSerializableType
     }
 
     /**
-     * @param FeedReadsLimitedEncoded $feedReadsLimited
+     * @param OwnTextLimitReachedEncoded $ownTextLimitReached
      * @return TooManyRequestsErrorBody
      */
-    public static function feedReadsLimited(FeedReadsLimitedEncoded $feedReadsLimited): TooManyRequestsErrorBody
+    public static function ownTextLimitReached(OwnTextLimitReachedEncoded $ownTextLimitReached): TooManyRequestsErrorBody
     {
         return new TooManyRequestsErrorBody([
-            'type' => 'FeedReadsLimited',
-            'value' => $feedReadsLimited,
+            'type' => 'OwnTextLimitReached',
+            'value' => $ownTextLimitReached,
+        ]);
+    }
+
+    /**
+     * @param TextProviderBusyEncoded $textProviderBusy
+     * @return TooManyRequestsErrorBody
+     */
+    public static function textProviderBusy(TextProviderBusyEncoded $textProviderBusy): TooManyRequestsErrorBody
+    {
+        return new TooManyRequestsErrorBody([
+            'type' => 'TextProviderBusy',
+            'value' => $textProviderBusy,
         ]);
     }
 
@@ -73,19 +89,41 @@ class TooManyRequestsErrorBody extends JsonSerializableType
     /**
      * @return bool
      */
-    public function isFeedReadsLimited(): bool
+    public function isOwnTextLimitReached(): bool
     {
-        return $this->value instanceof FeedReadsLimitedEncoded && $this->type === 'FeedReadsLimited';
+        return $this->value instanceof OwnTextLimitReachedEncoded && $this->type === 'OwnTextLimitReached';
     }
 
     /**
-     * @return FeedReadsLimitedEncoded
+     * @return OwnTextLimitReachedEncoded
      */
-    public function asFeedReadsLimited(): FeedReadsLimitedEncoded
+    public function asOwnTextLimitReached(): OwnTextLimitReachedEncoded
     {
-        if (!($this->value instanceof FeedReadsLimitedEncoded && $this->type === 'FeedReadsLimited')) {
+        if (!($this->value instanceof OwnTextLimitReachedEncoded && $this->type === 'OwnTextLimitReached')) {
             throw new Exception(
-                "Expected FeedReadsLimited; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected OwnTextLimitReached; got " . $this->type . " with value of type " . get_debug_type($this->value),
+            );
+        }
+
+        return $this->value;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isTextProviderBusy(): bool
+    {
+        return $this->value instanceof TextProviderBusyEncoded && $this->type === 'TextProviderBusy';
+    }
+
+    /**
+     * @return TextProviderBusyEncoded
+     */
+    public function asTextProviderBusy(): TextProviderBusyEncoded
+    {
+        if (!($this->value instanceof TextProviderBusyEncoded && $this->type === 'TextProviderBusy')) {
+            throw new Exception(
+                "Expected TextProviderBusy; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -134,8 +172,12 @@ class TooManyRequestsErrorBody extends JsonSerializableType
         $result = array_merge($base, $result);
 
         switch ($this->type) {
-            case 'FeedReadsLimited':
-                $value = $this->asFeedReadsLimited()->jsonSerialize();
+            case 'OwnTextLimitReached':
+                $value = $this->asOwnTextLimitReached()->jsonSerialize();
+                $result = array_merge($value, $result);
+                break;
+            case 'TextProviderBusy':
+                $value = $this->asTextProviderBusy()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case 'TooManyRequests':
@@ -178,8 +220,11 @@ class TooManyRequestsErrorBody extends JsonSerializableType
 
         $args['type'] = $type;
         switch ($type) {
-            case 'FeedReadsLimited':
-                $args['value'] = FeedReadsLimitedEncoded::jsonDeserialize($data);
+            case 'OwnTextLimitReached':
+                $args['value'] = OwnTextLimitReachedEncoded::jsonDeserialize($data);
+                break;
+            case 'TextProviderBusy':
+                $args['value'] = TextProviderBusyEncoded::jsonDeserialize($data);
                 break;
             case 'TooManyRequests':
                 $args['value'] = TooManyRequestsEncoded::jsonDeserialize($data);

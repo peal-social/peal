@@ -10,16 +10,16 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 
 
-class ConflictErrorBody_FollowUpRuleTaken(UniversalBaseModel):
+class ConflictErrorBody_ChannelAccountTaken(UniversalBaseModel):
     type: typing_extensions.Annotated[
-        typing.Literal["FollowUpRuleTaken"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
-    ] = "FollowUpRuleTaken"
+        typing.Literal["ChannelAccountTaken"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "ChannelAccountTaken"
     code: typing.Optional[str] = None
     message: typing.Optional[str] = None
     request_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="requestId"), pydantic.Field(alias="requestId")
     ] = None
-    rule_id: typing_extensions.Annotated[str, FieldMetadata(alias="ruleId"), pydantic.Field(alias="ruleId")]
+    channel_id: typing_extensions.Annotated[str, FieldMetadata(alias="channelId"), pydantic.Field(alias="channelId")]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
@@ -31,16 +31,38 @@ class ConflictErrorBody_FollowUpRuleTaken(UniversalBaseModel):
             extra = pydantic.Extra.allow
 
 
-class ConflictErrorBody_TooManyFollowUpRules(UniversalBaseModel):
+class ConflictErrorBody_IdempotencyKeyReused(UniversalBaseModel):
     type: typing_extensions.Annotated[
-        typing.Literal["TooManyFollowUpRules"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
-    ] = "TooManyFollowUpRules"
+        typing.Literal["IdempotencyKeyReused"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "IdempotencyKeyReused"
     code: typing.Optional[str] = None
     message: typing.Optional[str] = None
     request_id: typing_extensions.Annotated[
         typing.Optional[str], FieldMetadata(alias="requestId"), pydantic.Field(alias="requestId")
     ] = None
-    allowed: int
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class ConflictErrorBody_WorkspaceBusy(UniversalBaseModel):
+    type: typing_extensions.Annotated[
+        typing.Literal["WorkspaceBusy"], FieldMetadata(alias="_tag"), pydantic.Field(alias="_tag")
+    ] = "WorkspaceBusy"
+    code: typing.Optional[str] = None
+    message: typing.Optional[str] = None
+    request_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="requestId"), pydantic.Field(alias="requestId")
+    ] = None
+    workspace_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="workspaceId"), pydantic.Field(alias="workspaceId")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
@@ -53,6 +75,8 @@ class ConflictErrorBody_TooManyFollowUpRules(UniversalBaseModel):
 
 
 ConflictErrorBody = typing_extensions.Annotated[
-    typing.Union[ConflictErrorBody_FollowUpRuleTaken, ConflictErrorBody_TooManyFollowUpRules],
+    typing.Union[
+        ConflictErrorBody_ChannelAccountTaken, ConflictErrorBody_IdempotencyKeyReused, ConflictErrorBody_WorkspaceBusy
+    ],
     pydantic.Field(discriminator="type"),
 ]

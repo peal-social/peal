@@ -1,0 +1,15 @@
+# frozen_string_literal: true
+
+module Peal
+  module Inbox
+    module Comments
+      module Types
+        class ConfirmReplyCommentsRequest < Internal::Types::Model
+          field :reply_id, -> { String }, optional: false, nullable: false, api_name: "replyId"
+
+          field :sent, -> { Internal::Types::Boolean }, optional: false, nullable: false
+        end
+      end
+    end
+  end
+end

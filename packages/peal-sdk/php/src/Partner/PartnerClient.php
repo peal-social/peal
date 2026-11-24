@@ -2,6 +2,8 @@
 
 namespace Peal\Partner;
 
+use Peal\Partner\Account\AccountClient;
+use Peal\Partner\CustomerUsage\CustomerUsageClient;
 use Psr\Http\Client\ClientInterface;
 use Peal\Core\Client\RawClient;
 use Peal\Types\PartnerOverview;
@@ -24,6 +26,16 @@ use Peal\Types\MovedChannel;
 
 class PartnerClient
 {
+    /**
+     * @var AccountClient $account
+     */
+    public AccountClient $account;
+
+    /**
+     * @var CustomerUsageClient $customerUsage
+     */
+    public CustomerUsageClient $customerUsage;
+
     /**
      * @var array{
      *   baseUrl?: string,
@@ -56,6 +68,8 @@ class PartnerClient
     ) {
         $this->client = $client;
         $this->options = $options ?? [];
+        $this->account = new AccountClient($this->client, $this->options);
+        $this->customerUsage = new CustomerUsageClient($this->client, $this->options);
     }
 
     /**
@@ -63,7 +77,7 @@ class PartnerClient
      *
      * Example:
      * ```php
-     * $client->partner->account();
+     * $client->partner->get();
      * ```
      *
      * @param ?array{
@@ -78,7 +92,7 @@ class PartnerClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function account(?array $options = null): ?PartnerOverview
+    public function get(?array $options = null): ?PartnerOverview
     {
         $options = array_merge($this->options, $options ?? []);
         try {

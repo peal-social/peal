@@ -26,36 +26,51 @@ public final class ConflictErrorBody {
         return value.visit(visitor);
     }
 
-    public static ConflictErrorBody followUpRuleTaken(FollowUpRuleTakenEncoded value) {
-        return new ConflictErrorBody(new FollowUpRuleTakenValue(value));
+    public static ConflictErrorBody channelAccountTaken(ChannelAccountTakenEncoded value) {
+        return new ConflictErrorBody(new ChannelAccountTakenValue(value));
     }
 
-    public static ConflictErrorBody tooManyFollowUpRules(TooManyFollowUpRulesEncoded value) {
-        return new ConflictErrorBody(new TooManyFollowUpRulesValue(value));
+    public static ConflictErrorBody idempotencyKeyReused(IdempotencyKeyReusedEncoded value) {
+        return new ConflictErrorBody(new IdempotencyKeyReusedValue(value));
     }
 
-    public boolean isFollowUpRuleTaken() {
-        return value instanceof FollowUpRuleTakenValue;
+    public static ConflictErrorBody workspaceBusy(WorkspaceBusyEncoded value) {
+        return new ConflictErrorBody(new WorkspaceBusyValue(value));
     }
 
-    public boolean isTooManyFollowUpRules() {
-        return value instanceof TooManyFollowUpRulesValue;
+    public boolean isChannelAccountTaken() {
+        return value instanceof ChannelAccountTakenValue;
+    }
+
+    public boolean isIdempotencyKeyReused() {
+        return value instanceof IdempotencyKeyReusedValue;
+    }
+
+    public boolean isWorkspaceBusy() {
+        return value instanceof WorkspaceBusyValue;
     }
 
     public boolean _isUnknown() {
         return value instanceof _UnknownValue;
     }
 
-    public Optional<FollowUpRuleTakenEncoded> getFollowUpRuleTaken() {
-        if (isFollowUpRuleTaken()) {
-            return Optional.of(((FollowUpRuleTakenValue) value).value);
+    public Optional<ChannelAccountTakenEncoded> getChannelAccountTaken() {
+        if (isChannelAccountTaken()) {
+            return Optional.of(((ChannelAccountTakenValue) value).value);
         }
         return Optional.empty();
     }
 
-    public Optional<TooManyFollowUpRulesEncoded> getTooManyFollowUpRules() {
-        if (isTooManyFollowUpRules()) {
-            return Optional.of(((TooManyFollowUpRulesValue) value).value);
+    public Optional<IdempotencyKeyReusedEncoded> getIdempotencyKeyReused() {
+        if (isIdempotencyKeyReused()) {
+            return Optional.of(((IdempotencyKeyReusedValue) value).value);
+        }
+        return Optional.empty();
+    }
+
+    public Optional<WorkspaceBusyEncoded> getWorkspaceBusy() {
+        if (isWorkspaceBusy()) {
+            return Optional.of(((WorkspaceBusyValue) value).value);
         }
         return Optional.empty();
     }
@@ -89,47 +104,52 @@ public final class ConflictErrorBody {
     }
 
     public interface Visitor<T> {
-        T visitFollowUpRuleTaken(FollowUpRuleTakenEncoded followUpRuleTaken);
+        T visitChannelAccountTaken(ChannelAccountTakenEncoded channelAccountTaken);
 
-        T visitTooManyFollowUpRules(TooManyFollowUpRulesEncoded tooManyFollowUpRules);
+        T visitIdempotencyKeyReused(IdempotencyKeyReusedEncoded idempotencyKeyReused);
+
+        T visitWorkspaceBusy(WorkspaceBusyEncoded workspaceBusy);
 
         T _visitUnknown(Object unknownType);
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_tag", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({@JsonSubTypes.Type(FollowUpRuleTakenValue.class), @JsonSubTypes.Type(TooManyFollowUpRulesValue.class)
+    @JsonSubTypes({
+        @JsonSubTypes.Type(ChannelAccountTakenValue.class),
+        @JsonSubTypes.Type(IdempotencyKeyReusedValue.class),
+        @JsonSubTypes.Type(WorkspaceBusyValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
         <T> T visit(Visitor<T> visitor);
     }
 
-    @JsonTypeName("FollowUpRuleTaken")
+    @JsonTypeName("ChannelAccountTaken")
     @JsonIgnoreProperties("_tag")
-    private static final class FollowUpRuleTakenValue implements Value {
+    private static final class ChannelAccountTakenValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private FollowUpRuleTakenEncoded value;
+        private ChannelAccountTakenEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private FollowUpRuleTakenValue() {}
+        private ChannelAccountTakenValue() {}
 
-        private FollowUpRuleTakenValue(FollowUpRuleTakenEncoded value) {
+        private ChannelAccountTakenValue(ChannelAccountTakenEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitFollowUpRuleTaken(value);
+            return visitor.visitChannelAccountTaken(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof FollowUpRuleTakenValue && equalTo((FollowUpRuleTakenValue) other);
+            return other instanceof ChannelAccountTakenValue && equalTo((ChannelAccountTakenValue) other);
         }
 
-        private boolean equalTo(FollowUpRuleTakenValue other) {
+        private boolean equalTo(ChannelAccountTakenValue other) {
             return value.equals(other.value);
         }
 
@@ -144,32 +164,72 @@ public final class ConflictErrorBody {
         }
     }
 
-    @JsonTypeName("TooManyFollowUpRules")
+    @JsonTypeName("IdempotencyKeyReused")
     @JsonIgnoreProperties("_tag")
-    private static final class TooManyFollowUpRulesValue implements Value {
+    private static final class IdempotencyKeyReusedValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private TooManyFollowUpRulesEncoded value;
+        private IdempotencyKeyReusedEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private TooManyFollowUpRulesValue() {}
+        private IdempotencyKeyReusedValue() {}
 
-        private TooManyFollowUpRulesValue(TooManyFollowUpRulesEncoded value) {
+        private IdempotencyKeyReusedValue(IdempotencyKeyReusedEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitTooManyFollowUpRules(value);
+            return visitor.visitIdempotencyKeyReused(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof TooManyFollowUpRulesValue && equalTo((TooManyFollowUpRulesValue) other);
+            return other instanceof IdempotencyKeyReusedValue && equalTo((IdempotencyKeyReusedValue) other);
         }
 
-        private boolean equalTo(TooManyFollowUpRulesValue other) {
+        private boolean equalTo(IdempotencyKeyReusedValue other) {
+            return value.equals(other.value);
+        }
+
+        @java.lang.Override
+        public int hashCode() {
+            return Objects.hash(this.value);
+        }
+
+        @java.lang.Override
+        public String toString() {
+            return "ConflictErrorBody{" + "value: " + value + "}";
+        }
+    }
+
+    @JsonTypeName("WorkspaceBusy")
+    @JsonIgnoreProperties("_tag")
+    private static final class WorkspaceBusyValue implements Value {
+        @JsonUnwrapped
+        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
+        private WorkspaceBusyEncoded value;
+
+        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+        private WorkspaceBusyValue() {}
+
+        private WorkspaceBusyValue(WorkspaceBusyEncoded value) {
+            this.value = value;
+        }
+
+        @java.lang.Override
+        public <T> T visit(Visitor<T> visitor) {
+            return visitor.visitWorkspaceBusy(value);
+        }
+
+        @java.lang.Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            return other instanceof WorkspaceBusyValue && equalTo((WorkspaceBusyValue) other);
+        }
+
+        private boolean equalTo(WorkspaceBusyValue other) {
             return value.equals(other.value);
         }
 

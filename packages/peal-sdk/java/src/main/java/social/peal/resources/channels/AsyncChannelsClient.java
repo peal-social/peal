@@ -5,9 +5,15 @@ package social.peal.resources.channels;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
+import social.peal.core.Suppliers;
+import social.peal.resources.channels.capabilities.AsyncCapabilitiesClient;
+import social.peal.resources.channels.connectlinks.AsyncConnectLinksClient;
+import social.peal.resources.channels.defaultoptions.AsyncDefaultOptionsClient;
+import social.peal.resources.channels.lookups.AsyncLookupsClient;
 import social.peal.resources.channels.requests.ChannelUpdate;
 import social.peal.resources.channels.requests.ChooseAccounts;
 import social.peal.resources.channels.requests.ConnectCallback;
@@ -21,6 +27,8 @@ import social.peal.resources.channels.requests.FindChannelsRequest;
 import social.peal.resources.channels.requests.ReconnectChannelsRequest;
 import social.peal.resources.channels.requests.SiteSignInCallback;
 import social.peal.resources.channels.requests.StartSiteSignIn;
+import social.peal.resources.channels.sets.AsyncSetsClient;
+import social.peal.resources.channels.tiktokcreator.AsyncTiktokCreatorClient;
 import social.peal.types.Authorization;
 import social.peal.types.Channel;
 import social.peal.types.ChannelPage;
@@ -35,9 +43,27 @@ public class AsyncChannelsClient {
 
     private final AsyncRawChannelsClient rawClient;
 
+    protected final Supplier<AsyncCapabilitiesClient> capabilitiesClient;
+
+    protected final Supplier<AsyncDefaultOptionsClient> defaultOptionsClient;
+
+    protected final Supplier<AsyncLookupsClient> lookupsClient;
+
+    protected final Supplier<AsyncSetsClient> setsClient;
+
+    protected final Supplier<AsyncConnectLinksClient> connectLinksClient;
+
+    protected final Supplier<AsyncTiktokCreatorClient> tiktokCreatorClient;
+
     public AsyncChannelsClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.rawClient = new AsyncRawChannelsClient(clientOptions);
+        this.capabilitiesClient = Suppliers.memoize(() -> new AsyncCapabilitiesClient(clientOptions));
+        this.defaultOptionsClient = Suppliers.memoize(() -> new AsyncDefaultOptionsClient(clientOptions));
+        this.lookupsClient = Suppliers.memoize(() -> new AsyncLookupsClient(clientOptions));
+        this.setsClient = Suppliers.memoize(() -> new AsyncSetsClient(clientOptions));
+        this.connectLinksClient = Suppliers.memoize(() -> new AsyncConnectLinksClient(clientOptions));
+        this.tiktokCreatorClient = Suppliers.memoize(() -> new AsyncTiktokCreatorClient(clientOptions));
     }
 
     /**
@@ -722,5 +748,29 @@ public class AsyncChannelsClient {
             }
         });
         return future;
+    }
+
+    public AsyncCapabilitiesClient capabilities() {
+        return this.capabilitiesClient.get();
+    }
+
+    public AsyncDefaultOptionsClient defaultOptions() {
+        return this.defaultOptionsClient.get();
+    }
+
+    public AsyncLookupsClient lookups() {
+        return this.lookupsClient.get();
+    }
+
+    public AsyncSetsClient sets() {
+        return this.setsClient.get();
+    }
+
+    public AsyncConnectLinksClient connectLinks() {
+        return this.connectLinksClient.get();
+    }
+
+    public AsyncTiktokCreatorClient tiktokCreator() {
+        return this.tiktokCreatorClient.get();
     }
 }

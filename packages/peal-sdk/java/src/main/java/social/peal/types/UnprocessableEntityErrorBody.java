@@ -26,66 +26,36 @@ public final class UnprocessableEntityErrorBody {
         return value.visit(visitor);
     }
 
-    public static UnprocessableEntityErrorBody feedAddressRefused(FeedAddressRefusedEncoded value) {
-        return new UnprocessableEntityErrorBody(new FeedAddressRefusedValue(value));
+    public static UnprocessableEntityErrorBody aiCapabilityNotOffered(AiCapabilityNotOfferedEncoded value) {
+        return new UnprocessableEntityErrorBody(new AiCapabilityNotOfferedValue(value));
     }
 
-    public static UnprocessableEntityErrorBody feedTemplateInvalid(FeedTemplateInvalidEncoded value) {
-        return new UnprocessableEntityErrorBody(new FeedTemplateInvalidValue(value));
+    public static UnprocessableEntityErrorBody aiModelRequired(AiModelRequiredEncoded value) {
+        return new UnprocessableEntityErrorBody(new AiModelRequiredValue(value));
     }
 
-    public static UnprocessableEntityErrorBody feedUnreadable(FeedUnreadableEncoded value) {
-        return new UnprocessableEntityErrorBody(new FeedUnreadableValue(value));
+    public boolean isAiCapabilityNotOffered() {
+        return value instanceof AiCapabilityNotOfferedValue;
     }
 
-    public static UnprocessableEntityErrorBody unknownChannels(UnknownChannelsEncoded value) {
-        return new UnprocessableEntityErrorBody(new UnknownChannelsValue(value));
-    }
-
-    public boolean isFeedAddressRefused() {
-        return value instanceof FeedAddressRefusedValue;
-    }
-
-    public boolean isFeedTemplateInvalid() {
-        return value instanceof FeedTemplateInvalidValue;
-    }
-
-    public boolean isFeedUnreadable() {
-        return value instanceof FeedUnreadableValue;
-    }
-
-    public boolean isUnknownChannels() {
-        return value instanceof UnknownChannelsValue;
+    public boolean isAiModelRequired() {
+        return value instanceof AiModelRequiredValue;
     }
 
     public boolean _isUnknown() {
         return value instanceof _UnknownValue;
     }
 
-    public Optional<FeedAddressRefusedEncoded> getFeedAddressRefused() {
-        if (isFeedAddressRefused()) {
-            return Optional.of(((FeedAddressRefusedValue) value).value);
+    public Optional<AiCapabilityNotOfferedEncoded> getAiCapabilityNotOffered() {
+        if (isAiCapabilityNotOffered()) {
+            return Optional.of(((AiCapabilityNotOfferedValue) value).value);
         }
         return Optional.empty();
     }
 
-    public Optional<FeedTemplateInvalidEncoded> getFeedTemplateInvalid() {
-        if (isFeedTemplateInvalid()) {
-            return Optional.of(((FeedTemplateInvalidValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<FeedUnreadableEncoded> getFeedUnreadable() {
-        if (isFeedUnreadable()) {
-            return Optional.of(((FeedUnreadableValue) value).value);
-        }
-        return Optional.empty();
-    }
-
-    public Optional<UnknownChannelsEncoded> getUnknownChannels() {
-        if (isUnknownChannels()) {
-            return Optional.of(((UnknownChannelsValue) value).value);
+    public Optional<AiModelRequiredEncoded> getAiModelRequired() {
+        if (isAiModelRequired()) {
+            return Optional.of(((AiModelRequiredValue) value).value);
         }
         return Optional.empty();
     }
@@ -120,55 +90,47 @@ public final class UnprocessableEntityErrorBody {
     }
 
     public interface Visitor<T> {
-        T visitFeedAddressRefused(FeedAddressRefusedEncoded feedAddressRefused);
+        T visitAiCapabilityNotOffered(AiCapabilityNotOfferedEncoded aiCapabilityNotOffered);
 
-        T visitFeedTemplateInvalid(FeedTemplateInvalidEncoded feedTemplateInvalid);
-
-        T visitFeedUnreadable(FeedUnreadableEncoded feedUnreadable);
-
-        T visitUnknownChannels(UnknownChannelsEncoded unknownChannels);
+        T visitAiModelRequired(AiModelRequiredEncoded aiModelRequired);
 
         T _visitUnknown(Object unknownType);
     }
 
     @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_tag", visible = true, defaultImpl = _UnknownValue.class)
-    @JsonSubTypes({
-        @JsonSubTypes.Type(FeedAddressRefusedValue.class),
-        @JsonSubTypes.Type(FeedTemplateInvalidValue.class),
-        @JsonSubTypes.Type(FeedUnreadableValue.class),
-        @JsonSubTypes.Type(UnknownChannelsValue.class)
+    @JsonSubTypes({@JsonSubTypes.Type(AiCapabilityNotOfferedValue.class), @JsonSubTypes.Type(AiModelRequiredValue.class)
     })
     @JsonIgnoreProperties(ignoreUnknown = true)
     private interface Value {
         <T> T visit(Visitor<T> visitor);
     }
 
-    @JsonTypeName("FeedAddressRefused")
+    @JsonTypeName("AiCapabilityNotOffered")
     @JsonIgnoreProperties("_tag")
-    private static final class FeedAddressRefusedValue implements Value {
+    private static final class AiCapabilityNotOfferedValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private FeedAddressRefusedEncoded value;
+        private AiCapabilityNotOfferedEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private FeedAddressRefusedValue() {}
+        private AiCapabilityNotOfferedValue() {}
 
-        private FeedAddressRefusedValue(FeedAddressRefusedEncoded value) {
+        private AiCapabilityNotOfferedValue(AiCapabilityNotOfferedEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitFeedAddressRefused(value);
+            return visitor.visitAiCapabilityNotOffered(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof FeedAddressRefusedValue && equalTo((FeedAddressRefusedValue) other);
+            return other instanceof AiCapabilityNotOfferedValue && equalTo((AiCapabilityNotOfferedValue) other);
         }
 
-        private boolean equalTo(FeedAddressRefusedValue other) {
+        private boolean equalTo(AiCapabilityNotOfferedValue other) {
             return value.equals(other.value);
         }
 
@@ -183,112 +145,32 @@ public final class UnprocessableEntityErrorBody {
         }
     }
 
-    @JsonTypeName("FeedTemplateInvalid")
+    @JsonTypeName("AiModelRequired")
     @JsonIgnoreProperties("_tag")
-    private static final class FeedTemplateInvalidValue implements Value {
+    private static final class AiModelRequiredValue implements Value {
         @JsonUnwrapped
         @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private FeedTemplateInvalidEncoded value;
+        private AiModelRequiredEncoded value;
 
         @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private FeedTemplateInvalidValue() {}
+        private AiModelRequiredValue() {}
 
-        private FeedTemplateInvalidValue(FeedTemplateInvalidEncoded value) {
+        private AiModelRequiredValue(AiModelRequiredEncoded value) {
             this.value = value;
         }
 
         @java.lang.Override
         public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitFeedTemplateInvalid(value);
+            return visitor.visitAiModelRequired(value);
         }
 
         @java.lang.Override
         public boolean equals(Object other) {
             if (this == other) return true;
-            return other instanceof FeedTemplateInvalidValue && equalTo((FeedTemplateInvalidValue) other);
+            return other instanceof AiModelRequiredValue && equalTo((AiModelRequiredValue) other);
         }
 
-        private boolean equalTo(FeedTemplateInvalidValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "UnprocessableEntityErrorBody{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("FeedUnreadable")
-    @JsonIgnoreProperties("_tag")
-    private static final class FeedUnreadableValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private FeedUnreadableEncoded value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private FeedUnreadableValue() {}
-
-        private FeedUnreadableValue(FeedUnreadableEncoded value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitFeedUnreadable(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof FeedUnreadableValue && equalTo((FeedUnreadableValue) other);
-        }
-
-        private boolean equalTo(FeedUnreadableValue other) {
-            return value.equals(other.value);
-        }
-
-        @java.lang.Override
-        public int hashCode() {
-            return Objects.hash(this.value);
-        }
-
-        @java.lang.Override
-        public String toString() {
-            return "UnprocessableEntityErrorBody{" + "value: " + value + "}";
-        }
-    }
-
-    @JsonTypeName("UnknownChannels")
-    @JsonIgnoreProperties("_tag")
-    private static final class UnknownChannelsValue implements Value {
-        @JsonUnwrapped
-        @JsonIgnoreProperties(value = "_tag", allowSetters = true)
-        private UnknownChannelsEncoded value;
-
-        @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-        private UnknownChannelsValue() {}
-
-        private UnknownChannelsValue(UnknownChannelsEncoded value) {
-            this.value = value;
-        }
-
-        @java.lang.Override
-        public <T> T visit(Visitor<T> visitor) {
-            return visitor.visitUnknownChannels(value);
-        }
-
-        @java.lang.Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            return other instanceof UnknownChannelsValue && equalTo((UnknownChannelsValue) other);
-        }
-
-        private boolean equalTo(UnknownChannelsValue other) {
+        private boolean equalTo(AiModelRequiredValue other) {
             return value.equals(other.value);
         }
 

@@ -1,0 +1,90 @@
+using NUnit.Framework;
+using Peal.Test.Unit.MockServer;
+using Peal.Test.Utils;
+
+namespace Peal.Test.Unit.MockServer.Me.NotificationPreferences;
+
+[TestFixture]
+[Parallelizable(ParallelScope.Self)]
+public class GetTest : BaseMockServerTest
+{
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_1()
+    {
+        const string mockResponse = """
+            {
+              "email": {
+                "automations": true,
+                "channelReconnect": true,
+                "comments": true,
+                "feedStopped": true,
+                "postFailed": true,
+                "postPublished": true,
+                "postReview": true,
+                "postUnconfirmed": true,
+                "recyclingEnded": true,
+                "webhookFailing": true,
+                "weeklyDigest": true
+              },
+              "everyPost": true
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/me/notification-preferences")
+                    .UsingGet()
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Me.NotificationPreferences.GetAsync();
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+
+    [NUnit.Framework.Test]
+    public async Task MockServerTest_2()
+    {
+        const string mockResponse = """
+            {
+              "email": {
+                "automations": true,
+                "channelReconnect": true,
+                "comments": true,
+                "feedStopped": true,
+                "postFailed": true,
+                "postPublished": true,
+                "postReview": true,
+                "postUnconfirmed": true,
+                "recyclingEnded": true,
+                "webhookFailing": true,
+                "weeklyDigest": true
+              },
+              "everyPost": true
+            }
+            """;
+
+        Server
+            .Given(
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/me/notification-preferences")
+                    .UsingGet()
+            )
+            .RespondWith(
+                WireMock
+                    .ResponseBuilders.Response.Create()
+                    .WithStatusCode(200)
+                    .WithBody(mockResponse)
+            );
+
+        var response = await Client.Me.NotificationPreferences.GetAsync();
+        JsonAssert.AreEqual(response, mockResponse);
+    }
+}

@@ -1,0 +1,17 @@
+# frozen_string_literal: true
+
+module Peal
+  module Approvals
+    module Types
+      class NewComment < Internal::Types::Model
+        field :post_id, -> { String }, optional: false, nullable: false, api_name: "postId"
+
+        field :anchor, -> { Peal::Approvals::Types::NewCommentAnchor }, optional: true, nullable: false
+
+        field :parent_id, -> { String }, optional: true, nullable: false, api_name: "parentId"
+
+        field :text, -> { String }, optional: false, nullable: false
+      end
+    end
+  end
+end

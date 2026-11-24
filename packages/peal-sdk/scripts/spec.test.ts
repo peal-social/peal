@@ -35,6 +35,107 @@ const headersOf = (document: Schema.JsonObject) =>
         .map(({ name }) => name.toLowerCase())
     );
 
+// What the test reads of an operation: its id and its SDK names.
+const NamedPathsSchema = Schema.Record(
+  Schema.String,
+  Schema.Record(
+    Schema.String,
+    Schema.Struct({
+      operationId: Schema.String,
+      "x-fern-sdk-group-name": Schema.Union([
+        Schema.String,
+        Schema.Array(Schema.String),
+      ]),
+      "x-fern-sdk-method-name": Schema.String,
+    })
+  )
+);
+
+// Each operation of the SDKs' document: its id, its namespace's segments
+// and its method.
+const namesOf = (document: Schema.JsonObject) =>
+  Object.values(
+    Schema.decodeUnknownSync(NamedPathsSchema)(document["paths"])
+  ).flatMap((item) =>
+    Object.values(item).map((operation) => ({
+      id: operation.operationId,
+      method: operation["x-fern-sdk-method-name"],
+      namespace: [operation["x-fern-sdk-group-name"]].flat(),
+    }))
+  );
+
+describe("the SDKs' namespaces", () => {
+  it("nests a namespace of several segments, its method the id's last", async () => {
+    const sdks = await read(path.join(root, "peal-sdk", "openapi.json"));
+    const names = namesOf(sdks);
+
+    expect(names.find(({ id }) => id === "inbox.messages.send")).toEqual({
+      id: "inbox.messages.send",
+      method: "send",
+      namespace: ["inbox", "messages"],
+    });
+    expect(names.find(({ id }) => id === "posts.schedule")).toEqual({
+      id: "posts.schedule",
+      method: "schedule",
+      namespace: ["posts"],
+    });
+    // The health checks' ids name no group: their tag does.
+    expect(names.find(({ id }) => id === "health")).toEqual({
+      id: "health",
+      method: "health",
+      namespace: ["system"],
+    });
+  });
+
+  it("keeps each namespace's last segment its own, as Rust names a client by it", async () => {
+    const sdks = await read(path.join(root, "peal-sdk", "openapi.json"));
+
+    const namespaces = new Set(
+      namesOf(sdks).map(({ namespace }) => namespace.join("."))
+    );
+
+    const lasts = [...namespaces].map((name) => name.split(".").at(-1));
+
+    expect(lasts.filter((last, at) => lasts.indexOf(last) !== at)).toEqual([]);
+    expect(lasts).not.toContain("peal");
+  });
+
+  it("gives no method a sibling namespace's name", async () => {
+    const sdks = await read(path.join(root, "peal-sdk", "openapi.json"));
+    const names = namesOf(sdks);
+
+    const namespaces = new Set(
+      names.flatMap(({ namespace }) =>
+        namespace.map((_, at) => namespace.slice(0, at + 1).join("."))
+      )
+    );
+
+    expect(
+      names
+        .map(({ method, namespace }) => [...namespace, method].join("."))
+        .filter((name) => namespaces.has(name))
+    ).toEqual([]);
+  });
+
+  it("leaves out the groups only a person's own session calls", async () => {
+    const sdks = await read(path.join(root, "peal-sdk", "openapi.json"));
+    const ids = namesOf(sdks).map(({ id }) => id);
+
+    for (const id of [
+      "me.account.export",
+      "me.connectedApps.list",
+      "me.browserAnalytics.setConsent",
+      "workspace.delete",
+      "workspace.billingActions.order",
+    ]) {
+      expect(ids).not.toContain(id);
+    }
+
+    expect(ids).toContain("workspace.members.list");
+    expect(ids).toContain("me.get");
+  });
+});
+
 describe("the SDKs' document", () => {
   it("leaves out the events webhooks send, which the contract's lists", async () => {
     const contract = await read(

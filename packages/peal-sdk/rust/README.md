@@ -55,12 +55,37 @@ async fn main() {
     };
     let client = PealClient::new(config).expect("Failed to build client");
     client
-        .api_keys
+        .posts
         .create(
-            &NewApiKey {
-                name: "name".to_string(),
-                permissions: vec![Permission::ActivityRead],
-                expires_in_days: None,
+            &NewPost {
+                channel_ids: vec!["channelIds".to_string()],
+                content: PostContent {
+                    media: vec![MediaAttachment {
+                        alt_text: "altText".to_string(),
+                        media_id: "mediaId".to_string(),
+                        ..Default::default()
+                    }],
+                    overrides: vec![TextOverride {
+                        channel_id: "channelId".to_string(),
+                        text: "text".to_string(),
+                        ..Default::default()
+                    }],
+                    text: "text".to_string(),
+                    ..Default::default()
+                },
+                when: PostTiming::Now {
+                    data: PostTimingNow {
+                        ..Default::default()
+                    },
+                },
+                wait: None,
+                allow_duplicate: None,
+                channel_sets: None,
+                default_signatures: None,
+                options: None,
+                shorten_links: None,
+                signature_id: None,
+                tag_ids: None,
             },
             None,
         )
@@ -87,7 +112,7 @@ let client = Client::new(config).expect("Failed to build client");
 When the API returns a non-success status code (4xx or 5xx response), an error will be returned.
 
 ```rust
-match client.api_keys.create(None)?.await {
+match client.posts.create(None)?.await {
     Ok(response) => {
         println!("Success: {:?}", response);
     },
@@ -107,7 +132,7 @@ The SDK exports all request types as Rust structs. Simply import them from the c
 ```rust
 use peal_sdk::prelude::{*};
 
-let request = NewApiKey {
+let request = NewPost {
     ...
 };
 ```
@@ -134,7 +159,7 @@ The `retryStatusCodes` configuration controls which [5XX](https://developer.mozi
 Use the `max_retries` method to configure this behavior.
 
 ```rust
-let response = client.api_keys.create(
+let response = client.posts.create(
     Some(RequestOptions::new().max_retries(3))
 )?.await;
 ```
@@ -144,7 +169,7 @@ let response = client.api_keys.create(
 The SDK defaults to a 30 second timeout. Use the `timeout` method to configure this behavior.
 
 ```rust
-let response = client.api_keys.create(
+let response = client.posts.create(
     Some(RequestOptions::new().timeout_seconds(30))
 )?.await;
 ```
@@ -154,7 +179,7 @@ let response = client.api_keys.create(
 You can add custom headers to requests using `RequestOptions`.
 
 ```rust
-let response = client.api_keys.create(
+let response = client.posts.create(
     Some(
         RequestOptions::new()
             .additional_header("X-Custom-Header", "custom-value")
@@ -169,7 +194,7 @@ let response = client.api_keys.create(
 You can add custom query parameters to requests using `RequestOptions`.
 
 ```rust
-let response = client.api_keys.create(
+let response = client.posts.create(
     Some(
         RequestOptions::new()
             .additional_query_param("filter", "active")
@@ -188,7 +213,7 @@ properties apply to JSON and form-urlencoded bodies; multipart (file upload) and
 are sent unchanged.
 
 ```rust
-let response = client.api_keys.create(
+let response = client.posts.create(
     Some(
         RequestOptions::new()
             .additional_body_param("beta_feature", true)

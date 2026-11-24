@@ -4,9 +4,12 @@
 package social.peal.resources.media;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
+import social.peal.core.Suppliers;
+import social.peal.resources.media.images.AsyncImagesClient;
 import social.peal.resources.media.requests.CompleteMediaRequest;
 import social.peal.resources.media.requests.DeleteMediaRequest;
 import social.peal.resources.media.requests.GetMediaRequest;
@@ -15,6 +18,10 @@ import social.peal.resources.media.requests.MediaDescription;
 import social.peal.resources.media.requests.MediaImport;
 import social.peal.resources.media.requests.NewUpload;
 import social.peal.resources.media.requests.UsageMediaRequest;
+import social.peal.resources.media.slideshows.AsyncSlideshowsClient;
+import social.peal.resources.media.transcriptions.AsyncTranscriptionsClient;
+import social.peal.resources.media.videos.AsyncVideosClient;
+import social.peal.resources.media.voiceovers.AsyncVoiceoversClient;
 import social.peal.types.Media;
 import social.peal.types.MediaPage;
 import social.peal.types.MediaUsage;
@@ -25,9 +32,24 @@ public class AsyncMediaClient {
 
     private final AsyncRawMediaClient rawClient;
 
+    protected final Supplier<AsyncImagesClient> imagesClient;
+
+    protected final Supplier<AsyncVoiceoversClient> voiceoversClient;
+
+    protected final Supplier<AsyncTranscriptionsClient> transcriptionsClient;
+
+    protected final Supplier<AsyncVideosClient> videosClient;
+
+    protected final Supplier<AsyncSlideshowsClient> slideshowsClient;
+
     public AsyncMediaClient(ClientOptions clientOptions) {
         this.clientOptions = clientOptions;
         this.rawClient = new AsyncRawMediaClient(clientOptions);
+        this.imagesClient = Suppliers.memoize(() -> new AsyncImagesClient(clientOptions));
+        this.voiceoversClient = Suppliers.memoize(() -> new AsyncVoiceoversClient(clientOptions));
+        this.transcriptionsClient = Suppliers.memoize(() -> new AsyncTranscriptionsClient(clientOptions));
+        this.videosClient = Suppliers.memoize(() -> new AsyncVideosClient(clientOptions));
+        this.slideshowsClient = Suppliers.memoize(() -> new AsyncSlideshowsClient(clientOptions));
     }
 
     /**
@@ -408,5 +430,25 @@ public class AsyncMediaClient {
             }
         });
         return future;
+    }
+
+    public AsyncImagesClient images() {
+        return this.imagesClient.get();
+    }
+
+    public AsyncVoiceoversClient voiceovers() {
+        return this.voiceoversClient.get();
+    }
+
+    public AsyncTranscriptionsClient transcriptions() {
+        return this.transcriptionsClient.get();
+    }
+
+    public AsyncVideosClient videos() {
+        return this.videosClient.get();
+    }
+
+    public AsyncSlideshowsClient slideshows() {
+        return this.slideshowsClient.get();
     }
 }

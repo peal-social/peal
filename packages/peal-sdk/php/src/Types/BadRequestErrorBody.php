@@ -10,7 +10,7 @@ class BadRequestErrorBody extends JsonSerializableType
     /**
      * @var (
      *    'InvalidDateRange'
-     *   |'WorkspaceRequired'
+     *   |'BadRequest'
      *   |'_unknown'
      * ) $type
      */
@@ -19,7 +19,7 @@ class BadRequestErrorBody extends JsonSerializableType
     /**
      * @var (
      *    InvalidDateRangeEncoded
-     *   |WorkspaceRequiredEncoded
+     *   |EffectHttpApiErrorBadRequestEncoded
      *   |mixed
      * ) $value
      */
@@ -29,12 +29,12 @@ class BadRequestErrorBody extends JsonSerializableType
      * @param array{
      *   type: (
      *    'InvalidDateRange'
-     *   |'WorkspaceRequired'
+     *   |'BadRequest'
      *   |'_unknown'
      * ),
      *   value: (
      *    InvalidDateRangeEncoded
-     *   |WorkspaceRequiredEncoded
+     *   |EffectHttpApiErrorBadRequestEncoded
      *   |mixed
      * ),
      * } $values
@@ -59,14 +59,14 @@ class BadRequestErrorBody extends JsonSerializableType
     }
 
     /**
-     * @param WorkspaceRequiredEncoded $workspaceRequired
+     * @param EffectHttpApiErrorBadRequestEncoded $badRequest
      * @return BadRequestErrorBody
      */
-    public static function workspaceRequired(WorkspaceRequiredEncoded $workspaceRequired): BadRequestErrorBody
+    public static function badRequest(EffectHttpApiErrorBadRequestEncoded $badRequest): BadRequestErrorBody
     {
         return new BadRequestErrorBody([
-            'type' => 'WorkspaceRequired',
-            'value' => $workspaceRequired,
+            'type' => 'BadRequest',
+            'value' => $badRequest,
         ]);
     }
 
@@ -95,19 +95,19 @@ class BadRequestErrorBody extends JsonSerializableType
     /**
      * @return bool
      */
-    public function isWorkspaceRequired(): bool
+    public function isBadRequest(): bool
     {
-        return $this->value instanceof WorkspaceRequiredEncoded && $this->type === 'WorkspaceRequired';
+        return $this->value instanceof EffectHttpApiErrorBadRequestEncoded && $this->type === 'BadRequest';
     }
 
     /**
-     * @return WorkspaceRequiredEncoded
+     * @return EffectHttpApiErrorBadRequestEncoded
      */
-    public function asWorkspaceRequired(): WorkspaceRequiredEncoded
+    public function asBadRequest(): EffectHttpApiErrorBadRequestEncoded
     {
-        if (!($this->value instanceof WorkspaceRequiredEncoded && $this->type === 'WorkspaceRequired')) {
+        if (!($this->value instanceof EffectHttpApiErrorBadRequestEncoded && $this->type === 'BadRequest')) {
             throw new Exception(
-                "Expected WorkspaceRequired; got " . $this->type . " with value of type " . get_debug_type($this->value),
+                "Expected BadRequest; got " . $this->type . " with value of type " . get_debug_type($this->value),
             );
         }
 
@@ -138,8 +138,8 @@ class BadRequestErrorBody extends JsonSerializableType
                 $value = $this->asInvalidDateRange()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
-            case 'WorkspaceRequired':
-                $value = $this->asWorkspaceRequired()->jsonSerialize();
+            case 'BadRequest':
+                $value = $this->asBadRequest()->jsonSerialize();
                 $result = array_merge($value, $result);
                 break;
             case '_unknown':
@@ -181,8 +181,8 @@ class BadRequestErrorBody extends JsonSerializableType
             case 'InvalidDateRange':
                 $args['value'] = InvalidDateRangeEncoded::jsonDeserialize($data);
                 break;
-            case 'WorkspaceRequired':
-                $args['value'] = WorkspaceRequiredEncoded::jsonDeserialize($data);
+            case 'BadRequest':
+                $args['value'] = EffectHttpApiErrorBadRequestEncoded::jsonDeserialize($data);
                 break;
             case '_unknown':
             default:

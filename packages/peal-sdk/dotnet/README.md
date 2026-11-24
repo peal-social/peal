@@ -47,11 +47,23 @@ Instantiate and use the client with the following:
 using Peal;
 
 var client = new PealClient("TOKEN", "WORKSPACE");
-await client.ApiKeys.CreateAsync(
-    new NewApiKey
+await client.Posts.CreateAsync(
+    new NewPost
     {
-        Name = "name",
-        Permissions = new List<Permission>() { Permission.ActivityRead },
+        ChannelIds = new List<string>() { "channelIds" },
+        Content = new PostContent
+        {
+            Media = new List<MediaAttachment>()
+            {
+                new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
+            },
+            Overrides = new List<TextOverride>()
+            {
+                new TextOverride { ChannelId = "channelId", Text = "text" },
+            },
+            Text = "text",
+        },
+        When = new PostTiming(new PostTiming.Now(new PostTimingNow())),
     }
 );
 ```
@@ -78,7 +90,7 @@ will be thrown.
 using Peal;
 
 try {
-    var response = await client.ApiKeys.CreateAsync(...);
+    var response = await client.Posts.CreateAsync(...);
 } catch (PealClientApiException e) {
     System.Console.WriteLine(e.Body);
     System.Console.WriteLine(e.StatusCode);
@@ -112,7 +124,7 @@ A request is deemed retryable when any of the following HTTP status codes is ret
 Use the `MaxRetries` request option to configure this behavior.
 
 ```csharp
-var response = await client.ApiKeys.CreateAsync(
+var response = await client.Posts.CreateAsync(
     ...,
     new RequestOptions {
         MaxRetries = 0 // Override MaxRetries at the request level
@@ -125,7 +137,7 @@ var response = await client.ApiKeys.CreateAsync(
 The SDK defaults to a 30 second timeout. Use the `Timeout` option to configure this behavior.
 
 ```csharp
-var response = await client.ApiKeys.CreateAsync(
+var response = await client.Posts.CreateAsync(
     ...,
     new RequestOptions {
         Timeout = TimeSpan.FromSeconds(3) // Override timeout to 3s
@@ -141,7 +153,7 @@ Access raw HTTP response data (status code, headers, URL) alongside parsed respo
 using Peal;
 
 // Access raw response data (status code, headers, etc.) alongside the parsed response
-var result = await client.ApiKeys.CreateAsync(...).WithRawResponse();
+var result = await client.Posts.CreateAsync(...).WithRawResponse();
 
 // Access the parsed data
 var data = result.Data;
@@ -158,7 +170,7 @@ if (headers.TryGetValue("X-Request-Id", out var requestId))
 }
 
 // For the default behavior, simply await without .WithRawResponse()
-var parsedData = await client.ApiKeys.CreateAsync(...);
+var parsedData = await client.Posts.CreateAsync(...);
 
 // .WithRawResponse() also works on streaming endpoints (returns IAsyncEnumerable<T> + RawResponse)
 // and on endpoints with no response body (returns RawResponse only).
@@ -169,7 +181,7 @@ var parsedData = await client.ApiKeys.CreateAsync(...);
 If you would like to send additional headers as part of the request, use the `AdditionalHeaders` request option.
 
 ```csharp
-var response = await client.ApiKeys.CreateAsync(
+var response = await client.Posts.CreateAsync(
     ...,
     new RequestOptions {
         AdditionalHeaders = new Dictionary<string, string?>
@@ -185,7 +197,7 @@ var response = await client.ApiKeys.CreateAsync(
 If you would like to send additional query parameters as part of the request, use the `AdditionalQueryParameters` request option.
 
 ```csharp
-var response = await client.ApiKeys.CreateAsync(
+var response = await client.Posts.CreateAsync(
     ...,
     new RequestOptions {
         AdditionalQueryParameters = new Dictionary<string, string>
@@ -205,7 +217,7 @@ are sent as the JSON body. Form-urlencoded requests merge the additional propert
 multipart (file upload) requests are not supported.
 
 ```csharp
-var response = await client.ApiKeys.CreateAsync(
+var response = await client.Posts.CreateAsync(
     ...,
     new RequestOptions {
         AdditionalBodyProperties = new Dictionary<string, object>
@@ -224,25 +236,25 @@ This SDK uses forward-compatible enums that can handle unknown values gracefully
 using Peal;
 
 // Using a built-in value
-var reconnectChannelsRequestMessages = ReconnectChannelsRequestMessages.True;
+var listPostsRequestRemoved = ListPostsRequestRemoved.True;
 
 // Using a custom value
-var customReconnectChannelsRequestMessages = ReconnectChannelsRequestMessages.FromCustom("custom-value");
+var customListPostsRequestRemoved = ListPostsRequestRemoved.FromCustom("custom-value");
 
 // Using in a switch statement
-switch (reconnectChannelsRequestMessages.Value)
+switch (listPostsRequestRemoved.Value)
 {
-    case ReconnectChannelsRequestMessages.Values.True:
+    case ListPostsRequestRemoved.Values.True:
         Console.WriteLine("True");
         break;
     default:
-        Console.WriteLine($"Unknown value: {reconnectChannelsRequestMessages.Value}");
+        Console.WriteLine($"Unknown value: {listPostsRequestRemoved.Value}");
         break;
 }
 
 // Explicit casting
-string reconnectChannelsRequestMessagesString = (string)ReconnectChannelsRequestMessages.True;
-ReconnectChannelsRequestMessages reconnectChannelsRequestMessagesFromString = (ReconnectChannelsRequestMessages)"true";
+string listPostsRequestRemovedString = (string)ListPostsRequestRemoved.True;
+ListPostsRequestRemoved listPostsRequestRemovedFromString = (ListPostsRequestRemoved)"true";
 ```
 
 ## Contributing

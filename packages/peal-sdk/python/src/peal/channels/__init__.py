@@ -7,9 +7,16 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import ReconnectChannelsRequestMessages, ReconnectChannelsRequestReposts
+    from . import capabilities, connect_links, default_options, lookups, sets, tiktok_creator
 _dynamic_imports: typing.Dict[str, str] = {
     "ReconnectChannelsRequestMessages": ".types",
     "ReconnectChannelsRequestReposts": ".types",
+    "capabilities": ".capabilities",
+    "connect_links": ".connect_links",
+    "default_options": ".default_options",
+    "lookups": ".lookups",
+    "sets": ".sets",
+    "tiktok_creator": ".tiktok_creator",
 }
 
 
@@ -34,4 +41,13 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["ReconnectChannelsRequestMessages", "ReconnectChannelsRequestReposts"]
+__all__ = [
+    "ReconnectChannelsRequestMessages",
+    "ReconnectChannelsRequestReposts",
+    "capabilities",
+    "connect_links",
+    "default_options",
+    "lookups",
+    "sets",
+    "tiktok_creator",
+]

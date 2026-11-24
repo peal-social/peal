@@ -18,49 +18,27 @@
       },
       "default": "./dist/cjs/index.js"
     },
-    "./system": {
+    "./posts": {
       "import": {
-        "types": "./dist/esm/api/resources/system/exports.d.mts",
-        "default": "./dist/esm/api/resources/system/exports.mjs"
+        "types": "./dist/esm/api/resources/posts/exports.d.mts",
+        "default": "./dist/esm/api/resources/posts/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/system/exports.d.ts",
-        "default": "./dist/cjs/api/resources/system/exports.js"
+        "types": "./dist/cjs/api/resources/posts/exports.d.ts",
+        "default": "./dist/cjs/api/resources/posts/exports.js"
       },
-      "default": "./dist/cjs/api/resources/system/exports.js"
+      "default": "./dist/cjs/api/resources/posts/exports.js"
     },
-    "./session": {
+    "./approvals": {
       "import": {
-        "types": "./dist/esm/api/resources/session/exports.d.mts",
-        "default": "./dist/esm/api/resources/session/exports.mjs"
+        "types": "./dist/esm/api/resources/approvals/exports.d.mts",
+        "default": "./dist/esm/api/resources/approvals/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/session/exports.d.ts",
-        "default": "./dist/cjs/api/resources/session/exports.js"
+        "types": "./dist/cjs/api/resources/approvals/exports.d.ts",
+        "default": "./dist/cjs/api/resources/approvals/exports.js"
       },
-      "default": "./dist/cjs/api/resources/session/exports.js"
-    },
-    "./credential": {
-      "import": {
-        "types": "./dist/esm/api/resources/credential/exports.d.mts",
-        "default": "./dist/esm/api/resources/credential/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/credential/exports.d.ts",
-        "default": "./dist/cjs/api/resources/credential/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/credential/exports.js"
-    },
-    "./apiKeys": {
-      "import": {
-        "types": "./dist/esm/api/resources/apiKeys/exports.d.mts",
-        "default": "./dist/esm/api/resources/apiKeys/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/apiKeys/exports.d.ts",
-        "default": "./dist/cjs/api/resources/apiKeys/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/apiKeys/exports.js"
+      "default": "./dist/cjs/api/resources/approvals/exports.js"
     },
     "./channels": {
       "import": {
@@ -73,28 +51,6 @@
       },
       "default": "./dist/cjs/api/resources/channels/exports.js"
     },
-    "./posts": {
-      "import": {
-        "types": "./dist/esm/api/resources/posts/exports.d.mts",
-        "default": "./dist/esm/api/resources/posts/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/posts/exports.d.ts",
-        "default": "./dist/cjs/api/resources/posts/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/posts/exports.js"
-    },
-    "./articles": {
-      "import": {
-        "types": "./dist/esm/api/resources/articles/exports.d.mts",
-        "default": "./dist/esm/api/resources/articles/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/articles/exports.d.ts",
-        "default": "./dist/cjs/api/resources/articles/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/articles/exports.js"
-    },
     "./media": {
       "import": {
         "types": "./dist/esm/api/resources/media/exports.d.mts",
@@ -105,116 +61,6 @@
         "default": "./dist/cjs/api/resources/media/exports.js"
       },
       "default": "./dist/cjs/api/resources/media/exports.js"
-    },
-    "./mediaAudio": {
-      "import": {
-        "types": "./dist/esm/api/resources/mediaAudio/exports.d.mts",
-        "default": "./dist/esm/api/resources/mediaAudio/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/mediaAudio/exports.d.ts",
-        "default": "./dist/cjs/api/resources/mediaAudio/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/mediaAudio/exports.js"
-    },
-    "./notices": {
-      "import": {
-        "types": "./dist/esm/api/resources/notices/exports.d.mts",
-        "default": "./dist/esm/api/resources/notices/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/notices/exports.d.ts",
-        "default": "./dist/cjs/api/resources/notices/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/notices/exports.js"
-    },
-    "./notificationPreferences": {
-      "import": {
-        "types": "./dist/esm/api/resources/notificationPreferences/exports.d.mts",
-        "default": "./dist/esm/api/resources/notificationPreferences/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/notificationPreferences/exports.d.ts",
-        "default": "./dist/cjs/api/resources/notificationPreferences/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/notificationPreferences/exports.js"
-    },
-    "./assistant": {
-      "import": {
-        "types": "./dist/esm/api/resources/assistant/exports.d.mts",
-        "default": "./dist/esm/api/resources/assistant/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/assistant/exports.d.ts",
-        "default": "./dist/cjs/api/resources/assistant/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/assistant/exports.js"
-    },
-    "./videoGenerations": {
-      "import": {
-        "types": "./dist/esm/api/resources/videoGenerations/exports.d.mts",
-        "default": "./dist/esm/api/resources/videoGenerations/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/videoGenerations/exports.d.ts",
-        "default": "./dist/cjs/api/resources/videoGenerations/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/videoGenerations/exports.js"
-    },
-    "./slideshows": {
-      "import": {
-        "types": "./dist/esm/api/resources/slideshows/exports.d.mts",
-        "default": "./dist/esm/api/resources/slideshows/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/slideshows/exports.d.ts",
-        "default": "./dist/cjs/api/resources/slideshows/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/slideshows/exports.js"
-    },
-    "./members": {
-      "import": {
-        "types": "./dist/esm/api/resources/members/exports.d.mts",
-        "default": "./dist/esm/api/resources/members/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/members/exports.d.ts",
-        "default": "./dist/cjs/api/resources/members/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/members/exports.js"
-    },
-    "./invitations": {
-      "import": {
-        "types": "./dist/esm/api/resources/invitations/exports.d.mts",
-        "default": "./dist/esm/api/resources/invitations/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/invitations/exports.d.ts",
-        "default": "./dist/cjs/api/resources/invitations/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/invitations/exports.js"
-    },
-    "./billing": {
-      "import": {
-        "types": "./dist/esm/api/resources/billing/exports.d.mts",
-        "default": "./dist/esm/api/resources/billing/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/billing/exports.d.ts",
-        "default": "./dist/cjs/api/resources/billing/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/billing/exports.js"
-    },
-    "./usage": {
-      "import": {
-        "types": "./dist/esm/api/resources/usage/exports.d.mts",
-        "default": "./dist/esm/api/resources/usage/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/usage/exports.d.ts",
-        "default": "./dist/cjs/api/resources/usage/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/usage/exports.js"
     },
     "./analytics": {
       "import": {
@@ -227,38 +73,38 @@
       },
       "default": "./dist/cjs/api/resources/analytics/exports.js"
     },
-    "./tiktok": {
+    "./ads": {
       "import": {
-        "types": "./dist/esm/api/resources/tiktok/exports.d.mts",
-        "default": "./dist/esm/api/resources/tiktok/exports.mjs"
+        "types": "./dist/esm/api/resources/ads/exports.d.mts",
+        "default": "./dist/esm/api/resources/ads/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/tiktok/exports.d.ts",
-        "default": "./dist/cjs/api/resources/tiktok/exports.js"
+        "types": "./dist/cjs/api/resources/ads/exports.d.ts",
+        "default": "./dist/cjs/api/resources/ads/exports.js"
       },
-      "default": "./dist/cjs/api/resources/tiktok/exports.js"
+      "default": "./dist/cjs/api/resources/ads/exports.js"
     },
-    "./capabilities": {
+    "./articles": {
       "import": {
-        "types": "./dist/esm/api/resources/capabilities/exports.d.mts",
-        "default": "./dist/esm/api/resources/capabilities/exports.mjs"
+        "types": "./dist/esm/api/resources/articles/exports.d.mts",
+        "default": "./dist/esm/api/resources/articles/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/capabilities/exports.d.ts",
-        "default": "./dist/cjs/api/resources/capabilities/exports.js"
+        "types": "./dist/cjs/api/resources/articles/exports.d.ts",
+        "default": "./dist/cjs/api/resources/articles/exports.js"
       },
-      "default": "./dist/cjs/api/resources/capabilities/exports.js"
+      "default": "./dist/cjs/api/resources/articles/exports.js"
     },
-    "./lookups": {
+    "./links": {
       "import": {
-        "types": "./dist/esm/api/resources/lookups/exports.d.mts",
-        "default": "./dist/esm/api/resources/lookups/exports.mjs"
+        "types": "./dist/esm/api/resources/links/exports.d.mts",
+        "default": "./dist/esm/api/resources/links/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/lookups/exports.d.ts",
-        "default": "./dist/cjs/api/resources/lookups/exports.js"
+        "types": "./dist/cjs/api/resources/links/exports.d.ts",
+        "default": "./dist/cjs/api/resources/links/exports.js"
       },
-      "default": "./dist/cjs/api/resources/lookups/exports.js"
+      "default": "./dist/cjs/api/resources/links/exports.js"
     },
     "./webhooks": {
       "import": {
@@ -271,60 +117,16 @@
       },
       "default": "./dist/cjs/api/resources/webhooks/exports.js"
     },
-    "./inbox": {
+    "./assistant": {
       "import": {
-        "types": "./dist/esm/api/resources/inbox/exports.d.mts",
-        "default": "./dist/esm/api/resources/inbox/exports.mjs"
+        "types": "./dist/esm/api/resources/assistant/exports.d.mts",
+        "default": "./dist/esm/api/resources/assistant/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/inbox/exports.d.ts",
-        "default": "./dist/cjs/api/resources/inbox/exports.js"
+        "types": "./dist/cjs/api/resources/assistant/exports.d.ts",
+        "default": "./dist/cjs/api/resources/assistant/exports.js"
       },
-      "default": "./dist/cjs/api/resources/inbox/exports.js"
-    },
-    "./inboxReviews": {
-      "import": {
-        "types": "./dist/esm/api/resources/inboxReviews/exports.d.mts",
-        "default": "./dist/esm/api/resources/inboxReviews/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/inboxReviews/exports.d.ts",
-        "default": "./dist/cjs/api/resources/inboxReviews/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/inboxReviews/exports.js"
-    },
-    "./inboxMessages": {
-      "import": {
-        "types": "./dist/esm/api/resources/inboxMessages/exports.d.mts",
-        "default": "./dist/esm/api/resources/inboxMessages/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/inboxMessages/exports.d.ts",
-        "default": "./dist/cjs/api/resources/inboxMessages/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/inboxMessages/exports.js"
-    },
-    "./ads": {
-      "import": {
-        "types": "./dist/esm/api/resources/ads/exports.d.mts",
-        "default": "./dist/esm/api/resources/ads/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/ads/exports.d.ts",
-        "default": "./dist/cjs/api/resources/ads/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/ads/exports.js"
-    },
-    "./activity": {
-      "import": {
-        "types": "./dist/esm/api/resources/activity/exports.d.mts",
-        "default": "./dist/esm/api/resources/activity/exports.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/api/resources/activity/exports.d.ts",
-        "default": "./dist/cjs/api/resources/activity/exports.js"
-      },
-      "default": "./dist/cjs/api/resources/activity/exports.js"
+      "default": "./dist/cjs/api/resources/assistant/exports.js"
     },
     "./partner": {
       "import": {
@@ -337,159 +139,423 @@
       },
       "default": "./dist/cjs/api/resources/partner/exports.js"
     },
-    "./partnerUsage": {
+    "./me": {
       "import": {
-        "types": "./dist/esm/api/resources/partnerUsage/exports.d.mts",
-        "default": "./dist/esm/api/resources/partnerUsage/exports.mjs"
+        "types": "./dist/esm/api/resources/me/exports.d.mts",
+        "default": "./dist/esm/api/resources/me/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/partnerUsage/exports.d.ts",
-        "default": "./dist/cjs/api/resources/partnerUsage/exports.js"
+        "types": "./dist/cjs/api/resources/me/exports.d.ts",
+        "default": "./dist/cjs/api/resources/me/exports.js"
       },
-      "default": "./dist/cjs/api/resources/partnerUsage/exports.js"
+      "default": "./dist/cjs/api/resources/me/exports.js"
     },
-    "./partnerAccount": {
+    "./credential": {
       "import": {
-        "types": "./dist/esm/api/resources/partnerAccount/exports.d.mts",
-        "default": "./dist/esm/api/resources/partnerAccount/exports.mjs"
+        "types": "./dist/esm/api/resources/credential/exports.d.mts",
+        "default": "./dist/esm/api/resources/credential/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/partnerAccount/exports.d.ts",
-        "default": "./dist/cjs/api/resources/partnerAccount/exports.js"
+        "types": "./dist/cjs/api/resources/credential/exports.d.ts",
+        "default": "./dist/cjs/api/resources/credential/exports.js"
       },
-      "default": "./dist/cjs/api/resources/partnerAccount/exports.js"
+      "default": "./dist/cjs/api/resources/credential/exports.js"
     },
-    "./connectLinks": {
+    "./system": {
       "import": {
-        "types": "./dist/esm/api/resources/connectLinks/exports.d.mts",
-        "default": "./dist/esm/api/resources/connectLinks/exports.mjs"
+        "types": "./dist/esm/api/resources/system/exports.d.mts",
+        "default": "./dist/esm/api/resources/system/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/connectLinks/exports.d.ts",
-        "default": "./dist/cjs/api/resources/connectLinks/exports.js"
+        "types": "./dist/cjs/api/resources/system/exports.d.ts",
+        "default": "./dist/cjs/api/resources/system/exports.js"
       },
-      "default": "./dist/cjs/api/resources/connectLinks/exports.js"
+      "default": "./dist/cjs/api/resources/system/exports.js"
     },
-    "./review": {
+    "./automations": {
       "import": {
-        "types": "./dist/esm/api/resources/review/exports.d.mts",
-        "default": "./dist/esm/api/resources/review/exports.mjs"
+        "types": "./dist/esm/api/resources/automations/exports.d.mts",
+        "default": "./dist/esm/api/resources/automations/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/review/exports.d.ts",
-        "default": "./dist/cjs/api/resources/review/exports.js"
+        "types": "./dist/cjs/api/resources/automations/exports.d.ts",
+        "default": "./dist/cjs/api/resources/automations/exports.js"
       },
-      "default": "./dist/cjs/api/resources/review/exports.js"
+      "default": "./dist/cjs/api/resources/automations/exports.js"
     },
-    "./tags": {
+    "./automations/commentRules": {
       "import": {
-        "types": "./dist/esm/api/resources/tags/exports.d.mts",
-        "default": "./dist/esm/api/resources/tags/exports.mjs"
+        "types": "./dist/esm/api/resources/automations/resources/commentRules/exports.d.mts",
+        "default": "./dist/esm/api/resources/automations/resources/commentRules/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/tags/exports.d.ts",
-        "default": "./dist/cjs/api/resources/tags/exports.js"
+        "types": "./dist/cjs/api/resources/automations/resources/commentRules/exports.d.ts",
+        "default": "./dist/cjs/api/resources/automations/resources/commentRules/exports.js"
       },
-      "default": "./dist/cjs/api/resources/tags/exports.js"
+      "default": "./dist/cjs/api/resources/automations/resources/commentRules/exports.js"
     },
-    "./signatures": {
+    "./automations/queues": {
       "import": {
-        "types": "./dist/esm/api/resources/signatures/exports.d.mts",
-        "default": "./dist/esm/api/resources/signatures/exports.mjs"
+        "types": "./dist/esm/api/resources/automations/resources/queues/exports.d.mts",
+        "default": "./dist/esm/api/resources/automations/resources/queues/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/signatures/exports.d.ts",
-        "default": "./dist/cjs/api/resources/signatures/exports.js"
+        "types": "./dist/cjs/api/resources/automations/resources/queues/exports.d.ts",
+        "default": "./dist/cjs/api/resources/automations/resources/queues/exports.js"
       },
-      "default": "./dist/cjs/api/resources/signatures/exports.js"
+      "default": "./dist/cjs/api/resources/automations/resources/queues/exports.js"
     },
-    "./channelSets": {
+    "./automations/recycling": {
       "import": {
-        "types": "./dist/esm/api/resources/channelSets/exports.d.mts",
-        "default": "./dist/esm/api/resources/channelSets/exports.mjs"
+        "types": "./dist/esm/api/resources/automations/resources/recycling/exports.d.mts",
+        "default": "./dist/esm/api/resources/automations/resources/recycling/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/channelSets/exports.d.ts",
-        "default": "./dist/cjs/api/resources/channelSets/exports.js"
+        "types": "./dist/cjs/api/resources/automations/resources/recycling/exports.d.ts",
+        "default": "./dist/cjs/api/resources/automations/resources/recycling/exports.js"
       },
-      "default": "./dist/cjs/api/resources/channelSets/exports.js"
+      "default": "./dist/cjs/api/resources/automations/resources/recycling/exports.js"
     },
-    "./queues": {
+    "./automations/followUps": {
       "import": {
-        "types": "./dist/esm/api/resources/queues/exports.d.mts",
-        "default": "./dist/esm/api/resources/queues/exports.mjs"
+        "types": "./dist/esm/api/resources/automations/resources/followUps/exports.d.mts",
+        "default": "./dist/esm/api/resources/automations/resources/followUps/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/queues/exports.d.ts",
-        "default": "./dist/cjs/api/resources/queues/exports.js"
+        "types": "./dist/cjs/api/resources/automations/resources/followUps/exports.d.ts",
+        "default": "./dist/cjs/api/resources/automations/resources/followUps/exports.js"
       },
-      "default": "./dist/cjs/api/resources/queues/exports.js"
+      "default": "./dist/cjs/api/resources/automations/resources/followUps/exports.js"
     },
-    "./recycling": {
+    "./automations/feeds": {
       "import": {
-        "types": "./dist/esm/api/resources/recycling/exports.d.mts",
-        "default": "./dist/esm/api/resources/recycling/exports.mjs"
+        "types": "./dist/esm/api/resources/automations/resources/feeds/exports.d.mts",
+        "default": "./dist/esm/api/resources/automations/resources/feeds/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/recycling/exports.d.ts",
-        "default": "./dist/cjs/api/resources/recycling/exports.js"
+        "types": "./dist/cjs/api/resources/automations/resources/feeds/exports.d.ts",
+        "default": "./dist/cjs/api/resources/automations/resources/feeds/exports.js"
       },
-      "default": "./dist/cjs/api/resources/recycling/exports.js"
+      "default": "./dist/cjs/api/resources/automations/resources/feeds/exports.js"
     },
-    "./followUps": {
+    "./channels/capabilities": {
       "import": {
-        "types": "./dist/esm/api/resources/followUps/exports.d.mts",
-        "default": "./dist/esm/api/resources/followUps/exports.mjs"
+        "types": "./dist/esm/api/resources/channels/resources/capabilities/exports.d.mts",
+        "default": "./dist/esm/api/resources/channels/resources/capabilities/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/followUps/exports.d.ts",
-        "default": "./dist/cjs/api/resources/followUps/exports.js"
+        "types": "./dist/cjs/api/resources/channels/resources/capabilities/exports.d.ts",
+        "default": "./dist/cjs/api/resources/channels/resources/capabilities/exports.js"
       },
-      "default": "./dist/cjs/api/resources/followUps/exports.js"
+      "default": "./dist/cjs/api/resources/channels/resources/capabilities/exports.js"
     },
-    "./inboxRules": {
+    "./channels/defaultOptions": {
       "import": {
-        "types": "./dist/esm/api/resources/inboxRules/exports.d.mts",
-        "default": "./dist/esm/api/resources/inboxRules/exports.mjs"
+        "types": "./dist/esm/api/resources/channels/resources/defaultOptions/exports.d.mts",
+        "default": "./dist/esm/api/resources/channels/resources/defaultOptions/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/inboxRules/exports.d.ts",
-        "default": "./dist/cjs/api/resources/inboxRules/exports.js"
+        "types": "./dist/cjs/api/resources/channels/resources/defaultOptions/exports.d.ts",
+        "default": "./dist/cjs/api/resources/channels/resources/defaultOptions/exports.js"
       },
-      "default": "./dist/cjs/api/resources/inboxRules/exports.js"
+      "default": "./dist/cjs/api/resources/channels/resources/defaultOptions/exports.js"
     },
-    "./feeds": {
+    "./channels/lookups": {
       "import": {
-        "types": "./dist/esm/api/resources/feeds/exports.d.mts",
-        "default": "./dist/esm/api/resources/feeds/exports.mjs"
+        "types": "./dist/esm/api/resources/channels/resources/lookups/exports.d.mts",
+        "default": "./dist/esm/api/resources/channels/resources/lookups/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/feeds/exports.d.ts",
-        "default": "./dist/cjs/api/resources/feeds/exports.js"
+        "types": "./dist/cjs/api/resources/channels/resources/lookups/exports.d.ts",
+        "default": "./dist/cjs/api/resources/channels/resources/lookups/exports.js"
       },
-      "default": "./dist/cjs/api/resources/feeds/exports.js"
+      "default": "./dist/cjs/api/resources/channels/resources/lookups/exports.js"
     },
-    "./channelDefaults": {
+    "./channels/sets": {
       "import": {
-        "types": "./dist/esm/api/resources/channelDefaults/exports.d.mts",
-        "default": "./dist/esm/api/resources/channelDefaults/exports.mjs"
+        "types": "./dist/esm/api/resources/channels/resources/sets/exports.d.mts",
+        "default": "./dist/esm/api/resources/channels/resources/sets/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/channelDefaults/exports.d.ts",
-        "default": "./dist/cjs/api/resources/channelDefaults/exports.js"
+        "types": "./dist/cjs/api/resources/channels/resources/sets/exports.d.ts",
+        "default": "./dist/cjs/api/resources/channels/resources/sets/exports.js"
       },
-      "default": "./dist/cjs/api/resources/channelDefaults/exports.js"
+      "default": "./dist/cjs/api/resources/channels/resources/sets/exports.js"
     },
-    "./shortLinks": {
+    "./channels/connectLinks": {
       "import": {
-        "types": "./dist/esm/api/resources/shortLinks/exports.d.mts",
-        "default": "./dist/esm/api/resources/shortLinks/exports.mjs"
+        "types": "./dist/esm/api/resources/channels/resources/connectLinks/exports.d.mts",
+        "default": "./dist/esm/api/resources/channels/resources/connectLinks/exports.mjs"
       },
       "require": {
-        "types": "./dist/cjs/api/resources/shortLinks/exports.d.ts",
-        "default": "./dist/cjs/api/resources/shortLinks/exports.js"
+        "types": "./dist/cjs/api/resources/channels/resources/connectLinks/exports.d.ts",
+        "default": "./dist/cjs/api/resources/channels/resources/connectLinks/exports.js"
       },
-      "default": "./dist/cjs/api/resources/shortLinks/exports.js"
+      "default": "./dist/cjs/api/resources/channels/resources/connectLinks/exports.js"
+    },
+    "./channels/tiktokCreator": {
+      "import": {
+        "types": "./dist/esm/api/resources/channels/resources/tiktokCreator/exports.d.mts",
+        "default": "./dist/esm/api/resources/channels/resources/tiktokCreator/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/channels/resources/tiktokCreator/exports.d.ts",
+        "default": "./dist/cjs/api/resources/channels/resources/tiktokCreator/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/channels/resources/tiktokCreator/exports.js"
+    },
+    "./inbox": {
+      "import": {
+        "types": "./dist/esm/api/resources/inbox/exports.d.mts",
+        "default": "./dist/esm/api/resources/inbox/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/inbox/exports.d.ts",
+        "default": "./dist/cjs/api/resources/inbox/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/inbox/exports.js"
+    },
+    "./inbox/comments": {
+      "import": {
+        "types": "./dist/esm/api/resources/inbox/resources/comments/exports.d.mts",
+        "default": "./dist/esm/api/resources/inbox/resources/comments/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/inbox/resources/comments/exports.d.ts",
+        "default": "./dist/cjs/api/resources/inbox/resources/comments/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/inbox/resources/comments/exports.js"
+    },
+    "./inbox/messages": {
+      "import": {
+        "types": "./dist/esm/api/resources/inbox/resources/messages/exports.d.mts",
+        "default": "./dist/esm/api/resources/inbox/resources/messages/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/inbox/resources/messages/exports.d.ts",
+        "default": "./dist/cjs/api/resources/inbox/resources/messages/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/inbox/resources/messages/exports.js"
+    },
+    "./inbox/reviews": {
+      "import": {
+        "types": "./dist/esm/api/resources/inbox/resources/reviews/exports.d.mts",
+        "default": "./dist/esm/api/resources/inbox/resources/reviews/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/inbox/resources/reviews/exports.d.ts",
+        "default": "./dist/cjs/api/resources/inbox/resources/reviews/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/inbox/resources/reviews/exports.js"
+    },
+    "./me/notices": {
+      "import": {
+        "types": "./dist/esm/api/resources/me/resources/notices/exports.d.mts",
+        "default": "./dist/esm/api/resources/me/resources/notices/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/me/resources/notices/exports.d.ts",
+        "default": "./dist/cjs/api/resources/me/resources/notices/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/me/resources/notices/exports.js"
+    },
+    "./me/notificationPreferences": {
+      "import": {
+        "types": "./dist/esm/api/resources/me/resources/notificationPreferences/exports.d.mts",
+        "default": "./dist/esm/api/resources/me/resources/notificationPreferences/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/me/resources/notificationPreferences/exports.d.ts",
+        "default": "./dist/cjs/api/resources/me/resources/notificationPreferences/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/me/resources/notificationPreferences/exports.js"
+    },
+    "./media/images": {
+      "import": {
+        "types": "./dist/esm/api/resources/media/resources/images/exports.d.mts",
+        "default": "./dist/esm/api/resources/media/resources/images/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/media/resources/images/exports.d.ts",
+        "default": "./dist/cjs/api/resources/media/resources/images/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/media/resources/images/exports.js"
+    },
+    "./media/voiceovers": {
+      "import": {
+        "types": "./dist/esm/api/resources/media/resources/voiceovers/exports.d.mts",
+        "default": "./dist/esm/api/resources/media/resources/voiceovers/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/media/resources/voiceovers/exports.d.ts",
+        "default": "./dist/cjs/api/resources/media/resources/voiceovers/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/media/resources/voiceovers/exports.js"
+    },
+    "./media/transcriptions": {
+      "import": {
+        "types": "./dist/esm/api/resources/media/resources/transcriptions/exports.d.mts",
+        "default": "./dist/esm/api/resources/media/resources/transcriptions/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/media/resources/transcriptions/exports.d.ts",
+        "default": "./dist/cjs/api/resources/media/resources/transcriptions/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/media/resources/transcriptions/exports.js"
+    },
+    "./media/videos": {
+      "import": {
+        "types": "./dist/esm/api/resources/media/resources/videos/exports.d.mts",
+        "default": "./dist/esm/api/resources/media/resources/videos/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/media/resources/videos/exports.d.ts",
+        "default": "./dist/cjs/api/resources/media/resources/videos/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/media/resources/videos/exports.js"
+    },
+    "./media/slideshows": {
+      "import": {
+        "types": "./dist/esm/api/resources/media/resources/slideshows/exports.d.mts",
+        "default": "./dist/esm/api/resources/media/resources/slideshows/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/media/resources/slideshows/exports.d.ts",
+        "default": "./dist/cjs/api/resources/media/resources/slideshows/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/media/resources/slideshows/exports.js"
+    },
+    "./partner/account": {
+      "import": {
+        "types": "./dist/esm/api/resources/partner/resources/account/exports.d.mts",
+        "default": "./dist/esm/api/resources/partner/resources/account/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/partner/resources/account/exports.d.ts",
+        "default": "./dist/cjs/api/resources/partner/resources/account/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/partner/resources/account/exports.js"
+    },
+    "./partner/customerUsage": {
+      "import": {
+        "types": "./dist/esm/api/resources/partner/resources/customerUsage/exports.d.mts",
+        "default": "./dist/esm/api/resources/partner/resources/customerUsage/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/partner/resources/customerUsage/exports.d.ts",
+        "default": "./dist/cjs/api/resources/partner/resources/customerUsage/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/partner/resources/customerUsage/exports.js"
+    },
+    "./posts/drafts": {
+      "import": {
+        "types": "./dist/esm/api/resources/posts/resources/drafts/exports.d.mts",
+        "default": "./dist/esm/api/resources/posts/resources/drafts/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/posts/resources/drafts/exports.d.ts",
+        "default": "./dist/cjs/api/resources/posts/resources/drafts/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/posts/resources/drafts/exports.js"
+    },
+    "./posts/tags": {
+      "import": {
+        "types": "./dist/esm/api/resources/posts/resources/tags/exports.d.mts",
+        "default": "./dist/esm/api/resources/posts/resources/tags/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/posts/resources/tags/exports.d.ts",
+        "default": "./dist/cjs/api/resources/posts/resources/tags/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/posts/resources/tags/exports.js"
+    },
+    "./posts/signatures": {
+      "import": {
+        "types": "./dist/esm/api/resources/posts/resources/signatures/exports.d.mts",
+        "default": "./dist/esm/api/resources/posts/resources/signatures/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/posts/resources/signatures/exports.d.ts",
+        "default": "./dist/cjs/api/resources/posts/resources/signatures/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/posts/resources/signatures/exports.js"
+    },
+    "./workspace": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/exports.js"
+    },
+    "./workspace/activity": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/activity/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/activity/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/activity/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/activity/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/activity/exports.js"
+    },
+    "./workspace/apiKeys": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/apiKeys/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/apiKeys/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/apiKeys/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/apiKeys/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/apiKeys/exports.js"
+    },
+    "./workspace/members": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/members/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/members/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/members/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/members/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/members/exports.js"
+    },
+    "./workspace/invitations": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/invitations/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/invitations/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/invitations/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/invitations/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/invitations/exports.js"
+    },
+    "./workspace/billing": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/billing/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/billing/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/billing/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/billing/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/billing/exports.js"
+    },
+    "./workspace/usage": {
+      "import": {
+        "types": "./dist/esm/api/resources/workspace/resources/usage/exports.d.mts",
+        "default": "./dist/esm/api/resources/workspace/resources/usage/exports.mjs"
+      },
+      "require": {
+        "types": "./dist/cjs/api/resources/workspace/resources/usage/exports.d.ts",
+        "default": "./dist/cjs/api/resources/workspace/resources/usage/exports.js"
+      },
+      "default": "./dist/cjs/api/resources/workspace/resources/usage/exports.js"
     },
     "./package.json": "./package.json"
   },

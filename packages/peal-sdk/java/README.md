@@ -50,8 +50,12 @@ package com.example.usage;
 
 import java.util.Arrays;
 import social.peal.PealClient;
-import social.peal.resources.apikeys.requests.NewApiKey;
-import social.peal.types.Permission;
+import social.peal.resources.posts.requests.NewPost;
+import social.peal.types.MediaAttachment;
+import social.peal.types.PostContent;
+import social.peal.types.PostTiming;
+import social.peal.types.PostTimingNow;
+import social.peal.types.TextOverride;
 
 public class Example {
     public static void main(String[] args) {
@@ -60,12 +64,42 @@ public class Example {
             .token("<token>")
             .build();
 
-        client.apiKeys().create(
-            NewApiKey
+        client.posts().create(
+            NewPost
                 .builder()
-                .name("name")
-                .permissions(
-                    Arrays.asList(Permission.ACTIVITY_READ)
+                .content(
+                    PostContent
+                        .builder()
+                        .text("text")
+                        .media(
+                            Arrays.asList(
+                                MediaAttachment
+                                    .builder()
+                                    .altText("altText")
+                                    .mediaId("mediaId")
+                                    .build()
+                            )
+                        )
+                        .overrides(
+                            Arrays.asList(
+                                TextOverride
+                                    .builder()
+                                    .channelId("channelId")
+                                    .text("text")
+                                    .build()
+                            )
+                        )
+                        .build()
+                )
+                .when(
+                    PostTiming.now(
+                        PostTimingNow
+                            .builder()
+                            .build()
+                    )
+                )
+                .channelIds(
+                    Arrays.asList("channelIds")
                 )
                 .build()
         );
@@ -108,7 +142,7 @@ When the API returns a non-success status code (4xx or 5xx response), an API exc
 import social.peal.core.PealClientApiException;
 
 try{
-    client.apiKeys().create(...);
+    client.posts().create(...);
 } catch (PealClientApiException e){
     // Do something with the API exception...
 }
@@ -173,7 +207,7 @@ PealClient client = PealClient
     .build();
 
 // Request level
-client.apiKeys().create(
+client.posts().create(
     ...,
     RequestOptions
         .builder()
@@ -199,7 +233,7 @@ PealClient client = PealClient
 ;
 
 // Request level
-client.apiKeys().create(
+client.posts().create(
     ...,
     RequestOptions
         .builder()
@@ -218,7 +252,7 @@ This is supported for JSON and form-urlencoded request bodies, but not for multi
 ```java
 import social.peal.core.RequestOptions;
 
-client.apiKeys().create(
+client.posts().create(
     ...,
     RequestOptions
         .builder()
@@ -234,7 +268,7 @@ The `withRawResponse()` method returns a raw client that wraps all responses wit
 (A normal client's `response` is identical to a raw client's `response.body()`.)
 
 ```java
-PealClientHttpResponse response = client.apiKeys().withRawResponse().create(...);
+PealClientHttpResponse response = client.posts().withRawResponse().create(...);
 
 System.out.println(response.body());
 System.out.println(response.headers().get("X-My-Header"));

@@ -40,6 +40,9 @@ public class CreateTest : BaseMockServerTest
                   }
                 ],
                 "text": "text"
+              },
+              "when": {
+                "_tag": "now"
               }
             }
             """;
@@ -348,6 +351,7 @@ public class CreateTest : BaseMockServerTest
                 WireMock
                     .RequestBuilders.Request.Create()
                     .WithPath("/api/v1/posts")
+                    .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -359,8 +363,9 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.CreateAsync(
-            new PostDraft
+            new NewPost
             {
+                AllowDuplicate = null,
                 ChannelIds = new List<string>() { "channelIds", "channelIds" },
                 ChannelSets = null,
                 Content = new PostContent
@@ -394,6 +399,7 @@ public class CreateTest : BaseMockServerTest
                 ShortenLinks = null,
                 SignatureId = null,
                 TagIds = null,
+                When = new PostTiming(new PostTiming.Now(new PostTimingNow { TimeZone = null })),
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -421,6 +427,9 @@ public class CreateTest : BaseMockServerTest
                   }
                 ],
                 "text": "text"
+              },
+              "when": {
+                "_tag": "now"
               }
             }
             """;
@@ -541,6 +550,7 @@ public class CreateTest : BaseMockServerTest
                 WireMock
                     .RequestBuilders.Request.Create()
                     .WithPath("/api/v1/posts")
+                    .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -552,7 +562,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.CreateAsync(
-            new PostDraft
+            new NewPost
             {
                 ChannelIds = new List<string>() { "channelIds" },
                 Content = new PostContent
@@ -567,6 +577,7 @@ public class CreateTest : BaseMockServerTest
                     },
                     Text = "text",
                 },
+                When = new PostTiming(new PostTiming.Now(new PostTimingNow())),
             }
         );
         JsonAssert.AreEqual(response, mockResponse);

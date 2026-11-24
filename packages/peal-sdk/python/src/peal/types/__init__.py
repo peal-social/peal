@@ -228,8 +228,8 @@ if typing.TYPE_CHECKING:
     )
     from .bad_request_error_body import (
         BadRequestErrorBody,
+        BadRequestErrorBody_BadRequest,
         BadRequestErrorBody_InvalidDateRange,
-        BadRequestErrorBody_WorkspaceRequired,
     )
     from .best_times import BestTimes
     from .best_times_hour import BestTimesHour
@@ -342,8 +342,9 @@ if typing.TYPE_CHECKING:
     from .composition_unavailable_encoded_tag import CompositionUnavailableEncodedTag
     from .conflict_error_body import (
         ConflictErrorBody,
-        ConflictErrorBody_FollowUpRuleTaken,
-        ConflictErrorBody_TooManyFollowUpRules,
+        ConflictErrorBody_ChannelAccountTaken,
+        ConflictErrorBody_IdempotencyKeyReused,
+        ConflictErrorBody_WorkspaceBusy,
     )
     from .connect_chat import ConnectChat, ConnectChat_Discord, ConnectChat_Telegram
     from .connect_discord_chat import ConnectDiscordChat
@@ -731,7 +732,7 @@ if typing.TYPE_CHECKING:
     from .non_finite_number import NonFiniteNumber
     from .not_found_error_body import (
         NotFoundErrorBody,
-        NotFoundErrorBody_ShortLinkNotFound,
+        NotFoundErrorBody_PartnerNotFound,
         NotFoundErrorBody_WorkspaceNotFound,
     )
     from .not_recyclable_reason import NotRecyclableReason
@@ -1145,7 +1146,8 @@ if typing.TYPE_CHECKING:
     from .too_many_requests_encoded_tag import TooManyRequestsEncodedTag
     from .too_many_requests_error_body import (
         TooManyRequestsErrorBody,
-        TooManyRequestsErrorBody_FeedReadsLimited,
+        TooManyRequestsErrorBody_OwnTextLimitReached,
+        TooManyRequestsErrorBody_TextProviderBusy,
         TooManyRequestsErrorBody_TooManyRequests,
     )
     from .too_many_review_links_encoded import TooManyReviewLinksEncoded
@@ -1173,10 +1175,8 @@ if typing.TYPE_CHECKING:
     from .unknown_tags_encoded_tag import UnknownTagsEncodedTag
     from .unprocessable_entity_error_body import (
         UnprocessableEntityErrorBody,
-        UnprocessableEntityErrorBody_FeedAddressRefused,
-        UnprocessableEntityErrorBody_FeedTemplateInvalid,
-        UnprocessableEntityErrorBody_FeedUnreadable,
-        UnprocessableEntityErrorBody_UnknownChannels,
+        UnprocessableEntityErrorBody_AiCapabilityNotOffered,
+        UnprocessableEntityErrorBody_AiModelRequired,
     )
     from .unread_notices import UnreadNotices
     from .unsupported_media_type_encoded import UnsupportedMediaTypeEncoded
@@ -1468,8 +1468,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "BadGatewayErrorBody_AssistantFailed": ".bad_gateway_error_body",
     "BadGatewayErrorBody_TextProviderRefused": ".bad_gateway_error_body",
     "BadRequestErrorBody": ".bad_request_error_body",
+    "BadRequestErrorBody_BadRequest": ".bad_request_error_body",
     "BadRequestErrorBody_InvalidDateRange": ".bad_request_error_body",
-    "BadRequestErrorBody_WorkspaceRequired": ".bad_request_error_body",
     "BestTimes": ".best_times",
     "BestTimesHour": ".best_times_hour",
     "BestTimesHourMedian": ".best_times_hour_median",
@@ -1585,8 +1585,9 @@ _dynamic_imports: typing.Dict[str, str] = {
     "CompositionUnavailableEncodedReason": ".composition_unavailable_encoded_reason",
     "CompositionUnavailableEncodedTag": ".composition_unavailable_encoded_tag",
     "ConflictErrorBody": ".conflict_error_body",
-    "ConflictErrorBody_FollowUpRuleTaken": ".conflict_error_body",
-    "ConflictErrorBody_TooManyFollowUpRules": ".conflict_error_body",
+    "ConflictErrorBody_ChannelAccountTaken": ".conflict_error_body",
+    "ConflictErrorBody_IdempotencyKeyReused": ".conflict_error_body",
+    "ConflictErrorBody_WorkspaceBusy": ".conflict_error_body",
     "ConnectChat": ".connect_chat",
     "ConnectChat_Discord": ".connect_chat",
     "ConnectChat_Telegram": ".connect_chat",
@@ -1967,7 +1968,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NewBoost": ".new_boost",
     "NonFiniteNumber": ".non_finite_number",
     "NotFoundErrorBody": ".not_found_error_body",
-    "NotFoundErrorBody_ShortLinkNotFound": ".not_found_error_body",
+    "NotFoundErrorBody_PartnerNotFound": ".not_found_error_body",
     "NotFoundErrorBody_WorkspaceNotFound": ".not_found_error_body",
     "NotRecyclableReason": ".not_recyclable_reason",
     "Notice": ".notice",
@@ -2372,7 +2373,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "TooManyRequestsEncodedPolicy": ".too_many_requests_encoded_policy",
     "TooManyRequestsEncodedTag": ".too_many_requests_encoded_tag",
     "TooManyRequestsErrorBody": ".too_many_requests_error_body",
-    "TooManyRequestsErrorBody_FeedReadsLimited": ".too_many_requests_error_body",
+    "TooManyRequestsErrorBody_OwnTextLimitReached": ".too_many_requests_error_body",
+    "TooManyRequestsErrorBody_TextProviderBusy": ".too_many_requests_error_body",
     "TooManyRequestsErrorBody_TooManyRequests": ".too_many_requests_error_body",
     "TooManyReviewLinksEncoded": ".too_many_review_links_encoded",
     "TooManySignaturesEncoded": ".too_many_signatures_encoded",
@@ -2398,10 +2400,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "UnknownTagsEncoded": ".unknown_tags_encoded",
     "UnknownTagsEncodedTag": ".unknown_tags_encoded_tag",
     "UnprocessableEntityErrorBody": ".unprocessable_entity_error_body",
-    "UnprocessableEntityErrorBody_FeedAddressRefused": ".unprocessable_entity_error_body",
-    "UnprocessableEntityErrorBody_FeedTemplateInvalid": ".unprocessable_entity_error_body",
-    "UnprocessableEntityErrorBody_FeedUnreadable": ".unprocessable_entity_error_body",
-    "UnprocessableEntityErrorBody_UnknownChannels": ".unprocessable_entity_error_body",
+    "UnprocessableEntityErrorBody_AiCapabilityNotOffered": ".unprocessable_entity_error_body",
+    "UnprocessableEntityErrorBody_AiModelRequired": ".unprocessable_entity_error_body",
     "UnreadNotices": ".unread_notices",
     "UnsupportedMediaTypeEncoded": ".unsupported_media_type_encoded",
     "UploadIncompleteEncoded": ".upload_incomplete_encoded",
@@ -2718,8 +2718,8 @@ __all__ = [
     "BadGatewayErrorBody_AssistantFailed",
     "BadGatewayErrorBody_TextProviderRefused",
     "BadRequestErrorBody",
+    "BadRequestErrorBody_BadRequest",
     "BadRequestErrorBody_InvalidDateRange",
-    "BadRequestErrorBody_WorkspaceRequired",
     "BestTimes",
     "BestTimesHour",
     "BestTimesHourMedian",
@@ -2835,8 +2835,9 @@ __all__ = [
     "CompositionUnavailableEncodedReason",
     "CompositionUnavailableEncodedTag",
     "ConflictErrorBody",
-    "ConflictErrorBody_FollowUpRuleTaken",
-    "ConflictErrorBody_TooManyFollowUpRules",
+    "ConflictErrorBody_ChannelAccountTaken",
+    "ConflictErrorBody_IdempotencyKeyReused",
+    "ConflictErrorBody_WorkspaceBusy",
     "ConnectChat",
     "ConnectChat_Discord",
     "ConnectChat_Telegram",
@@ -3217,7 +3218,7 @@ __all__ = [
     "NewBoost",
     "NonFiniteNumber",
     "NotFoundErrorBody",
-    "NotFoundErrorBody_ShortLinkNotFound",
+    "NotFoundErrorBody_PartnerNotFound",
     "NotFoundErrorBody_WorkspaceNotFound",
     "NotRecyclableReason",
     "Notice",
@@ -3622,7 +3623,8 @@ __all__ = [
     "TooManyRequestsEncodedPolicy",
     "TooManyRequestsEncodedTag",
     "TooManyRequestsErrorBody",
-    "TooManyRequestsErrorBody_FeedReadsLimited",
+    "TooManyRequestsErrorBody_OwnTextLimitReached",
+    "TooManyRequestsErrorBody_TextProviderBusy",
     "TooManyRequestsErrorBody_TooManyRequests",
     "TooManyReviewLinksEncoded",
     "TooManySignaturesEncoded",
@@ -3648,10 +3650,8 @@ __all__ = [
     "UnknownTagsEncoded",
     "UnknownTagsEncodedTag",
     "UnprocessableEntityErrorBody",
-    "UnprocessableEntityErrorBody_FeedAddressRefused",
-    "UnprocessableEntityErrorBody_FeedTemplateInvalid",
-    "UnprocessableEntityErrorBody_FeedUnreadable",
-    "UnprocessableEntityErrorBody_UnknownChannels",
+    "UnprocessableEntityErrorBody_AiCapabilityNotOffered",
+    "UnprocessableEntityErrorBody_AiModelRequired",
     "UnreadNotices",
     "UnsupportedMediaTypeEncoded",
     "UploadIncompleteEncoded",
