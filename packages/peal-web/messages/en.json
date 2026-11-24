@@ -81,7 +81,9 @@
       "description": "The same numbers as CSV files, to open in a spreadsheet. A number a platform does not give is left empty.",
       "posts": "Posts of the range",
       "accounts": "Accounts, day by day",
-      "failed": "The file could not be downloaded. Try again in a moment."
+      "failed": "The file could not be downloaded. Try again in a moment.",
+      "refused": "Your role in this workspace doesn't let you download its numbers.",
+      "signedOut": "You are signed out. Sign in, then download the file again."
     },
     "bestTimes": {
       "title": "When this channel's posts did best",
