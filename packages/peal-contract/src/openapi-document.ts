@@ -376,7 +376,7 @@ export const namespaceTags = new Map<string, NamespaceTag>([
     "webhooks",
     {
       description: "The endpoints a workspace's events are sent to.",
-      name: "Webhooks",
+      name: "Webhook endpoints",
     },
   ],
   [
