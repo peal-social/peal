@@ -12,12 +12,10 @@ import type { ArticleId } from "#publishing/domain/article-id.ts";
 import { claimed, settled } from "#publishing/domain/article.ts";
 import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import { decide } from "#publishing/domain/publication-policy.ts";
-import type {
-  AttemptOutcome,
-  PublicationDecision,
-} from "#publishing/domain/publication-policy.ts";
+import type { PublicationDecision } from "#publishing/domain/publication-policy.ts";
 import type { TargetSettlement } from "#publishing/domain/target-settlement.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
+import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";
 

@@ -10,6 +10,7 @@ import {
   PlatformPostIdSchema,
   UnconfirmedReasonSchema,
 } from "#shared/domain/publish-result.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 
 import { bodyMediaOf, bodyTextLength } from "./article-body.ts";
 import { ArticleContent } from "./article-content.ts";
@@ -21,7 +22,6 @@ import type {
   ArticleStateName,
 } from "./invalid-article-transition.ts";
 import { FailureReasonSchema } from "./post-target-status.ts";
-import { Schedule } from "./schedule.ts";
 import { maxTermLength, siteRules } from "./site-rules.ts";
 import type { SiteRules } from "./site-rules.ts";
 import type { TargetSettlement } from "./target-settlement.ts";

@@ -15,12 +15,12 @@ import {
 } from "#publishing/domain/publication-policy.ts";
 import type {
   AttemptContext,
-  AttemptOutcome,
   EarlierRefusals,
   PublicationDecision,
   RefusalReason,
 } from "#publishing/domain/publication-policy.ts";
 import { needsReconnect } from "#publishing/domain/target-settlement.ts";
+import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { MediaRejected } from "#shared/domain/media-rejected.ts";
 import { PlatformUnavailable } from "#shared/domain/platform-unavailable.ts";

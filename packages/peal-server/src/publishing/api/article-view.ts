@@ -5,7 +5,7 @@ import type {
 } from "peal-contract";
 
 import type { Article, ArticleState } from "#publishing/domain/article.ts";
-import type { Schedule } from "#publishing/domain/schedule.ts";
+import type { Schedule } from "#shared/domain/schedule.ts";
 
 const scheduledOf = (schedule: Schedule) => ({
   scheduledAt: schedule.at,

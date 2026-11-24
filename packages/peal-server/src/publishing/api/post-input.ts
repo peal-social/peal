@@ -26,7 +26,6 @@ import { PostContent } from "#publishing/domain/post-content.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import { QueueIdSchema } from "#publishing/domain/queue-id.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { SignatureIdSchema } from "#publishing/domain/signature-id.ts";
 import { TagIdSchema } from "#publishing/domain/tag-id.ts";
 import type { TagId } from "#publishing/domain/tag-id.ts";
@@ -35,6 +34,7 @@ import {
   MediaAssetIdSchema,
   PostIdSchema,
 } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 // Requests carry ids and zones as strings. An id that is not even of the

@@ -17,8 +17,7 @@ import { LivePostChangeIdSchema } from "#publishing/domain/live-post-change-id.t
 import type { LivePostChangeId } from "#publishing/domain/live-post-change-id.ts";
 import { RemovalDecisionSchema } from "#publishing/domain/removal-decision.ts";
 import type { EarlierRemovals } from "#publishing/domain/removal-decision.ts";
-
-import { retryingDatabase } from "./activity-retry.ts";
+import { retryingDatabase } from "#shared/infrastructure/workflows/activity-retry.ts";
 
 /**
  * Carries out one change of a live post: deletes its parts from the

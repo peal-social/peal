@@ -2,11 +2,9 @@ import { Context } from "effect";
 import type { DateTime, Effect, Option } from "effect";
 
 import type { ArticleId } from "#publishing/domain/article-id.ts";
-import type {
-  AttemptOutcome,
-  EarlierRefusals,
-} from "#publishing/domain/publication-policy.ts";
+import type { EarlierRefusals } from "#publishing/domain/publication-policy.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
+import type { AttemptOutcome } from "#shared/domain/attempt-outcome.ts";
 import type { MediaAssetId } from "#shared/domain/ids.ts";
 
 /** One attempt at sending an article, in one round. */

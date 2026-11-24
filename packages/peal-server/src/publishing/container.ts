@@ -592,6 +592,12 @@ export const PublishingWorkersLive = Layer.mergeAll(
   SendFollowUpV1Live.pipe(Layer.provide(SendFollowUp.layer))
 );
 
+// The files as platforms and sites get them, the large ones a few at a
+// time: one limiter for every consumer of a build.
+const UploadsLive = limitedUploads.pipe(
+  Layer.provide(LibraryMediaForPublishing)
+);
+
 /**
  * The platforms the gates publish to, Mastodon, Bluesky, LinkedIn, X,
  * Threads, Instagram, Facebook Pages, TikTok, YouTube and Pinterest, with
@@ -613,7 +619,7 @@ export const PlatformsLive = RoutedPlatformPublisher.pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessCredentials,
-      limitedUploads.pipe(Layer.provide(LibraryMediaForPublishing)),
+      UploadsLive,
       DrizzlePublicationProgress,
       DrizzleUploadSessions,
       DrizzlePlatformQuota,
@@ -643,7 +649,7 @@ export const FollowUpPlatformsLive = RoutedFollowUpPublisher.pipe(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessCredentials,
-      limitedUploads.pipe(Layer.provide(LibraryMediaForPublishing)),
+      UploadsLive,
       DrizzlePublicationProgress,
       DrizzleUploadSessions,
       DrizzlePlatformQuota,
@@ -708,7 +714,7 @@ const SitePublisherLive = routedSitePublisher(
   Layer.provide(
     Layer.mergeAll(
       ChannelAccessSiteCredentials,
-      limitedUploads.pipe(Layer.provide(LibraryMediaForPublishing)),
+      UploadsLive,
       DrizzleArticleStore,
       DrizzleArticleJournal
     )

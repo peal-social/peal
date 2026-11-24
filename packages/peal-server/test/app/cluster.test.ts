@@ -69,7 +69,6 @@ import { publishingWith } from "#publishing/container.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import { createTarget } from "#publishing/domain/post-target.ts";
 import { createDraft, schedulePost } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import {
   FakePlatform,
   FakePlatformPublisher,
@@ -84,6 +83,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import type { PostId } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { purgeFinishedClusterRows } from "#shared/infrastructure/cluster-retention.ts";
 import { DatabaseLive } from "#shared/infrastructure/database.ts";

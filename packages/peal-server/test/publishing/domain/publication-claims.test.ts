@@ -11,13 +11,13 @@ import {
   claimPost,
   claimTarget,
 } from "#publishing/domain/publication-claims.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 const postId = PostIdSchema.make("00000000-0000-7000-8000-000000000001");

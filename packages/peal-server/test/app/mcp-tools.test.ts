@@ -62,7 +62,6 @@ import { PostRepository } from "#publishing/application/post-repository.ts";
 import { MediaAttachment } from "#publishing/domain/media-attachment.ts";
 import { PostContent } from "#publishing/domain/post-content.ts";
 import { createDraft, schedulePost } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
 import { newId } from "#shared/application/ids.ts";
 import {
@@ -73,6 +72,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { DatabaseLive } from "#shared/infrastructure/database.ts";
 import { IdsLive } from "#shared/infrastructure/secure-random-ids.ts";

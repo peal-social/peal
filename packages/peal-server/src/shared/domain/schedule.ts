@@ -6,10 +6,10 @@ import { fromWallClock } from "#shared/domain/wall-clock.ts";
 import type { LocalDate, LocalTime } from "#shared/domain/wall-clock.ts";
 
 /**
- * When a post goes out: the instant, in UTC, and the IANA time zone it was
- * scheduled in. The zone lets calendars show the post on the wall clock the
- * user picked, and recurring posts keep their local time when daylight saving
- * shifts the offset.
+ * When a post or an article goes out: the instant, in UTC, and the IANA
+ * time zone it was scheduled in. The zone lets calendars show it on the
+ * wall clock the user picked, and recurring posts keep their local time
+ * when daylight saving shifts the offset.
  */
 export class Schedule extends Schema.Class<Schedule>(
   "peal-server/publishing/domain/Schedule"
@@ -24,7 +24,7 @@ export class Schedule extends Schema.Class<Schedule>(
 }
 
 /**
- * Schedules a post at a wall-clock date and time in a zone. A time that
+ * Schedules at a wall-clock date and time in a zone. A time that
  * daylight saving skips or repeats follows the policy in
  * `#shared/domain/wall-clock.ts`.
  */

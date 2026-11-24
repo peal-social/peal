@@ -3,7 +3,6 @@ import { DateTime, Option, Result, Schema } from "effect";
 
 import { emptyContent } from "#publishing/domain/post-content.ts";
 import { createDraft, schedulePost, tagPost } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { TagIdSchema } from "#publishing/domain/tag-id.ts";
 import {
   createTag,
@@ -16,6 +15,7 @@ import {
   tagNameOf,
 } from "#publishing/domain/tag.ts";
 import { PostIdSchema, WorkspaceIdSchema } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 const workspaceId = WorkspaceIdSchema.make(
