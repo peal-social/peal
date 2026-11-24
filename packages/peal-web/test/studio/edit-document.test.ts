@@ -108,6 +108,24 @@ describe("the editor's document", () => {
     ]).toStrictEqual([true, true, false, edit]);
   });
 
+  it("stores a font once, added by its relayed address and its own", () => {
+    const relayed = `${origin}/studio-assets/${font.slice("https://".length)}`;
+
+    expect(
+      storedOf(
+        {
+          ...edit,
+          timeline: {
+            ...edit.timeline,
+            fonts: [{ src: relayed }, { src: font }],
+          },
+        },
+        () => null,
+        origin
+      ).timeline.fonts
+    ).toStrictEqual([{ src: font }]);
+  });
+
   it("leaves a file the library no longer has by its name", () => {
     const shown = previewOf(edit, () => null, origin);
 
