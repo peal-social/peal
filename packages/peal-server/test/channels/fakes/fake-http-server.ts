@@ -4,6 +4,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { Effect, Schema } from "effect";
 
+import { fakeHandler } from "#test/shared/fake-handler.ts";
 import { receivedBody } from "#test/shared/received-body.ts";
 
 /** A request a fake platform received. */
@@ -93,9 +94,7 @@ export const fakeHttpServer = (
         send(response, handle(request, origin));
       };
 
-      const server = createServer((incoming, response) => {
-        void answer(incoming, response);
-      });
+      const server = createServer(fakeHandler(answer));
 
       server.listen(0, "127.0.0.1");
       await once(server, "listening");

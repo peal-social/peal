@@ -5,6 +5,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { Clock, Effect, Option, Schema } from "effect";
 
+import { fakeHandler } from "#test/shared/fake-handler.ts";
 import { receivedBody } from "#test/shared/received-body.ts";
 
 // DEV's API, Forem's v1, on a loopback port, as its specification
@@ -574,9 +575,7 @@ export const fakeDevTo = (options: FakeDevToOptions = {}) =>
           send(response, answered);
         };
 
-        const server = createServer((incoming, response) => {
-          void answer(incoming, response);
-        });
+        const server = createServer(fakeHandler(answer));
 
         server.listen(0, "127.0.0.1");
         await once(server, "listening");

@@ -5,6 +5,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { Clock, Effect, Option, Schema } from "effect";
 
+import { fakeHandler } from "#test/shared/fake-handler.ts";
 import { receivedBody } from "#test/shared/received-body.ts";
 
 // A WordPress site as its REST API documents it, on a loopback port: the
@@ -772,9 +773,7 @@ export const fakeWordPress = (options: FakeWordPressOptions = {}) =>
           send(response, answered);
         };
 
-        const server = createServer((incoming, response) => {
-          void answer(incoming, response);
-        });
+        const server = createServer(fakeHandler(answer));
 
         server.listen(0, "127.0.0.1");
         await once(server, "listening");

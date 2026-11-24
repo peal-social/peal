@@ -1,10 +1,14 @@
 import { once } from "node:events";
 import { connect } from "node:net";
+import { setImmediate } from "node:timers/promises";
 
-import { assert, it } from "@effect/vitest";
+import { assert, describe, it } from "@effect/vitest";
 import { Effect } from "effect";
 
+import { fakeDevTo } from "#test/channels/fakes/fake-devto.ts";
+import { fakeHashnode } from "#test/channels/fakes/fake-hashnode.ts";
 import { fakeHttpServer } from "#test/channels/fakes/fake-http-server.ts";
+import { fakeWordPress } from "#test/channels/fakes/fake-wordpress.ts";
 import {
   empty,
   platformServer,
@@ -12,10 +16,10 @@ import {
 
 // A client that sends a request's head and part of its body, then goes
 // away, as a fetch aborted by its timeout does: the fake's read of the
-// body fails, after the test that sent it may have ended.
-const cutOff = (origin: string) =>
+// body fails.
+const cutOff = (address: string) =>
   Effect.promise(async () => {
-    const socket = connect(Number(new URL(origin).port), "127.0.0.1");
+    const socket = connect(Number(new URL(address).port), "127.0.0.1");
 
     await once(socket, "connect");
     socket.write(
@@ -29,48 +33,125 @@ const cutOff = (origin: string) =>
     await once(socket, "close");
   });
 
-// What the fake makes of the next request: it still answers, and keeps
-// that one alone.
-const answered = async (origin: string) => {
-  const response = await fetch(`${origin}/next`);
+// The status of a request the fake answers.
+const statusOf = (url: string) =>
+  Effect.promise(async () => {
+    const response = await fetch(url);
 
-  return response.status;
-};
+    await response.arrayBuffer();
 
-it.effect(
-  "the fake HTTP server forgets a request whose client went away before its body",
-  () =>
-    Effect.gen(function* fakeServer() {
-      const local = yield* fakeHttpServer(() => ({ status: 204 }));
+    return response.status;
+  });
 
-      yield* cutOff(local.url);
+/**
+ * Runs `effect`, then lets the event loop turn, and gives what it gave
+ * with how many rejections no one handled meanwhile. It listens beside
+ * the runner's own listener, which still reports each one.
+ */
+const withRejections = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
+  Effect.gen(function* observing() {
+    let rejections = 0;
 
-      assert.strictEqual(
-        yield* Effect.promise(async () => await answered(local.url)),
-        204
-      );
-      assert.deepStrictEqual(
-        local.requests().map(({ path }) => path),
-        ["/next"]
-      );
-    }).pipe(Effect.scoped)
-);
+    const listener = () => {
+      rejections += 1;
+    };
 
-it.effect(
-  "the fake platform forgets a request whose client went away before its body",
-  () =>
-    Effect.gen(function* fakePlatform() {
-      const local = yield* platformServer(() => empty(204));
+    process.on("unhandledRejection", listener);
 
-      yield* cutOff(local.url);
+    return yield* effect.pipe(
+      Effect.tap(() =>
+        Effect.promise(async () => {
+          await setImmediate();
+          await setImmediate();
+        })
+      ),
+      Effect.map((value) => ({ rejections, value })),
+      Effect.ensuring(
+        Effect.sync(() => process.off("unhandledRejection", listener))
+      )
+    );
+  });
 
-      assert.strictEqual(
-        yield* Effect.promise(async () => await answered(local.url)),
-        204
-      );
-      assert.deepStrictEqual(
-        local.requests().map(({ path }) => path),
-        ["/next"]
-      );
-    }).pipe(Effect.scoped)
-);
+// Each fake, by the address its server answers at.
+const fakes = [
+  [
+    "the fake HTTP server",
+    fakeHttpServer(() => ({ status: 204 })).pipe(Effect.map(({ url }) => url)),
+  ],
+  [
+    "the fake platform",
+    platformServer(() => empty(204)).pipe(Effect.map(({ url }) => url)),
+  ],
+  ["the fake DEV", fakeDevTo().pipe(Effect.map(({ api }) => api))],
+  ["the fake Hashnode", fakeHashnode().pipe(Effect.map(({ api }) => api))],
+  [
+    "the fake WordPress site",
+    fakeWordPress().pipe(Effect.map(({ home }) => home)),
+  ],
+] as const;
+
+describe("a request whose client went away before its body", () => {
+  for (const [name, started] of fakes) {
+    it.effect(`leaves nothing unhandled behind ${name}, which answers on`, () =>
+      Effect.gen(function* cutOffRequest() {
+        const address = yield* started;
+
+        const { rejections, value: status } = yield* withRejections(
+          cutOff(address).pipe(
+            Effect.andThen(statusOf(new URL("/next", address).href))
+          )
+        );
+
+        assert.strictEqual(rejections, 0);
+        assert.isAtLeast(status, 200);
+      }).pipe(Effect.scoped)
+    );
+  }
+});
+
+describe("a fake whose own code fails", () => {
+  it.effect(
+    "answers 500, and leaves nothing unhandled, when its handler throws",
+    () =>
+      Effect.gen(function* throwing() {
+        const local = yield* fakeHttpServer(() => {
+          throw new Error("A synthetic handler's bug");
+        });
+
+        const platform = yield* platformServer(async () => {
+          await Promise.resolve();
+
+          throw new Error("A synthetic handler's bug");
+        });
+
+        const { rejections, value } = yield* withRejections(
+          Effect.all([
+            statusOf(`${local.url}/answer`),
+            statusOf(`${platform.url}/answer`),
+          ])
+        );
+
+        assert.strictEqual(rejections, 0);
+        assert.deepStrictEqual(value, [500, 500]);
+      }).pipe(Effect.scoped)
+  );
+
+  it.effect(
+    "answers 500, and leaves nothing unhandled, for a malformed escape",
+    () =>
+      Effect.gen(function* malformed() {
+        const local = yield* fakeHttpServer(() => ({ status: 204 }));
+        const platform = yield* platformServer(() => empty(204));
+
+        const { rejections, value } = yield* withRejections(
+          Effect.all([
+            statusOf(`${local.url}/%E0%A4%A`),
+            statusOf(`${platform.url}/%E0%A4%A`),
+          ])
+        );
+
+        assert.strictEqual(rejections, 0);
+        assert.deepStrictEqual(value, [500, 500]);
+      }).pipe(Effect.scoped)
+  );
+});

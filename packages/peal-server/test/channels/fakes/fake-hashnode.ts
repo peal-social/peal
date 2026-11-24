@@ -6,6 +6,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Clock, Effect, Option, Schema } from "effect";
 
 import type { GraphQlVariables } from "#shared/infrastructure/platforms/hashnode-api.ts";
+import { fakeHandler } from "#test/shared/fake-handler.ts";
 import { receivedBody } from "#test/shared/received-body.ts";
 
 // Hashnode's GraphQL API on a loopback port, as its schema and its agent
@@ -549,9 +550,7 @@ export const fakeHashnode = (options: FakeHashnodeOptions = {}) =>
           send(response, answered);
         };
 
-        const server = createServer((incoming, response) => {
-          void answer(incoming, response);
-        });
+        const server = createServer(fakeHandler(answer));
 
         server.listen(0, "127.0.0.1");
         await once(server, "listening");
