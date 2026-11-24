@@ -78,6 +78,7 @@ export class PealAccount extends pulumi.ComponentResource {
   readonly blogRecord: cloudflare.DnsRecord;
   readonly blogRedirect: cloudflare.Ruleset;
   readonly blueskyHandleRecord: cloudflare.DnsRecord | undefined;
+  readonly domainVerificationRecords: readonly cloudflare.DnsRecord[];
   readonly forwardedAddresses: readonly pulumi.Output<string>[];
   readonly httpsSettings: readonly cloudflare.ZoneSetting[];
   readonly normalization: cloudflare.UrlNormalizationSettings;
@@ -192,6 +193,27 @@ export class PealAccount extends pulumi.ComponentResource {
             },
             { parent: this }
           );
+
+    // What outside services read on the domain to check that Peal owns it.
+    // A record's name in the state is who asked, so a new text for the
+    // same service replaces its record.
+    this.domainVerificationRecords = Object.entries(
+      settings.domainVerifications ?? {}
+    ).map(
+      ([service, text]) =>
+        new cloudflare.DnsRecord(
+          `domain-verification-${service}`,
+          {
+            content: `"${text}"`,
+            name: domain,
+            proxied: false,
+            ttl: 1,
+            type: "TXT",
+            zoneId,
+          },
+          { parent: this }
+        )
+    );
 
     // blog.<domain> leads to the blog at <domain>/blog, which search
     // engines index there (packages/peal-blog). The name has no origin: a

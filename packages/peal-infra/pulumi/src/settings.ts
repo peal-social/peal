@@ -61,6 +61,15 @@ export const AccountSettingsSchema = Schema.Struct({
       Schema.makeFilter((did) => /^did:(?:plc|web):[\w.:%-]+$/u.test(did))
     )
   ),
+  // The texts outside services read on the bare domain to check that Peal
+  // owns it (a platform's developer portal, before it reviews an app), by
+  // who asked: each is a TXT record of the domain. Unset, none is made.
+  domainVerifications: Schema.optionalKey(
+    Schema.Record(
+      Schema.String.check(Schema.isPattern(/^[a-z\d](?:[a-z\d-]*[a-z\d])?$/u)),
+      Schema.String.check(Schema.isPattern(/^[\w.-]+=[\w.=-]+$/u))
+    )
+  ),
 });
 
 export type AccountSettings = typeof AccountSettingsSchema.Type;
