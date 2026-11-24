@@ -4,9 +4,9 @@ import { toolAreas } from "#app/mcp/catalogue.ts";
 import { ToolAreaSchema } from "#app/mcp/discovery-tools.ts";
 import { PealTools } from "#app/mcp/tools.ts";
 
-// The areas find_tools sorts the tools in: the product's concerns, named as
-// the API's namespaces are, so the tools, the SDKs and the command line cut
-// the product the same way.
+// The areas find_tools sorts the tools in: the product's concerns. The
+// API's namespaces are being renamed to the same names in a pull request of
+// their own.
 
 const namesIn = (area: typeof ToolAreaSchema.Type) =>
   toolAreas[area].map(({ name }) => name);
@@ -16,7 +16,7 @@ describe("the tools' areas", () => {
     expect(ToolAreaSchema.literals).toStrictEqual([
       "workspace",
       "posts",
-      "review",
+      "approvals",
       "channels",
       "media",
       "inbox",
@@ -176,7 +176,7 @@ describe("the tools' areas", () => {
         "update_signature",
         "delete_signature",
       ],
-      review: [
+      approvals: [
         "list_approvals",
         "get_post_review",
         "approve_post",

@@ -679,7 +679,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Review links are made and ended with the scope that publishes,
           // as their use case checks post:approve.
           const reviewing = yield* reader.call("find_tools", FoundSchema, {
-            area: "review",
+            area: "approvals",
           });
 
           assert.deepStrictEqual(

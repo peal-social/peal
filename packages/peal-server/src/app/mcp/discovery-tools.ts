@@ -6,15 +6,15 @@ import { reading } from "#app/mcp/annotations.ts";
 import { ToolRefused } from "#app/mcp/tool-refused.ts";
 
 /**
- * The areas the tools are sorted in: the product's concerns, named as the
- * API's namespaces are. An area lists the tools of one toolkit or of
- * several (`toolAreas` in `#app/mcp/catalogue.ts`), and exists only while
- * it has tools.
+ * The areas the tools are sorted in: the product's concerns. The API's
+ * namespaces are being renamed to the same names in a pull request of their
+ * own. An area lists the tools of one toolkit or of several (`toolAreas` in
+ * `#app/mcp/catalogue.ts`), and exists only while it has tools.
  */
 export const ToolAreaSchema = Schema.Literals([
   "workspace",
   "posts",
-  "review",
+  "approvals",
   "channels",
   "media",
   "inbox",
@@ -25,7 +25,7 @@ export const ToolAreaSchema = Schema.Literals([
   "webhooks",
 ]).annotate({
   description:
-    "An area of Peal: `workspace` (who the connection is and what it may do, the workspace, the server, members and their roles, the plan and usage, the activity log, the partner account), `posts` (drafts, scheduling, publishing, outcomes, tags and tagging a post, signatures), `review` (the posts that wait for an approval, deciding them, and review links), `channels` (the connected social accounts: listing them, naming one, turning one off or on, what each platform takes and its lookups, channel sets, a channel's default options, connect links), `media` (images and videos, generated ones included), `inbox` (comments, direct messages and reviews, and answering them), `automations` (what acts on its own: queues, repeating posts, follow-up rules, feeds and comment rules), `analytics` (the figures of posts and channels, and the best times to post), `links` (short links and their clicks), `ads` (ad accounts, campaigns and their numbers, and boosting a published post, which spends money), `webhooks` (endpoints and their deliveries).",
+    "An area of Peal: `workspace` (who the connection is and what it may do, the workspace, the server, members and their roles, the plan and usage, the activity log, the partner account), `posts` (drafts, scheduling, publishing, outcomes, tags and tagging a post, signatures), `approvals` (the posts that wait for an approval, deciding them, and review links), `channels` (the connected social accounts: listing them, naming one, turning one off or on, what each platform takes and its lookups, channel sets, a channel's default options, connect links), `media` (images and videos, generated ones included), `inbox` (comments, direct messages and reviews, and answering them), `automations` (what acts on its own: queues, repeating posts, follow-up rules, feeds and comment rules), `analytics` (the figures of posts and channels, and the best times to post), `links` (short links and their clicks), `ads` (ad accounts, campaigns and their numbers, and boosting a published post, which spends money), `webhooks` (endpoints and their deliveries).",
 });
 
 export type ToolArea = typeof ToolAreaSchema.Type;

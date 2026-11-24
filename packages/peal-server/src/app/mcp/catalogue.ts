@@ -36,9 +36,11 @@ const pick = <Tools extends { readonly [Name in keyof Tools]: ListedTool }>(
 ): readonly ListedTool[] => names.map((name) => tools[name]);
 
 /**
- * The tools by area: the product's concerns, named as the API's namespaces
- * are. An area lists a whole toolkit, or the tools it takes of several, by
- * what each tool acts on; every tool is in one area. Tools are written by
+ * The tools by area: the product's concerns. An area lists a whole
+ * toolkit, or the tools it takes of several, by what each tool acts on;
+ * every tool is in one area, and `changingTools` (`server.ts`) reads the
+ * catalogue built from here, so a tool left out would change things
+ * without the activity log keeping its calls. Tools are written by
  * hand, each with a description of what it changes, and none is generated
  * from an endpoint; as their number grows, `find_tools` lists them from
  * here, so a client chooses among summaries rather than read every
@@ -55,6 +57,7 @@ export const toolAreas: Readonly<Record<ToolArea, readonly ListedTool[]>> = {
     "best_times",
     "post_analytics",
   ]),
+  approvals: Object.values(ReviewTools.tools),
   automations: [
     ...pick(SavedTools.tools, [
       "list_queues",
@@ -170,7 +173,6 @@ export const toolAreas: Readonly<Record<ToolArea, readonly ListedTool[]>> = {
       "delete_signature",
     ]),
   ],
-  review: Object.values(ReviewTools.tools),
   webhooks: Object.values(WebhookTools.tools),
   workspace: [
     ...pick(BasicTools.tools, [

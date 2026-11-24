@@ -59,13 +59,18 @@
   lists them by area from `catalogue.ts` (`toolAreas`), with the scope
   each takes (`publishingTools` names those that take
   `workspace:publish`; a test calls each without it) and whether the
-  connection holds it. The areas are the product's concerns, named as the
-  API's namespaces are (`ToolAreaSchema`): an area takes a whole toolkit
+  connection holds it. The areas are the product's concerns
+  (`ToolAreaSchema`; the API's namespaces are being renamed to the same
+  names in a pull request of their own): an area takes a whole toolkit
   or tools of several, by what each tool acts on, and every tool is in
-  one area (`test/app/mcp-tool-areas.test.ts`). A new tool joins an area
-  in `toolAreas`, a new toolkit joins `toolAreas` and `PealTools`
-  together, an area exists only while it has tools, and tools/list stays
-  whole, as the protocol has no filter. Annotate every tool with `reading`, or
+  one area (`test/app/mcp-tool-areas.test.ts`). That test also keeps the
+  activity log whole: `changingTools` (`server.ts`) reads the catalogue,
+  so a tool missing from `toolAreas` would change things unlogged, told
+  to product analytics as changing nothing. A new
+  tool joins an area in `toolAreas`, a new toolkit joins `toolAreas` and
+  `PealTools` together, an area exists only while it has tools, and
+  tools/list stays whole, as the protocol has no filter. Annotate every
+  tool with `reading`, or
   `changing({ destructive, idempotent, openWorld })` from `annotations.ts`,
   and say in its description what it changes. `list_members` answers
   members' email addresses only with `includeEmails`: hand an AI model no
@@ -129,7 +134,8 @@
   publishes goes out by itself, in public. No tool approves a rule: a
   member does, in person.
 - `list_comment_rules` (reading), `start_comment_rule` (open world),
-  `update_comment_rule` and `stop_comment_rule` are in `InboxTools` and
+  `update_comment_rule` and `stop_comment_rule` (area `automations`) are
+  in `InboxTools` and
   `publishingTools`, check engagement:reply before reading anything, and
   list what a rule matched by id, never a comment's text. The start and
   update tools take a `privateReply`, whose descriptions say that a rule
@@ -221,7 +227,8 @@
   `authenticate.ts`; 400 without it), and is told 404 for any workspace
   its partner does not own, as on the API. A workspace's API key never
   reads the header: it acts in its own workspace.
-- The inbox tools (`inbox-tools.ts`, area `inbox`) read with
+- The inbox tools (`inbox-tools.ts`, area `inbox`, but for the comment
+  rules' four, area `automations`) read with
   `workspace:read`; whatever answers, settles or moderates a comment is in
   `publishingTools`, as its use case checks `engagement:reply`. Every tool
   that returns comments says in its description that their text and
