@@ -162,6 +162,15 @@ export const storedOf = (
   };
 };
 
+type GenerativeAsset = Extract<
+  StudioAsset,
+  { readonly type: "audio" | "image" | "video" }
+>;
+
+// The assets a prompt may make, as the editor adds them.
+const isGenerative = (asset: StudioAsset): asset is GenerativeAsset =>
+  asset.type === "audio" || asset.type === "image" || asset.type === "video";
+
 /**
  * Whether a clip still waits to be generated: a prompt and no file. Sent
  * as it is, Shotstack would generate it, at the cost of the workspace's
@@ -171,7 +180,7 @@ export const waitsToBeGenerated = (edit: StudioEdit): boolean =>
   edit.timeline.tracks.some(({ clips }) =>
     clips.some(
       ({ asset }) =>
-        "prompt" in asset &&
+        isGenerative(asset) &&
         asset.prompt !== undefined &&
         asset.src === undefined
     )
@@ -180,7 +189,7 @@ export const waitsToBeGenerated = (edit: StudioEdit): boolean =>
 // An asset made from a prompt is its file alone: with the prompt, the
 // render would generate it again.
 const generatedAsset = (asset: StudioAsset): StudioAsset => {
-  if (!("prompt" in asset) || asset.src === undefined) {
+  if (!isGenerative(asset) || asset.src === undefined) {
     return asset;
   }
 
