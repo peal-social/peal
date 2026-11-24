@@ -13,7 +13,6 @@
       "loadFailed": "The analytics could not be loaded.",
       "retry": "Try again",
       "empty": "No post went out in this range yet on a platform Peal reads counts on. A post’s counts appear within the hour after it goes live.",
-      "collection": "Peal reads each post’s counts every hour for 48 hours after it goes live, then every day until it is 30 days old.",
       "noImpressions": "No post of this range is on a platform that tells how many times it was shown, so there are no impressions. Mastodon and Bluesky tell none; TikTok’s and YouTube’s are their views."
     },
     "totals": {

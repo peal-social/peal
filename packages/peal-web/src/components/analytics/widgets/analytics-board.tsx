@@ -494,8 +494,69 @@ const WidgetBody = (
   return <DashboardData {...props} />;
 };
 
-/** Which edge of a widget a resize pulls: its end edge, or its bottom. */
-type Edge = "width" | "height";
+/**
+ * Which way a resize pulls a widget: each of its edges and corners. The
+ * signs say which side moves: 1 the end or bottom, -1 the start or top,
+ * 0 neither.
+ */
+const pulls = {
+  bottom: [0, 1],
+  bottomEnd: [1, 1],
+  bottomStart: [-1, 1],
+  end: [1, 0],
+  start: [-1, 0],
+  top: [0, -1],
+  topEnd: [1, -1],
+  topStart: [-1, -1],
+} as const;
+
+type Pull = keyof typeof pulls;
+
+// Where each handle sits and which cursor it shows. The edges' pills
+// show on hover; the corners are reached by the pointer alone.
+const handlePlaces: Readonly<Record<Pull, string>> = {
+  bottom:
+    "bottom-0 left-1/2 h-3 w-12 -translate-x-1/2 translate-y-1/2 cursor-ns-resize",
+  bottomEnd: "right-0 bottom-0 size-4 translate-1/2 cursor-nwse-resize",
+  bottomStart:
+    "bottom-0 left-0 size-4 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize",
+  end: "top-1/2 right-0 h-12 w-3 translate-x-1/2 -translate-y-1/2 cursor-ew-resize",
+  start:
+    "top-1/2 left-0 h-12 w-3 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize",
+  top: "top-0 left-1/2 h-3 w-12 -translate-1/2 cursor-ns-resize",
+  topEnd:
+    "top-0 right-0 size-4 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize",
+  topStart: "top-0 left-0 size-4 -translate-1/2 cursor-nwse-resize",
+};
+
+// The pills drawn on the edges' handles; a corner draws none.
+const pillOf: Readonly<Record<Pull, string | null>> = {
+  bottom: "h-1 w-8",
+  bottomEnd: null,
+  bottomStart: null,
+  end: "h-8 w-1",
+  start: "h-8 w-1",
+  top: "h-1 w-8",
+  topEnd: null,
+  topStart: null,
+};
+
+// The arrow keys a keyboard handle takes.
+const keysOf: Partial<Record<Pull, string>> = {
+  bottom: "ArrowUp ArrowDown",
+  end: "ArrowLeft ArrowRight",
+};
+
+const pullOrder: readonly Pull[] = [
+  "end",
+  "bottom",
+  "start",
+  "top",
+  "topStart",
+  "topEnd",
+  "bottomStart",
+  "bottomEnd",
+];
 
 // Where every widget was before a change of size, so each glides to
 // where it lands; and which one changed.
@@ -691,8 +752,9 @@ export const AnalyticsBoard = ({
   const startResize = (
     event: PointerEvent<HTMLElement>,
     widget: Widget,
-    edge: Edge
+    pull: Pull
   ) => {
+    const [alongX, alongY] = pulls[pull];
     const container = grid.current;
     const handle = event.currentTarget;
     const item = handle.closest<HTMLElement>("[data-widget-id]");
@@ -712,7 +774,11 @@ export const AnalyticsBoard = ({
     const narrowest =
       Math.min(least, cell.columns) * (cell.column + cell.gap) - cell.gap;
 
-    const widest = bounds.right - box.left;
+    // Pulled from its start, it may grow back to the board's start; from
+    // its end, to the board's end. Its other side stays where it is.
+    const widest =
+      alongX < 0 ? box.right - bounds.left : bounds.right - box.left;
+
     const tallest = maxHeight * (cell.row + cell.rowGap) - cell.rowGap;
     const startX = event.clientX;
     const startY = event.clientY;
@@ -724,18 +790,30 @@ export const AnalyticsBoard = ({
       frame = 0;
       item.style.setProperty("--resize-width", `${String(width)}px`);
       item.style.setProperty("--resize-height", `${String(height)}px`);
+      // Pulled from its start or top, the card moves as it grows, so its
+      // other edge stays put.
+      item.style.setProperty(
+        "--resize-x",
+        `${String(alongX < 0 ? box.width - width : 0)}px`
+      );
+      item.style.setProperty(
+        "--resize-y",
+        `${String(alongY < 0 ? box.height - height : 0)}px`
+      );
     };
 
     const move = (moved: globalThis.PointerEvent) => {
-      if (edge === "width") {
+      if (alongX !== 0) {
         width = Math.min(
           widest,
-          Math.max(narrowest, box.width + moved.clientX - startX)
+          Math.max(narrowest, box.width + alongX * (moved.clientX - startX))
         );
-      } else {
+      }
+
+      if (alongY !== 0) {
         height = Math.min(
           tallest,
-          Math.max(cell.row, box.height + moved.clientY - startY)
+          Math.max(cell.row, box.height + alongY * (moved.clientY - startY))
         );
       }
 
@@ -759,8 +837,15 @@ export const AnalyticsBoard = ({
           (height + cell.rowGap) / (cell.row + cell.rowGap)
         )
       );
-      item.style.removeProperty("--resize-width");
-      item.style.removeProperty("--resize-height");
+
+      for (const property of [
+        "--resize-width",
+        "--resize-height",
+        "--resize-x",
+        "--resize-y",
+      ]) {
+        item.style.removeProperty(property);
+      }
     };
 
     paint();
@@ -859,46 +944,55 @@ export const AnalyticsBoard = ({
         }
         resizer={
           <>
-            <button
-              type="button"
-              aria-label={t("resizeWidth", { name })}
-              aria-keyshortcuts="ArrowLeft ArrowRight"
-              title={t("resizeWidth", { name })}
-              onPointerDown={(event) => {
-                startResize(event, widget, "width");
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-                  keyResize(event, widget, own);
-                }
-              }}
-              className="group/edge focus-visible:ring-ring absolute top-1/2 right-0 z-10 hidden h-12 w-3 translate-x-1/2 -translate-y-1/2 cursor-ew-resize touch-none items-center justify-center rounded-full opacity-0 outline-none group-hover/widget:opacity-100 group-data-[resizing]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 sm:flex"
-            >
-              <span
-                aria-hidden="true"
-                className="bg-border group-hover/edge:bg-muted-foreground h-8 w-1 rounded-full transition-colors"
-              />
-            </button>
-            <button
-              type="button"
-              aria-label={t("resizeHeight", { name })}
-              aria-keyshortcuts="ArrowUp ArrowDown"
-              title={t("resizeHeight", { name })}
-              onPointerDown={(event) => {
-                startResize(event, widget, "height");
-              }}
-              onKeyDown={(event) => {
-                if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-                  keyResize(event, widget, own);
-                }
-              }}
-              className="group/edge focus-visible:ring-ring absolute bottom-0 left-1/2 z-10 hidden h-3 w-12 -translate-x-1/2 translate-y-1/2 cursor-ns-resize touch-none items-center justify-center rounded-full opacity-0 outline-none group-hover/widget:opacity-100 group-data-[resizing]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 sm:flex"
-            >
-              <span
-                aria-hidden="true"
-                className="bg-border group-hover/edge:bg-muted-foreground h-1 w-8 rounded-full transition-colors"
-              />
-            </button>
+            {pullOrder.map((pull) => {
+              // The end and bottom pills take the keyboard; the others
+              // are the pointer's alone, so the card is two tab stops.
+              const keyed = pull === "end" || pull === "bottom";
+
+              const label =
+                pull === "end"
+                  ? t("resizeWidth", { name })
+                  : t("resizeHeight", { name });
+
+              const pill = pillOf[pull];
+
+              return (
+                <button
+                  key={pull}
+                  type="button"
+                  aria-hidden={keyed ? undefined : true}
+                  tabIndex={keyed ? undefined : -1}
+                  aria-label={keyed ? label : undefined}
+                  aria-keyshortcuts={keyed ? keysOf[pull] : undefined}
+                  title={keyed ? label : undefined}
+                  onPointerDown={(event) => {
+                    startResize(event, widget, pull);
+                  }}
+                  onKeyDown={(event) => {
+                    const horizontal =
+                      event.key === "ArrowLeft" || event.key === "ArrowRight";
+
+                    const vertical =
+                      event.key === "ArrowUp" || event.key === "ArrowDown";
+
+                    if (
+                      (pull === "end" && horizontal) ||
+                      (pull === "bottom" && vertical)
+                    ) {
+                      keyResize(event, widget, own);
+                    }
+                  }}
+                  className={`group/edge focus-visible:ring-ring absolute z-10 hidden touch-none items-center justify-center rounded-full opacity-0 outline-none group-hover/widget:opacity-100 group-data-[resizing]/widget:opacity-100 focus-visible:opacity-100 focus-visible:ring-3 sm:flex ${handlePlaces[pull]}`}
+                >
+                  {pill === null ? null : (
+                    <span
+                      aria-hidden="true"
+                      className={`bg-border group-hover/edge:bg-muted-foreground rounded-full transition-colors ${pill}`}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </>
         }
         actions={

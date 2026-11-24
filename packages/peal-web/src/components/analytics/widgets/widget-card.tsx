@@ -70,7 +70,7 @@ export const WidgetCardView = ({
       data-widget-id={widgetId}
       data-dragging={dragging ? "" : undefined}
       data-resizing={resizing ? "" : undefined}
-      className={`group/widget relative flex min-h-0 min-w-0 data-[resizing]:z-20 data-[resizing]:h-(--resize-height) data-[resizing]:w-(--resize-width) data-[resizing]:self-start data-[resizing]:justify-self-start ${widthClasses[width]} ${heightClasses[height]}`}
+      className={`group/widget relative flex min-h-0 min-w-0 data-[resizing]:z-20 data-[resizing]:h-(--resize-height) data-[resizing]:w-(--resize-width) data-[resizing]:translate-x-(--resize-x) data-[resizing]:translate-y-(--resize-y) data-[resizing]:self-start data-[resizing]:justify-self-start ${widthClasses[width]} ${heightClasses[height]}`}
     >
       {handle}
       <article

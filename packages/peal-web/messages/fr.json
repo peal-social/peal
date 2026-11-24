@@ -13,7 +13,6 @@
       "loadFailed": "Les statistiques n’ont pas pu être chargées.",
       "retry": "Réessayer",
       "empty": "Aucune publication n’est encore parue sur cette période sur une plateforme dont Peal relève les chiffres. Les chiffres d’une publication arrivent dans l’heure qui suit sa parution.",
-      "collection": "Peal relève les chiffres de chaque publication toutes les heures pendant les 48 heures qui suivent sa parution, puis chaque jour jusqu’à ses 30 jours.",
       "noImpressions": "Aucune publication de la période n’est sur une plateforme qui dit combien de fois elle a été affichée : il n’y a donc pas d’impressions. Mastodon et Bluesky n’en donnent pas ; celles de TikTok et de YouTube sont leurs vues."
     },
     "totals": {

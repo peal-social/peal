@@ -373,10 +373,10 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   (`components/viewer-time-zone.tsx`), in the locale layout, sets the
   browser's on the shared provider once the page has hydrated, so every
   page's dates follow it. `InTimeZone` (`components/notices/in-time-zone.tsx`)
-  sets a given zone on part of a page. Calendar and Analytics name the zone
-  they read in with `TimeZoneLine` (`components/lists/time-zone-line.tsx`,
-  `Lists.timeZoneLine`, tested), rendered after hydration: beside the
-  calendar's dates, and above the board on Analytics.
+  sets a given zone on part of a page. The calendar names the zone it
+  reads in with `TimeZoneLine` (`components/lists/time-zone-line.tsx`,
+  `Lists.timeZoneLine`, tested), rendered after hydration, beside its
+  dates; Analytics shows no such line (the owner's call).
 - The support chat (DESIGN.md, "Support chat"): where `PEAL_CRISP_WEBSITE_ID`
   names a Crisp website (`#shell/support-chat.ts`, read per request), the
   workspace layout puts `SupportLauncher` in the bottom bar, which makes
@@ -725,14 +725,15 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   new kind goes there, with its name and line in `Analytics.widgets`.
   The grid's rows are fixed (`--widget-row`), so every body fills its
   card: charts take `flex-1` and stretch, lists show as many rows as the
-  widget's height allows (`room`). Resizing pulls an edge (`Edge`:
-  the end edge's pill for width, the bottom's for height) with pointer
-  capture: the card follows the pointer to the pixel through
+  widget's height allows (`room`). Resizing pulls any edge or corner (`pulls`:
+  the signs of the sides it moves; pulled from the start or top, the
+  card also moves by `--resize-x` and `--resize-y`, so its other side
+  stays) with pointer capture: the card follows the pointer to the pixel through
   `--resize-width` and `--resize-height`, set once a frame outside
   React, then the size snaps (`sizeFor`, from the grid's computed
   columns and rows), committed in `flushSync` so every widget glides
   from its noted place (`glideFrom`, Web Animations; none under reduced
-  motion); the arrow keys of its edge do the same on a focused pill.
+  motion); the end and bottom pills alone take the arrow keys, the others staying out of the tab order.
   Moving is `@dnd-kit/react`'s sortable (`SortableWidget`, its handle
   `handleRef`), which animates the others aside and takes the keyboard;
   the board takes the order on drop (`isSortable`, `index`). The board is

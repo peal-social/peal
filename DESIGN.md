@@ -1212,11 +1212,12 @@ way, so a person who learns one screen knows them all.
   menu (level 3) of the spans the screen offers, the chosen one ticked. It
   sits in the page's actions, or at the end of the header of the card it
   governs. It lives in the address as `?period=` and a number of days.
-- **Time zone** — A screen that places posts at times or counts by day
-  (Calendar, Analytics) says once which zone it reads them in:
-  one line in `{typography.caption}`, muted, at the end of the content's
-  first row (beside the dates the calendar names, above the board on
-  Analytics): "Times are in your time zone, Europe/Paris." The zone is
+- **Time zone** — A screen that places posts at times (Calendar) says
+  once which zone it reads them in: one line in `{typography.caption}`,
+  muted, at the end of the content's first row, beside the dates the
+  calendar names: "Times are in your time zone, Europe/Paris." Analytics
+  says nothing of it, nor how often counts are read: its days are the
+  reader's, as every date in the app is. The zone is
   the browser's, so the line appears once the page has hydrated. It is
   not a description, and never sits in the panel's header.
 - What a list shows lives in the page's **address**: a reload, the back
@@ -1370,14 +1371,15 @@ thing over a period of its own.
   picks it up: it follows the pointer in any direction, lifted with a
   shadow, while the others glide aside (240 ms, easing out) to show
   where it lands; Space picks it up from the keyboard, the arrows carry
-  it and Space puts it down. A pill centred on its end edge (width) and
-  one centred on its bottom edge (height), shown on hover and focus,
-  resize it: the card follows the pointer to the pixel, over its
+  it and Space puts it down. Every edge and corner resizes it: a pill
+  centred on each edge, shown on hover and focus, and the corners under
+  the pointer alone; pulled from its start or top, its other side stays
+  put: the card follows the pointer to the pixel, over its
   neighbours, with a 2 px `brand` ring and a shadow, what it shows
   blurred and its chart stretching; let go, it snaps to whole columns
   and rows and glides there (260 ms, easing out) while the others glide
-  to their new places. Focused, a pill takes the arrow keys of its
-  edge. Nothing glides for a reader who asked for less motion.
+  to their new places. Focused, the end and bottom pills take the
+  arrow keys of their edge, the card's two tab stops for its size. Nothing glides for a reader who asked for less motion.
 - Under the header: the headline number (`headline`, tabular), one muted
   line with its change against the days before or what it gained, then
   one chart, the one that fits what the widget shows, filling the card

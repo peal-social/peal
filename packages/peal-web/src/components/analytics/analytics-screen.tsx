@@ -8,7 +8,6 @@ import { Skeleton } from "peal-ui/components/skeleton";
 
 import { summaryTimeZone } from "#analytics/report.ts";
 import { AnalyticsBoard } from "#components/analytics/widgets/analytics-board.tsx";
-import { TimeZoneLine } from "#components/lists/time-zone-line.tsx";
 import { InTimeZone } from "#components/notices/in-time-zone.tsx";
 import { workspaceChannels } from "#posts/api.ts";
 import { useMounted } from "#posts/use-mounted.ts";
@@ -61,19 +60,9 @@ const BoardOfChannels = ({ timeZone, workspaceId }: AnalyticsViewProps) => {
   });
 };
 
-const AnalyticsView = ({ timeZone, workspaceId }: AnalyticsViewProps) => {
-  const t = useTranslations("Analytics");
-
-  return (
-    <div className="flex flex-col gap-3">
-      <TimeZoneLine of="days" timeZone={timeZone} className="text-end" />
-      <BoardOfChannels timeZone={timeZone} workspaceId={workspaceId} />
-      <p className="text-muted-foreground mt-3 text-sm">
-        {t("page.collection")}
-      </p>
-    </div>
-  );
-};
+const AnalyticsView = ({ timeZone, workspaceId }: AnalyticsViewProps) => (
+  <BoardOfChannels timeZone={timeZone} workspaceId={workspaceId} />
+);
 
 interface AnalyticsScreenProps {
   readonly workspaceId: string;
