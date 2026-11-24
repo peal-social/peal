@@ -5,8 +5,8 @@ import { SiteCredentials } from "#publishing/application/site-credentials.ts";
 import type { SiteToken } from "#publishing/application/site-credentials.ts";
 import { SitePublisher } from "#publishing/application/site-publisher.ts";
 import type { SitePublishRequest } from "#publishing/application/site-publisher.ts";
+import { articleRefusalCodes } from "#publishing/domain/article-refusals.ts";
 import type { Article } from "#publishing/domain/article.ts";
-import { ownRefusalCodes } from "#publishing/domain/own-refusals.ts";
 import type { SiteAdapter } from "#publishing/infrastructure/platforms/site-adapter.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import type { SitePlatform } from "#shared/domain/platform.ts";
@@ -16,7 +16,7 @@ export type SiteAdapters = Readonly<Record<SitePlatform, SiteAdapter>>;
 
 // Peal's own refusal for an article it cannot read any more.
 const articleGone = new BadRequest({
-  code: ownRefusalCodes.channelDisconnected,
+  code: articleRefusalCodes.channelDisconnected,
 });
 
 /**

@@ -8,6 +8,7 @@ import {
   ArticleClaimSchema,
   ArticleOutcomeSchema,
 } from "#publishing/application/article-publication.ts";
+import { ArticleDecisionSchema } from "#publishing/domain/article-failure.ts";
 import { ArticleStateSchema } from "#publishing/domain/article.ts";
 import { PublicationDecisionSchema } from "#publishing/domain/publication-policy.ts";
 import { PublishArticleV1 } from "#publishing/infrastructure/workflows/publish-article.ts";
@@ -104,10 +105,19 @@ describe("the articles' persisted contract", () => {
       const decisions = yield* roundTrip(
         "PublishArticleV1",
         "send.json",
+        Schema.Array(ArticleDecisionSchema)
+      );
+
+      // The posts' schema, which wrote them first, reads and writes them
+      // the same: a job of the release before reads what this one stores.
+      const asPosts = yield* roundTrip(
+        "PublishArticleV1",
+        "send.json",
         Schema.Array(PublicationDecisionSchema)
       );
 
       assert.isAbove(decisions.length, 0);
+      assert.strictEqual(asPosts.length, decisions.length);
     })
   );
 

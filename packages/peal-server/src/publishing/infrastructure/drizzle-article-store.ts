@@ -20,12 +20,12 @@ import {
   SiteStatusSchema,
 } from "#publishing/domain/article-content.ts";
 import { ArticleIdSchema } from "#publishing/domain/article-id.ts";
+import { articleEarlierRefusalsOf } from "#publishing/domain/article-policy.ts";
 import {
   Article,
   ArticleStateSchema,
   articleMediaOf,
 } from "#publishing/domain/article.ts";
-import { earlierRefusalsOf } from "#publishing/domain/publication-policy.ts";
 import { DatabaseError } from "#shared/application/database-error.ts";
 import { AttemptOutcomeSchema } from "#shared/domain/attempt-outcome.ts";
 import {
@@ -642,7 +642,7 @@ export const DrizzleArticleJournal = Layer.effect(
               )
             ),
             Effect.map((outcomes) =>
-              earlierRefusalsOf(outcomes.flatMap(Option.toArray))
+              articleEarlierRefusalsOf(outcomes.flatMap(Option.toArray))
             )
           ),
       finish: Effect.fn("ArticleJournal.finish")(

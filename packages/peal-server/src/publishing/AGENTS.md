@@ -217,13 +217,23 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   its files are looked up in the library again then. Its title and
   excerpt reach the site escaped: plain text, as a member typed it.
   `media_ids` lists the library's files it shows: a scheduled or
-  publishing article keeps one from deletion (`MediaInPosts`).
+  publishing article keeps one from deletion (`MediaInArticles`, which
+  media's `HoldersMediaUsage` asks before `MediaInPosts`).
 - `PublishArticleV1` (`workflows/publish-article.ts`, persisted contract:
   payload `{ articleId, revision, round, at }`, key
   `<articleId>:<revision>:<round>`, activities `claim`, `send/<n>`,
   `settle`, clocks `send-at`, `retry/<n>`) sleeps until `at`, claims the
   article for its revision and round (`claimed`: missed past an hour),
-  decides each attempt with the posts' `decide`, and settles it, telling
+  decides each attempt with `articleDecide` (`domain/article-policy.ts`,
+  the posts' figures for what a site can answer, on articles' own ten
+  failure reasons and `articleRefusalCodes`; a stored reason of posts
+  outside the ten, which articles were failed with before they had their
+  own and which the release before still writes when a site answers a
+  code posts read as Peal's own, reads as `contentRejected` with its code
+  kept: `ArticleStoredFailureReasonSchema`, over the list
+  `postReasonsReadAsContentRejected` in `domain/article-failure.ts`, which
+  `test/publishing/domain/article-policy.test.ts` keeps equal to the
+  posts' reasons less the ten; only the ten are written), and settles it, telling
   `ArticleEvents` (the webhooks' `article.published`, `article.failed`)
   in that transaction. Each attempt's row (`publishing.article_calls`) is
   written and committed before the site is called, and marked
@@ -320,12 +330,12 @@ are in the server's guide, [`../../AGENTS.md`](../../AGENTS.md).
   come from a cache, so `find` waits a minute past the earlier call; a
   commit answered with an undocumented code is looked for; it cannot
   publish at a time (`siteStatusNotTaken`) and refuses all without its
-  Pro plan (`platformRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
+  Pro plan (`articleRefusalCodes.sitePlanRequired`). A search that finds several posts the call may have made ends to check as `severalOnSite`, which tells the member to look and rename or remove the other. What each site takes is
   `domain/site-rules.ts`, checked by `articleViolations` with the
   channel's rules. Tests set the fakes' addresses on
   `testDevToHosts`, `testHashnodeHosts`, `testWordPressComHosts`.
 - Erasing a workspace erases its articles (`ArticleRecords`, refused
-  while a call to a site is in flight, `PostsPublishing`), the export
+  while a call to a site is in flight, `ArticlesSending`), the export
   holds them, and a member who leaves is forgotten as their author.
 - A post keeps how it was created and last scheduled (`PostAttribution`,
   `#publishing/domain/post-origin.ts`): in the web app, with an API key or

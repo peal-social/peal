@@ -11,7 +11,7 @@ import type { UserId, WorkspaceId } from "#shared/domain/ids.ts";
 import { ArticleJobs } from "./article-jobs.ts";
 import { ArticleJournal } from "./article-journal.ts";
 import { ArticleStore } from "./article-store.ts";
-import { PostsPublishing } from "./posts-publishing.ts";
+import { ArticlesSending } from "./articles-sending.ts";
 
 const encodeBody = Schema.encodeSync(Schema.toCodecJson(ArticleBodySchema));
 
@@ -37,7 +37,7 @@ const recordOf = (article: Article): ArticleRecord => ({
  * exported or erased, and a member's when they leave. Erasing stops the
  * jobs of the articles that wait, in the transaction that deletes them,
  * and is refused while a call to a site is in flight for one of them
- * (PostsPublishing, as for posts).
+ * (ArticlesSending, as posts are by PostsPublishing).
  */
 export class ArticleRecords extends Context.Service<
   ArticleRecords,
@@ -47,10 +47,10 @@ export class ArticleRecords extends Context.Service<
     ) => Effect.Effect<readonly ArticleRecord[], DatabaseError>;
     readonly ensureErasable: (
       workspaceId: WorkspaceId
-    ) => Effect.Effect<void, DatabaseError | PostsPublishing>;
+    ) => Effect.Effect<void, DatabaseError | ArticlesSending>;
     readonly eraseWorkspace: (
       workspaceId: WorkspaceId
-    ) => Effect.Effect<void, DatabaseError | PostsPublishing>;
+    ) => Effect.Effect<void, DatabaseError | ArticlesSending>;
     /** The articles stay with their workspaces, without an author. */
     readonly forgetAuthor: (
       userId: UserId
@@ -74,7 +74,7 @@ export class ArticleRecords extends Context.Service<
         const all = yield* store.lockWorkspace(workspaceId);
 
         if (yield* journal.inFlight(all.map(({ id }) => id))) {
-          return yield* new PostsPublishing({ workspaceId });
+          return yield* new ArticlesSending({ workspaceId });
         }
 
         return all;

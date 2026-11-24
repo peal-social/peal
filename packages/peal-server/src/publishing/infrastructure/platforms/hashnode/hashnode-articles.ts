@@ -11,12 +11,9 @@ import type {
   SiteSearch,
 } from "#publishing/application/site-publisher.ts";
 import { articleMarkdown } from "#publishing/domain/article-markdown.ts";
+import { articleRefusalCodes } from "#publishing/domain/article-refusals.ts";
 import { articleMediaOf } from "#publishing/domain/article.ts";
 import type { Article } from "#publishing/domain/article.ts";
-import {
-  ownRefusalCodes,
-  platformRefusalCodes,
-} from "#publishing/domain/own-refusals.ts";
 import { hashnodeSlugOf } from "#publishing/domain/site-rules.ts";
 import type { SiteAdapter } from "#publishing/infrastructure/platforms/site-adapter.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
@@ -80,7 +77,7 @@ const commitRefusals: ReadonlySet<string> = new Set([
   "bad_user_input",
   "forbidden",
   "not_found",
-  platformRefusalCodes.sitePlanRequired,
+  articleRefusalCodes.sitePlanRequired,
 ]);
 
 // How far before the call a post made by it may say it was published.
@@ -237,7 +234,7 @@ const refusalOf = (
   }
 
   if (errors.some(isPlanRefusal)) {
-    return new BadRequest({ code: platformRefusalCodes.sitePlanRequired });
+    return new BadRequest({ code: articleRefusalCodes.sitePlanRequired });
   }
 
   const [first] = errors;
@@ -254,7 +251,7 @@ const refusalOf = (
 const guardRefusalOf = (refused: OutboundRequestRefused) =>
   refused.reason === "lookupFailed"
     ? new PlatformUnavailable()
-    : new BadRequest({ code: ownRefusalCodes.channelDisconnected });
+    : new BadRequest({ code: articleRefusalCodes.channelDisconnected });
 
 const webAddress = (link: string | null | undefined): string | undefined => {
   if (link === null || link === undefined || !URL.canParse(link)) {

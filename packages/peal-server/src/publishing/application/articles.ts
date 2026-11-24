@@ -20,33 +20,30 @@ import {
 } from "#publishing/domain/article.ts";
 import type { Article, ArticleViolation } from "#publishing/domain/article.ts";
 import type { InvalidArticleTransition } from "#publishing/domain/invalid-article-transition.ts";
-import { authorOf } from "#publishing/domain/post.ts";
 import { siteRules } from "#publishing/domain/site-rules.ts";
 import type { DatabaseError } from "#shared/application/database-error.ts";
 import { Ids, newId } from "#shared/application/ids.ts";
 import { TransactionRunner } from "#shared/application/transaction-runner.ts";
 import type { Actor, Permission } from "#shared/domain/access.ts";
 import { authorize } from "#shared/domain/authorize.ts";
-import type { ChannelId } from "#shared/domain/ids.ts";
+import type { ChannelId, UserId } from "#shared/domain/ids.ts";
 import type { MissingPermission } from "#shared/domain/missing-permission.ts";
 import type { PlanLimitReached } from "#shared/domain/plan-limit-reached.ts";
 import type { PublishFailure } from "#shared/domain/publish-failure.ts";
 import { Schedule } from "#shared/domain/schedule.ts";
 import type { TimeZoneId } from "#shared/domain/time-zone.ts";
 
-import { ApprovalGate } from "./approval-gate.ts";
+import { ArticleGates } from "./article-gates.ts";
 import { ArticleJobs } from "./article-jobs.ts";
 import type { ArticleJob } from "./article-jobs.ts";
+import { ArticleMedia } from "./article-media.ts";
 import { ArticleNotFound } from "./article-not-found.ts";
 import { ArticleStore } from "./article-store.ts";
 import type { ArticlePage, ArticlePageRequest } from "./article-store.ts";
-import { AttachableMedia } from "./attachable-media.ts";
-import { PostAllowance } from "./post-allowance.ts";
 import { SiteChannels } from "./site-channels.ts";
 import { SiteNotFound } from "./site-not-found.ts";
 import { SitePublisher } from "./site-publisher.ts";
 import { UnknownMedia } from "./unknown-media.ts";
-import { withinPlan } from "./within-plan.ts";
 
 /** When an article goes out: at a time in a zone, or now. */
 export interface ArticleTime {
@@ -82,6 +79,12 @@ const rejected = (violations: readonly ArticleViolation[]) => {
 
 const decodeArticleId = (id: string) =>
   Option.getOrUndefined(Schema.decodeUnknownOption(ArticleIdSchema)(id));
+
+// The member who writes an article: none for an API key.
+const authorOf = (actor: Actor): Option.Option<UserId> =>
+  actor.subject._tag === "user"
+    ? Option.some(actor.subject.userId)
+    : Option.none();
 
 const allowed = (actor: Actor, permission: Permission) =>
   Effect.fromResult(authorize(actor, permission));
@@ -158,11 +161,10 @@ export class Articles extends Context.Service<
       const store = yield* ArticleStore;
       const jobs = yield* ArticleJobs;
       const sites = yield* SiteChannels;
-      const media = yield* AttachableMedia;
+      const media = yield* ArticleMedia;
       const publisher = yield* SitePublisher;
       const ids = yield* Ids;
-      const gate = yield* ApprovalGate;
-      const allowance = yield* PostAllowance;
+      const gates = yield* ArticleGates;
       const { transaction } = yield* TransactionRunner;
 
       const found = Effect.fn("Articles.found")(function* found(
@@ -239,7 +241,7 @@ export class Articles extends Context.Service<
       const mayGoOut = Effect.fn("Articles.mayGoOut")(function* mayGoOut(
         actor: Actor
       ) {
-        const held = yield* gate.holds(actor);
+        const held = yield* gates.holds(actor);
 
         yield* held
           ? Effect.fail(
@@ -249,9 +251,7 @@ export class Articles extends Context.Service<
             )
           : Effect.void;
 
-        return yield* withinPlan(actor.workspaceId).pipe(
-          Effect.provideService(PostAllowance, allowance)
-        );
+        return yield* gates.withinPlan(actor.workspaceId);
       });
 
       // Saves the article over what it was, stops the job of what it was,

@@ -28,6 +28,7 @@ import { LivePostEdits } from "#publishing/application/live-post-edits.ts";
 import { LivePostEvents } from "#publishing/application/live-post-events.ts";
 import { LivePostHolds } from "#publishing/application/live-post-holds.ts";
 import { LiveTargetParts } from "#publishing/application/live-target-parts.ts";
+import { MediaInArticles } from "#publishing/application/media-in-articles.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { pacedLookups } from "#publishing/application/paced-lookups.ts";
 import { PlatformCredentials } from "#publishing/application/platform-credentials.ts";
@@ -60,11 +61,9 @@ import { TikTokCreatorInfo } from "#publishing/application/tiktok-creator-info.t
 import type { WorkspaceChannels } from "#publishing/application/workspace-channels.ts";
 import { AdsLivePostHolds } from "#publishing/infrastructure/ads-live-post-holds.ts";
 import { AnalyticsCountedPlatforms } from "#publishing/infrastructure/analytics-counted-platforms.ts";
-import {
-  ChannelAccessCredentials,
-  ChannelAccessSiteCredentials,
-} from "#publishing/infrastructure/channel-access-credentials.ts";
+import { ChannelAccessCredentials } from "#publishing/infrastructure/channel-access-credentials.ts";
 import { ChannelAccessGrants } from "#publishing/infrastructure/channel-access-grants.ts";
+import { ChannelAccessSiteCredentials } from "#publishing/infrastructure/channel-access-site-credentials.ts";
 import {
   IdempotencyRetentionCron,
   QuotaRetentionCron,
@@ -104,6 +103,7 @@ import { NotifiedFollowUpNotices } from "#publishing/infrastructure/follow-ups/n
 import { PlatformRepostsLive } from "#publishing/infrastructure/follow-ups/platforms/platform-reposts-live.ts";
 import { WorkflowFollowUpJobs } from "#publishing/infrastructure/follow-ups/workflow-follow-up-jobs.ts";
 import { SendFollowUpV1Live } from "#publishing/infrastructure/follow-ups/workflows/send-follow-up.ts";
+import { LibraryArticleMedia } from "#publishing/infrastructure/library-article-media.ts";
 import { LibraryAttachableMedia } from "#publishing/infrastructure/library-attachable-media.ts";
 import { LibraryMediaForPublishing } from "#publishing/infrastructure/library-media-for-publishing.ts";
 import { ListedChannelConnections } from "#publishing/infrastructure/listed-channel-connections.ts";
@@ -123,6 +123,7 @@ import { PlatformClientsLive } from "#publishing/infrastructure/platforms/platfo
 import { PlatformLookupsLive } from "#publishing/infrastructure/platforms/platform-lookups-live.ts";
 import { TikTokCreatorsLive } from "#publishing/infrastructure/platforms/tiktok/tiktok-creators.ts";
 import { wordpressSiteAdapter } from "#publishing/infrastructure/platforms/wordpress/wordpress-articles.ts";
+import { PostingArticleGates } from "#publishing/infrastructure/posting-article-gates.ts";
 import { DrizzleRecyclingStore } from "#publishing/infrastructure/recycling/drizzle-recycling-store.ts";
 import { NotifiedRecyclingNotices } from "#publishing/infrastructure/recycling/notified-recycling-notices.ts";
 import { RecyclingCron } from "#publishing/infrastructure/recycling/recycling-cron.ts";
@@ -524,12 +525,12 @@ export const PublishingLive = publishingOver(
 );
 
 /**
- * Which posts and articles show a media asset, for the media context to
- * ask before it deletes one (MediaInPosts). Needs the database (Drizzle) and a
+ * Which posts show a media asset, for the media context to ask before it
+ * deletes one (MediaInPosts). Needs the database (Drizzle) and a
  * TransactionRunner.
  */
 export const MediaInPostsLive = MediaInPosts.layer.pipe(
-  Layer.provide(Layer.merge(DrizzlePostRepository, DrizzleArticleStore))
+  Layer.provide(DrizzlePostRepository)
 );
 
 /**
@@ -723,6 +724,12 @@ const SitePublisherLive = routedSitePublisher(
   Layer.provide(FetchHttpClient.layer)
 );
 
+// What articles go out under: the approval policy posts are held by,
+// which the composition root provides, and the workspace's plan.
+const ArticleGatesLive = PostingArticleGates.pipe(
+  Layer.provide(PlanPostAllowanceLive)
+);
+
 /**
  * The articles' use cases (`Articles`), for the handlers: on the channels
  * of websites the channels context lists, with the media its library
@@ -741,8 +748,8 @@ export const ArticlesLive = Layer.merge(
       DrizzleArticleJournal,
       WorkflowArticleJobs,
       ListedSiteChannels,
-      LibraryAttachableMedia,
-      PlanPostAllowanceLive,
+      LibraryArticleMedia.pipe(Layer.provide(LibraryAttachableMedia)),
+      ArticleGatesLive,
       SitePublisherLive
     )
   )
@@ -751,7 +758,8 @@ export const ArticlesLive = Layer.merge(
 /**
  * The job that sends articles to their sites (`PublishArticleV1`), whose
  * endings the workspace's webhook endpoints hear. Needs the cluster and
- * what ArticlesLive needs, with WebhookEvents and ChannelRepository.
+ * what ArticlesLive needs, the ApprovalGate included, with WebhookEvents
+ * and ChannelRepository.
  */
 export const ArticleWorkersLive = PublishArticleV1Live.pipe(
   Layer.provide(
@@ -760,10 +768,19 @@ export const ArticleWorkersLive = PublishArticleV1Live.pipe(
       DrizzleArticleStore,
       DrizzleArticleJournal,
       WebhookArticleEvents,
-      PlanPostAllowanceLive,
+      ArticleGatesLive,
       SitePublisherLive
     )
   )
+);
+
+/**
+ * Which articles show a file of the library, for the media context to ask
+ * before it deletes one (MediaInArticles), articles first in its
+ * transaction. Needs the database (Drizzle).
+ */
+export const MediaInArticlesLive = MediaInArticles.layer.pipe(
+  Layer.provide(DrizzleArticleStore)
 );
 
 export { ArticlesHandlers as ArticlesApiLive } from "#publishing/api/articles.ts";

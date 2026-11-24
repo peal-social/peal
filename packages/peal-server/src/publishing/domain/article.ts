@@ -14,6 +14,8 @@ import { Schedule } from "#shared/domain/schedule.ts";
 
 import { bodyMediaOf, bodyTextLength } from "./article-body.ts";
 import { ArticleContent } from "./article-content.ts";
+import { ArticleStoredFailureReasonSchema } from "./article-failure.ts";
+import type { ArticleSettlement } from "./article-failure.ts";
 import { ArticleIdSchema } from "./article-id.ts";
 import type { ArticleViolationSchema } from "./article-rejected.ts";
 import { InvalidArticleTransition } from "./invalid-article-transition.ts";
@@ -21,10 +23,8 @@ import type {
   ArticleAction,
   ArticleStateName,
 } from "./invalid-article-transition.ts";
-import { FailureReasonSchema } from "./post-target-status.ts";
 import { maxTermLength, siteRules } from "./site-rules.ts";
 import type { SiteRules } from "./site-rules.ts";
-import type { TargetSettlement } from "./target-settlement.ts";
 
 /** The longest excerpt. */
 export const maxExcerptLength = 1000;
@@ -64,7 +64,7 @@ export const ArticleStateSchema = Schema.Union([
   Schema.TaggedStruct("failed", {
     code: Schema.optionalKey(Schema.String),
     failedAt: Schema.DateTimeUtc,
-    reason: FailureReasonSchema,
+    reason: ArticleStoredFailureReasonSchema,
     schedule: Schedule,
   }),
   Schema.TaggedStruct("unconfirmed", {
@@ -396,7 +396,7 @@ export const claimed = (
 /** How an article that was being sent ended, once nothing is left to try. */
 export const settled = (
   article: Article,
-  settlement: TargetSettlement,
+  settlement: ArticleSettlement,
   now: DateTime.Utc
 ): Article => {
   const { state } = article;

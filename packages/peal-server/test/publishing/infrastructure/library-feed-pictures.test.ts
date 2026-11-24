@@ -20,7 +20,7 @@ import { OpenOutboundGuard } from "#test/channels/support.ts";
 import { syntheticPdf } from "#test/media/pdf.ts";
 import {
   DatabaseTest,
-  MediaInPostsTest,
+  MediaHoldersTest,
   memberIn,
   NoWebhooks,
   storageSettings,
@@ -44,7 +44,7 @@ const PicturesTest = LibraryFeedPictures.pipe(
       ).pipe(
         Layer.provide(
           Layer.mergeAll(
-            MediaInPostsTest,
+            MediaHoldersTest,
             UnmeteredTest,
             NoAccountsConnectedTest,
             NoWebhooks,

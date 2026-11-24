@@ -3,10 +3,13 @@
 import { assert, describe, it } from "@effect/vitest";
 import { DateTime, Effect, Layer, Option, Ref } from "effect";
 
+import { MediaUsage } from "#media/application/ports/media-usage.ts";
+import { HoldersMediaUsage } from "#media/infrastructure/holders-media-usage.ts";
 import type { ArticleEvents } from "#publishing/application/article-events.ts";
 import { claimArticleRun } from "#publishing/application/article-publication.ts";
 import { ArticleStore } from "#publishing/application/article-store.ts";
 import { Articles } from "#publishing/application/articles.ts";
+import { MediaInArticles } from "#publishing/application/media-in-articles.ts";
 import { MediaInPosts } from "#publishing/application/media-in-posts.ts";
 import { DrizzleArticleStore } from "#publishing/infrastructure/drizzle-article-store.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";
@@ -303,6 +306,21 @@ describe("an article refused at scheduling", () => {
   );
 });
 
+// What the library asks before it deletes a file, as the server builds
+// it: the articles held first, then the posts, in one transaction.
+const holders = MediaUsage.pipe(
+  Effect.provide(
+    HoldersMediaUsage.pipe(
+      Layer.provide(
+        Layer.merge(
+          MediaInPosts.layer.pipe(Layer.provide(DrizzlePostRepository)),
+          MediaInArticles.layer.pipe(Layer.provide(DrizzleArticleStore))
+        )
+      )
+    )
+  )
+);
+
 describe("a file of the library an article shows", () => {
   it.effect(
     "is kept while the article is scheduled, and listed for a draft",
@@ -328,32 +346,25 @@ describe("a file of the library an article shows", () => {
             Option.none()
           );
 
-          const inPosts = yield* MediaInPosts.pipe(
-            Effect.provide(
-              MediaInPosts.layer.pipe(
-                Layer.provide(
-                  Layer.merge(DrizzlePostRepository, DrizzleArticleStore)
-                )
-              )
-            )
-          );
+          const usage = yield* holders;
 
-          assert.deepStrictEqual(
-            (yield* inPosts.usage(workspaceId, cover)).articles,
-            { drafts: [draft.id], scheduled: [scheduled.id] }
-          );
-          assert.deepStrictEqual(yield* inPosts.release(workspaceId, cover), {
-            _tag: "inUse",
-            articles: [scheduled.id],
+          assert.deepStrictEqual(yield* usage.of(workspaceId, cover), {
+            draftArticles: [draft.id],
+            drafts: [],
             scheduled: [],
+            scheduledArticles: [scheduled.id],
           });
+
+          const refused = yield* usage
+            .release(workspaceId, cover)
+            .pipe(Effect.flip);
+
+          assert.deepStrictEqual(refused.articleIds, [scheduled.id]);
+          assert.deepStrictEqual(refused.postIds, []);
 
           yield* articles.unschedule(actor, scheduled.id);
 
-          assert.strictEqual(
-            (yield* inPosts.release(workspaceId, cover))._tag,
-            "unused"
-          );
+          assert.deepStrictEqual(yield* usage.release(workspaceId, cover), []);
         })
       )
   );
@@ -373,24 +384,17 @@ describe("a file of the library an article shows", () => {
           Option.none()
         );
 
-        const inPosts = yield* MediaInPosts.pipe(
-          Effect.provide(
-            MediaInPosts.layer.pipe(
-              Layer.provide(
-                Layer.merge(DrizzlePostRepository, DrizzleArticleStore)
-              )
-            )
-          )
-        );
+        const usage = yield* holders;
 
-        yield* inPosts.release(workspaceId, coverImage.media.mediaId);
-        yield* inPosts.release(workspaceId, bodyImage.media.mediaId);
+        yield* usage.release(workspaceId, coverImage.media.mediaId);
+        yield* usage.release(workspaceId, bodyImage.media.mediaId);
 
         const kept = yield* articles.get(actor, draft.id);
+        const left = yield* usage.of(workspaceId, bodyImage.media.mediaId);
 
         assert.isTrue(Option.isNone(kept.content.coverMediaId));
         assert.deepStrictEqual(
-          (yield* inPosts.usage(workspaceId, bodyImage.media.mediaId)).articles,
+          { drafts: left.draftArticles, scheduled: left.scheduledArticles },
           { drafts: [], scheduled: [] }
         );
       })
@@ -414,17 +418,9 @@ describe("a file of the library an article shows", () => {
 
           assert.strictEqual(sent.state._tag, "unconfirmed");
 
-          const inPosts = yield* MediaInPosts.pipe(
-            Effect.provide(
-              MediaInPosts.layer.pipe(
-                Layer.provide(
-                  Layer.merge(DrizzlePostRepository, DrizzleArticleStore)
-                )
-              )
-            )
-          );
+          const usage = yield* holders;
 
-          yield* inPosts.release(sent.workspaceId, coverImage.media.mediaId);
+          yield* usage.release(sent.workspaceId, coverImage.media.mediaId);
 
           const kept = yield* (yield* Articles).get(actor, sent.id);
 
@@ -440,20 +436,16 @@ describe("a file of the library an article shows", () => {
         Effect.gen(function* onSite() {
           const { sent } = yield* sentTo();
 
-          const inPosts = yield* MediaInPosts.pipe(
-            Effect.provide(
-              MediaInPosts.layer.pipe(
-                Layer.provide(
-                  Layer.merge(DrizzlePostRepository, DrizzleArticleStore)
-                )
-              )
-            )
+          const usage = yield* holders;
+
+          const left = yield* usage.of(
+            sent.workspaceId,
+            coverImage.media.mediaId
           );
 
           assert.strictEqual(sent.state._tag, "published");
           assert.deepStrictEqual(
-            (yield* inPosts.usage(sent.workspaceId, coverImage.media.mediaId))
-              .articles,
+            { drafts: left.draftArticles, scheduled: left.scheduledArticles },
             { drafts: [], scheduled: [] }
           );
         })

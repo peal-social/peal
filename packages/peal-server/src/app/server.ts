@@ -122,6 +122,7 @@ import {
   FollowUpPlatformsLive,
   LivePostPlatformsLive,
   LookupsApiLive,
+  MediaInArticlesLive,
   MediaInPostsLive,
   PostAttentionLive,
   PlatformQuotaLive,
@@ -348,13 +349,14 @@ const ChannelsWithNoticesLive = ChannelsLive.pipe(
   Layer.provideMerge(NoticesContextLive)
 );
 
-// The media context, which asks publishing which posts show an asset before
-// deleting it, and billing how much a workspace may store, and tells the
-// webhooks how uploads end.
+// The media context, which asks which articles and posts show an asset
+// before deleting it, and billing how much a workspace may store, and tells
+// the webhooks how uploads end.
 const MediaContextLive = MediaLive.pipe(
   Layer.provide(
     Layer.mergeAll(
       MediaInPostsLive,
+      MediaInArticlesLive,
       BillingContextsLive,
       ChannelsWithNoticesLive
     )
