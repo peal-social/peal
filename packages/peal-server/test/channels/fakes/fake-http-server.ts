@@ -1,9 +1,11 @@
 import { once } from "node:events";
 import { createServer } from "node:http";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { text } from "node:stream/consumers";
 
 import { Effect, Schema } from "effect";
+
+import { fakeHandler } from "#test/shared/fake-handler.ts";
+import { receivedText } from "#test/shared/received-body.ts";
 
 /** A request a fake platform received. */
 export interface FakeRequest {
@@ -72,7 +74,12 @@ export const fakeHttpServer = (
         incoming: IncomingMessage,
         response: ServerResponse
       ) => {
-        const body = await text(incoming);
+        const body = await receivedText(incoming);
+
+        if (body === undefined) {
+          return;
+        }
+
         const url = new URL(incoming.url ?? "/", origin);
 
         const request: FakeRequest = {
@@ -87,9 +94,7 @@ export const fakeHttpServer = (
         send(response, handle(request, origin));
       };
 
-      const server = createServer((incoming, response) => {
-        void answer(incoming, response);
-      });
+      const server = createServer(fakeHandler(answer));
 
       server.listen(0, "127.0.0.1");
       await once(server, "listening");

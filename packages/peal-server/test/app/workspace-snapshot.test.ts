@@ -33,6 +33,7 @@ import {
   FakePostHog,
   postHogSettings,
 } from "#test/shared/fake-posthog.ts";
+import { ownDatabase } from "#test/shared/own-database.ts";
 import { seedChannel } from "#test/workspace/integration/seed.ts";
 
 // Two workspaces next to each other in the snapshot's order, the excluded
@@ -55,7 +56,11 @@ const Cluster = clusterLayer(
 );
 
 // The server's contexts, product analytics sending to the fake, with the
-// one workspace excluded.
+// one workspace excluded, on a database of the suite's own: the snapshot
+// sweeps every workspace and billing account it holds, starts their day
+// and purges usage past its days, so on the database the other suites
+// share it took their rows while they ran (the meters and days they keep
+// at the test clock's epoch, decades past the purge's cutoff).
 const Test = Layer.unwrap(
   Effect.gen(function* withPostHog() {
     const posthog = yield* fakePostHog;
@@ -71,10 +76,13 @@ const Test = Layer.unwrap(
           ConfigProvider.fromUnknown({
             ...postHogSettings(posthog),
             PEAL_POSTHOG_EXCLUDED_IDS: excluded,
+            // The media folder of its database.
+            PEAL_S3_KEY_PREFIX: "tests/snapshot/",
           }),
           { asPrimary: true }
         )
       ),
+      Layer.provide(ownDatabase("snapshot")),
       Layer.merge(Layer.succeed(FakePostHog, posthog))
     );
   })

@@ -197,6 +197,36 @@ const api = (context: Kernel, open: readonly string[] = []) =>
     moduleWalls(context, open)
   );
 
+// The MCP endpoint (src/app/mcp/): a second delivery layer beside the api
+// layers, inside the composition root. Its tools answer with the views and
+// inputs the HTTP handlers use (`#<context>/api/…`), and reach the database,
+// workflows and adapters through a context's use cases, as handlers do. The
+// one adapter it reads is the database ping, which the health tool answers
+// with, as GET /api/ready does.
+const mcp = restrict(
+  "MCP tools import Effect's core, AI and HTTP modules, peal-contract, #app, and any context's container, domain, application and api. Reach the database, workflows or adapters through a use case.",
+  [
+    "*",
+    "!effect",
+    "!effect/ai",
+    "!effect/http",
+    "!peal-contract",
+    "!peal-contract/rate-card",
+    "!./**",
+    "!#app/**",
+    ...contexts.flatMap((context) => [
+      `!#${context}/container.ts`,
+      `!#${context}/domain/**`,
+      `!#${context}/application/**`,
+      `!#${context}/api/**`,
+    ]),
+    "!#shared/domain/**",
+    "!#shared/application/**",
+    "!#shared/api/**",
+    "!#shared/infrastructure/database-ping.ts",
+  ]
+);
+
 // The container wires one context's layers together.
 const container = (context: Kernel) =>
   restrict("A container wires its own context and the shared kernel only.", [
@@ -360,6 +390,11 @@ export default defineConfig({
           { paths: noGateway, patterns: [testHelpers, aiSeam] },
         ],
       },
+    },
+    {
+      // After src/**, whose options it replaces for the MCP endpoint.
+      files: ["src/app/mcp/**"],
+      rules: { "no-restricted-imports": mcp },
     },
     {
       // Tests may drive the SDK (its mock models), never its gateway.
