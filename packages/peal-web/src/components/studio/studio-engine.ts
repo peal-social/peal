@@ -103,6 +103,37 @@ const relayFetches = (origin: string): (() => void) => {
   };
 };
 
+const fields =
+  'input, textarea, select, [contenteditable="true"], [role="textbox"]';
+
+const popups =
+  '[role="dialog"], [role="alertdialog"], [role="menu"], [role="listbox"]';
+
+// What Space and Enter press.
+const pressed = 'a, button, [role="button"], [role="switch"]';
+
+/**
+ * Whether a key pressed on the page is not the SDK's, which listens to all
+ * of it: one typed in a field, one pressed while a dialog or a menu is
+ * open, which would reach the clip behind it, or one that presses the
+ * button it is on.
+ */
+const isNotForSdk = (event: KeyboardEvent): boolean => {
+  const { code, target } = event;
+
+  if (!(target instanceof Element)) {
+    return false;
+  }
+
+  return (
+    target.closest(fields) !== null ||
+    [...document.querySelectorAll(popups)].some((popup) =>
+      popup.checkVisibility()
+    ) ||
+    ((code === "Space" || code === "Enter") && target.closest(pressed) !== null)
+  );
+};
+
 /** The element the SDK's preview and toolbars go in, which it finds by itself. */
 export const canvasAttribute = "data-shotstack-studio";
 
@@ -239,6 +270,9 @@ export const startStudio = async ({
     });
 
     const controls = new sdk.Controls(edit);
+
+    // The SDK's own check, which leaves out fields alone, private to it.
+    Reflect.set(controls, "shouldIgnoreKeyboardEvent", isNotForSdk);
 
     await controls.load();
 
