@@ -180,5 +180,10 @@
     "change": "The SDKs' BadRequestErrorBody (one type for every 400 body with several errors) names InvalidDateRange and WorkspaceRequired, no longer BadRequest and InvalidDateRange; InvalidDateRangeEncoded and InvalidTimeRangeEncoded lost their _tag field, and their tag types (InvalidDateRangeEncodedTag, InvalidTimeRangeEncodedTag) are gone",
     "kind": "sdk",
     "reason": "Every workspace endpoint now answers 400 WorkspaceRequired to a request that names no workspace from a credential that belongs to none, beside the 400s some already had, and the generator names a single body type for each status, after one of the endpoints that has a union there. Nothing changes on the wire: every 400 body still carries its _tag. Code that matched BadRequestErrorBody.BadRequest, or read the date or time range errors' _tag through their types, reads the body's _tag as a string instead. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
+  },
+  {
+    "change": "The .NET SDK's constructor is PealClient(string token, string? workspace = null, ClientOptions? clientOptions = null): the client's options are its third parameter, so new PealClient(token, options) no longer compiles",
+    "kind": "sdk",
+    "reason": "The workspace a client acts in became a client option, Peal-Workspace, which the generator places before the client's options. Code that passed the options by position passes them by name (clientOptions: options), or gives the workspace first. Nothing changes on the wire. The SDKs are 0.x: this ships in their next minor release, whose notes say so."
   }
 ]

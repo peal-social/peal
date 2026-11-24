@@ -156,6 +156,21 @@ const withoutWorkspaceHeader = (operation: JsonObject): JsonObject => {
     return operation;
   }
 
+  // The client sends it only when given a workspace: an operation that
+  // could not answer without one would fail every client made with a key.
+  if (
+    parameters.some(
+      (parameter) =>
+        isWorkspaceHeader(parameter) &&
+        isJsonObject(parameter) &&
+        parameter["required"] === true
+    )
+  ) {
+    throw new Error(
+      `${JSON.stringify(operation["operationId"])} requires the Peal-Workspace header, which the SDKs send only as an optional client option: keep it optional in the contract (workspaceHeaders).`
+    );
+  }
+
   const kept = parameters.filter((parameter) => !isWorkspaceHeader(parameter));
 
   return kept.length === 0
