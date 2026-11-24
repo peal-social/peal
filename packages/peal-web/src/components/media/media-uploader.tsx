@@ -93,7 +93,8 @@ const outcomeOf = (
   return { _tag: "running" };
 };
 
-const useErrorMessage = () => {
+/** Why an upload failed, in the reader's words. */
+export const useUploadErrorMessage = () => {
   const t = useTranslations("Media.uploader.errors");
 
   return ({ limit, reason }: UploadFailed): string => {
@@ -254,7 +255,7 @@ const UploadItem = ({
 
   const [description, setDescription] = useState<AltTextDraft>(emptyDraft);
 
-  const errorMessage = useErrorMessage();
+  const errorMessage = useUploadErrorMessage();
   const progress = useAtomValue(uploadProgress(entry.id));
   const outcome = outcomeOf(useAtomValue(upload(entry.id)));
   const { name } = entry.file;
