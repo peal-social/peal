@@ -4668,6 +4668,8 @@
     }
   },
   "Studio": {
+    "addCircle": "Ajouter un cercle",
+    "addRectangle": "Ajouter un rectangle",
     "addCaptions": "Ajouter des sous-titres",
     "captionsNeedVoice": "Ajoutez d’abord une vidéo ou un son : les sous-titres viennent de sa voix.",
     "fullScreen": "Plein écran",
