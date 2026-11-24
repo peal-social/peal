@@ -1,9 +1,9 @@
 import { Effect, Layer, Option } from "effect";
 
 import { MediaLibrary } from "#media/application/media-library.ts";
-import { FeedPictures } from "#publishing/application/feed-pictures.ts";
-import type { FeedPicture } from "#publishing/application/feed-pictures.ts";
-import type { FeedPictureSkip } from "#publishing/domain/feed-item-outcome.ts";
+import { FeedPictures } from "#publishing/application/feeds/feed-pictures.ts";
+import type { FeedPicture } from "#publishing/application/feeds/feed-pictures.ts";
+import type { FeedPictureSkip } from "#publishing/domain/feeds/feed-item-outcome.ts";
 import { maxAltTextLength } from "#publishing/domain/media-attachment.ts";
 
 const skipped = (reason: FeedPictureSkip) =>

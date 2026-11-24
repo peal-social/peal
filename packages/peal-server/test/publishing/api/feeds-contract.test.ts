@@ -24,20 +24,23 @@ import {
 } from "peal-contract";
 
 import { FeedStopReasonSchema as NoticeReasons } from "#notifications/domain/notice-event.ts";
-import { itemsShown, previewedItems } from "#publishing/application/feeds.ts";
+import {
+  itemsShown,
+  previewedItems,
+} from "#publishing/application/feeds/feeds.ts";
 import {
   FeedItemOutcomeSchema as OwnOutcomes,
   FeedItemReasonSchema as OwnItemReasons,
   FeedPictureSkipSchema as OwnPictureSkips,
-} from "#publishing/domain/feed-item-outcome.ts";
-import { FeedReadFailureSchema as OwnFailures } from "#publishing/domain/feed-read-failure.ts";
-import { FeedStopReasonSchema as OwnStopReasons } from "#publishing/domain/feed-stop-reason.ts";
+} from "#publishing/domain/feeds/feed-item-outcome.ts";
+import { FeedReadFailureSchema as OwnFailures } from "#publishing/domain/feeds/feed-read-failure.ts";
+import { FeedStopReasonSchema as OwnStopReasons } from "#publishing/domain/feeds/feed-stop-reason.ts";
 import {
   defaultTemplate,
   maxTemplateLength,
   placeholders,
-} from "#publishing/domain/feed-template.ts";
-import * as Own from "#publishing/domain/feed.ts";
+} from "#publishing/domain/feeds/feed-template.ts";
+import * as Own from "#publishing/domain/feeds/feed.ts";
 
 // The contract's copy of feeds' limits and reasons, which clients read,
 // is the server's: written once each side, kept equal here.

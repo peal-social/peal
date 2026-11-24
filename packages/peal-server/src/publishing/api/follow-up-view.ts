@@ -7,7 +7,7 @@ import type {
 import type { ListedFollowUpRule } from "#publishing/application/follow-up-rules.ts";
 import type { FollowUp } from "#publishing/domain/follow-up.ts";
 
-import { originView } from "./recycling-view.ts";
+import { originView } from "./origin-view.ts";
 
 // What a follow-up's state says, field by field: null where it says none.
 const stateOf = (followUp: FollowUp) =>

@@ -1,6 +1,6 @@
 import { Schema } from "effect";
 
-import { FeedReadFailureSchema } from "#publishing/domain/feed-read-failure.ts";
+import { FeedReadFailureSchema } from "#publishing/domain/feeds/feed-read-failure.ts";
 
 /**
  * A read of a feed that gave nothing: why, as a code, and how many

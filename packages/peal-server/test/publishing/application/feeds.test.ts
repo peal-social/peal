@@ -4,14 +4,14 @@ import { SqlClient } from "effect/sql";
 import { TestClock } from "effect/testing";
 
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
-import { FeedStore } from "#publishing/application/feed-store.ts";
-import type { CreateFeedRequest } from "#publishing/application/feeds.ts";
-import { Feeds } from "#publishing/application/feeds.ts";
+import { FeedStore } from "#publishing/application/feeds/feed-store.ts";
+import type { CreateFeedRequest } from "#publishing/application/feeds/feeds.ts";
+import { Feeds } from "#publishing/application/feeds/feeds.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { Queues } from "#publishing/application/queues.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
-import type { FeedId } from "#publishing/domain/feed-id.ts";
+import type { FeedId } from "#publishing/domain/feeds/feed-id.ts";
 import type { QueueId } from "#publishing/domain/queue-id.ts";
 import { newId } from "#shared/application/ids.ts";
 import { Actor } from "#shared/domain/access.ts";

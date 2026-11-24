@@ -5,11 +5,10 @@ import type {
   FeedPreview as FeedPreviewView,
 } from "peal-contract";
 
-import type { FeedItemRecord } from "#publishing/application/feed-store.ts";
-import type { FeedPreview } from "#publishing/application/feeds.ts";
-import type { Feed } from "#publishing/domain/feed.ts";
-
-import { originView } from "./recycling-view.ts";
+import { originView } from "#publishing/api/origin-view.ts";
+import type { FeedItemRecord } from "#publishing/application/feeds/feed-store.ts";
+import type { FeedPreview } from "#publishing/application/feeds/feeds.ts";
+import type { Feed } from "#publishing/domain/feeds/feed.ts";
 
 /** What clients see of a feed. */
 export const feedView = (feed: Feed): FeedView => {

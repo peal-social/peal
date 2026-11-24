@@ -1,8 +1,8 @@
 import { Context, Effect, Layer, Option } from "effect";
 
-import type { FeedAddress } from "#publishing/domain/feed-address.ts";
-import type { FeedDocument } from "#publishing/domain/feed-document.ts";
-import type { FeedValidators } from "#publishing/domain/feed.ts";
+import type { FeedAddress } from "#publishing/domain/feeds/feed-address.ts";
+import type { FeedDocument } from "#publishing/domain/feeds/feed-document.ts";
+import type { FeedValidators } from "#publishing/domain/feeds/feed.ts";
 
 import { FeedReadFailed } from "./feed-read-failed.ts";
 
