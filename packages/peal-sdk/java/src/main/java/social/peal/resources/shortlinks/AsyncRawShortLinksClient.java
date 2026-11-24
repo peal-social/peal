@@ -35,7 +35,6 @@ import social.peal.errors.UnauthorizedError;
 import social.peal.resources.shortlinks.requests.GetShortLinksRequest;
 import social.peal.resources.shortlinks.requests.ListShortLinksRequest;
 import social.peal.resources.shortlinks.requests.ShortLinkSettings;
-import social.peal.resources.shortlinks.requests.StatusShortLinksRequest;
 import social.peal.types.ShortLinkPage;
 import social.peal.types.ShortLinkReport;
 import social.peal.types.ShortLinkStatus;
@@ -51,48 +50,28 @@ public class AsyncRawShortLinksClient {
     /**
      * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> status(String workspaceId) {
-        return status(workspaceId, StatusShortLinksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> status() {
+        return status(null);
     }
 
     /**
      * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> status(
-            String workspaceId, RequestOptions requestOptions) {
-        return status(workspaceId, StatusShortLinksRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> status(
-            String workspaceId, StatusShortLinksRequest request) {
-        return status(workspaceId, request, null);
-    }
-
-    /**
-     * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> status(
-            String workspaceId, StatusShortLinksRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> status(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("short-links")
-                .addPathSegments("status");
+                .addPathSegments("api/v1/short-links/status");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -121,6 +100,11 @@ public class AsyncRawShortLinksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -174,22 +158,18 @@ public class AsyncRawShortLinksClient {
     /**
      * Sets whether the workspace's new posts ask for short links unless they say otherwise (<code>shortenLinks</code>), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
      */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> setDefault(
-            String workspaceId, ShortLinkSettings request) {
-        return setDefault(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> setDefault(ShortLinkSettings request) {
+        return setDefault(request, null);
     }
 
     /**
      * Sets whether the workspace's new posts ask for short links unless they say otherwise (<code>shortenLinks</code>), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
      */
     public CompletableFuture<PealClientHttpResponse<ShortLinkStatus>> setDefault(
-            String workspaceId, ShortLinkSettings request, RequestOptions requestOptions) {
+            ShortLinkSettings request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("short-links")
-                .addPathSegments("settings");
+                .addPathSegments("api/v1/short-links/settings");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -239,6 +219,11 @@ public class AsyncRawShortLinksClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -292,36 +277,32 @@ public class AsyncRawShortLinksClient {
     /**
      * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkPage>> list(String workspaceId) {
-        return list(workspaceId, ListShortLinksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ShortLinkPage>> list() {
+        return list(ListShortLinksRequest.builder().build());
+    }
+
+    /**
+     * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<ShortLinkPage>> list(RequestOptions requestOptions) {
+        return list(ListShortLinksRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<ShortLinkPage>> list(ListShortLinksRequest request) {
+        return list(request, null);
     }
 
     /**
      * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
     public CompletableFuture<PealClientHttpResponse<ShortLinkPage>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListShortLinksRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkPage>> list(
-            String workspaceId, ListShortLinksRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkPage>> list(
-            String workspaceId, ListShortLinksRequest request, RequestOptions requestOptions) {
+            ListShortLinksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("short-links");
+                .addPathSegments("api/v1/short-links");
         if (request.getChannelId().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "channelId", request.getChannelId().get(), false);
@@ -442,36 +423,33 @@ public class AsyncRawShortLinksClient {
     /**
      * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkReport>> get(String workspaceId, String linkId) {
-        return get(workspaceId, linkId, GetShortLinksRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ShortLinkReport>> get(String linkId) {
+        return get(linkId, GetShortLinksRequest.builder().build());
     }
 
     /**
      * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
     public CompletableFuture<PealClientHttpResponse<ShortLinkReport>> get(
-            String workspaceId, String linkId, RequestOptions requestOptions) {
-        return get(workspaceId, linkId, GetShortLinksRequest.builder().build(), requestOptions);
+            String linkId, RequestOptions requestOptions) {
+        return get(linkId, GetShortLinksRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<ShortLinkReport>> get(String linkId, GetShortLinksRequest request) {
+        return get(linkId, request, null);
     }
 
     /**
      * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
     public CompletableFuture<PealClientHttpResponse<ShortLinkReport>> get(
-            String workspaceId, String linkId, GetShortLinksRequest request) {
-        return get(workspaceId, linkId, request, null);
-    }
-
-    /**
-     * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<ShortLinkReport>> get(
-            String workspaceId, String linkId, GetShortLinksRequest request, RequestOptions requestOptions) {
+            String linkId, GetShortLinksRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("short-links")
+                .addPathSegments("api/v1/short-links")
                 .addPathSegment(PathSegments.validate(linkId));
         if (request.getFrom().isPresent()) {
             QueryStringMapper.addQueryParameter(

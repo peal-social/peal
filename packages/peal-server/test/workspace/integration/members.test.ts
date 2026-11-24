@@ -1,7 +1,11 @@
 import { assert, layer } from "@effect/vitest";
 import { Config, Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
-import { InvitationSchema, WorkspaceMemberSchema } from "peal-contract";
+import {
+  InvitationSchema,
+  WorkspaceMemberSchema,
+  forWorkspace,
+} from "peal-contract";
 
 import { SqlLive } from "#shared/infrastructure/database.ts";
 
@@ -39,16 +43,16 @@ const invite = (
   body: { readonly email: string; readonly role: string }
 ) =>
   TestApp.use((app) =>
-    app.request(`/api/workspaces/${workspaceId}/invitations`, {
+    app.request(`/api/v1/invitations`, {
       body,
-      headers: asPerson(person),
+      headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
     })
   );
 
 const invitations = (person: Person, workspaceId: string) =>
   TestApp.use((app) =>
-    app.request(`/api/workspaces/${workspaceId}/invitations`, {
-      headers: asPerson(person),
+    app.request(`/api/v1/invitations`, {
+      headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
     })
   );
 
@@ -90,10 +94,9 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const viewer = yield* joined(owner, workspaceId, "watcher", "viewer");
 
           for (const person of [owner, viewer]) {
-            const reply = yield* app.request(
-              `/api/workspaces/${workspaceId}/members`,
-              { headers: asPerson(person) }
-            );
+            const reply = yield* app.request(`/api/v1/members`, {
+              headers: { ...asPerson(person), ...forWorkspace(workspaceId) },
+            });
 
             assert.strictEqual(reply.status, 200);
 
@@ -117,10 +120,12 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "invitation:create",
           ]);
 
-          const byKey = yield* app.request(
-            `/api/workspaces/${workspaceId}/members`,
-            { headers: { authorization: `Bearer ${key}` } }
-          );
+          const byKey = yield* app.request(`/api/v1/members`, {
+            headers: {
+              authorization: `Bearer ${key}`,
+              ...forWorkspace(workspaceId),
+            },
+          });
 
           assert.strictEqual(byKey.status, 403);
         })
@@ -172,10 +177,10 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const revoke = (invitationId: string) =>
-            app.request(
-              `/api/workspaces/${workspaceId}/invitations/${invitationId}`,
-              { headers: asPerson(owner), method: "DELETE" }
-            );
+            app.request(`/api/v1/invitations/${invitationId}`, {
+              headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
+              method: "DELETE",
+            });
 
           assert.strictEqual((yield* revoke(sent.id)).status, 204);
           assert.strictEqual((yield* revoke(sent.id)).status, 404);

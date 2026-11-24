@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId"
  *     }
  */
 export interface ReconnectChannelsRequest {
-    workspaceId: string;
     channelId: string;
     messages?: Peal.ReconnectChannelsRequestMessages;
     reposts?: Peal.ReconnectChannelsRequestReposts;

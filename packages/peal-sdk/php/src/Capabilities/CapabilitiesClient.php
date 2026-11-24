@@ -56,12 +56,9 @@ class CapabilitiesClient
      *
      * Example:
      * ```php
-     * $client->capabilities->platforms(
-     *     'workspaceId',
-     * );
+     * $client->capabilities->platforms();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -74,14 +71,14 @@ class CapabilitiesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function platforms(string $workspaceId, ?array $options = null): ?array
+    public function platforms(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/platforms/capabilities",
+                    path: "api/v1/platforms/capabilities",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -112,12 +109,10 @@ class CapabilitiesClient
      * Example:
      * ```php
      * $client->capabilities->channel(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -131,14 +126,14 @@ class CapabilitiesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function channel(string $workspaceId, string $channelId, ?array $options = null): ?ChannelCapabilities
+    public function channel(string $channelId, ?array $options = null): ?ChannelCapabilities
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/capabilities",
+                    path: "api/v1/channels/{$channelId}/capabilities",
                     method: HttpMethod::GET,
                 ),
                 $options,

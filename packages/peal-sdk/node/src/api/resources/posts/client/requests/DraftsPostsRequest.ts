@@ -2,12 +2,9 @@
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface DraftsPostsRequest {
-    workspaceId: string;
     cursor?: string;
     limit?: string;
 }

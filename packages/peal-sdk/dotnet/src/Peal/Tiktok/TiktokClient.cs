@@ -33,8 +33,7 @@ public partial class TiktokClient : ITiktokClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/tiktok-creator",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/tiktok-creator",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -87,6 +86,18 @@ public partial class TiktokClient : ITiktokClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -183,9 +194,7 @@ public partial class TiktokClient : ITiktokClient
     /// Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
     /// </summary>
     /// <example><code>
-    /// await client.Tiktok.CreatorAsync(
-    ///     new CreatorTiktokRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.Tiktok.CreatorAsync(new CreatorTiktokRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask<TikTokAccount> CreatorAsync(
         CreatorTiktokRequest request,

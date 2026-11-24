@@ -20,6 +20,10 @@
   on every request (`x-fern-global-headers`, a literal its users may
   override), so a release that records a changelog entry regenerates the
   SDKs; `scripts/test.ts` fails a smoke test whose calls leave it out.
+  The workspace a client acts in is a client option too (`workspace`,
+  `Peal-Workspace`, an optional global header): the script strips the
+  header from every operation, so no method takes a workspace, and a
+  client made without one sends none (an API key acts in its own).
   The contract's `webhooks` section (the events Peal sends) is left
   out (`leftOut`, tested in `scripts/spec.test.ts`, and `api-changes.ts`
   reads none of it): the open-source generators are documented to make no

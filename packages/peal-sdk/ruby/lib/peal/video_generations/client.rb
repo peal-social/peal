@@ -20,11 +20,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::VideoGenerationStatus, nil] :status
       #
       # @example
-      #   client.video_generations.list(workspace_id: "workspaceId")
+      #   client.video_generations.list
       #
       # @return [Peal::Types::VideoGenerations]
       def list(request_options: {}, **params)
@@ -35,7 +34,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/videos/generations",
+          path: "api/v1/media/videos/generations",
           query: query_params,
           request_options: request_options
         )
@@ -75,11 +74,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.video_generations.create(
-      #     workspace_id: "workspaceId",
       #     aspect: "square",
       #     prompt: "prompt"
       #   )
@@ -87,15 +84,11 @@ module Peal
       # @return [Peal::Types::VideoGeneration]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::VideoGenerations::Types::VideoGenerationRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/videos/generations",
-          body: body,
+          path: "api/v1/media/videos/generations",
+          body: Peal::VideoGenerations::Types::VideoGenerationRequest.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -127,14 +120,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :generation_id
       #
       # @example
-      #   client.video_generations.get(
-      #     workspace_id: "workspaceId",
-      #     generation_id: "generationId"
-      #   )
+      #   client.video_generations.get(generation_id: "generationId")
       #
       # @return [Peal::Types::VideoGeneration]
       def get(request_options: {}, **params)
@@ -142,7 +131,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/videos/generations/#{URI.encode_uri_component(params[:generation_id].to_s)}",
+          path: "api/v1/media/videos/generations/#{URI.encode_uri_component(params[:generation_id].to_s)}",
           request_options: request_options
         )
         begin

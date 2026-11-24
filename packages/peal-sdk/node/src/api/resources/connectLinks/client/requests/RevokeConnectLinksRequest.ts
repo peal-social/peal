@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         linkId: "linkId"
  *     }
  */
 export interface RevokeConnectLinksRequest {
-    workspaceId: string;
     linkId: string;
 }

@@ -10,7 +10,6 @@ import (
 	os "os"
 	testing "testing"
 
-	peal "github.com/peal-social/peal/packages/peal-sdk/go"
 	client "github.com/peal-social/peal/packages/peal-sdk/go/client"
 	option "github.com/peal-social/peal/packages/peal-sdk/go/option"
 	require "github.com/stretchr/testify/require"
@@ -88,19 +87,15 @@ func TestBillingGetWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.GetBillingRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Billing.Get(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestBillingGetWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestBillingGetWithWireMock", "GET", "/api/workspaces/workspaceId/billing", nil, 1)
+	VerifyRequestCount(t, "TestBillingGetWithWireMock", "GET", "/api/v1/billing", nil, 1)
 }
 
 func TestBillingStandingWithWireMock(
@@ -114,17 +109,13 @@ func TestBillingStandingWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.StandingBillingRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Billing.Standing(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestBillingStandingWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestBillingStandingWithWireMock", "GET", "/api/workspaces/workspaceId/billing/standing", nil, 1)
+	VerifyRequestCount(t, "TestBillingStandingWithWireMock", "GET", "/api/v1/billing/standing", nil, 1)
 }

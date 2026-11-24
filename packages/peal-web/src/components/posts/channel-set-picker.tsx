@@ -4,7 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { maxChannelSetNameLength } from "peal-contract";
+import { maxChannelSetNameLength, forWorkspace } from "peal-contract";
 import type {
   SocialChannel,
   ChannelOptions,
@@ -163,7 +163,7 @@ const SaveSelection = ({
 
     startTransition(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: details.value,
         reactivityKeys: channelSetsChanged(workspaceId),
       });

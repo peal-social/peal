@@ -7,9 +7,6 @@ namespace Peal;
 public record ConnectCallback
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required Platform Platform { get; set; }
 
     [JsonPropertyName("code")]

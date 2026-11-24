@@ -60,35 +60,32 @@ public class AsyncRawMediaClient {
     /**
      * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
-    public CompletableFuture<PealClientHttpResponse<MediaPage>> list(String workspaceId) {
-        return list(workspaceId, ListMediaRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<MediaPage>> list() {
+        return list(ListMediaRequest.builder().build());
+    }
+
+    /**
+     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<MediaPage>> list(RequestOptions requestOptions) {
+        return list(ListMediaRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<MediaPage>> list(ListMediaRequest request) {
+        return list(request, null);
     }
 
     /**
      * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
     public CompletableFuture<PealClientHttpResponse<MediaPage>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListMediaRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<MediaPage>> list(String workspaceId, ListMediaRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<MediaPage>> list(
-            String workspaceId, ListMediaRequest request, RequestOptions requestOptions) {
+            ListMediaRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media");
+                .addPathSegments("api/v1/media");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -205,20 +202,18 @@ public class AsyncRawMediaClient {
     /**
      * Records pending media and signs the upload of its file: one PUT for an image or a video up to 16 MiB, one PUT per part for a larger video. Send the file with them, then complete the upload. Give <code>fileName</code>, what the file is called on the device, so members find it in the library by its name. The requests only take the declared size and content type. On a server that bills, the declared size must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public CompletableFuture<PealClientHttpResponse<PreparedUpload>> create(String workspaceId, NewUpload request) {
-        return create(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<PreparedUpload>> create(NewUpload request) {
+        return create(request, null);
     }
 
     /**
      * Records pending media and signs the upload of its file: one PUT for an image or a video up to 16 MiB, one PUT per part for a larger video. Send the file with them, then complete the upload. Give <code>fileName</code>, what the file is called on the device, so members find it in the library by its name. The requests only take the declared size and content type. On a server that bills, the declared size must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
     public CompletableFuture<PealClientHttpResponse<PreparedUpload>> create(
-            String workspaceId, NewUpload request, RequestOptions requestOptions) {
+            NewUpload request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media");
+                .addPathSegments("api/v1/media");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -263,6 +258,11 @@ public class AsyncRawMediaClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -331,21 +331,18 @@ public class AsyncRawMediaClient {
     /**
      * Fetches a file from a public address, stores it as media of the workspace and probes it, as completing an upload does: the answer is the media, ready, or uploaded with why it could not be probed. The media is named after the last segment of the address's path, once redirects are followed, never its query. The server fetches it itself, from HTTPS URLs on the default port whose host resolves to public addresses only, without credentials or cookies, following at most three redirects, each checked the same way (MediaSourceNotPublic otherwise). The file's type is read from its first bytes, not from what the host says: JPEG, PNG, GIF and WebP images up to 16 MiB, MP4 and QuickTime videos up to 1 GiB (UnsupportedMediaType, MediaTooLarge). It must arrive within 90 seconds (MediaSourceUnreachable <code>tooSlow</code>): upload larger or slower files instead. On a server that bills, it must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). A workspace imports two files at once, and the server eight (429 MediaImportBusy: ask again in a moment). Needs media:upload.
      */
-    public CompletableFuture<PealClientHttpResponse<Media>> importFromUrl(String workspaceId, MediaImport request) {
-        return importFromUrl(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Media>> importFromUrl(MediaImport request) {
+        return importFromUrl(request, null);
     }
 
     /**
      * Fetches a file from a public address, stores it as media of the workspace and probes it, as completing an upload does: the answer is the media, ready, or uploaded with why it could not be probed. The media is named after the last segment of the address's path, once redirects are followed, never its query. The server fetches it itself, from HTTPS URLs on the default port whose host resolves to public addresses only, without credentials or cookies, following at most three redirects, each checked the same way (MediaSourceNotPublic otherwise). The file's type is read from its first bytes, not from what the host says: JPEG, PNG, GIF and WebP images up to 16 MiB, MP4 and QuickTime videos up to 1 GiB (UnsupportedMediaType, MediaTooLarge). It must arrive within 90 seconds (MediaSourceUnreachable <code>tooSlow</code>): upload larger or slower files instead. On a server that bills, it must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). A workspace imports two files at once, and the server eight (429 MediaImportBusy: ask again in a moment). Needs media:upload.
      */
     public CompletableFuture<PealClientHttpResponse<Media>> importFromUrl(
-            String workspaceId, MediaImport request, RequestOptions requestOptions) {
+            MediaImport request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
-                .addPathSegments("import");
+                .addPathSegments("api/v1/media/import");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -389,6 +386,11 @@ public class AsyncRawMediaClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -457,36 +459,32 @@ public class AsyncRawMediaClient {
     /**
      * Shows one of the workspace's media. Needs media:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Media>> get(String workspaceId, String mediaId) {
-        return get(workspaceId, mediaId, GetMediaRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Media>> get(String mediaId) {
+        return get(mediaId, GetMediaRequest.builder().build());
+    }
+
+    /**
+     * Shows one of the workspace's media. Needs media:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Media>> get(String mediaId, RequestOptions requestOptions) {
+        return get(mediaId, GetMediaRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Shows one of the workspace's media. Needs media:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Media>> get(String mediaId, GetMediaRequest request) {
+        return get(mediaId, request, null);
     }
 
     /**
      * Shows one of the workspace's media. Needs media:read.
      */
     public CompletableFuture<PealClientHttpResponse<Media>> get(
-            String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return get(workspaceId, mediaId, GetMediaRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Shows one of the workspace's media. Needs media:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Media>> get(
-            String workspaceId, String mediaId, GetMediaRequest request) {
-        return get(workspaceId, mediaId, request, null);
-    }
-
-    /**
-     * Shows one of the workspace's media. Needs media:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Media>> get(
-            String workspaceId, String mediaId, GetMediaRequest request, RequestOptions requestOptions) {
+            String mediaId, GetMediaRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
+                .addPathSegments("api/v1/media")
                 .addPathSegment(PathSegments.validate(mediaId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -526,6 +524,11 @@ public class AsyncRawMediaClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -584,36 +587,32 @@ public class AsyncRawMediaClient {
     /**
      * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(String workspaceId, String mediaId) {
-        return delete(workspaceId, mediaId, DeleteMediaRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String mediaId) {
+        return delete(mediaId, DeleteMediaRequest.builder().build());
+    }
+
+    /**
+     * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String mediaId, RequestOptions requestOptions) {
+        return delete(mediaId, DeleteMediaRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String mediaId, DeleteMediaRequest request) {
+        return delete(mediaId, request, null);
     }
 
     /**
      * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return delete(workspaceId, mediaId, DeleteMediaRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String mediaId, DeleteMediaRequest request) {
-        return delete(workspaceId, mediaId, request, null);
-    }
-
-    /**
-     * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String mediaId, DeleteMediaRequest request, RequestOptions requestOptions) {
+            String mediaId, DeleteMediaRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
+                .addPathSegments("api/v1/media")
                 .addPathSegment(PathSegments.validate(mediaId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -655,6 +654,11 @@ public class AsyncRawMediaClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -718,21 +722,18 @@ public class AsyncRawMediaClient {
     /**
      * Sets the media's description, which platforms show to people who cannot see it. It can be written while the file uploads. Needs media:upload.
      */
-    public CompletableFuture<PealClientHttpResponse<Media>> describe(
-            String workspaceId, String mediaId, MediaDescription request) {
-        return describe(workspaceId, mediaId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Media>> describe(String mediaId, MediaDescription request) {
+        return describe(mediaId, request, null);
     }
 
     /**
      * Sets the media's description, which platforms show to people who cannot see it. It can be written while the file uploads. Needs media:upload.
      */
     public CompletableFuture<PealClientHttpResponse<Media>> describe(
-            String workspaceId, String mediaId, MediaDescription request, RequestOptions requestOptions) {
+            String mediaId, MediaDescription request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
+                .addPathSegments("api/v1/media")
                 .addPathSegment(PathSegments.validate(mediaId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -777,6 +778,11 @@ public class AsyncRawMediaClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -840,36 +846,32 @@ public class AsyncRawMediaClient {
     /**
      * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public CompletableFuture<PealClientHttpResponse<Media>> complete(String workspaceId, String mediaId) {
-        return complete(workspaceId, mediaId, CompleteMediaRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Media>> complete(String mediaId) {
+        return complete(mediaId, CompleteMediaRequest.builder().build());
+    }
+
+    /**
+     * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
+     */
+    public CompletableFuture<PealClientHttpResponse<Media>> complete(String mediaId, RequestOptions requestOptions) {
+        return complete(mediaId, CompleteMediaRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
+     */
+    public CompletableFuture<PealClientHttpResponse<Media>> complete(String mediaId, CompleteMediaRequest request) {
+        return complete(mediaId, request, null);
     }
 
     /**
      * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
     public CompletableFuture<PealClientHttpResponse<Media>> complete(
-            String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return complete(workspaceId, mediaId, CompleteMediaRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
-     */
-    public CompletableFuture<PealClientHttpResponse<Media>> complete(
-            String workspaceId, String mediaId, CompleteMediaRequest request) {
-        return complete(workspaceId, mediaId, request, null);
-    }
-
-    /**
-     * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
-     */
-    public CompletableFuture<PealClientHttpResponse<Media>> complete(
-            String workspaceId, String mediaId, CompleteMediaRequest request, RequestOptions requestOptions) {
+            String mediaId, CompleteMediaRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
+                .addPathSegments("api/v1/media")
                 .addPathSegment(PathSegments.validate(mediaId))
                 .addPathSegments("complete");
         if (requestOptions != null) {
@@ -909,6 +911,11 @@ public class AsyncRawMediaClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -982,36 +989,32 @@ public class AsyncRawMediaClient {
     /**
      * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
      */
-    public CompletableFuture<PealClientHttpResponse<MediaUsage>> usage(String workspaceId, String mediaId) {
-        return usage(workspaceId, mediaId, UsageMediaRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<MediaUsage>> usage(String mediaId) {
+        return usage(mediaId, UsageMediaRequest.builder().build());
+    }
+
+    /**
+     * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<MediaUsage>> usage(String mediaId, RequestOptions requestOptions) {
+        return usage(mediaId, UsageMediaRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<MediaUsage>> usage(String mediaId, UsageMediaRequest request) {
+        return usage(mediaId, request, null);
     }
 
     /**
      * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
      */
     public CompletableFuture<PealClientHttpResponse<MediaUsage>> usage(
-            String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return usage(workspaceId, mediaId, UsageMediaRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<MediaUsage>> usage(
-            String workspaceId, String mediaId, UsageMediaRequest request) {
-        return usage(workspaceId, mediaId, request, null);
-    }
-
-    /**
-     * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<MediaUsage>> usage(
-            String workspaceId, String mediaId, UsageMediaRequest request, RequestOptions requestOptions) {
+            String mediaId, UsageMediaRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media")
+                .addPathSegments("api/v1/media")
                 .addPathSegment(PathSegments.validate(mediaId))
                 .addPathSegments("usage");
         if (requestOptions != null) {
@@ -1052,6 +1055,11 @@ public class AsyncRawMediaClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

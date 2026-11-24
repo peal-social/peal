@@ -1,7 +1,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
-import { MeSchema } from "peal-contract";
+import { MeSchema, forWorkspace } from "peal-contract";
 
 import { authorize, registeredClient } from "#test/app/mcp-support.ts";
 import { appWithOidc } from "#test/workspace/fakes/fake-oidc.ts";
@@ -48,18 +48,15 @@ const RefusalSchema = Schema.Struct({
 const refusalOf = (reply: Reply) =>
   Schema.decodeUnknownEffect(RefusalSchema)(reply.body).pipe(Effect.orDie);
 
-const security = (workspaceId: string) =>
-  `/api/workspaces/${workspaceId}/security`;
-
 const requiring = (
   workspaceId: string,
   headers: Readonly<Record<string, string>>,
   twoStepRequired = true
 ) =>
   TestApp.use((app) =>
-    app.request(security(workspaceId), {
+    app.request("/api/v1/workspace/security", {
       body: { twoStepRequired },
-      headers,
+      headers: { ...headers, ...forWorkspace(workspaceId) },
       method: "PUT",
     })
   );
@@ -122,8 +119,8 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Nobody required it yet.
           const unset = yield* bodyOf(
             SecuritySchema,
-            yield* app.request(security(workspaceId), {
-              headers: asPerson(admin),
+            yield* app.request("/api/v1/workspace/security", {
+              headers: { ...asPerson(admin), ...forWorkspace(workspaceId) },
             })
           );
 
@@ -197,18 +194,17 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
           });
 
           // The activity log keeps who required it.
-          const log = yield* app.request(
-            `/api/workspaces/${workspaceId}/activity`,
-            { headers: { cookie: cookies } }
-          );
+          const log = yield* app.request(`/api/v1/activity`, {
+            headers: { cookie: cookies, ...forWorkspace(workspaceId) },
+          });
 
           assert.include(JSON.stringify(log.body), "workspaces.secure");
 
           // A key reads the policy, as any member does.
           const read = yield* bodyOf(
             SecuritySchema,
-            yield* app.request(security(workspaceId), {
-              headers: bearer(key),
+            yield* app.request("/api/v1/workspace/security", {
+              headers: { ...bearer(key), ...forWorkspace(workspaceId) },
             })
           );
 
@@ -251,10 +247,9 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
           ]);
 
           // Whether each member has it on, to who manages members only.
-          const listedToEditor = yield* app.request(
-            `/api/workspaces/${workspaceId}/members`,
-            { headers: asPerson(member) }
-          );
+          const listedToEditor = yield* app.request(`/api/v1/members`, {
+            headers: { ...asPerson(member), ...forWorkspace(workspaceId) },
+          });
 
           assert.notInclude(
             JSON.stringify(listedToEditor.body),
@@ -263,10 +258,9 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const ownerSession = (yield* enrolled(owner)).cookies;
 
-          const listedToOwner = yield* app.request(
-            `/api/workspaces/${workspaceId}/members`,
-            { headers: { cookie: ownerSession } }
-          );
+          const listedToOwner = yield* app.request(`/api/v1/members`, {
+            headers: { cookie: ownerSession, ...forWorkspace(workspaceId) },
+          });
 
           assert.include(
             JSON.stringify(listedToOwner.body),
@@ -282,21 +276,21 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
             200
           );
 
-          const posts = `/api/workspaces/${workspaceId}/posts`;
+          const posts = `/api/v1/posts`;
 
-          const channels = `/api/workspaces/${workspaceId}/channels`;
+          const channels = `/api/v1/channels`;
 
           const read = yield* app.request(channels, {
-            headers: asPerson(member),
+            headers: { ...asPerson(member), ...forWorkspace(workspaceId) },
           });
 
           const written = yield* app.request(posts, {
             body: draft,
-            headers: asPerson(member),
+            headers: { ...asPerson(member), ...forWorkspace(workspaceId) },
           });
 
           const byCommandLine = yield* app.request(channels, {
-            headers: bearer(token),
+            headers: { ...bearer(token), ...forWorkspace(workspaceId) },
           });
 
           for (const refused of [read, written, byCommandLine]) {
@@ -349,19 +343,21 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Elsewhere they are not refused, nor is the workspace's key.
           assert.strictEqual(
-            (yield* app.request(`/api/workspaces/${ownWorkspace}/channels`, {
-              headers: asPerson(member),
+            (yield* app.request(`/api/v1/channels`, {
+              headers: { ...asPerson(member), ...forWorkspace(ownWorkspace) },
             })).status,
             200
           );
           assert.strictEqual(
-            (yield* app.request(channels, { headers: bearer(key) })).status,
+            (yield* app.request(channels, {
+              headers: { ...bearer(key), ...forWorkspace(workspaceId) },
+            })).status,
             200
           );
 
           const created = yield* app.request(posts, {
             body: draft,
-            headers: bearer(key),
+            headers: { ...bearer(key), ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(created.status, 201);
@@ -371,12 +367,15 @@ layer(RequirementLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const { cookies } = yield* enrolled(member);
 
           assert.strictEqual(
-            (yield* app.request(channels, { headers: { cookie: cookies } }))
-              .status,
+            (yield* app.request(channels, {
+              headers: { cookie: cookies, ...forWorkspace(workspaceId) },
+            })).status,
             200
           );
           assert.strictEqual(
-            (yield* app.request(channels, { headers: bearer(token) })).status,
+            (yield* app.request(channels, {
+              headers: { ...bearer(token), ...forWorkspace(workspaceId) },
+            })).status,
             200
           );
           const again = yield* mcpCall(mcpToken);
@@ -411,10 +410,9 @@ layer(
       yield* sql`INSERT INTO workspace.security_policies (workspace_id, two_step_required, updated_at)
         VALUES (${customer.id}, true, now())`.pipe(Effect.orDie);
 
-      const channels = yield* app.request(
-        `/api/workspaces/${customer.id}/channels`,
-        { headers: bearer(key) }
-      );
+      const channels = yield* app.request(`/api/v1/channels`, {
+        headers: { ...bearer(key), ...forWorkspace(customer.id) },
+      });
 
       assert.strictEqual(channels.status, 200);
     })
@@ -441,13 +439,10 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), {
 
       assert.isNull(member.error);
 
-      const sent = yield* app.request(
-        `/api/workspaces/${workspaceId}/invitations`,
-        {
-          body: { email, role: "editor" },
-          headers: asPerson(owner),
-        }
-      );
+      const sent = yield* app.request(`/api/v1/invitations`, {
+        body: { email, role: "editor" },
+        headers: { ...asPerson(owner), ...forWorkspace(workspaceId) },
+      });
 
       assert.strictEqual(sent.status, 201, JSON.stringify(sent.body));
 
@@ -470,8 +465,8 @@ layer(Layer.mergeAll(appWithOidc(), MigratedSqlLive), {
 
       assert.strictEqual(set.status, 200, JSON.stringify(set.body));
 
-      const refused = yield* app.request(security(workspaceId), {
-        headers: { cookie: member.cookies },
+      const refused = yield* app.request("/api/v1/workspace/security", {
+        headers: { cookie: member.cookies, ...forWorkspace(workspaceId) },
       });
 
       assert.strictEqual(refused.status, 403);

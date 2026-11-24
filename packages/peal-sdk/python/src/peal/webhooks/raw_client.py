@@ -43,15 +43,13 @@ class RawWebhooksClient:
         self._client_wrapper = client_wrapper
 
     def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[WebhookEndpoint]]:
         """
         Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -61,7 +59,7 @@ class RawWebhooksClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks",
+            "api/v1/webhooks",
             method="GET",
             request_options=request_options,
         )
@@ -75,6 +73,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -130,7 +139,6 @@ class RawWebhooksClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         event_types: typing.Sequence[SubscribableWebhookEventType],
         url: str,
@@ -147,8 +155,6 @@ class RawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         event_types : typing.Sequence[SubscribableWebhookEventType]
 
         url : str
@@ -177,7 +183,7 @@ class RawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks",
+            "api/v1/webhooks",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -207,6 +213,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -295,7 +312,6 @@ class RawWebhooksClient:
 
     def search_deliveries(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -311,8 +327,6 @@ class RawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -336,7 +350,7 @@ class RawWebhooksClient:
             WebhookDeliveryPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/deliveries",
+            "api/v1/webhooks/deliveries",
             method="GET",
             params={
                 "cursor": cursor,
@@ -424,19 +438,13 @@ class RawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def redeliver_many(
-        self,
-        workspace_id: str,
-        *,
-        request: WebhookRedeliveryRequest,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: WebhookRedeliveryRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[WebhookBulkRedelivery]:
         """
         Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, or the failed deliveries of the endpoint `endpointId` (made from `since`, before `until`, of `eventType`, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same `webhook-id` and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; `remaining` says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : WebhookRedeliveryRequest
 
         request_options : typing.Optional[RequestOptions]
@@ -451,14 +459,11 @@ class RawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/deliveries/redeliver",
+            "api/v1/webhooks/deliveries/redeliver",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=WebhookRedeliveryRequest, direction="write"
             ),
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -472,6 +477,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -526,15 +542,13 @@ class RawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[WebhookEndpoint]:
         """
         Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -546,7 +560,7 @@ class RawWebhooksClient:
             WebhookEndpoint
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -560,6 +574,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -614,15 +639,13 @@ class RawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def delete(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -633,13 +656,24 @@ class RawWebhooksClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -695,7 +729,6 @@ class RawWebhooksClient:
 
     def update(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -712,8 +745,6 @@ class RawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -742,7 +773,7 @@ class RawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}",
             method="PATCH",
             json={
                 "channelIds": channel_ids,
@@ -771,6 +802,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -847,15 +889,13 @@ class RawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def rotate_secret(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[WebhookEndpointSecret]:
         """
         Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -870,7 +910,7 @@ class RawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/secret",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/secret",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -884,6 +924,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -950,7 +1001,6 @@ class RawWebhooksClient:
 
     def send_test(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         event_type: typing.Optional[SubscribableWebhookEventType] = None,
@@ -961,8 +1011,6 @@ class RawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         event_type : typing.Optional[SubscribableWebhookEventType]
@@ -979,7 +1027,7 @@ class RawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/test",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/test",
             method="POST",
             params={
                 "eventType": event_type,
@@ -996,6 +1044,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1062,7 +1121,6 @@ class RawWebhooksClient:
 
     def list_deliveries(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -1076,8 +1134,6 @@ class RawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         cursor : typing.Optional[str]
@@ -1097,7 +1153,7 @@ class RawWebhooksClient:
             WebhookDeliveryPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/deliveries",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/deliveries",
             method="GET",
             params={
                 "cursor": cursor,
@@ -1182,20 +1238,13 @@ class RawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def redeliver(
-        self,
-        workspace_id: str,
-        endpoint_id: str,
-        delivery_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, endpoint_id: str, delivery_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[WebhookDelivery]:
         """
         Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same `webhook-id` and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         delivery_id : str
@@ -1212,7 +1261,7 @@ class RawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/deliveries/{encode_path_param(delivery_id)}/redeliver",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/deliveries/{encode_path_param(delivery_id)}/redeliver",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1226,6 +1275,17 @@ class RawWebhooksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1296,15 +1356,13 @@ class AsyncRawWebhooksClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[WebhookEndpoint]]:
         """
         Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1314,7 +1372,7 @@ class AsyncRawWebhooksClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks",
+            "api/v1/webhooks",
             method="GET",
             request_options=request_options,
         )
@@ -1328,6 +1386,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1383,7 +1452,6 @@ class AsyncRawWebhooksClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         event_types: typing.Sequence[SubscribableWebhookEventType],
         url: str,
@@ -1400,8 +1468,6 @@ class AsyncRawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         event_types : typing.Sequence[SubscribableWebhookEventType]
 
         url : str
@@ -1430,7 +1496,7 @@ class AsyncRawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks",
+            "api/v1/webhooks",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -1460,6 +1526,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1548,7 +1625,6 @@ class AsyncRawWebhooksClient:
 
     async def search_deliveries(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -1564,8 +1640,6 @@ class AsyncRawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -1589,7 +1663,7 @@ class AsyncRawWebhooksClient:
             WebhookDeliveryPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/deliveries",
+            "api/v1/webhooks/deliveries",
             method="GET",
             params={
                 "cursor": cursor,
@@ -1677,19 +1751,13 @@ class AsyncRawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def redeliver_many(
-        self,
-        workspace_id: str,
-        *,
-        request: WebhookRedeliveryRequest,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, request: WebhookRedeliveryRequest, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[WebhookBulkRedelivery]:
         """
         Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, or the failed deliveries of the endpoint `endpointId` (made from `since`, before `until`, of `eventType`, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same `webhook-id` and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; `remaining` says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : WebhookRedeliveryRequest
 
         request_options : typing.Optional[RequestOptions]
@@ -1704,14 +1772,11 @@ class AsyncRawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/deliveries/redeliver",
+            "api/v1/webhooks/deliveries/redeliver",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=WebhookRedeliveryRequest, direction="write"
             ),
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -1725,6 +1790,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1779,15 +1855,13 @@ class AsyncRawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[WebhookEndpoint]:
         """
         Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1799,7 +1873,7 @@ class AsyncRawWebhooksClient:
             WebhookEndpoint
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1813,6 +1887,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1867,15 +1952,13 @@ class AsyncRawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1886,13 +1969,24 @@ class AsyncRawWebhooksClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1948,7 +2042,6 @@ class AsyncRawWebhooksClient:
 
     async def update(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -1965,8 +2058,6 @@ class AsyncRawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -1995,7 +2086,7 @@ class AsyncRawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}",
             method="PATCH",
             json={
                 "channelIds": channel_ids,
@@ -2024,6 +2115,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2100,15 +2202,13 @@ class AsyncRawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def rotate_secret(
-        self, workspace_id: str, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, endpoint_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[WebhookEndpointSecret]:
         """
         Replaces an endpoint's signing secret, and answers with the new one, which is not shown again. For 24 hours each delivery carries two signatures, one per secret, so the receiver changes its own without missing any; the old one then signs nothing more. Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2123,7 +2223,7 @@ class AsyncRawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/secret",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/secret",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2137,6 +2237,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2203,7 +2314,6 @@ class AsyncRawWebhooksClient:
 
     async def send_test(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         event_type: typing.Optional[SubscribableWebhookEventType] = None,
@@ -2214,8 +2324,6 @@ class AsyncRawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         event_type : typing.Optional[SubscribableWebhookEventType]
@@ -2232,7 +2340,7 @@ class AsyncRawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/test",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/test",
             method="POST",
             params={
                 "eventType": event_type,
@@ -2249,6 +2357,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2315,7 +2434,6 @@ class AsyncRawWebhooksClient:
 
     async def list_deliveries(
         self,
-        workspace_id: str,
         endpoint_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -2329,8 +2447,6 @@ class AsyncRawWebhooksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         cursor : typing.Optional[str]
@@ -2350,7 +2466,7 @@ class AsyncRawWebhooksClient:
             WebhookDeliveryPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/deliveries",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/deliveries",
             method="GET",
             params={
                 "cursor": cursor,
@@ -2435,20 +2551,13 @@ class AsyncRawWebhooksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def redeliver(
-        self,
-        workspace_id: str,
-        endpoint_id: str,
-        delivery_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, endpoint_id: str, delivery_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[WebhookDelivery]:
         """
         Sends the delivery's event to the endpoint again, as a new delivery of the same event: the receiver gets the same `webhook-id` and body, with a new timestamp and signature. A workspace sends 30 test events and deliveries again an hour at most (429 `TooManyWebhookSends`). Needs webhook:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         endpoint_id : str
 
         delivery_id : str
@@ -2465,7 +2574,7 @@ class AsyncRawWebhooksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/webhooks/{encode_path_param(endpoint_id)}/deliveries/{encode_path_param(delivery_id)}/redeliver",
+            f"api/v1/webhooks/{encode_path_param(endpoint_id)}/deliveries/{encode_path_param(delivery_id)}/redeliver",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2479,6 +2588,17 @@ class AsyncRawWebhooksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

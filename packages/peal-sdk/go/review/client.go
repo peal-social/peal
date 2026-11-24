@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.SettingsReviewRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Review.Settings(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Settings(
 	ctx context.Context,
-	request *peal.SettingsReviewRequest,
 	opts ...option.RequestOption,
 ) (*peal.ReviewSettings, error) {
 	response, err := c.WithRawResponse.Settings(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,11 +59,8 @@ func (c *Client) Settings(
 //
 // Example:
 //
-//	request := &peal.UpdateSettingsReviewRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.ReviewSettings{
-//	        ApprovalPolicy: peal.ApprovalPolicyNever,
-//	    },
+//	request := &peal.ReviewSettings{
+//	    ApprovalPolicy: peal.ApprovalPolicyNever,
 //	}
 //	_, err := client.Review.UpdateSettings(
 //	    context.TODO(),
@@ -77,7 +68,7 @@ func (c *Client) Settings(
 //	)
 func (c *Client) UpdateSettings(
 	ctx context.Context,
-	request *peal.UpdateSettingsReviewRequest,
+	request *peal.ReviewSettings,
 	opts ...option.RequestOption,
 ) (*peal.ReviewSettings, error) {
 	response, err := c.WithRawResponse.UpdateSettings(
@@ -95,21 +86,15 @@ func (c *Client) UpdateSettings(
 //
 // Example:
 //
-//	request := &peal.PendingReviewRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Review.Pending(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Pending(
 	ctx context.Context,
-	request *peal.PendingReviewRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.ApprovalRequest, error) {
 	response, err := c.WithRawResponse.Pending(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -123,7 +108,6 @@ func (c *Client) Pending(
 // Example:
 //
 //	request := &peal.ThreadReviewRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Review.Thread(
@@ -151,7 +135,6 @@ func (c *Client) Thread(
 // Example:
 //
 //	request := &peal.NewComment{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    Text: "text",
 //	}
@@ -180,7 +163,6 @@ func (c *Client) Comment(
 // Example:
 //
 //	request := &peal.ResolveReviewRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    CommentID: "commentId",
 //	    Resolved: true,
@@ -210,7 +192,6 @@ func (c *Client) Resolve(
 // Example:
 //
 //	request := &peal.ApprovalDecision{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    ApprovalID: "approvalId",
 //	    SubjectHash: "subjectHash",
@@ -240,7 +221,6 @@ func (c *Client) Approve(
 // Example:
 //
 //	request := &peal.ChangesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    ApprovalID: "approvalId",
 //	    SubjectHash: "subjectHash",
@@ -271,7 +251,6 @@ func (c *Client) RequestChanges(
 // Example:
 //
 //	request := &peal.LinksReviewRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Review.Links(
@@ -299,7 +278,6 @@ func (c *Client) Links(
 // Example:
 //
 //	request := &peal.NewReviewLink{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	    Access: peal.ReviewLinkAccessView,
 //	}
@@ -328,7 +306,6 @@ func (c *Client) CreateLink(
 // Example:
 //
 //	request := &peal.RevokeLinkReviewRequest{
-//	    WorkspaceID: "workspaceId",
 //	    LinkID: "linkId",
 //	}
 //	_, err := client.Review.RevokeLink(

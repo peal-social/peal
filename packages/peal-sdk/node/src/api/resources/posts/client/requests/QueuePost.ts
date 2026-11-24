@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId"
  *     }
  */
 export interface QueuePost {
-    workspaceId: string;
     postId: string;
     channelIds?: string[];
     queueId?: string;

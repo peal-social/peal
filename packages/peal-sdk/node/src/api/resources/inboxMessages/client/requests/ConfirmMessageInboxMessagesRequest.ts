@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         messageId: "messageId",
  *         sent: true
  *     }
  */
 export interface ConfirmMessageInboxMessagesRequest {
-    workspaceId: string;
     messageId: string;
     sent: boolean;
 }

@@ -7,9 +7,6 @@ namespace Peal;
 public record UnsetModelAssistantRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required AiCapability Capability { get; set; }
 
     /// <inheritdoc />

@@ -12,6 +12,7 @@ import { Forbidden } from "./forbidden.ts";
 import { InvalidDateRange } from "./invalid-date-range.ts";
 import { ShortLinkNotFound } from "./short-link-not-found.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** How many days one read of clicks covers at most, both ends included. */
 export const maxShortLinkRangeDays = 92;
@@ -121,7 +122,8 @@ export class ShortLinksApi extends HttpApiGroup.make("shortLinks")
   .add(
     HttpApiEndpoint.get("status", "/status", {
       error: [Forbidden],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       success: ShortLinkStatusSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -134,7 +136,8 @@ export class ShortLinksApi extends HttpApiGroup.make("shortLinks")
   .add(
     HttpApiEndpoint.put("setDefault", "/settings", {
       error: [Forbidden],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       payload: ShortLinkSettingsSchema,
       success: ShortLinkStatusSchema,
     }).annotateMerge(
@@ -148,7 +151,8 @@ export class ShortLinksApi extends HttpApiGroup.make("shortLinks")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest, InvalidDateRange],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       query: {
         channelId: Schema.optionalKey(Schema.String),
         cursor: Schema.optionalKey(Schema.String),
@@ -172,7 +176,8 @@ export class ShortLinksApi extends HttpApiGroup.make("shortLinks")
   .add(
     HttpApiEndpoint.get("get", "/:linkId", {
       error: [Forbidden, InvalidDateRange, ShortLinkNotFound],
-      params: { linkId: Schema.String, workspaceId: Schema.String },
+      headers: workspaceHeaders,
+      params: { linkId: Schema.String },
       query: {
         from: Schema.optionalKey(CalendarDaySchema),
         to: Schema.optionalKey(CalendarDaySchema),
@@ -187,4 +192,4 @@ export class ShortLinksApi extends HttpApiGroup.make("shortLinks")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/short-links") {}
+  .prefix("/api/v1/short-links") {}

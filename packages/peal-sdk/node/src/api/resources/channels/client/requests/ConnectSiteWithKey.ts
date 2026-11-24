@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         apiKey: "apiKey",
  *         platform: "devto"
  *     }
  */
 export interface ConnectSiteWithKey {
-    workspaceId: string;
     apiKey: string;
     platform: Peal.KeySitePlatform;
     publication?: string;

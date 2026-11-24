@@ -10,17 +10,15 @@ import (
 )
 
 var (
-	bestTimesAnalyticsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	bestTimesAnalyticsRequestFieldChannelID   = big.NewInt(1 << 1)
-	bestTimesAnalyticsRequestFieldDays        = big.NewInt(1 << 2)
-	bestTimesAnalyticsRequestFieldTimeZone    = big.NewInt(1 << 3)
+	bestTimesAnalyticsRequestFieldChannelID = big.NewInt(1 << 0)
+	bestTimesAnalyticsRequestFieldDays      = big.NewInt(1 << 1)
+	bestTimesAnalyticsRequestFieldTimeZone  = big.NewInt(1 << 2)
 )
 
 type BestTimesAnalyticsRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	ChannelID   string  `json:"-" url:"channelId"`
-	Days        *string `json:"-" url:"days,omitempty"`
-	TimeZone    string  `json:"-" url:"timeZone"`
+	ChannelID string  `json:"-" url:"channelId"`
+	Days      *string `json:"-" url:"days,omitempty"`
+	TimeZone  string  `json:"-" url:"timeZone"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -33,13 +31,6 @@ func (b *BestTimesAnalyticsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	b.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (b *BestTimesAnalyticsRequest) SetWorkspaceID(workspaceID string) {
-	b.WorkspaceID = workspaceID
-	b.require(bestTimesAnalyticsRequestFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -64,21 +55,19 @@ func (b *BestTimesAnalyticsRequest) SetTimeZone(timeZone string) {
 }
 
 var (
-	channelAnalyticsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	channelAnalyticsRequestFieldChannelID   = big.NewInt(1 << 1)
-	channelAnalyticsRequestFieldDays        = big.NewInt(1 << 2)
-	channelAnalyticsRequestFieldFrom        = big.NewInt(1 << 3)
-	channelAnalyticsRequestFieldTimeZone    = big.NewInt(1 << 4)
-	channelAnalyticsRequestFieldTo          = big.NewInt(1 << 5)
+	channelAnalyticsRequestFieldChannelID = big.NewInt(1 << 0)
+	channelAnalyticsRequestFieldDays      = big.NewInt(1 << 1)
+	channelAnalyticsRequestFieldFrom      = big.NewInt(1 << 2)
+	channelAnalyticsRequestFieldTimeZone  = big.NewInt(1 << 3)
+	channelAnalyticsRequestFieldTo        = big.NewInt(1 << 4)
 )
 
 type ChannelAnalyticsRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	ChannelID   string       `json:"-" url:"-"`
-	Days        *string      `json:"-" url:"days,omitempty"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	TimeZone    string       `json:"-" url:"timeZone"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
+	ChannelID string       `json:"-" url:"-"`
+	Days      *string      `json:"-" url:"days,omitempty"`
+	From      *CalendarDay `json:"-" url:"from,omitempty"`
+	TimeZone  string       `json:"-" url:"timeZone"`
+	To        *CalendarDay `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -91,13 +80,6 @@ func (c *ChannelAnalyticsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ChannelAnalyticsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(channelAnalyticsRequestFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -136,21 +118,19 @@ func (c *ChannelAnalyticsRequest) SetTo(to *CalendarDay) {
 }
 
 var (
-	dashboardAnalyticsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	dashboardAnalyticsRequestFieldDays        = big.NewInt(1 << 1)
-	dashboardAnalyticsRequestFieldFrom        = big.NewInt(1 << 2)
-	dashboardAnalyticsRequestFieldTimeZone    = big.NewInt(1 << 3)
-	dashboardAnalyticsRequestFieldTo          = big.NewInt(1 << 4)
-	dashboardAnalyticsRequestFieldTopPosts    = big.NewInt(1 << 5)
+	dashboardAnalyticsRequestFieldDays     = big.NewInt(1 << 0)
+	dashboardAnalyticsRequestFieldFrom     = big.NewInt(1 << 1)
+	dashboardAnalyticsRequestFieldTimeZone = big.NewInt(1 << 2)
+	dashboardAnalyticsRequestFieldTo       = big.NewInt(1 << 3)
+	dashboardAnalyticsRequestFieldTopPosts = big.NewInt(1 << 4)
 )
 
 type DashboardAnalyticsRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	Days        *string      `json:"-" url:"days,omitempty"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	TimeZone    string       `json:"-" url:"timeZone"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
-	TopPosts    *string      `json:"-" url:"topPosts,omitempty"`
+	Days     *string      `json:"-" url:"days,omitempty"`
+	From     *CalendarDay `json:"-" url:"from,omitempty"`
+	TimeZone string       `json:"-" url:"timeZone"`
+	To       *CalendarDay `json:"-" url:"to,omitempty"`
+	TopPosts *string      `json:"-" url:"topPosts,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -163,13 +143,6 @@ func (d *DashboardAnalyticsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	d.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DashboardAnalyticsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(dashboardAnalyticsRequestFieldWorkspaceID)
 }
 
 // SetDays sets the Days field and marks it as non-optional;
@@ -208,23 +181,21 @@ func (d *DashboardAnalyticsRequest) SetTopPosts(topPosts *string) {
 }
 
 var (
-	exportAnalyticsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	exportAnalyticsRequestFieldDays        = big.NewInt(1 << 1)
-	exportAnalyticsRequestFieldFrom        = big.NewInt(1 << 2)
-	exportAnalyticsRequestFieldTimeZone    = big.NewInt(1 << 3)
-	exportAnalyticsRequestFieldTo          = big.NewInt(1 << 4)
-	exportAnalyticsRequestFieldFormat      = big.NewInt(1 << 5)
-	exportAnalyticsRequestFieldKind        = big.NewInt(1 << 6)
+	exportAnalyticsRequestFieldDays     = big.NewInt(1 << 0)
+	exportAnalyticsRequestFieldFrom     = big.NewInt(1 << 1)
+	exportAnalyticsRequestFieldTimeZone = big.NewInt(1 << 2)
+	exportAnalyticsRequestFieldTo       = big.NewInt(1 << 3)
+	exportAnalyticsRequestFieldFormat   = big.NewInt(1 << 4)
+	exportAnalyticsRequestFieldKind     = big.NewInt(1 << 5)
 )
 
 type ExportAnalyticsRequest struct {
-	WorkspaceID string                 `json:"-" url:"-"`
-	Days        *string                `json:"-" url:"days,omitempty"`
-	From        *CalendarDay           `json:"-" url:"from,omitempty"`
-	TimeZone    string                 `json:"-" url:"timeZone"`
-	To          *CalendarDay           `json:"-" url:"to,omitempty"`
-	Format      *AnalyticsExportFormat `json:"-" url:"format,omitempty"`
-	Kind        AnalyticsExportKind    `json:"-" url:"kind"`
+	Days     *string                `json:"-" url:"days,omitempty"`
+	From     *CalendarDay           `json:"-" url:"from,omitempty"`
+	TimeZone string                 `json:"-" url:"timeZone"`
+	To       *CalendarDay           `json:"-" url:"to,omitempty"`
+	Format   *AnalyticsExportFormat `json:"-" url:"format,omitempty"`
+	Kind     AnalyticsExportKind    `json:"-" url:"kind"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -237,13 +208,6 @@ func (e *ExportAnalyticsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	e.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *ExportAnalyticsRequest) SetWorkspaceID(workspaceID string) {
-	e.WorkspaceID = workspaceID
-	e.require(exportAnalyticsRequestFieldWorkspaceID)
 }
 
 // SetDays sets the Days field and marks it as non-optional;
@@ -289,13 +253,11 @@ func (e *ExportAnalyticsRequest) SetKind(kind AnalyticsExportKind) {
 }
 
 var (
-	postAnalyticsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	postAnalyticsRequestFieldPostID      = big.NewInt(1 << 1)
+	postAnalyticsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type PostAnalyticsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -310,13 +272,6 @@ func (p *PostAnalyticsRequest) require(field *big.Int) {
 	p.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostAnalyticsRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(postAnalyticsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (p *PostAnalyticsRequest) SetPostID(postID string) {
@@ -325,17 +280,15 @@ func (p *PostAnalyticsRequest) SetPostID(postID string) {
 }
 
 var (
-	summaryAnalyticsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	summaryAnalyticsRequestFieldFrom        = big.NewInt(1 << 1)
-	summaryAnalyticsRequestFieldTimeZone    = big.NewInt(1 << 2)
-	summaryAnalyticsRequestFieldTo          = big.NewInt(1 << 3)
+	summaryAnalyticsRequestFieldFrom     = big.NewInt(1 << 0)
+	summaryAnalyticsRequestFieldTimeZone = big.NewInt(1 << 1)
+	summaryAnalyticsRequestFieldTo       = big.NewInt(1 << 2)
 )
 
 type SummaryAnalyticsRequest struct {
-	WorkspaceID string      `json:"-" url:"-"`
-	From        CalendarDay `json:"-" url:"from"`
-	TimeZone    string      `json:"-" url:"timeZone"`
-	To          CalendarDay `json:"-" url:"to"`
+	From     CalendarDay `json:"-" url:"from"`
+	TimeZone string      `json:"-" url:"timeZone"`
+	To       CalendarDay `json:"-" url:"to"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -348,13 +301,6 @@ func (s *SummaryAnalyticsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SummaryAnalyticsRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(summaryAnalyticsRequestFieldWorkspaceID)
 }
 
 // SetFrom sets the From field and marks it as non-optional;

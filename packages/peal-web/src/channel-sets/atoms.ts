@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -14,7 +15,7 @@ export const channelSetsChanged = (workspaceId: string) => [
 
 export const workspaceChannelSets = Atom.family((workspaceId: string) =>
   PealApi.query("channelSets", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: [...channelSetsChanged(workspaceId), "channels"],
   })
 );

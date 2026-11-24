@@ -54,7 +54,7 @@ public class ModerateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/comments/commentId/moderation")
+                    .WithPath("/api/v1/inbox/comments/commentId/moderation")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -69,7 +69,6 @@ public class ModerateTest : BaseMockServerTest
         var response = await Client.Inbox.ModerateAsync(
             new ModerateInboxRequest
             {
-                WorkspaceId = "workspaceId",
                 CommentId = "commentId",
                 Action = InboxModerationAction.Hide,
             }
@@ -122,7 +121,7 @@ public class ModerateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/comments/commentId/moderation")
+                    .WithPath("/api/v1/inbox/comments/commentId/moderation")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -137,7 +136,6 @@ public class ModerateTest : BaseMockServerTest
         var response = await Client.Inbox.ModerateAsync(
             new ModerateInboxRequest
             {
-                WorkspaceId = "workspaceId",
                 CommentId = "commentId",
                 Action = InboxModerationAction.Hide,
             }

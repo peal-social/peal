@@ -4,8 +4,6 @@ module Peal
   module Articles
     module Types
       class NewArticle < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :body, -> { Peal::Types::ArticleBody }, optional: false, nullable: false
 
         field :categories, -> { Internal::Types::Array[String] }, optional: true, nullable: false

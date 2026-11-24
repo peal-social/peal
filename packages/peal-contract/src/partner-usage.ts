@@ -17,7 +17,7 @@ import {
 /**
  * What a partner account used, per customer, for its backend, with a
  * partner key: the same report its home workspace's people read at
- * `GET /api/workspaces/{workspaceId}/usage/partner`.
+ * `GET /api/v1/usage/partner`.
  */
 export class PartnerUsageApi extends HttpApiGroup.make("partnerUsage")
   .add(
@@ -33,4 +33,4 @@ export class PartnerUsageApi extends HttpApiGroup.make("partnerUsage")
     )
   )
   .middleware(Authentication)
-  .prefix("/api/partner/usage") {}
+  .prefix("/api/v1/partner/usage") {}

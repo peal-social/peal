@@ -52,7 +52,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId")
+                    .WithPath("/api/v1/webhooks/endpointId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -67,7 +67,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Webhooks.UpdateAsync(
             new WebhookEndpointChange
             {
-                WorkspaceId = "workspaceId",
                 EndpointId = "endpointId",
                 ChannelIds = null,
                 Description = null,
@@ -120,7 +119,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId")
+                    .WithPath("/api/v1/webhooks/endpointId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -133,7 +132,7 @@ public class UpdateTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.UpdateAsync(
-            new WebhookEndpointChange { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+            new WebhookEndpointChange { EndpointId = "endpointId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -93,7 +93,7 @@ class PartnerUsageClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/partner/usage",
+                    path: "api/v1/partner/usage",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

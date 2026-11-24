@@ -1,6 +1,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import { syntheticKeyring } from "#test/channels/support.ts";
 
@@ -118,31 +119,32 @@ const AuditSchema = Schema.Struct({
 const CountSchema = Schema.Array(Schema.Struct({ rows: Schema.Number }));
 
 // What a credential may reach: each workspace endpoint a key calls, read
-// with every kind of credential, in every kind of workspace.
-const reads = (workspaceId: string) => [
-  `/api/workspaces/${workspaceId}/channels`,
-  `/api/workspaces/${workspaceId}/channels/platforms`,
-  `/api/workspaces/${workspaceId}/posts?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z`,
-  `/api/workspaces/${workspaceId}/posts/drafts`,
-  `/api/workspaces/${workspaceId}/media`,
-  `/api/workspaces/${workspaceId}/webhooks`,
-  `/api/workspaces/${workspaceId}/billing`,
-  `/api/workspaces/${workspaceId}/usage`,
-  `/api/workspaces/${workspaceId}/assistant`,
-  `/api/workspaces/${workspaceId}/analytics/summary?from=2026-11-01&to=2026-11-07&timeZone=Europe/Paris`,
-  `/api/workspaces/${workspaceId}/posts/search`,
-  `/api/workspaces/${workspaceId}/platforms/capabilities`,
-  `/api/workspaces/${workspaceId}/approvals`,
-  `/api/workspaces/${workspaceId}/review/settings`,
-  `/api/workspaces/${workspaceId}/connect-links`,
-  `/api/workspaces/${workspaceId}/queues`,
-  `/api/workspaces/${workspaceId}/recycling`,
-  `/api/workspaces/${workspaceId}/feeds`,
+// with every kind of credential, in every kind of workspace the
+// `Peal-Workspace` header names.
+const reads = [
+  "/api/v1/channels",
+  "/api/v1/channels/platforms",
+  "/api/v1/posts?from=2026-11-01T00:00:00Z&to=2026-11-30T00:00:00Z",
+  "/api/v1/posts/drafts",
+  "/api/v1/media",
+  "/api/v1/webhooks",
+  "/api/v1/billing",
+  "/api/v1/usage",
+  "/api/v1/assistant",
+  "/api/v1/analytics/summary?from=2026-11-01&to=2026-11-07&timeZone=Europe/Paris",
+  "/api/v1/posts/search",
+  "/api/v1/platforms/capabilities",
+  "/api/v1/approvals",
+  "/api/v1/review/settings",
+  "/api/v1/connect-links",
+  "/api/v1/queues",
+  "/api/v1/recycling",
+  "/api/v1/feeds",
   // The numbers and their exports, and the comments under its posts.
-  `/api/workspaces/${workspaceId}/analytics/dashboard?days=7&timeZone=Europe/Paris`,
-  `/api/workspaces/${workspaceId}/analytics/export?kind=posts&days=7&timeZone=Europe/Paris`,
-  `/api/workspaces/${workspaceId}/analytics/export?kind=accounts&format=json&days=7&timeZone=Europe/Paris`,
-  `/api/workspaces/${workspaceId}/inbox/threads`,
+  "/api/v1/analytics/dashboard?days=7&timeZone=Europe/Paris",
+  "/api/v1/analytics/export?kind=posts&days=7&timeZone=Europe/Paris",
+  "/api/v1/analytics/export?kind=accounts&format=json&days=7&timeZone=Europe/Paris",
+  "/api/v1/inbox/threads",
 ];
 
 const SelfServiceLive = Layer.mergeAll(
@@ -167,8 +169,8 @@ layer(StaffOnlyLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const owner = yield* signedUpUnconfirmed("closed");
         const home = yield* workspaceOf(owner, "Closed");
 
-        const standing = yield* app.request(`/api/workspaces/${home}/partner`, {
-          headers: { cookie: owner.cookies },
+        const standing = yield* app.request(`/api/v1/partner-account`, {
+          headers: { cookie: owner.cookies, ...forWorkspace(home) },
         });
 
         assert.deepStrictEqual(yield* bodyOf(StandingSchema, standing), {
@@ -177,9 +179,9 @@ layer(StaffOnlyLive, { excludeTestServices: true, timeout: "180 seconds" })(
           usage: null,
         });
 
-        const opened = yield* app.request(`/api/workspaces/${home}/partner`, {
+        const opened = yield* app.request(`/api/v1/partner-account`, {
           body: { name: "Closed Suite" },
-          headers: { cookie: owner.cookies },
+          headers: { cookie: owner.cookies, ...forWorkspace(home) },
         });
 
         assert.strictEqual(opened.status, 403);
@@ -254,14 +256,11 @@ layer(StaffOnlyLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The owner names it and creates its keys; the key's workspaces
           // show, to staff, whose they are.
-          const renamed = yield* app.request(
-            `/api/workspaces/${home}/partner`,
-            {
-              body: { name: "Granted Suite" },
-              headers: { cookie: owner.cookies },
-              method: "PATCH",
-            }
-          );
+          const renamed = yield* app.request(`/api/v1/partner-account`, {
+            body: { name: "Granted Suite" },
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
+            method: "PATCH",
+          });
 
           assert.strictEqual(renamed.status, 200);
 
@@ -308,9 +307,9 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(partner.workspaceId, home);
 
           // Opening again answers the same account.
-          const again = yield* app.request(`/api/workspaces/${home}/partner`, {
+          const again = yield* app.request(`/api/v1/partner-account`, {
             body: { name: "Another name" },
-            headers: { cookie: owner.cookies },
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
           });
 
           assert.strictEqual(
@@ -318,22 +317,19 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             partner.id
           );
 
-          const changed = yield* app.request(
-            `/api/workspaces/${home}/partner`,
-            {
-              body: {
-                accentColor: "#166534",
-                logoUrl: "https://cdn.example.test/logo.png",
-                returnOrigins: [
-                  "https://app.example.test",
-                  "http://localhost:4000",
-                  "https://app.example.test/",
-                ],
-              },
-              headers: { cookie: owner.cookies },
-              method: "PATCH",
-            }
-          );
+          const changed = yield* app.request(`/api/v1/partner-account`, {
+            body: {
+              accentColor: "#166534",
+              logoUrl: "https://cdn.example.test/logo.png",
+              returnOrigins: [
+                "https://app.example.test",
+                "http://localhost:4000",
+                "https://app.example.test/",
+              ],
+            },
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
+            method: "PATCH",
+          });
 
           assert.strictEqual(changed.status, 200);
 
@@ -363,10 +359,11 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             { accentColor: "#415EEEFF" },
             { accentColor: "rgb(65, 94, 238)" },
           ]) {
-            const refused = yield* app.request(
-              `/api/workspaces/${home}/partner`,
-              { body, headers: { cookie: owner.cookies }, method: "PATCH" }
-            );
+            const refused = yield* app.request(`/api/v1/partner-account`, {
+              body,
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
+              method: "PATCH",
+            });
 
             assert.strictEqual(refused.status, 422, JSON.stringify(body));
           }
@@ -378,19 +375,16 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "partner:manage",
           ]);
 
-          const read = yield* app.request(`/api/workspaces/${home}/partner`, {
-            headers: bearer(key),
+          const read = yield* app.request(`/api/v1/partner-account`, {
+            headers: { ...bearer(key), ...forWorkspace(home) },
           });
 
           assert.strictEqual(read.status, 200);
 
-          const minted = yield* app.request(
-            `/api/workspaces/${home}/partner/keys`,
-            {
-              body: { name: "minted", permissions: [], scopes: everyScope },
-              headers: bearer(key),
-            }
-          );
+          const minted = yield* app.request(`/api/v1/partner-account/keys`, {
+            body: { name: "minted", permissions: [], scopes: everyScope },
+            headers: { ...bearer(key), ...forWorkspace(home) },
+          });
 
           assert.strictEqual(minted.status, 403);
         })
@@ -425,13 +419,10 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "organization:delete",
             "partner:manage",
           ]) {
-            const refused = yield* app.request(
-              `/api/workspaces/${home}/partner/keys`,
-              {
-                body: { name: "wide", permissions: [permission], scopes: [] },
-                headers: { cookie: owner.cookies },
-              }
-            );
+            const refused = yield* app.request(`/api/v1/partner-account/keys`, {
+              body: { name: "wide", permissions: [permission], scopes: [] },
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
+            });
 
             assert.strictEqual(refused.status, 422, permission);
           }
@@ -447,28 +438,30 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [{ rows: 0 }]
           );
 
-          const listed = yield* app.request(
-            `/api/workspaces/${home}/partner/keys`,
-            { headers: { cookie: owner.cookies } }
-          );
+          const listed = yield* app.request(`/api/v1/partner-account/keys`, {
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
+          });
 
           assert.notInclude(JSON.stringify(listed.body), created.key);
 
           // Revoked, it stops working at once.
-          const before = yield* app.request("/api/partner", {
+          const before = yield* app.request("/api/v1/partner", {
             headers: bearer(created.key),
           });
 
           assert.strictEqual(before.status, 200);
 
           const revoked = yield* app.request(
-            `/api/workspaces/${home}/partner/keys/${created.partnerKey.id}`,
-            { headers: { cookie: owner.cookies }, method: "DELETE" }
+            `/api/v1/partner-account/keys/${created.partnerKey.id}`,
+            {
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
+              method: "DELETE",
+            }
           );
 
           assert.strictEqual(revoked.status, 204);
 
-          const after = yield* app.request("/api/partner", {
+          const after = yield* app.request("/api/v1/partner", {
             headers: bearer(created.key),
           });
 
@@ -493,7 +486,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             ["Free money https://evil.example", 422],
             ["a".repeat(121), 400],
           ] as const) {
-            const refused = yield* app.request("/api/partner/workspaces", {
+            const refused = yield* app.request("/api/v1/partner/workspaces", {
               body: { name },
               headers: bearer(key),
             });
@@ -505,7 +498,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(first.channels, 0);
 
           // The same external id again: the workspace that has it.
-          const duplicate = yield* app.request("/api/partner/workspaces", {
+          const duplicate = yield* app.request("/api/v1/partner/workspaces", {
             body: { externalId: "cus_001", name: "Boulangerie Martin" },
             headers: bearer(key),
           });
@@ -522,8 +515,12 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             headers: { ...bearer(key), "idempotency-key": "signup-cus_002" },
           };
 
-          const made = yield* app.request("/api/partner/workspaces", keyed);
-          const replayed = yield* app.request("/api/partner/workspaces", keyed);
+          const made = yield* app.request("/api/v1/partner/workspaces", keyed);
+
+          const replayed = yield* app.request(
+            "/api/v1/partner/workspaces",
+            keyed
+          );
 
           assert.strictEqual(made.status, 201);
           assert.strictEqual(replayed.status, 201);
@@ -533,7 +530,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           // The key with another request is refused, and makes nothing.
-          const reused = yield* app.request("/api/partner/workspaces", {
+          const reused = yield* app.request("/api/v1/partner/workspaces", {
             body: { externalId: "cus_003", name: "Another" },
             headers: keyed.headers,
           });
@@ -552,8 +549,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const [left, right] = yield* Effect.all(
             [
-              app.request("/api/partner/workspaces", together),
-              app.request("/api/partner/workspaces", together),
+              app.request("/api/v1/partner/workspaces", together),
+              app.request("/api/v1/partner/workspaces", together),
             ],
             { concurrency: 2 }
           );
@@ -563,7 +560,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             (yield* bodyOf(WorkspaceSchema, right)).id
           );
 
-          const listed = yield* app.request("/api/partner/workspaces", {
+          const listed = yield* app.request("/api/v1/partner/workspaces", {
             headers: bearer(key),
           });
 
@@ -578,7 +575,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Looked up by the partner's own id, and by name.
           const found = yield* app.request(
-            "/api/partner/workspaces?externalId=cus_002",
+            "/api/v1/partner/workspaces?externalId=cus_002",
             { headers: bearer(key) }
           );
 
@@ -590,7 +587,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const named = yield* app.request(
-            "/api/partner/workspaces?name=boulang",
+            "/api/v1/partner/workspaces?name=boulang",
             { headers: bearer(key) }
           );
 
@@ -599,7 +596,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Page by page, newest first, each workspace once.
           const one = yield* bodyOf(
             PageSchema,
-            yield* app.request("/api/partner/workspaces?limit=2", {
+            yield* app.request("/api/v1/partner/workspaces?limit=2", {
               headers: bearer(key),
             })
           );
@@ -610,7 +607,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const two = yield* bodyOf(
             PageSchema,
             yield* app.request(
-              `/api/partner/workspaces?limit=2&before=${one.next ?? ""}`,
+              `/api/v1/partner/workspaces?limit=2&before=${one.next ?? ""}`,
               { headers: bearer(key) }
             )
           );
@@ -632,7 +629,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             "5b0c6e64-5d0f-4a7e-9a52-3f1c2d4e5f60",
           ]) {
             const refused = yield* app.request(
-              `/api/partner/workspaces?limit=2&before=${before}`,
+              `/api/v1/partner/workspaces?limit=2&before=${before}`,
               { headers: bearer(key) }
             );
 
@@ -646,7 +643,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Changed: its name, and an external id no other workspace has.
           const taken = yield* app.request(
-            `/api/partner/workspaces/${first.id}`,
+            `/api/v1/partner/workspaces/${first.id}`,
             {
               body: { externalId: "cus_002" },
               headers: bearer(key),
@@ -657,7 +654,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(taken.status, 409);
 
           const renamed = yield* app.request(
-            `/api/partner/workspaces/${first.id}`,
+            `/api/v1/partner/workspaces/${first.id}`,
             {
               body: { externalId: null, name: "Boulangerie Martin & fils" },
               headers: bearer(key),
@@ -677,7 +674,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const overview = yield* bodyOf(
             OverviewSchema,
-            yield* app.request("/api/partner", { headers: bearer(key) })
+            yield* app.request("/api/v1/partner", { headers: bearer(key) })
           );
 
           assert.deepStrictEqual(overview.usage, {
@@ -687,7 +684,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const one_ = yield* bodyOf(
             WorkspaceSchema,
-            yield* app.request(`/api/partner/workspaces/${first.id}`, {
+            yield* app.request(`/api/v1/partner/workspaces/${first.id}`, {
               headers: bearer(key),
             })
           );
@@ -696,8 +693,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The home workspace's people read the same list.
           const forPeople = yield* app.request(
-            `/api/workspaces/${home}/partner/workspaces`,
-            { headers: { cookie: owner.cookies } }
+            `/api/v1/partner-account/workspaces`,
+            { headers: { cookie: owner.cookies, ...forWorkspace(home) } }
           );
 
           assert.strictEqual((yield* bodyOf(PageSchema, forPeople)).total, 3);
@@ -724,24 +721,25 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             workspaceId: string,
             headers: Readonly<Record<string, string>>
           ) =>
-            Effect.forEach(reads(workspaceId), (path) =>
+            Effect.forEach(reads.values(), (path) =>
               app
-                .request(path, { headers })
+                .request(path, {
+                  headers: { ...headers, ...forWorkspace(workspaceId) },
+                })
                 .pipe(Effect.map(({ status }) => status))
             );
 
           // Its partner's workspace: everything a key was given.
           assert.deepStrictEqual(
             yield* statusesOf(ofAlpha.id, bearer(alphaKey)),
-            reads(ofAlpha.id).map(() => 200)
+            reads.map(() => 200)
           );
 
           // Its channels count against its partner's plan, which its usage
           // says.
-          const usage = yield* app.request(
-            `/api/workspaces/${ofAlpha.id}/usage`,
-            { headers: bearer(alphaKey) }
-          );
+          const usage = yield* app.request(`/api/v1/usage`, {
+            headers: { ...bearer(alphaKey), ...forWorkspace(ofAlpha.id) },
+          });
 
           assert.deepStrictEqual(
             (yield* bodyOf(SharingSchema, usage)).sharedWith,
@@ -750,7 +748,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Its usage per customer lists its own workspaces, never another
           // partner's; a workspace that is no partner's home has none.
-          const perCustomer = yield* app.request("/api/partner/usage", {
+          const perCustomer = yield* app.request("/api/v1/partner/usage", {
             headers: bearer(alphaKey),
           });
 
@@ -762,10 +760,9 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [alpha.home, ofAlpha.id]
           );
 
-          const noHome = yield* app.request(
-            `/api/workspaces/${ordinary}/usage/partner`,
-            { headers: { cookie: stranger.cookies } }
-          );
+          const noHome = yield* app.request(`/api/v1/usage/partner`, {
+            headers: { cookie: stranger.cookies, ...forWorkspace(ordinary) },
+          });
 
           assert.strictEqual(noHome.status, 404);
           assert.deepInclude(noHome.body, { _tag: "PartnerNotFound" });
@@ -780,7 +777,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           ]) {
             assert.deepStrictEqual(
               yield* statusesOf(workspaceId, bearer(alphaKey)),
-              reads(workspaceId).map(() => 404),
+              reads.map(() => 404),
               workspaceId
             );
           }
@@ -793,8 +790,11 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [ordinary, "WorkspaceNotFound"],
           ] as const) {
             const reply = yield* app.request(
-              `/api/workspaces/${workspaceId}/queues/0190f3a0-0000-7000-8000-00000000c0de/reshuffle`,
-              { headers: bearer(alphaKey), method: "POST" }
+              `/api/v1/queues/0190f3a0-0000-7000-8000-00000000c0de/reshuffle`,
+              {
+                headers: { ...bearer(alphaKey), ...forWorkspace(workspaceId) },
+                method: "POST",
+              }
             );
 
             assert.strictEqual(reply.status, 404, workspaceId);
@@ -809,10 +809,10 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [ordinary, "WorkspaceNotFound"],
           ] as const) {
             const reply = yield* app.request(
-              `/api/workspaces/${workspaceId}/posts/0190f3a0-0000-7000-8000-00000000c0de/targets/0190f3a0-0000-7000-8000-00000000c0df/edit`,
+              `/api/v1/posts/0190f3a0-0000-7000-8000-00000000c0de/targets/0190f3a0-0000-7000-8000-00000000c0df/edit`,
               {
                 body: { text: "Corrected" },
-                headers: bearer(alphaKey),
+                headers: { ...bearer(alphaKey), ...forWorkspace(workspaceId) },
                 method: "POST",
               }
             );
@@ -834,14 +834,11 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
               ["transfer/acceptance", "POST"],
               ["transfer", "DELETE"],
             ] as const) {
-              const reply = yield* app.request(
-                `/api/workspaces/${workspaceId}/billing/${path}`,
-                {
-                  body: { toUserId: alpha.owner.id },
-                  headers: bearer(alphaKey),
-                  method,
-                }
-              );
+              const reply = yield* app.request(`/api/v1/billing/${path}`, {
+                body: { toUserId: alpha.owner.id },
+                headers: { ...bearer(alphaKey), ...forWorkspace(workspaceId) },
+                method,
+              });
 
               assert.strictEqual(
                 reply.status,
@@ -858,7 +855,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             { method: "DELETE" },
           ]) {
             const reply = yield* app.request(
-              `/api/partner/workspaces/${ofBeta.id}`,
+              `/api/v1/partner/workspaces/${ofBeta.id}`,
               { ...init, headers: bearer(alphaKey) }
             );
 
@@ -866,7 +863,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           }
 
           const stillThere = yield* app.request(
-            `/api/partner/workspaces/${ofBeta.id}`,
+            `/api/v1/partner/workspaces/${ofBeta.id}`,
             { headers: bearer(betaKey) }
           );
 
@@ -888,11 +885,11 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             { cookie: stranger.cookies },
           ]) {
             for (const path of [
-              "/api/partner",
-              "/api/partner/workspaces",
-              `/api/partner/workspaces/${ofAlpha.id}`,
-              "/api/partner/usage",
-              "/api/partner/overview",
+              "/api/v1/partner",
+              "/api/v1/partner/workspaces",
+              `/api/v1/partner/workspaces/${ofAlpha.id}`,
+              "/api/v1/partner/usage",
+              "/api/v1/partner/overview",
             ]) {
               const reply = yield* app.request(path, { headers });
 
@@ -904,11 +901,11 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // partner's workspaces: they are not members of them.
           assert.deepStrictEqual(
             yield* statusesOf(ofAlpha.id, bearer(homeKey)),
-            reads(ofAlpha.id).map(() => 403)
+            reads.map(() => 403)
           );
           assert.deepStrictEqual(
             yield* statusesOf(ofAlpha.id, { cookie: alpha.owner.cookies }),
-            reads(ofAlpha.id).map(() => 404)
+            reads.map(() => 404)
           );
 
           // No credential at all, or a key nobody issued.
@@ -916,7 +913,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             {},
             bearer("peal_partner_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
           ]) {
-            const reply = yield* app.request("/api/partner", { headers });
+            const reply = yield* app.request("/api/v1/partner", { headers });
 
             assert.strictEqual(reply.status, 401);
           }
@@ -924,15 +921,15 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // What belongs to people stays theirs: a partner key reads no
           // member, no invitation, no API key, and is nobody on /api/me.
           for (const path of [
-            `/api/workspaces/${ofAlpha.id}/members`,
-            `/api/workspaces/${ofAlpha.id}/invitations`,
-            `/api/workspaces/${ofAlpha.id}/api-keys`,
-            `/api/workspaces/${ofAlpha.id}/partner`,
-            `/api/workspaces/${ofAlpha.id}/usage/partner`,
+            "/api/v1/members",
+            "/api/v1/invitations",
+            "/api/v1/api-keys",
+            "/api/v1/partner-account",
+            "/api/v1/usage/partner",
             "/api/me",
           ]) {
             const reply = yield* app.request(path, {
-              headers: bearer(alphaKey),
+              headers: { ...bearer(alphaKey), ...forWorkspace(ofAlpha.id) },
             });
 
             assert.strictEqual(reply.status, 403, path);
@@ -940,16 +937,16 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Unlike /api/me, it may ask who it is: its partner, never its
           // partner's workspaces.
-          const credential = yield* app.request("/api/credential", {
+          const credential = yield* app.request("/api/v1/credential", {
             headers: bearer(alphaKey),
           });
 
           assert.strictEqual(credential.status, 200);
           assert.notInclude(JSON.stringify(credential.body), ofAlpha.id);
 
-          const deleted = yield* app.request(`/api/workspaces/${ofAlpha.id}`, {
+          const deleted = yield* app.request(`/api/v1/workspace`, {
             body: { name: "Alpha customer" },
-            headers: bearer(alphaKey),
+            headers: { ...bearer(alphaKey), ...forWorkspace(ofAlpha.id) },
             method: "DELETE",
           });
 
@@ -975,12 +972,12 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
             const [made, closed] = yield* Effect.all(
               [
-                app.request("/api/partner/workspaces", {
+                app.request("/api/v1/partner/workspaces", {
                   body: { name: "Sent together" },
                   headers: bearer(key),
                 }),
-                app.request(`/api/workspaces/${home}/partner`, {
-                  headers: { cookie: owner.cookies },
+                app.request(`/api/v1/partner-account`, {
+                  headers: { cookie: owner.cookies, ...forWorkspace(home) },
                   method: "DELETE",
                 }),
               ],
@@ -1010,7 +1007,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           scopes: ["workspaces:read"],
         })).key;
 
-        const created = yield* app.request("/api/partner/workspaces", {
+        const created = yield* app.request("/api/v1/partner/workspaces", {
           body: { name: "Not allowed" },
           headers: bearer(reading),
         });
@@ -1018,23 +1015,21 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
         assert.strictEqual(created.status, 403);
 
         const removed = yield* app.request(
-          `/api/partner/workspaces/${customer.id}`,
+          `/api/v1/partner/workspaces/${customer.id}`,
           { headers: bearer(reading), method: "DELETE" }
         );
 
         assert.strictEqual(removed.status, 403);
 
-        const channels = yield* app.request(
-          `/api/workspaces/${customer.id}/channels`,
-          { headers: bearer(reading) }
-        );
+        const channels = yield* app.request(`/api/v1/channels`, {
+          headers: { ...bearer(reading), ...forWorkspace(customer.id) },
+        });
 
         assert.strictEqual(channels.status, 200);
 
-        const media = yield* app.request(
-          `/api/workspaces/${customer.id}/media`,
-          { headers: bearer(reading) }
-        );
+        const media = yield* app.request(`/api/v1/media`, {
+          headers: { ...bearer(reading), ...forWorkspace(customer.id) },
+        });
 
         assert.strictEqual(media.status, 403);
 
@@ -1044,16 +1039,16 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
         const answer = (key: string) =>
           app
-            .request(
-              `/api/workspaces/${customer.id}/inbox/comments/${unknown}/replies`,
-              { body: { text: "Thank you." }, headers: bearer(key) }
-            )
+            .request(`/api/v1/inbox/comments/${unknown}/replies`, {
+              body: { text: "Thank you." },
+              headers: { ...bearer(key), ...forWorkspace(customer.id) },
+            })
             .pipe(Effect.map(({ status }) => status));
 
         const threads = (key: string) =>
           app
-            .request(`/api/workspaces/${customer.id}/inbox/threads`, {
-              headers: bearer(key),
+            .request(`/api/v1/inbox/threads`, {
+              headers: { ...bearer(key), ...forWorkspace(customer.id) },
             })
             .pipe(Effect.map(({ status }) => status));
 
@@ -1079,8 +1074,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
         );
 
         const numbers = yield* app.request(
-          `/api/workspaces/${customer.id}/analytics/export?kind=posts&days=7&timeZone=Europe/Paris`,
-          { headers: bearer(answering) }
+          `/api/v1/analytics/export?kind=posts&days=7&timeZone=Europe/Paris`,
+          { headers: { ...bearer(answering), ...forWorkspace(customer.id) } }
         );
 
         assert.strictEqual(numbers.status, 403);
@@ -1091,7 +1086,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           scopes: [],
         })).key;
 
-        const listed = yield* app.request("/api/partner/workspaces", {
+        const listed = yield* app.request("/api/v1/partner/workspaces", {
           headers: bearer(blind),
         });
 
@@ -1100,7 +1095,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
         // Its partner's usage per customer, by the same scope.
         const usage = yield* Effect.forEach([reading, blind], (key) =>
           app
-            .request("/api/partner/usage", { headers: bearer(key) })
+            .request("/api/v1/partner/usage", { headers: bearer(key) })
             .pipe(Effect.map(({ status }) => status))
         );
 
@@ -1126,9 +1121,9 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           yield* seedPost(customer.id, channelId, "Synthetic draft");
 
           // The home workspace, and the account, stay while it owns one.
-          const homeDeletion = yield* app.request(`/api/workspaces/${home}`, {
+          const homeDeletion = yield* app.request(`/api/v1/workspace`, {
             body: { name: "offboards" },
-            headers: { cookie: owner.cookies },
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
             method: "DELETE",
           });
 
@@ -1139,13 +1134,10 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             owned: 1,
           });
 
-          const closing = yield* app.request(
-            `/api/workspaces/${home}/partner`,
-            {
-              headers: { cookie: owner.cookies },
-              method: "DELETE",
-            }
-          );
+          const closing = yield* app.request(`/api/v1/partner-account`, {
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
+            method: "DELETE",
+          });
 
           assert.strictEqual(closing.status, 409);
 
@@ -1155,7 +1147,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const first = yield* bodyOf(
             PageSchema,
-            yield* app.request("/api/partner/workspaces?limit=1", {
+            yield* app.request("/api/v1/partner/workspaces?limit=1", {
               headers: bearer(key),
             })
           );
@@ -1165,7 +1157,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             [later.id]
           );
 
-          yield* app.request(`/api/partner/workspaces/${later.id}`, {
+          yield* app.request(`/api/v1/partner/workspaces/${later.id}`, {
             headers: bearer(key),
             method: "DELETE",
           });
@@ -1173,7 +1165,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const rest = yield* bodyOf(
             PageSchema,
             yield* app.request(
-              `/api/partner/workspaces?limit=1&before=${first.next ?? ""}`,
+              `/api/v1/partner/workspaces?limit=1&before=${first.next ?? ""}`,
               { headers: bearer(key) }
             )
           );
@@ -1184,7 +1176,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const offboarded = yield* app.request(
-            `/api/partner/workspaces/${customer.id}`,
+            `/api/v1/partner/workspaces/${customer.id}`,
             { headers: bearer(key), method: "DELETE" }
           );
 
@@ -1203,12 +1195,12 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // Gone for its key too, and offboarding again finds nothing.
           for (const [path, method] of [
-            [`/api/workspaces/${customer.id}/channels`, "GET"],
-            [`/api/partner/workspaces/${customer.id}`, "GET"],
-            [`/api/partner/workspaces/${customer.id}`, "DELETE"],
+            ["/api/v1/channels", "GET"],
+            [`/api/v1/partner/workspaces/${customer.id}`, "GET"],
+            [`/api/v1/partner/workspaces/${customer.id}`, "DELETE"],
           ] as const) {
             const reply = yield* app.request(path, {
-              headers: bearer(key),
+              headers: { ...bearer(key), ...forWorkspace(customer.id) },
               method,
             });
 
@@ -1218,20 +1210,20 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Its external id is free again.
           const again = yield* customerOf(key, "Returning customer", "cus_9");
 
-          yield* app.request(`/api/partner/workspaces/${again.id}`, {
+          yield* app.request(`/api/v1/partner/workspaces/${again.id}`, {
             headers: bearer(key),
             method: "DELETE",
           });
 
           // Owning none, the account closes, and its keys with it.
-          const closed = yield* app.request(`/api/workspaces/${home}/partner`, {
-            headers: { cookie: owner.cookies },
+          const closed = yield* app.request(`/api/v1/partner-account`, {
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
             method: "DELETE",
           });
 
           assert.strictEqual(closed.status, 204);
 
-          const after = yield* app.request("/api/partner", {
+          const after = yield* app.request("/api/v1/partner", {
             headers: bearer(key),
           });
 
@@ -1247,15 +1239,16 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const { home, owner } = yield* partnerOf("links");
           const { key } = yield* keyOf(owner, home);
           const customer = yield* customerOf(key, "Linked customer", "cus_l1");
-          const base = `/api/workspaces/${customer.id}/connect-links`;
+          const base = "/api/v1/connect-links";
+          const inCustomer = forWorkspace(customer.id);
 
-          yield* app.request(`/api/workspaces/${home}/partner`, {
+          yield* app.request(`/api/v1/partner-account`, {
             body: {
               accentColor: "#415eee",
               logoUrl: "https://cdn.example.test/logo.png",
               returnOrigins: ["https://app.example.test"],
             },
-            headers: { cookie: owner.cookies },
+            headers: { cookie: owner.cookies, ...forWorkspace(home) },
             method: "PATCH",
           });
 
@@ -1267,7 +1260,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           ]) {
             const refused = yield* app.request(base, {
               body: { platform: "mastodon", returnUrl },
-              headers: bearer(key),
+              headers: { ...bearer(key), ...inCustomer },
             });
 
             assert.strictEqual(refused.status, 422, returnUrl);
@@ -1291,7 +1284,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           ]) {
             const refused = yield* app.request(base, {
               body,
-              headers: bearer(key),
+              headers: { ...bearer(key), ...inCustomer },
             });
 
             assert.strictEqual(refused.status, 400, JSON.stringify(body));
@@ -1303,7 +1296,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
               platforms: ["mastodon"],
               returnUrl: "https://app.example.test/social",
             },
-            headers: bearer(key),
+            headers: { ...bearer(key), ...inCustomer },
           });
 
           assert.strictEqual(created.status, 201);
@@ -1370,7 +1363,9 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const read = yield* bodyOf(
             LinkSchema,
-            yield* app.request(`${base}/${link.id}`, { headers: bearer(key) })
+            yield* app.request(`${base}/${link.id}`, {
+              headers: { ...bearer(key), ...inCustomer },
+            })
           );
 
           assert.deepStrictEqual(read, {
@@ -1398,14 +1393,16 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const otherKey = (yield* keyOf(other.owner, other.home)).key;
 
           for (const headers of [bearer(otherKey), {}]) {
-            const reply = yield* app.request(`${base}/${link.id}`, { headers });
+            const reply = yield* app.request(`${base}/${link.id}`, {
+              headers: { ...headers, ...inCustomer },
+            });
 
             assert.include([401, 404], reply.status);
           }
 
           // Taken back, it opens as revoked, and starts nothing.
           const revoked = yield* app.request(`${base}/${link.id}`, {
-            headers: bearer(key),
+            headers: { ...bearer(key), ...inCustomer },
             method: "DELETE",
           });
 
@@ -1432,7 +1429,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           // Offboarded, the workspace's links open nothing at all.
-          yield* app.request(`/api/partner/workspaces/${customer.id}`, {
+          yield* app.request(`/api/v1/partner/workspaces/${customer.id}`, {
             headers: bearer(key),
             method: "DELETE",
           });
@@ -1451,21 +1448,21 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const member = yield* signedUpUnconfirmed("ordinary");
           const workspaceId = yield* workspaceOf(member, "Ordinary links");
-          const base = `/api/workspaces/${workspaceId}/connect-links`;
+          const base = "/api/v1/connect-links";
 
           const refused = yield* app.request(base, {
             body: {
               platform: "mastodon",
               returnUrl: "https://app.example.test/social",
             },
-            headers: { cookie: member.cookies },
+            headers: { cookie: member.cookies, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(refused.status, 422);
 
           const created = yield* app.request(base, {
             body: { expiresInHours: 1, platform: "mastodon" },
-            headers: { cookie: member.cookies },
+            headers: { cookie: member.cookies, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(created.status, 201);
@@ -1499,9 +1496,9 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const { home, owner, partner } = yield* partnerOf("goes");
         const { key } = yield* keyOf(owner, home);
 
-        const deleted = yield* app.request(`/api/workspaces/${home}`, {
+        const deleted = yield* app.request(`/api/v1/workspace`, {
           body: { name: "goes" },
-          headers: { cookie: owner.cookies },
+          headers: { cookie: owner.cookies, ...forWorkspace(home) },
           method: "DELETE",
         });
 
@@ -1516,7 +1513,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           [{ rows: 0 }]
         );
 
-        const after = yield* app.request("/api/partner", {
+        const after = yield* app.request("/api/v1/partner", {
           headers: bearer(key),
         });
 
@@ -1562,8 +1559,8 @@ layer(KeepsKeysLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const dayOf = (workspaceId: string) =>
             app
-              .request(`/api/workspaces/${workspaceId}/assistant`, {
-                headers: bearer(key),
+              .request(`/api/v1/assistant`, {
+                headers: { ...bearer(key), ...forWorkspace(workspaceId) },
               })
               .pipe(
                 Effect.flatMap((reply) => bodyOf(AssistantDaySchema, reply))
@@ -1585,29 +1582,23 @@ layer(KeepsKeysLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // The partner key holds assistant:configure: it sets the first
           // customer's provider, and the second has none.
-          const set = yield* app.request(
-            `/api/workspaces/${first.id}/assistant/image-provider`,
-            {
-              body: {
-                apiKey: "synthetic-workspace-image-key",
-                baseUrl: "https://1.1.1.1/v1",
-                model: "synthetic-image-model",
-              },
-              headers: bearer(key),
-              method: "PUT",
-            }
-          );
+          const set = yield* app.request(`/api/v1/assistant/image-provider`, {
+            body: {
+              apiKey: "synthetic-workspace-image-key",
+              baseUrl: "https://1.1.1.1/v1",
+              model: "synthetic-image-model",
+            },
+            headers: { ...bearer(key), ...forWorkspace(first.id) },
+            method: "PUT",
+          });
 
           assert.strictEqual(set.status, 200);
 
           const providerOf = (workspaceId: string) =>
             app
-              .request(
-                `/api/workspaces/${workspaceId}/assistant/image-provider`,
-                {
-                  headers: bearer(key),
-                }
-              )
+              .request(`/api/v1/assistant/image-provider`, {
+                headers: { ...bearer(key), ...forWorkspace(workspaceId) },
+              })
               .pipe(
                 Effect.flatMap((reply) => bodyOf(ProviderSettingSchema, reply))
               );
@@ -1628,8 +1619,8 @@ layer(KeepsKeysLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // The partner's home workspace is not the key's: it reads as one
           // that does not exist, and keeps no provider.
           const homeProvider = yield* app.request(
-            `/api/workspaces/${home}/assistant/image-provider`,
-            { headers: bearer(key) }
+            `/api/v1/assistant/image-provider`,
+            { headers: { ...bearer(key), ...forWorkspace(home) } }
           );
 
           assert.strictEqual(homeProvider.status, 404);
@@ -1640,10 +1631,10 @@ layer(KeepsKeysLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(kept?.count, 0);
 
-          yield* app.request(
-            `/api/workspaces/${first.id}/assistant/image-provider`,
-            { headers: bearer(key), method: "DELETE" }
-          );
+          yield* app.request(`/api/v1/assistant/image-provider`, {
+            headers: { ...bearer(key), ...forWorkspace(first.id) },
+            method: "DELETE",
+          });
           yield* sql`DELETE FROM assistant.daily_usage WHERE workspace_id IN (${first.id}, ${second.id})`;
         })
     );

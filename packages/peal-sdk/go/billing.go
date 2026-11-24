@@ -10,60 +10,6 @@ import (
 )
 
 var (
-	getBillingRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type GetBillingRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (g *GetBillingRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if g.explicitFields != nil {
-		next.Set(g.explicitFields)
-	}
-	next.Or(next, field)
-	g.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetBillingRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getBillingRequestFieldWorkspaceID)
-}
-
-var (
-	standingBillingRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type StandingBillingRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (s *StandingBillingRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if s.explicitFields != nil {
-		next.Set(s.explicitFields)
-	}
-	next.Or(next, field)
-	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *StandingBillingRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(standingBillingRequestFieldWorkspaceID)
-}
-
-var (
 	accountBandFieldMonthly = big.NewInt(1 << 0)
 	accountBandFieldUpTo    = big.NewInt(1 << 1)
 )

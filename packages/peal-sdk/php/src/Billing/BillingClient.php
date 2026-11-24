@@ -55,12 +55,9 @@ class BillingClient
      *
      * Example:
      * ```php
-     * $client->billing->get(
-     *     'workspaceId',
-     * );
+     * $client->billing->get();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -73,14 +70,14 @@ class BillingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, ?array $options = null): ?Billing
+    public function get(?array $options = null): ?Billing
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/billing",
+                    path: "api/v1/billing",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -110,12 +107,9 @@ class BillingClient
      *
      * Example:
      * ```php
-     * $client->billing->standing(
-     *     'workspaceId',
-     * );
+     * $client->billing->standing();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -128,14 +122,14 @@ class BillingClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function standing(string $workspaceId, ?array $options = null): ?Standing
+    public function standing(?array $options = null): ?Standing
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/billing/standing",
+                    path: "api/v1/billing/standing",
                     method: HttpMethod::GET,
                 ),
                 $options,

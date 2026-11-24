@@ -88,19 +88,15 @@ func TestChannelSetsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListChannelSetsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.ChannelSets.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestChannelSetsListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelSetsListWithWireMock", "GET", "/api/workspaces/workspaceId/channel-sets", nil, 1)
+	VerifyRequestCount(t, "TestChannelSetsListWithWireMock", "GET", "/api/v1/channel-sets", nil, 1)
 }
 
 func TestChannelSetsCreateWithWireMock(
@@ -114,14 +110,11 @@ func TestChannelSetsCreateWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.CreateChannelSetsRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.ChannelSetDetails{
-			ChannelIDs: []string{
-				"channelIds",
-			},
-			Name: "name",
+	request := &peal.ChannelSetDetails{
+		ChannelIDs: []string{
+			"channelIds",
 		},
+		Name: "name",
 	}
 	_, invocationErr := client.ChannelSets.Create(
 		context.TODO(),
@@ -132,7 +125,7 @@ func TestChannelSetsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelSetsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/channel-sets", nil, 1)
+	VerifyRequestCount(t, "TestChannelSetsCreateWithWireMock", "POST", "/api/v1/channel-sets", nil, 1)
 }
 
 func TestChannelSetsUpdateWithWireMock(
@@ -147,7 +140,6 @@ func TestChannelSetsUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UpdateChannelSetsRequest{
-		WorkspaceID:  "workspaceId",
 		ChannelSetID: "channelSetId",
 		Body: &peal.ChannelSetDetails{
 			ChannelIDs: []string{
@@ -165,7 +157,7 @@ func TestChannelSetsUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelSetsUpdateWithWireMock", "PUT", "/api/workspaces/workspaceId/channel-sets/channelSetId", nil, 1)
+	VerifyRequestCount(t, "TestChannelSetsUpdateWithWireMock", "PUT", "/api/v1/channel-sets/channelSetId", nil, 1)
 }
 
 func TestChannelSetsDeleteWithWireMock(
@@ -180,7 +172,6 @@ func TestChannelSetsDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteChannelSetsRequest{
-		WorkspaceID:  "workspaceId",
 		ChannelSetID: "channelSetId",
 	}
 	invocationErr := client.ChannelSets.Delete(
@@ -192,5 +183,5 @@ func TestChannelSetsDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestChannelSetsDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/channel-sets/channelSetId", nil, 1)
+	VerifyRequestCount(t, "TestChannelSetsDeleteWithWireMock", "DELETE", "/api/v1/channel-sets/channelSetId", nil, 1)
 }

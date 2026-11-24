@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         byDefault: true
  *     }
  */
 export interface ShortLinkSettings {
-    workspaceId: string;
     byDefault: boolean;
 }

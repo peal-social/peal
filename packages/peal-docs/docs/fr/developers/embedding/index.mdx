@@ -72,7 +72,7 @@ Réglez-le ensuite dans l’application web, sous **Paramètres**, puis **Parten
 
 ### Couleur d’accent [#accent]
 
-La couleur d’accent tient en six chiffres hexadécimaux, comme `#415EEE`. Vous pouvez aussi la régler avec `accentColor` dans `PATCH /api/workspaces/{workspaceId}/partner`, et la retirer avec `null`.
+La couleur d’accent tient en six chiffres hexadécimaux, comme `#415EEE`. Vous pouvez aussi la régler avec `accentColor` dans `PATCH /api/v1/partner-account`, et la retirer avec `null`.
 
 Les pages de Peal sont claires, et la ligne doit se voir. La couleur demande donc un contraste d’au moins 3:1 avec le blanc et avec le fond de la page (`#FAFAF9`), le seuil que fixent les WCAG pour une telle ligne. Une couleur plus claire, ou autre chose que `#RRGGBB`, reçoit 422 `PartnerDetailsInvalid` avec `field` `accentColor`, et rien n’est enregistré.
 
@@ -82,7 +82,7 @@ Les boutons et le texte gardent les couleurs de Peal, et restent lisibles quelle
 
 Une clé partenaire commence par `peal_partner_`, et s’envoie en `Authorization: Bearer peal_partner_…`. Seul un propriétaire ou un administrateur connecté peut en créer une, dans l’application web. Aucune clé ni aucune application ne crée de clés.
 
-Vous pouvez révoquer une clé au même endroit, ou avec `DELETE /api/workspaces/{workspaceId}/partner/keys/{partnerKeyId}`. Elle cesse de fonctionner aussitôt.
+Vous pouvez révoquer une clé au même endroit, ou avec `DELETE /api/v1/partner-account/keys/{partnerKeyId}`. Elle cesse de fonctionner aussitôt.
 
 La liste montre qui a créé chaque clé (`createdBy`). Une clé suit son créateur : elle cesse de fonctionner dès qu’il quitte votre espace de travail principal, en est retiré ou ferme son compte, et dès que son rôle y est un rôle qui ne gère pas le compte partenaire (tout rôle en dessous d’administrateur). Avant un retrait ou un tel changement de rôle, l’application web dit combien de ses clés cessent de fonctionner. Pour que votre backend continue de tourner quand quelqu’un part, utilisez une clé créée par un propriétaire qui reste.
 
@@ -98,7 +98,7 @@ Dans chaque espace de travail que possède le compte, la clé détient les [perm
 
 - `channel:*`, `media:*`, `post:*`, `analytics:read`, `assistant:use`, `webhook:*` et `billing:read`.
 - `engagement:read` et `engagement:reply`, pour les [commentaires](/guides/engage/inbox) sous les publications d’un client et pour y répondre en public au nom de son compte. Ces commentaires ont été écrits par d’autres personnes : ne les donnez à une clé que si votre produit les montre ou y répond.
-- `assistant:configure`, pour régler le [fournisseur d’images](/guides/workspace#providers) de chaque client avec `PUT /api/workspaces/{workspaceId}/assistant/image-provider`, un espace de travail à la fois, avec la clé du client.
+- `assistant:configure`, pour régler le [fournisseur d’images](/guides/workspace#providers) de chaque client avec `PUT /api/v1/assistant/image-provider`, un espace de travail à la fois, avec la clé du client.
 - `activity:read`, qui lit le [journal d’activité](/guides/workspace#activity) de l’espace de travail : ce que votre clé a demandé d’y changer, et les comptes connectés par des liens de connexion.
 
 Une clé partenaire n’obtient jamais les permissions des [messages privés](/guides/engage/inbox#direct-messages) (`engagement:readMessages`, `engagement:message`). Seul un propriétaire d’un espace de travail, en personne, peut y donner accès à une application, et l’espace de travail d’un client n’a pas de propriétaire.
@@ -107,7 +107,7 @@ Elle ne détient jamais non plus ce qui revient aux personnes : les membres, le
 
 ### Ce qu’atteint une clé partenaire [#isolation]
 
-Voici ce qu’obtient une clé partenaire, selon l’endroit qu’elle appelle :
+Une clé partenaire n’appartient à aucun espace de travail : chaque requête qu’elle envoie dans l’un d’eux le nomme, avec l’identifiant de l’espace de travail dans l’en-tête `Peal-Workspace`. Sans lui, l’API répond 400 `workspace_required` ([L’espace de travail d’une requête](/developers/conventions#workspace)). Voici ce qu’obtient une clé partenaire, selon l’espace de travail qu’elle nomme :
 
 | Avec une clé partenaire                                                    | Réponse                           |
 | -------------------------------------------------------------------------- | --------------------------------- |
@@ -116,7 +116,7 @@ Voici ce qu’obtient une clé partenaire, selon l’endroit qu’elle appelle 
 | Tout autre espace de travail, votre espace principal compris               | 404                               |
 | `/api/me`, les membres, invitations et clés d’API de n’importe quel espace | 403                               |
 
-Dans l’autre sens aussi. Une clé d’API d’un espace de travail, la session d’un membre ou un jeton OAuth n’appelle jamais `/api/partner`, et reçoit 403 s’il essaie.
+Dans l’autre sens aussi. Une clé d’API d’un espace de travail, la session d’un membre ou un jeton OAuth n’appelle jamais `/api/v1/partner`, et reçoit 403 s’il essaie.
 
 La [validation en deux étapes](/guides/workspace#require-two-step) concerne les personnes. Elle ne touche ni les clés partenaires, ni les espaces de travail de vos clients, qui n’ont aucun membre. Les propriétaires de votre espace de travail principal peuvent toujours l’exiger de ses membres, comme dans tout espace de travail.
 
@@ -139,7 +139,13 @@ const workspace = await peal.partner.createWorkspace({
   externalId: "cus_42",
   "idempotency-key": "signup-cus_42",
 });
-// Tous les autres appels prennent workspace.id comme workspaceId.
+
+// Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+const customer = new PealClient({
+  token: process.env.PEAL_PARTNER_KEY,
+  baseUrl: "https://api.example.com",
+  workspace: workspace.id,
+});
 ```
 
 ```python Python
@@ -154,7 +160,13 @@ workspace = peal.partner.create_workspace(
     external_id="cus_42",
     idempotency_key="signup-cus_42",
 )
-# Tous les autres appels prennent workspace.id comme workspace_id.
+
+# Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+customer = Peal(
+    token=os.environ["PEAL_PARTNER_KEY"],
+    base_url="https://api.example.com",
+    workspace=workspace.id,
+)
 ```
 
 ```go Go
@@ -178,7 +190,13 @@ workspace, err := client.Partner.CreateWorkspace(ctx, &peal.NewCustomerWorkspace
 	ExternalID:     peal.String("cus_42"),
 	IdempotencyKey: peal.String("signup-cus_42"),
 })
-// Tous les autres appels prennent workspace.ID comme WorkspaceID.
+
+// Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+customer := pealclient.NewClient(
+	option.WithToken(os.Getenv("PEAL_PARTNER_KEY")),
+	option.WithBaseURL("https://api.example.com"),
+	option.WithWorkspace(peal.String(workspace.ID)),
+)
 ```
 
 ```ruby Ruby
@@ -191,7 +209,13 @@ workspace = peal.partner.create_workspace(
   external_id: "cus_42",
   idempotency_key: "signup-cus_42"
 )
-# Tous les autres appels prennent workspace.id comme workspace_id.
+
+# Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+customer = Peal::Client.new(
+  token: ENV.fetch("PEAL_PARTNER_KEY"),
+  base_url: "https://api.example.com",
+  workspace: workspace.id
+)
 ```
 
 ```java Java
@@ -210,7 +234,13 @@ CustomerWorkspace workspace = peal.partner().createWorkspace(
         .externalId("cus_42")
         .idempotencyKey("signup-cus_42")
         .build());
-// Tous les autres appels prennent workspace.getId() comme workspaceId.
+
+// Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+PealClient customer = PealClient.builder()
+    .token(System.getenv("PEAL_PARTNER_KEY"))
+    .url("https://api.example.com")
+    .workspace(workspace.getId())
+    .build();
 ```
 
 ```php PHP
@@ -228,7 +258,13 @@ $workspace = $peal->partner->createWorkspace(new NewCustomerWorkspace([
     'externalId' => 'cus_42',
     'idempotencyKey' => 'signup-cus_42',
 ]));
-// Tous les autres appels prennent $workspace->id comme workspaceId.
+
+// Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+$customer = new PealClient(
+    token: getenv('PEAL_PARTNER_KEY'),
+    workspace: $workspace->id,
+    options: ['baseUrl' => 'https://api.example.com'],
+);
 ```
 
 ```csharp .NET
@@ -236,7 +272,7 @@ using Peal;
 
 var peal = new PealClient(
     Environment.GetEnvironmentVariable("PEAL_PARTNER_KEY")!,
-    new ClientOptions { BaseUrl = "https://api.example.com" }
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
 );
 
 var workspace = await peal.Partner.CreateWorkspaceAsync(new NewCustomerWorkspace
@@ -245,7 +281,13 @@ var workspace = await peal.Partner.CreateWorkspaceAsync(new NewCustomerWorkspace
     ExternalId = "cus_42",
     IdempotencyKey = "signup-cus_42",
 });
-// Tous les autres appels prennent workspace.Id comme WorkspaceId.
+
+// Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+var customer = new PealClient(
+    Environment.GetEnvironmentVariable("PEAL_PARTNER_KEY")!,
+    workspace: workspace.Id,
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
+);
 ```
 
 ```rust Rust
@@ -268,11 +310,18 @@ let workspace = peal
         Some(RequestOptions::new().additional_header("Idempotency-Key", "signup-cus_42")),
     )
     .await?;
-// Tous les autres appels prennent workspace.id comme workspace_id.
+
+// Un client qui agit dans le nouvel espace de travail : les appels qui s’y font passent par lui.
+let customer = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_PARTNER_KEY").ok(),
+    base_url: "https://api.example.com".to_string(),
+    custom_headers: HashMap::from([("Peal-Workspace".to_string(), workspace.id.clone())]),
+    ..Default::default()
+})?;
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/partner/workspaces \
+curl -X POST https://api.example.com/api/v1/partner/workspaces \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: signup-cus_42" \
@@ -296,14 +345,14 @@ Une inscription peut expirer, et votre code réessaiera. Deux choses empêchent 
 
 L’API partenaire a ces requêtes :
 
-| Requête                                        | Ce qu’elle fait                                                                                                                                                              |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/partner`                             | Le compte partenaire, et ce qu’il détient : espaces de travail et canaux, maintenant et à la fin de chacun des 35 derniers jours                                             |
-| `GET /api/partner/workspaces`                  | Vos espaces de travail, du plus récent au plus ancien, chacun avec son nombre de canaux : `externalId` en trouve un exactement, `name` cherche, `limit` et `before` paginent |
-| `POST /api/partner/workspaces`                 | En crée un                                                                                                                                                                   |
-| `GET /api/partner/workspaces/{workspaceId}`    | En lit un                                                                                                                                                                    |
-| `PATCH /api/partner/workspaces/{workspaceId}`  | Change son nom ou son identifiant externe (`null` le retire)                                                                                                                 |
-| `DELETE /api/partner/workspaces/{workspaceId}` | Le supprime, avec tout ce qu’il contient ([Retirer un client](/developers/embedding/operate#offboard))                                                                       |
+| Requête                                           | Ce qu’elle fait                                                                                                                                                              |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/partner`                             | Le compte partenaire, et ce qu’il détient : espaces de travail et canaux, maintenant et à la fin de chacun des 35 derniers jours                                             |
+| `GET /api/v1/partner/workspaces`                  | Vos espaces de travail, du plus récent au plus ancien, chacun avec son nombre de canaux : `externalId` en trouve un exactement, `name` cherche, `limit` et `before` paginent |
+| `POST /api/v1/partner/workspaces`                 | En crée un                                                                                                                                                                   |
+| `GET /api/v1/partner/workspaces/{workspaceId}`    | En lit un                                                                                                                                                                    |
+| `PATCH /api/v1/partner/workspaces/{workspaceId}`  | Change son nom ou son identifiant externe (`null` le retire)                                                                                                                 |
+| `DELETE /api/v1/partner/workspaces/{workspaceId}` | Le supprime, avec tout ce qu’il contient ([Retirer un client](/developers/embedding/operate#offboard))                                                                       |
 
 Pour retrouver l’espace de travail d’un client par votre propre identifiant :
 
@@ -368,7 +417,7 @@ let page = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/partner/workspaces?externalId=cus_42" \
+curl "https://api.example.com/api/v1/partner/workspaces?externalId=cus_42" \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY"
 ```
 
@@ -395,8 +444,7 @@ Il ne saisit jamais de mot de passe dans votre produit. Peal ne voit jamais son 
 <CodeGroup>
 
 ```ts Node.js
-const { link, url } = await peal.connectLinks.create({
-  workspaceId: workspace.id,
+const { link, url } = await customer.connectLinks.create({
   platform: "linkedin",
   returnUrl: "https://app.example.com/settings/social",
   expiresInHours: 24,
@@ -406,8 +454,7 @@ const { link, url } = await peal.connectLinks.create({
 ```
 
 ```python Python
-created = peal.connect_links.create(
-    workspace.id,
+created = customer.connect_links.create(
     platform="linkedin",
     return_url="https://app.example.com/settings/social",
     expires_in_hours=24,
@@ -417,8 +464,7 @@ created = peal.connect_links.create(
 ```
 
 ```go Go
-created, err := client.ConnectLinks.Create(ctx, &peal.NewConnectLink{
-	WorkspaceID:    workspace.ID,
+created, err := customer.ConnectLinks.Create(ctx, &peal.NewConnectLink{
 	Platform:       peal.PlatformLinkedin.Ptr(),
 	ReturnURL:      peal.String("https://app.example.com/settings/social"),
 	ExpiresInHours: peal.Int(24),
@@ -428,8 +474,7 @@ created, err := client.ConnectLinks.Create(ctx, &peal.NewConnectLink{
 ```
 
 ```ruby Ruby
-created = peal.connect_links.create(
-  workspace_id: workspace.id,
+created = customer.connect_links.create(
   platform: "linkedin",
   return_url: "https://app.example.com/settings/social",
   expires_in_hours: 24,
@@ -444,8 +489,7 @@ import social.peal.types.ConnectLinkLocale;
 import social.peal.types.CreatedConnectLink;
 import social.peal.types.Platform;
 
-CreatedConnectLink created = peal.connectLinks().create(
-    workspace.getId(),
+CreatedConnectLink created = customer.connectLinks().create(
     NewConnectLink.builder()
         .platform(Platform.LINKEDIN)
         .returnUrl("https://app.example.com/settings/social")
@@ -458,7 +502,7 @@ CreatedConnectLink created = peal.connectLinks().create(
 ```php PHP
 use Peal\ConnectLinks\Requests\NewConnectLink;
 
-$created = $peal->connectLinks->create($workspace->id, new NewConnectLink([
+$created = $customer->connectLinks->create(new NewConnectLink([
     'platform' => 'linkedin',
     'returnUrl' => 'https://app.example.com/settings/social',
     'expiresInHours' => 24,
@@ -468,9 +512,8 @@ $created = $peal->connectLinks->create($workspace->id, new NewConnectLink([
 ```
 
 ```csharp .NET
-var created = await peal.ConnectLinks.CreateAsync(new NewConnectLink
+var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
 {
-    WorkspaceId = workspace.Id,
     Platform = Platform.Linkedin,
     ReturnUrl = "https://app.example.com/settings/social",
     ExpiresInHours = 24,
@@ -480,10 +523,9 @@ var created = await peal.ConnectLinks.CreateAsync(new NewConnectLink
 ```
 
 ```rust Rust
-let created = peal
+let created = customer
     .connect_links
     .create(
-        &workspace.id,
         &NewConnectLink {
             platform: Some(Platform::Linkedin),
             return_url: Some("https://app.example.com/settings/social".to_string()),
@@ -498,8 +540,9 @@ let created = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/connect-links \
+curl -X POST https://api.example.com/api/v1/connect-links \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
   -d '{"platform": "linkedin", "returnUrl": "https://app.example.com/settings/social", "expiresInHours": 24, "locale": "fr"}'
 ```
@@ -527,32 +570,28 @@ Avec `platforms`, votre client peut connecter un compte sur chacune depuis une s
 <CodeGroup>
 
 ```ts Node.js
-const { link, url } = await peal.connectLinks.create({
-  workspaceId: workspace.id,
+const { link, url } = await customer.connectLinks.create({
   platforms: ["instagram", "linkedin", "mastodon"],
   returnUrl: "https://app.example.com/settings/social",
 });
 ```
 
 ```python Python
-created = peal.connect_links.create(
-    workspace.id,
+created = customer.connect_links.create(
     platforms=["instagram", "linkedin", "mastodon"],
     return_url="https://app.example.com/settings/social",
 )
 ```
 
 ```go Go
-created, err := client.ConnectLinks.Create(ctx, &peal.NewConnectLink{
-	WorkspaceID: workspace.ID,
-	Platforms:   []peal.Platform{peal.PlatformInstagram, peal.PlatformLinkedin, peal.PlatformMastodon},
-	ReturnURL:   peal.String("https://app.example.com/settings/social"),
+created, err := customer.ConnectLinks.Create(ctx, &peal.NewConnectLink{
+	Platforms: []peal.Platform{peal.PlatformInstagram, peal.PlatformLinkedin, peal.PlatformMastodon},
+	ReturnURL: peal.String("https://app.example.com/settings/social"),
 })
 ```
 
 ```ruby Ruby
-created = peal.connect_links.create(
-  workspace_id: workspace.id,
+created = customer.connect_links.create(
   platforms: %w[instagram linkedin mastodon],
   return_url: "https://app.example.com/settings/social"
 )
@@ -561,8 +600,7 @@ created = peal.connect_links.create(
 ```java Java
 import java.util.List;
 
-CreatedConnectLink created = peal.connectLinks().create(
-    workspace.getId(),
+CreatedConnectLink created = customer.connectLinks().create(
     NewConnectLink.builder()
         .platforms(List.of(Platform.INSTAGRAM, Platform.LINKEDIN, Platform.MASTODON))
         .returnUrl("https://app.example.com/settings/social")
@@ -570,26 +608,24 @@ CreatedConnectLink created = peal.connectLinks().create(
 ```
 
 ```php PHP
-$created = $peal->connectLinks->create($workspace->id, new NewConnectLink([
+$created = $customer->connectLinks->create(new NewConnectLink([
     'platforms' => ['instagram', 'linkedin', 'mastodon'],
     'returnUrl' => 'https://app.example.com/settings/social',
 ]));
 ```
 
 ```csharp .NET
-var created = await peal.ConnectLinks.CreateAsync(new NewConnectLink
+var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
 {
-    WorkspaceId = workspace.Id,
     Platforms = new[] { Platform.Instagram, Platform.Linkedin, Platform.Mastodon },
     ReturnUrl = "https://app.example.com/settings/social",
 });
 ```
 
 ```rust Rust
-let created = peal
+let created = customer
     .connect_links
     .create(
-        &workspace.id,
         &NewConnectLink {
             platforms: Some(vec![Platform::Instagram, Platform::Linkedin, Platform::Mastodon]),
             return_url: Some("https://app.example.com/settings/social".to_string()),
@@ -601,8 +637,9 @@ let created = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/connect-links \
+curl -X POST https://api.example.com/api/v1/connect-links \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
   -d '{"platforms": ["instagram", "linkedin", "mastodon"], "returnUrl": "https://app.example.com/settings/social"}'
 ```
@@ -665,7 +702,7 @@ Lisez le lien avec votre clé pour savoir ce qui s’est vraiment passé :
 <CodeGroup>
 
 ```ts Node.js
-const link = await peal.connectLinks.get({ workspaceId, linkId });
+const link = await customer.connectLinks.get({ linkId });
 
 if (link.status === "completed") {
   // link.channelIds contient les canaux qu’il a connectés.
@@ -673,7 +710,7 @@ if (link.status === "completed") {
 ```
 
 ```python Python
-link = peal.connect_links.get(workspace_id, link_id)
+link = customer.connect_links.get(link_id)
 
 if link.status == "completed":
     # link.channel_ids contient les canaux qu’il a connectés.
@@ -681,9 +718,8 @@ if link.status == "completed":
 ```
 
 ```go Go
-link, err := client.ConnectLinks.Get(ctx, &peal.GetConnectLinksRequest{
-	WorkspaceID: workspaceID,
-	LinkID:      linkID,
+link, err := customer.ConnectLinks.Get(ctx, &peal.GetConnectLinksRequest{
+	LinkID: linkID,
 })
 
 if link.Status == peal.ConnectLinkStatusCompleted {
@@ -692,7 +728,7 @@ if link.Status == peal.ConnectLinkStatusCompleted {
 ```
 
 ```ruby Ruby
-link = peal.connect_links.get(workspace_id: workspace_id, link_id: link_id)
+link = customer.connect_links.get(link_id: link_id)
 
 if link.status == "completed"
   # link.channel_ids contient les canaux qu’il a connectés.
@@ -703,7 +739,7 @@ end
 import social.peal.types.ConnectLink;
 import social.peal.types.ConnectLinkStatus;
 
-ConnectLink link = peal.connectLinks().get(workspaceId, linkId);
+ConnectLink link = customer.connectLinks().get(linkId);
 
 if (link.getStatus().equals(ConnectLinkStatus.COMPLETED)) {
     // link.getChannelIds() contient les canaux qu’il a connectés.
@@ -711,7 +747,7 @@ if (link.getStatus().equals(ConnectLinkStatus.COMPLETED)) {
 ```
 
 ```php PHP
-$link = $peal->connectLinks->get($workspaceId, $linkId);
+$link = $customer->connectLinks->get($linkId);
 
 if ($link->status === 'completed') {
     // $link->channelIds contient les canaux qu’il a connectés.
@@ -719,9 +755,8 @@ if ($link->status === 'completed') {
 ```
 
 ```csharp .NET
-var link = await peal.ConnectLinks.GetAsync(new GetConnectLinksRequest
+var link = await customer.ConnectLinks.GetAsync(new GetConnectLinksRequest
 {
-    WorkspaceId = workspaceId,
     LinkId = linkId,
 });
 
@@ -732,7 +767,7 @@ if (link.Status == ConnectLinkStatus.Completed)
 ```
 
 ```rust Rust
-let link = peal.connect_links.get(&workspace_id, &link_id, None).await?;
+let link = customer.connect_links.get(&link_id, None).await?;
 
 if link.status == ConnectLinkStatus::Completed {
     // link.channel_ids contient les canaux qu’il a connectés.
@@ -740,8 +775,9 @@ if link.status == ConnectLinkStatus::Completed {
 ```
 
 ```bash curl
-curl https://api.example.com/api/workspaces/$WORKSPACE_ID/connect-links/$LINK_ID \
-  -H "Authorization: Bearer $PEAL_PARTNER_KEY"
+curl https://api.example.com/api/v1/connect-links/$LINK_ID \
+  -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: $WORKSPACE_ID"
 ```
 
 </CodeGroup>
@@ -757,7 +793,7 @@ Le `status` d’un lien est l’un de ceux-ci :
 
 Ne vous fiez pas au seul navigateur, car votre client peut fermer l’onglet avant de revenir. Abonnez-vous aussi à [`channel.connected`](/developers/webhooks/events/channels#channel-connected). Peal l’envoie quand le compte est connecté, avec le `workspaceExternalId` de l’espace de travail.
 
-Pour révoquer un lien, envoyez `DELETE /api/workspaces/{workspaceId}/connect-links/{linkId}`. `GET …/connect-links` liste les liens d’un espace de travail : ceux qui attendent, et ceux terminés depuis moins de 30 jours.
+Pour révoquer un lien, envoyez `DELETE /api/v1/connect-links/{linkId}`. `GET …/connect-links` liste les liens d’un espace de travail : ceux qui attendent, et ceux terminés depuis moins de 30 jours.
 
 ### Reconnecter [#reconnect]
 

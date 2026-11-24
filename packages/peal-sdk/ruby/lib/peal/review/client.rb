@@ -14,24 +14,22 @@ module Peal
       # Needs post:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.review.settings(workspace_id: "workspaceId")
+      #   client.review.settings
       #
       # @return [Peal::Types::ReviewSettings]
-      def settings(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def settings(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/review/settings",
+          path: "api/v1/review/settings",
           request_options: request_options
         )
         begin
@@ -63,25 +61,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.review.update_settings(
-      #     workspace_id: "workspaceId",
-      #     approval_policy: "never"
-      #   )
+      #   client.review.update_settings(approval_policy: "never")
       #
       # @return [Peal::Types::ReviewSettings]
       def update_settings(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/review/settings",
-          body: Peal::Types::ReviewSettings.new(body_params).to_h,
+          path: "api/v1/review/settings",
+          body: Peal::Types::ReviewSettings.new(params).to_h,
           request_options: request_options
         )
         begin
@@ -105,24 +96,22 @@ module Peal
       # Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.review.pending(workspace_id: "workspaceId")
+      #   client.review.pending
       #
       # @return [Array[Peal::Types::ApprovalRequest]]
-      def pending(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def pending(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/approvals",
+          path: "api/v1/approvals",
           request_options: request_options
         )
         begin
@@ -153,14 +142,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.review.thread(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.review.thread(post_id: "postId")
       #
       # @return [Peal::Types::PostReview]
       def thread(request_options: {}, **params)
@@ -168,7 +153,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/review",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/review",
           request_options: request_options
         )
         begin
@@ -200,12 +185,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.review.comment(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     text: "text"
       #   )
@@ -214,13 +197,13 @@ module Peal
       def comment(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Review::Types::NewComment.new(params).to_h
-        non_body_param_names = %w[workspaceId postId]
+        non_body_param_names = %w[postId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/comments",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/comments",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -253,13 +236,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String] :comment_id
       #
       # @example
       #   client.review.resolve(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     comment_id: "commentId",
       #     resolved: true
@@ -269,13 +250,13 @@ module Peal
       def resolve(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Review::Types::ResolveReviewRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId postId commentId]
+        non_body_param_names = %w[postId commentId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/comments/#{URI.encode_uri_component(params[:comment_id].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -314,12 +295,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.review.approve(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     approval_id: "approvalId",
       #     subject_hash: "subjectHash"
@@ -329,13 +308,13 @@ module Peal
       def approve(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Review::Types::ApprovalDecision.new(params).to_h
-        non_body_param_names = %w[workspaceId postId]
+        non_body_param_names = %w[postId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/approve",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/approve",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -369,12 +348,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.review.request_changes(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     approval_id: "approvalId",
       #     subject_hash: "subjectHash",
@@ -385,13 +362,13 @@ module Peal
       def request_changes(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Review::Types::ChangesRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId postId]
+        non_body_param_names = %w[postId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/request-changes",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/request-changes",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -424,14 +401,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.review.links(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.review.links(post_id: "postId")
       #
       # @return [Array[Peal::Types::ReviewLink]]
       def links(request_options: {}, **params)
@@ -439,7 +412,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/review-links",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/review-links",
           request_options: request_options
         )
         begin
@@ -475,12 +448,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.review.create_link(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     access: "view"
       #   )
@@ -489,13 +460,13 @@ module Peal
       def create_link(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Review::Types::NewReviewLink.new(params).to_h
-        non_body_param_names = %w[workspaceId postId]
+        non_body_param_names = %w[postId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/review-links",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/review-links",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -528,14 +499,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :link_id
       #
       # @example
-      #   client.review.revoke_link(
-      #     workspace_id: "workspaceId",
-      #     link_id: "linkId"
-      #   )
+      #   client.review.revoke_link(link_id: "linkId")
       #
       # @return [Peal::Types::ReviewLink]
       def revoke_link(request_options: {}, **params)
@@ -543,7 +510,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/review-links/#{URI.encode_uri_component(params[:link_id].to_s)}",
+          path: "api/v1/review-links/#{URI.encode_uri_component(params[:link_id].to_s)}",
           request_options: request_options
         )
         begin

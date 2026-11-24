@@ -55,7 +55,7 @@ public class CreateKeyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner/keys")
+                    .WithPath("/api/v1/partner-account/keys")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -70,7 +70,6 @@ public class CreateKeyTest : BaseMockServerTest
         var response = await Client.PartnerAccount.CreateKeyAsync(
             new NewPartnerKey
             {
-                WorkspaceId = "workspaceId",
                 ExpiresInDays = null,
                 Name = "x",
                 Permissions = new List<Permission>()
@@ -130,7 +129,7 @@ public class CreateKeyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner/keys")
+                    .WithPath("/api/v1/partner-account/keys")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -145,7 +144,6 @@ public class CreateKeyTest : BaseMockServerTest
         var response = await Client.PartnerAccount.CreateKeyAsync(
             new NewPartnerKey
             {
-                WorkspaceId = "workspaceId",
                 Name = "name",
                 Permissions = new List<Permission>() { Permission.ActivityRead },
                 Scopes = new List<PartnerScope>() { PartnerScope.WorkspacesRead },

@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -25,7 +24,7 @@ public class StatusTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/short-links/status")
+                    .WithPath("/api/v1/short-links/status")
                     .UsingGet()
             )
             .RespondWith(
@@ -35,9 +34,7 @@ public class StatusTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.ShortLinks.StatusAsync(
-            new StatusShortLinksRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.ShortLinks.StatusAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -57,7 +54,7 @@ public class StatusTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/short-links/status")
+                    .WithPath("/api/v1/short-links/status")
                     .UsingGet()
             )
             .RespondWith(
@@ -67,9 +64,7 @@ public class StatusTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.ShortLinks.StatusAsync(
-            new StatusShortLinksRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.ShortLinks.StatusAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

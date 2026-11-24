@@ -88,9 +88,7 @@ func TestPostsDraftsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.DraftsPostsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.DraftsPostsRequest{}
 	_, invocationErr := client.Posts.Drafts(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestPostsDraftsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsDraftsWithWireMock", "GET", "/api/workspaces/workspaceId/posts/drafts", nil, 1)
+	VerifyRequestCount(t, "TestPostsDraftsWithWireMock", "GET", "/api/v1/posts/drafts", nil, 1)
 }
 
 func TestPostsListWithWireMock(
@@ -115,9 +113,8 @@ func TestPostsListWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ListPostsRequest{
-		WorkspaceID: "workspaceId",
-		From:        "from",
-		To:          "to",
+		From: "from",
+		To:   "to",
 	}
 	_, invocationErr := client.Posts.List(
 		context.TODO(),
@@ -128,7 +125,7 @@ func TestPostsListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsListWithWireMock", "GET", "/api/workspaces/workspaceId/posts", map[string]interface{}{"from": "from", "to": "to"}, 1)
+	VerifyRequestCount(t, "TestPostsListWithWireMock", "GET", "/api/v1/posts", map[string]interface{}{"from": "from", "to": "to"}, 1)
 }
 
 func TestPostsCreateWithWireMock(
@@ -142,27 +139,24 @@ func TestPostsCreateWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.CreatePostsRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.PostDraft{
-			ChannelIDs: []string{
-				"channelIds",
-			},
-			Content: &peal.PostContent{
-				Media: []*peal.MediaAttachment{
-					&peal.MediaAttachment{
-						AltText: "altText",
-						MediaID: "mediaId",
-					},
+	request := &peal.PostDraft{
+		ChannelIDs: []string{
+			"channelIds",
+		},
+		Content: &peal.PostContent{
+			Media: []*peal.MediaAttachment{
+				&peal.MediaAttachment{
+					AltText: "altText",
+					MediaID: "mediaId",
 				},
-				Overrides: []*peal.TextOverride{
-					&peal.TextOverride{
-						ChannelID: "channelId",
-						Text:      "text",
-					},
-				},
-				Text: "text",
 			},
+			Overrides: []*peal.TextOverride{
+				&peal.TextOverride{
+					ChannelID: "channelId",
+					Text:      "text",
+				},
+			},
+			Text: "text",
 		},
 	}
 	_, invocationErr := client.Posts.Create(
@@ -174,7 +168,7 @@ func TestPostsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/posts", nil, 1)
+	VerifyRequestCount(t, "TestPostsCreateWithWireMock", "POST", "/api/v1/posts", nil, 1)
 }
 
 func TestPostsSearchWithWireMock(
@@ -188,9 +182,7 @@ func TestPostsSearchWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.SearchPostsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.SearchPostsRequest{}
 	_, invocationErr := client.Posts.Search(
 		context.TODO(),
 		request,
@@ -200,7 +192,7 @@ func TestPostsSearchWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsSearchWithWireMock", "GET", "/api/workspaces/workspaceId/posts/search", nil, 1)
+	VerifyRequestCount(t, "TestPostsSearchWithWireMock", "GET", "/api/v1/posts/search", nil, 1)
 }
 
 func TestPostsSendWithWireMock(
@@ -215,7 +207,6 @@ func TestPostsSendWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewPost{
-		WorkspaceID: "workspaceId",
 		ChannelIDs: []string{
 			"channelIds",
 		},
@@ -247,7 +238,7 @@ func TestPostsSendWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsSendWithWireMock", "POST", "/api/workspaces/workspaceId/posts/send", nil, 1)
+	VerifyRequestCount(t, "TestPostsSendWithWireMock", "POST", "/api/v1/posts/send", nil, 1)
 }
 
 func TestPostsBulkWithWireMock(
@@ -262,7 +253,6 @@ func TestPostsBulkWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.BulkPosts{
-		WorkspaceID: "workspaceId",
 		Posts: []*peal.BulkPost{
 			&peal.BulkPost{
 				ChannelIDs: []string{
@@ -298,7 +288,7 @@ func TestPostsBulkWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsBulkWithWireMock", "POST", "/api/workspaces/workspaceId/posts/bulk", nil, 1)
+	VerifyRequestCount(t, "TestPostsBulkWithWireMock", "POST", "/api/v1/posts/bulk", nil, 1)
 }
 
 func TestPostsImportWithWireMock(
@@ -313,8 +303,7 @@ func TestPostsImportWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.PostImport{
-		WorkspaceID: "workspaceId",
-		Csv:         "csv",
+		Csv: "csv",
 	}
 	_, invocationErr := client.Posts.Import(
 		context.TODO(),
@@ -325,7 +314,7 @@ func TestPostsImportWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsImportWithWireMock", "POST", "/api/workspaces/workspaceId/posts/import", nil, 1)
+	VerifyRequestCount(t, "TestPostsImportWithWireMock", "POST", "/api/v1/posts/import", nil, 1)
 }
 
 func TestPostsValidateWithWireMock(
@@ -340,7 +329,6 @@ func TestPostsValidateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.PostToValidate{
-		WorkspaceID: "workspaceId",
 		ChannelIDs: []string{
 			"channelIds",
 		},
@@ -369,7 +357,7 @@ func TestPostsValidateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsValidateWithWireMock", "POST", "/api/workspaces/workspaceId/posts/validate", nil, 1)
+	VerifyRequestCount(t, "TestPostsValidateWithWireMock", "POST", "/api/v1/posts/validate", nil, 1)
 }
 
 func TestPostsGetWithWireMock(
@@ -384,8 +372,7 @@ func TestPostsGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Get(
 		context.TODO(),
@@ -396,7 +383,7 @@ func TestPostsGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsGetWithWireMock", "GET", "/api/workspaces/workspaceId/posts/postId", nil, 1)
+	VerifyRequestCount(t, "TestPostsGetWithWireMock", "GET", "/api/v1/posts/postId", nil, 1)
 }
 
 func TestPostsUpdateWithWireMock(
@@ -411,8 +398,7 @@ func TestPostsUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UpdatePostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 		Body: &peal.PostDraft{
 			ChannelIDs: []string{
 				"channelIds",
@@ -443,7 +429,7 @@ func TestPostsUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsUpdateWithWireMock", "PUT", "/api/workspaces/workspaceId/posts/postId", nil, 1)
+	VerifyRequestCount(t, "TestPostsUpdateWithWireMock", "PUT", "/api/v1/posts/postId", nil, 1)
 }
 
 func TestPostsDiscardWithWireMock(
@@ -458,8 +444,7 @@ func TestPostsDiscardWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DiscardPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	invocationErr := client.Posts.Discard(
 		context.TODO(),
@@ -470,7 +455,7 @@ func TestPostsDiscardWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsDiscardWithWireMock", "DELETE", "/api/workspaces/workspaceId/posts/postId", nil, 1)
+	VerifyRequestCount(t, "TestPostsDiscardWithWireMock", "DELETE", "/api/v1/posts/postId", nil, 1)
 }
 
 func TestPostsOutcomeWithWireMock(
@@ -485,8 +470,7 @@ func TestPostsOutcomeWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.OutcomePostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Outcome(
 		context.TODO(),
@@ -497,7 +481,7 @@ func TestPostsOutcomeWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsOutcomeWithWireMock", "GET", "/api/workspaces/workspaceId/posts/postId/outcome", nil, 1)
+	VerifyRequestCount(t, "TestPostsOutcomeWithWireMock", "GET", "/api/v1/posts/postId/outcome", nil, 1)
 }
 
 func TestPostsAttemptsWithWireMock(
@@ -512,8 +496,7 @@ func TestPostsAttemptsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.AttemptsPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Attempts(
 		context.TODO(),
@@ -524,7 +507,7 @@ func TestPostsAttemptsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsAttemptsWithWireMock", "GET", "/api/workspaces/workspaceId/posts/postId/attempts", nil, 1)
+	VerifyRequestCount(t, "TestPostsAttemptsWithWireMock", "GET", "/api/v1/posts/postId/attempts", nil, 1)
 }
 
 func TestPostsTagWithWireMock(
@@ -539,8 +522,7 @@ func TestPostsTagWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.PostTags{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 		TagIDs: []string{
 			"tagIds",
 		},
@@ -554,7 +536,7 @@ func TestPostsTagWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsTagWithWireMock", "PUT", "/api/workspaces/workspaceId/posts/postId/tags", nil, 1)
+	VerifyRequestCount(t, "TestPostsTagWithWireMock", "PUT", "/api/v1/posts/postId/tags", nil, 1)
 }
 
 func TestPostsDuplicateWithWireMock(
@@ -569,8 +551,7 @@ func TestPostsDuplicateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DuplicatePostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Duplicate(
 		context.TODO(),
@@ -581,7 +562,7 @@ func TestPostsDuplicateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsDuplicateWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/duplicate", nil, 1)
+	VerifyRequestCount(t, "TestPostsDuplicateWithWireMock", "POST", "/api/v1/posts/postId/duplicate", nil, 1)
 }
 
 func TestPostsScheduleWithWireMock(
@@ -596,9 +577,8 @@ func TestPostsScheduleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SchedulePost{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		At:          "at",
+		PostID: "postId",
+		At:     "at",
 		ChannelIDs: []string{
 			"channelIds",
 		},
@@ -613,7 +593,7 @@ func TestPostsScheduleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsScheduleWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/schedule", nil, 1)
+	VerifyRequestCount(t, "TestPostsScheduleWithWireMock", "POST", "/api/v1/posts/postId/schedule", nil, 1)
 }
 
 func TestPostsRescheduleWithWireMock(
@@ -628,8 +608,7 @@ func TestPostsRescheduleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ReschedulePostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 		Body: &peal.PostSchedule{
 			At:       "at",
 			TimeZone: "timeZone",
@@ -644,7 +623,7 @@ func TestPostsRescheduleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsRescheduleWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/reschedule", nil, 1)
+	VerifyRequestCount(t, "TestPostsRescheduleWithWireMock", "POST", "/api/v1/posts/postId/reschedule", nil, 1)
 }
 
 func TestPostsEnqueueWithWireMock(
@@ -659,8 +638,7 @@ func TestPostsEnqueueWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.QueuePost{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Enqueue(
 		context.TODO(),
@@ -671,7 +649,7 @@ func TestPostsEnqueueWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsEnqueueWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/queue", nil, 1)
+	VerifyRequestCount(t, "TestPostsEnqueueWithWireMock", "POST", "/api/v1/posts/postId/queue", nil, 1)
 }
 
 func TestPostsUnscheduleWithWireMock(
@@ -686,8 +664,7 @@ func TestPostsUnscheduleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UnschedulePostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Unschedule(
 		context.TODO(),
@@ -698,7 +675,7 @@ func TestPostsUnscheduleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsUnscheduleWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/unschedule", nil, 1)
+	VerifyRequestCount(t, "TestPostsUnscheduleWithWireMock", "POST", "/api/v1/posts/postId/unschedule", nil, 1)
 }
 
 func TestPostsRepostWithWireMock(
@@ -713,9 +690,8 @@ func TestPostsRepostWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RepostPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		TargetID:    "targetId",
+		PostID:   "postId",
+		TargetID: "targetId",
 	}
 	_, invocationErr := client.Posts.Repost(
 		context.TODO(),
@@ -726,7 +702,7 @@ func TestPostsRepostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsRepostWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/targets/targetId/repost", nil, 1)
+	VerifyRequestCount(t, "TestPostsRepostWithWireMock", "POST", "/api/v1/posts/postId/targets/targetId/repost", nil, 1)
 }
 
 func TestPostsRemoveTargetWithWireMock(
@@ -741,9 +717,8 @@ func TestPostsRemoveTargetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RemoveTargetPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		TargetID:    "targetId",
+		PostID:   "postId",
+		TargetID: "targetId",
 	}
 	_, invocationErr := client.Posts.RemoveTarget(
 		context.TODO(),
@@ -754,7 +729,7 @@ func TestPostsRemoveTargetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsRemoveTargetWithWireMock", "DELETE", "/api/workspaces/workspaceId/posts/postId/targets/targetId", nil, 1)
+	VerifyRequestCount(t, "TestPostsRemoveTargetWithWireMock", "DELETE", "/api/v1/posts/postId/targets/targetId", nil, 1)
 }
 
 func TestPostsConfirmWithWireMock(
@@ -769,9 +744,8 @@ func TestPostsConfirmWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConfirmPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		TargetID:    "targetId",
+		PostID:   "postId",
+		TargetID: "targetId",
 		Body: &peal.TargetConfirmation{
 			Published: &peal.TargetConfirmationPublished{},
 		},
@@ -785,7 +759,7 @@ func TestPostsConfirmWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsConfirmWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/targets/targetId/confirm", nil, 1)
+	VerifyRequestCount(t, "TestPostsConfirmWithWireMock", "POST", "/api/v1/posts/postId/targets/targetId/confirm", nil, 1)
 }
 
 func TestPostsLeaveOutRestWithWireMock(
@@ -800,9 +774,8 @@ func TestPostsLeaveOutRestWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.LeaveOutRestPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		TargetID:    "targetId",
+		PostID:   "postId",
+		TargetID: "targetId",
 	}
 	_, invocationErr := client.Posts.LeaveOutRest(
 		context.TODO(),
@@ -813,7 +786,7 @@ func TestPostsLeaveOutRestWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsLeaveOutRestWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/targets/targetId/leave-out-rest", nil, 1)
+	VerifyRequestCount(t, "TestPostsLeaveOutRestWithWireMock", "POST", "/api/v1/posts/postId/targets/targetId/leave-out-rest", nil, 1)
 }
 
 func TestPostsUnpublishTargetWithWireMock(
@@ -828,9 +801,8 @@ func TestPostsUnpublishTargetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UnpublishTargetPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		TargetID:    "targetId",
+		PostID:   "postId",
+		TargetID: "targetId",
 	}
 	_, invocationErr := client.Posts.UnpublishTarget(
 		context.TODO(),
@@ -841,7 +813,7 @@ func TestPostsUnpublishTargetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsUnpublishTargetWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/targets/targetId/unpublish", nil, 1)
+	VerifyRequestCount(t, "TestPostsUnpublishTargetWithWireMock", "POST", "/api/v1/posts/postId/targets/targetId/unpublish", nil, 1)
 }
 
 func TestPostsEditTargetWithWireMock(
@@ -856,10 +828,9 @@ func TestPostsEditTargetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.LivePostEdit{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		TargetID:    "targetId",
-		Text:        "text",
+		PostID:   "postId",
+		TargetID: "targetId",
+		Text:     "text",
 	}
 	_, invocationErr := client.Posts.EditTarget(
 		context.TODO(),
@@ -870,7 +841,7 @@ func TestPostsEditTargetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsEditTargetWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/targets/targetId/edit", nil, 1)
+	VerifyRequestCount(t, "TestPostsEditTargetWithWireMock", "POST", "/api/v1/posts/postId/targets/targetId/edit", nil, 1)
 }
 
 func TestPostsUnpublishWithWireMock(
@@ -885,8 +856,7 @@ func TestPostsUnpublishWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UnpublishPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Unpublish(
 		context.TODO(),
@@ -897,7 +867,7 @@ func TestPostsUnpublishWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsUnpublishWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/unpublish", nil, 1)
+	VerifyRequestCount(t, "TestPostsUnpublishWithWireMock", "POST", "/api/v1/posts/postId/unpublish", nil, 1)
 }
 
 func TestPostsChangesWithWireMock(
@@ -912,8 +882,7 @@ func TestPostsChangesWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ChangesPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Changes(
 		context.TODO(),
@@ -924,7 +893,7 @@ func TestPostsChangesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsChangesWithWireMock", "GET", "/api/workspaces/workspaceId/posts/postId/changes", nil, 1)
+	VerifyRequestCount(t, "TestPostsChangesWithWireMock", "GET", "/api/v1/posts/postId/changes", nil, 1)
 }
 
 func TestPostsCancelWithWireMock(
@@ -939,8 +908,7 @@ func TestPostsCancelWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.CancelPostsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Posts.Cancel(
 		context.TODO(),
@@ -951,5 +919,5 @@ func TestPostsCancelWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPostsCancelWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/cancel", nil, 1)
+	VerifyRequestCount(t, "TestPostsCancelWithWireMock", "POST", "/api/v1/posts/postId/cancel", nil, 1)
 }

@@ -13,7 +13,7 @@ import type {
   InboxThreadDetail,
   Platform,
 } from "peal-contract";
-import { isSocialChannel } from "peal-contract";
+import { isSocialChannel, forWorkspace } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import {
   AlertDialog,
@@ -146,7 +146,8 @@ const CommentActions = ({
   const ask = (request: CommentRequest) => {
     startRequest(async () => {
       const call = {
-        params: { commentId: comment.id, workspaceId: context.workspaceId },
+        headers: forWorkspace(context.workspaceId),
+        params: { commentId: comment.id },
         reactivityKeys: inboxChanged(context.workspaceId, comment.threadId),
       };
 
@@ -264,7 +265,8 @@ const ReplyActions = ({
   const [isBusy, startRequest] = useTransition();
 
   const call = {
-    params: { replyId: reply.id, workspaceId: context.workspaceId },
+    headers: forWorkspace(context.workspaceId),
+    params: { replyId: reply.id },
     reactivityKeys: inboxChanged(context.workspaceId, reply.threadId),
   };
 
@@ -400,7 +402,8 @@ const PrivateReplyActions = ({
   const handleConfirm = (went: boolean) => {
     startRequest(async () => {
       const exit = await confirm({
-        params: { privateReplyId: reply.id, workspaceId: context.workspaceId },
+        headers: forWorkspace(context.workspaceId),
+        params: { privateReplyId: reply.id },
         payload: { went },
         reactivityKeys: inboxChanged(context.workspaceId, threadId),
       });
@@ -473,8 +476,10 @@ const PrivateReplyAction = ({
     setError(null);
     startSending(async () => {
       const exit = await send({
-        headers: { "idempotency-key": key },
-        params: { workspaceId: context.workspaceId },
+        headers: {
+          ...forWorkspace(context.workspaceId),
+          "idempotency-key": key,
+        },
         payload: { commentId: comment.id, text },
         reactivityKeys: inboxChanged(context.workspaceId, comment.threadId),
       });
@@ -621,8 +626,8 @@ const ReplyBox = ({
     setError(null);
     startSending(async () => {
       const exit = await send({
-        headers: {},
-        params: { commentId: comment.id, workspaceId: context.workspaceId },
+        headers: { ...forWorkspace(context.workspaceId) },
+        params: { commentId: comment.id },
         payload: { text },
         reactivityKeys: inboxChanged(context.workspaceId, comment.threadId),
       });

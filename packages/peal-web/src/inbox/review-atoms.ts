@@ -1,5 +1,5 @@
 import { Atom } from "effect/reactivity";
-import { maxInboxPageSize } from "peal-contract";
+import { maxInboxPageSize, forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -29,7 +29,7 @@ export const reviewsChanged = (workspaceId: string, threadId: string) => [
  */
 export const reviewLocations = Atom.family((workspaceId: string) =>
   PealApi.query("inboxReviews", "listReviewThreads", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: { limit: maxInboxPageSize },
     reactivityKeys: locationsChanged(workspaceId),
   })
@@ -39,7 +39,8 @@ const locations = Atom.family((key: string) => {
   const [workspaceId = "", threadId = ""] = key.split("/");
 
   return PealApi.query("inboxReviews", "getReviewThread", {
-    params: { threadId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { threadId },
     reactivityKeys: locationChanged(threadId),
   });
 });

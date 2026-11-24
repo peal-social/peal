@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId",
  *         enabled: true
  *     }
  */
 export interface SetChannelMessagesInboxMessagesRequest {
-    workspaceId: string;
     channelId: string;
     enabled: boolean;
 }

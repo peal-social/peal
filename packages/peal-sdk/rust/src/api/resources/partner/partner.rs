@@ -50,7 +50,7 @@ impl PartnerClient {
             Some(o)
         };
         self.http_client
-            .execute_request(Method::GET, "api/partner", None, None, options)
+            .execute_request(Method::GET, "api/v1/partner", None, None, options)
             .await
     }
 
@@ -102,7 +102,7 @@ impl PartnerClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                "api/partner/overview",
+                "api/v1/partner/overview",
                 None,
                 QueryBuilder::new()
                     .string("before", request.before.clone())
@@ -161,7 +161,7 @@ impl PartnerClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                "api/partner/workspaces",
+                "api/v1/partner/workspaces",
                 None,
                 QueryBuilder::new()
                     .string("before", request.before.clone())
@@ -224,7 +224,7 @@ impl PartnerClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                "api/partner/workspaces",
+                "api/v1/partner/workspaces",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -275,7 +275,7 @@ impl PartnerClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/partner/workspaces/{}", workspace_id),
+                &format!("api/v1/partner/workspaces/{}", workspace_id),
                 None,
                 None,
                 options,
@@ -326,7 +326,7 @@ impl PartnerClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/partner/workspaces/{}", workspace_id),
+                &format!("api/v1/partner/workspaces/{}", workspace_id),
                 None,
                 None,
                 options,
@@ -385,7 +385,7 @@ impl PartnerClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/partner/workspaces/{}", workspace_id),
+                &format!("api/v1/partner/workspaces/{}", workspace_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -447,7 +447,7 @@ impl PartnerClient {
             .execute_request(
                 Method::POST,
                 &format!(
-                    "api/partner/workspaces/{}/channels/{}/move",
+                    "api/v1/partner/workspaces/{}/channels/{}/move",
                     workspace_id, channel_id
                 ),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),

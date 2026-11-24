@@ -618,7 +618,7 @@ public class BulkTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/bulk")
+                    .WithPath("/api/v1/posts/bulk")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -633,7 +633,6 @@ public class BulkTest : BaseMockServerTest
         var response = await Client.Posts.BulkAsync(
             new BulkPosts
             {
-                WorkspaceId = "workspaceId",
                 Posts = new List<BulkPost>()
                 {
                     new BulkPost
@@ -815,7 +814,7 @@ public class BulkTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/bulk")
+                    .WithPath("/api/v1/posts/bulk")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -830,7 +829,6 @@ public class BulkTest : BaseMockServerTest
         var response = await Client.Posts.BulkAsync(
             new BulkPosts
             {
-                WorkspaceId = "workspaceId",
                 Posts = new List<BulkPost>()
                 {
                     new BulkPost

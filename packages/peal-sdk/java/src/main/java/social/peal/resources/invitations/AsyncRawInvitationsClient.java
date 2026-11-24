@@ -35,7 +35,6 @@ import social.peal.errors.NotFoundError;
 import social.peal.errors.PaymentRequiredError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
-import social.peal.resources.invitations.requests.ListInvitationsRequest;
 import social.peal.resources.invitations.requests.NewInvitation;
 import social.peal.resources.invitations.requests.RevokeInvitationsRequest;
 import social.peal.types.Invitation;
@@ -51,47 +50,28 @@ public class AsyncRawInvitationsClient {
     /**
      * Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
      */
-    public CompletableFuture<PealClientHttpResponse<List<Invitation>>> list(String workspaceId) {
-        return list(workspaceId, ListInvitationsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<Invitation>>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
      */
-    public CompletableFuture<PealClientHttpResponse<List<Invitation>>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListInvitationsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<Invitation>>> list(
-            String workspaceId, ListInvitationsRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<Invitation>>> list(
-            String workspaceId, ListInvitationsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<Invitation>>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("invitations");
+                .addPathSegments("api/v1/invitations");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -121,6 +101,11 @@ public class AsyncRawInvitationsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -174,20 +159,18 @@ public class AsyncRawInvitationsClient {
     /**
      * Invites someone to the workspace with a role: Peal emails them a link that works for 7 days, in their language when they have an account, in the inviter's otherwise. A pending invitation to the same address is revoked, and its link stops working. Only owners invite owners. On a server that bills, the members and the other pending invitations must leave room in the workspace's plan (PlanLimitReached). Needs invitation:create, and a member in person: not an API key, nor staff impersonating one.
      */
-    public CompletableFuture<PealClientHttpResponse<Invitation>> create(String workspaceId, NewInvitation request) {
-        return create(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Invitation>> create(NewInvitation request) {
+        return create(request, null);
     }
 
     /**
      * Invites someone to the workspace with a role: Peal emails them a link that works for 7 days, in their language when they have an account, in the inviter's otherwise. A pending invitation to the same address is revoked, and its link stops working. Only owners invite owners. On a server that bills, the members and the other pending invitations must leave room in the workspace's plan (PlanLimitReached). Needs invitation:create, and a member in person: not an API key, nor staff impersonating one.
      */
     public CompletableFuture<PealClientHttpResponse<Invitation>> create(
-            String workspaceId, NewInvitation request, RequestOptions requestOptions) {
+            NewInvitation request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("invitations");
+                .addPathSegments("api/v1/invitations");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -299,38 +282,33 @@ public class AsyncRawInvitationsClient {
     /**
      * Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> revoke(String workspaceId, String invitationId) {
-        return revoke(
-                workspaceId, invitationId, RevokeInvitationsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> revoke(String invitationId) {
+        return revoke(invitationId, RevokeInvitationsRequest.builder().build());
+    }
+
+    /**
+     * Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> revoke(String invitationId, RequestOptions requestOptions) {
+        return revoke(invitationId, RevokeInvitationsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> revoke(
-            String workspaceId, String invitationId, RequestOptions requestOptions) {
-        return revoke(
-                workspaceId, invitationId, RevokeInvitationsRequest.builder().build(), requestOptions);
+            String invitationId, RevokeInvitationsRequest request) {
+        return revoke(invitationId, request, null);
     }
 
     /**
      * Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> revoke(
-            String workspaceId, String invitationId, RevokeInvitationsRequest request) {
-        return revoke(workspaceId, invitationId, request, null);
-    }
-
-    /**
-     * Revokes a pending invitation of the workspace: its link stops working at once. Needs invitation:cancel, and a member in person: not an API key, nor staff impersonating one.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> revoke(
-            String workspaceId, String invitationId, RevokeInvitationsRequest request, RequestOptions requestOptions) {
+            String invitationId, RevokeInvitationsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("invitations")
+                .addPathSegments("api/v1/invitations")
                 .addPathSegment(PathSegments.validate(invitationId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -372,6 +350,11 @@ public class AsyncRawInvitationsClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

@@ -93,7 +93,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups/ruleId")
+                    .WithPath("/api/v1/follow-ups/ruleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -108,7 +108,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.FollowUps.UpdateAsync(
             new FollowUpRuleChange
             {
-                WorkspaceId = "workspaceId",
                 RuleId = "ruleId",
                 Comment = null,
                 Likes = null,
@@ -180,7 +179,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/follow-ups/ruleId")
+                    .WithPath("/api/v1/follow-ups/ruleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -193,7 +192,7 @@ public class UpdateTest : BaseMockServerTest
             );
 
         var response = await Client.FollowUps.UpdateAsync(
-            new FollowUpRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new FollowUpRuleChange { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

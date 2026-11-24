@@ -51,7 +51,7 @@ public class SetChannelMessagesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/channels/channelId")
+                    .WithPath("/api/v1/inbox/messages/channels/channelId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -64,12 +64,7 @@ public class SetChannelMessagesTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SetChannelMessagesAsync(
-            new SetChannelMessagesInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                Enabled = true,
-            }
+            new SetChannelMessagesInboxMessagesRequest { ChannelId = "channelId", Enabled = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -106,7 +101,7 @@ public class SetChannelMessagesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/channels/channelId")
+                    .WithPath("/api/v1/inbox/messages/channels/channelId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -119,12 +114,7 @@ public class SetChannelMessagesTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SetChannelMessagesAsync(
-            new SetChannelMessagesInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                Enabled = true,
-            }
+            new SetChannelMessagesInboxMessagesRequest { ChannelId = "channelId", Enabled = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -69,12 +69,10 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->listConversations(
-     *     'workspaceId',
      *     new ListConversationsInboxMessagesRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListConversationsInboxMessagesRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -88,7 +86,7 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listConversations(string $workspaceId, ListConversationsInboxMessagesRequest $request = new ListConversationsInboxMessagesRequest(), ?array $options = null): ?InboxConversationPage
+    public function listConversations(ListConversationsInboxMessagesRequest $request = new ListConversationsInboxMessagesRequest(), ?array $options = null): ?InboxConversationPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -108,7 +106,7 @@ class InboxMessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/conversations",
+                    path: "api/v1/inbox/messages/conversations",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -140,13 +138,11 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->getConversation(
-     *     'workspaceId',
      *     'conversationId',
      *     new GetConversationInboxMessagesRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $conversationId
      * @param GetConversationInboxMessagesRequest $request
      * @param ?array{
@@ -161,7 +157,7 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getConversation(string $workspaceId, string $conversationId, GetConversationInboxMessagesRequest $request = new GetConversationInboxMessagesRequest(), ?array $options = null): ?InboxConversationDetail
+    public function getConversation(string $conversationId, GetConversationInboxMessagesRequest $request = new GetConversationInboxMessagesRequest(), ?array $options = null): ?InboxConversationDetail
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -175,7 +171,7 @@ class InboxMessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/conversations/{$conversationId}",
+                    path: "api/v1/inbox/messages/conversations/{$conversationId}",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -207,7 +203,6 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->sendMessage(
-     *     'workspaceId',
      *     'conversationId',
      *     new NewInboxMessage([
      *         'text' => 'text',
@@ -215,7 +210,6 @@ class InboxMessagesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $conversationId
      * @param NewInboxMessage $request
      * @param ?array{
@@ -230,7 +224,7 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function sendMessage(string $workspaceId, string $conversationId, NewInboxMessage $request, ?array $options = null): ?InboxOutgoingMessage
+    public function sendMessage(string $conversationId, NewInboxMessage $request, ?array $options = null): ?InboxOutgoingMessage
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -242,7 +236,7 @@ class InboxMessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/conversations/{$conversationId}/messages",
+                    path: "api/v1/inbox/messages/conversations/{$conversationId}/messages",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -275,7 +269,6 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->sendPrivateReply(
-     *     'workspaceId',
      *     new NewInboxPrivateReply([
      *         'commentId' => 'commentId',
      *         'text' => 'text',
@@ -283,7 +276,6 @@ class InboxMessagesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewInboxPrivateReply $request
      * @param ?array{
      *   baseUrl?: string,
@@ -297,7 +289,7 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function sendPrivateReply(string $workspaceId, NewInboxPrivateReply $request, ?array $options = null): ?InboxPrivateReply
+    public function sendPrivateReply(NewInboxPrivateReply $request, ?array $options = null): ?InboxPrivateReply
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -309,7 +301,7 @@ class InboxMessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/private-replies",
+                    path: "api/v1/inbox/messages/private-replies",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request,
@@ -342,12 +334,10 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->getPrivateReply(
-     *     'workspaceId',
      *     'privateReplyId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $privateReplyId
      * @param ?array{
      *   baseUrl?: string,
@@ -361,14 +351,14 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getPrivateReply(string $workspaceId, string $privateReplyId, ?array $options = null): ?InboxPrivateReply
+    public function getPrivateReply(string $privateReplyId, ?array $options = null): ?InboxPrivateReply
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/private-replies/{$privateReplyId}",
+                    path: "api/v1/inbox/messages/private-replies/{$privateReplyId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -399,7 +389,6 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->confirmPrivateReply(
-     *     'workspaceId',
      *     'privateReplyId',
      *     new ConfirmPrivateReplyInboxMessagesRequest([
      *         'went' => true,
@@ -407,7 +396,6 @@ class InboxMessagesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $privateReplyId
      * @param ConfirmPrivateReplyInboxMessagesRequest $request
      * @param ?array{
@@ -422,7 +410,7 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function confirmPrivateReply(string $workspaceId, string $privateReplyId, ConfirmPrivateReplyInboxMessagesRequest $request, ?array $options = null): ?InboxPrivateReply
+    public function confirmPrivateReply(string $privateReplyId, ConfirmPrivateReplyInboxMessagesRequest $request, ?array $options = null): ?InboxPrivateReply
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -430,7 +418,7 @@ class InboxMessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/private-replies/{$privateReplyId}/confirm",
+                    path: "api/v1/inbox/messages/private-replies/{$privateReplyId}/confirm",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -462,7 +450,6 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->setConversationRead(
-     *     'workspaceId',
      *     'conversationId',
      *     new SetConversationReadInboxMessagesRequest([
      *         'read' => true,
@@ -470,7 +457,6 @@ class InboxMessagesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $conversationId
      * @param SetConversationReadInboxMessagesRequest $request
      * @param ?array{
@@ -485,7 +471,7 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setConversationRead(string $workspaceId, string $conversationId, SetConversationReadInboxMessagesRequest $request, ?array $options = null): ?InboxConversation
+    public function setConversationRead(string $conversationId, SetConversationReadInboxMessagesRequest $request, ?array $options = null): ?InboxConversation
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -493,7 +479,7 @@ class InboxMessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/conversations/{$conversationId}/read",
+                    path: "api/v1/inbox/messages/conversations/{$conversationId}/read",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -524,12 +510,9 @@ class InboxMessagesClient
      *
      * Example:
      * ```php
-     * $client->inboxMessages->getMessageSettings(
-     *     'workspaceId',
-     * );
+     * $client->inboxMessages->getMessageSettings();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -542,14 +525,14 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getMessageSettings(string $workspaceId, ?array $options = null): ?InboxMessageSettings
+    public function getMessageSettings(?array $options = null): ?InboxMessageSettings
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/settings",
+                    path: "api/v1/inbox/messages/settings",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -580,7 +563,6 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->setChannelMessages(
-     *     'workspaceId',
      *     'channelId',
      *     new SetChannelMessagesInboxMessagesRequest([
      *         'enabled' => true,
@@ -588,7 +570,6 @@ class InboxMessagesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param SetChannelMessagesInboxMessagesRequest $request
      * @param ?array{
@@ -603,14 +584,14 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setChannelMessages(string $workspaceId, string $channelId, SetChannelMessagesInboxMessagesRequest $request, ?array $options = null): ?InboxMessageSettings
+    public function setChannelMessages(string $channelId, SetChannelMessagesInboxMessagesRequest $request, ?array $options = null): ?InboxMessageSettings
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/channels/{$channelId}",
+                    path: "api/v1/inbox/messages/channels/{$channelId}",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -642,7 +623,6 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->setMessageApplication(
-     *     'workspaceId',
      *     new SetMessageApplicationInboxMessagesRequest([
      *         'allowed' => true,
      *         'clientId' => 'clientId',
@@ -650,7 +630,6 @@ class InboxMessagesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param SetMessageApplicationInboxMessagesRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -664,14 +643,14 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setMessageApplication(string $workspaceId, SetMessageApplicationInboxMessagesRequest $request, ?array $options = null): ?InboxMessageSettings
+    public function setMessageApplication(SetMessageApplicationInboxMessagesRequest $request, ?array $options = null): ?InboxMessageSettings
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/applications",
+                    path: "api/v1/inbox/messages/applications",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -703,7 +682,6 @@ class InboxMessagesClient
      * Example:
      * ```php
      * $client->inboxMessages->confirmMessage(
-     *     'workspaceId',
      *     'messageId',
      *     new ConfirmMessageInboxMessagesRequest([
      *         'sent' => true,
@@ -711,7 +689,6 @@ class InboxMessagesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $messageId
      * @param ConfirmMessageInboxMessagesRequest $request
      * @param ?array{
@@ -726,7 +703,7 @@ class InboxMessagesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function confirmMessage(string $workspaceId, string $messageId, ConfirmMessageInboxMessagesRequest $request, ?array $options = null): ?InboxOutgoingMessage
+    public function confirmMessage(string $messageId, ConfirmMessageInboxMessagesRequest $request, ?array $options = null): ?InboxOutgoingMessage
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -734,7 +711,7 @@ class InboxMessagesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/messages/outgoing/{$messageId}/confirmation",
+                    path: "api/v1/inbox/messages/outgoing/{$messageId}/confirmation",
                     method: HttpMethod::POST,
                     body: $request,
                 ),

@@ -10,7 +10,11 @@
   typed SDKs). A break the document cannot show goes there too, with a `kind`:
   `behaviour` (what an endpoint refuses now) or `sdk` (a type the
   generator renamed or narrowed, such as a status-named error body); the
-  check keeps it until the release writes it to the changelog. It also refuses a tighter limit on what is sent, a way of
+  check keeps it until the release writes it to the changelog. A move of
+  operations decided on (`kind` `move`, with `from`, `to` and the path
+  parameter it `dropping`s) takes each operation under `from` to its place
+  under `to`, where the check compares it as any other: every other
+  difference still fails, and a move that moves nothing is stale. It also refuses a tighter limit on what is sent, a way of
   signing in that goes, a value or a union member no longer answered,
   null where there was always a value, and a baseline that lists nothing
   or is not the one the last release recorded (`released/openapi.sha256`).
@@ -37,12 +41,18 @@
   it for the docs and the server serves it at `/api/openapi.json` and
   `/openapi.json`: the server's tests check they are equal and list every
   event type. A new event type needs its summary there.
-- `GET /api/credential` (`CredentialApi`, `credential.ts`) answers every
+- `GET /api/v1/credential` (`CredentialApi`, `credential.ts`) answers every
   principal `Authentication` knows, by kind (`user`, `apiKey`,
   `partnerKey`), never a key, a token, or a partner's workspaces: a new
   principal is a new member of `CredentialSchema`, and the server's
   `toCredential` and `CredentialCheck` (`Match.typeTags`) do not compile
   until it is described.
+- The workspace endpoints are under `/api/v1/…` and never name the
+  workspace in their path: each takes `headers: workspaceHeaders` (the
+  optional `Peal-Workspace`, spread first into headers of its own), and a
+  typed client's call passes `headers: forWorkspace(workspaceId)` where its
+  credential belongs to no workspace. A path that names a workspace is a
+  resource (the partner API's customers, the staff console's).
 - Every contract error spreads `errorEnvelope` first, and its `code` is its
   tag in snake case (`errorCodeOf`): a tag never changes once published.
   The server's guide says how answers are shaped

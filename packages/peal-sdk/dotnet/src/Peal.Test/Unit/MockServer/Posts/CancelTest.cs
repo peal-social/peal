@@ -315,7 +315,7 @@ public class CancelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/cancel")
+                    .WithPath("/api/v1/posts/postId/cancel")
                     .UsingPost()
             )
             .RespondWith(
@@ -325,9 +325,7 @@ public class CancelTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.CancelAsync(
-            new CancelPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-        );
+        var response = await Client.Posts.CancelAsync(new CancelPostsRequest { PostId = "postId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -449,7 +447,7 @@ public class CancelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/cancel")
+                    .WithPath("/api/v1/posts/postId/cancel")
                     .UsingPost()
             )
             .RespondWith(
@@ -459,9 +457,7 @@ public class CancelTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.CancelAsync(
-            new CancelPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-        );
+        var response = await Client.Posts.CancelAsync(new CancelPostsRequest { PostId = "postId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

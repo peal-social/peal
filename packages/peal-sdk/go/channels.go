@@ -10,17 +10,15 @@ import (
 )
 
 var (
-	chooseAccountsFieldWorkspaceID = big.NewInt(1 << 0)
-	chooseAccountsFieldPlatform    = big.NewInt(1 << 1)
-	chooseAccountsFieldAccountIDs  = big.NewInt(1 << 2)
-	chooseAccountsFieldSelection   = big.NewInt(1 << 3)
+	chooseAccountsFieldPlatform   = big.NewInt(1 << 0)
+	chooseAccountsFieldAccountIDs = big.NewInt(1 << 1)
+	chooseAccountsFieldSelection  = big.NewInt(1 << 2)
 )
 
 type ChooseAccounts struct {
-	WorkspaceID string   `json:"-" url:"-"`
-	Platform    Platform `json:"-" url:"-"`
-	AccountIDs  []string `json:"accountIds" url:"-"`
-	Selection   string   `json:"selection" url:"-"`
+	Platform   Platform `json:"-" url:"-"`
+	AccountIDs []string `json:"accountIds" url:"-"`
+	Selection  string   `json:"selection" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -33,13 +31,6 @@ func (c *ChooseAccounts) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ChooseAccounts) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(chooseAccountsFieldWorkspaceID)
 }
 
 // SetPlatform sets the Platform field and marks it as non-optional;
@@ -85,21 +76,19 @@ func (c *ChooseAccounts) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	connectCallbackFieldWorkspaceID = big.NewInt(1 << 0)
-	connectCallbackFieldPlatform    = big.NewInt(1 << 1)
-	connectCallbackFieldCode        = big.NewInt(1 << 2)
-	connectCallbackFieldError       = big.NewInt(1 << 3)
-	connectCallbackFieldIss         = big.NewInt(1 << 4)
-	connectCallbackFieldState       = big.NewInt(1 << 5)
+	connectCallbackFieldPlatform = big.NewInt(1 << 0)
+	connectCallbackFieldCode     = big.NewInt(1 << 1)
+	connectCallbackFieldError    = big.NewInt(1 << 2)
+	connectCallbackFieldIss      = big.NewInt(1 << 3)
+	connectCallbackFieldState    = big.NewInt(1 << 4)
 )
 
 type ConnectCallback struct {
-	WorkspaceID string   `json:"-" url:"-"`
-	Platform    Platform `json:"-" url:"-"`
-	Code        *string  `json:"code,omitempty" url:"-"`
-	Error       *string  `json:"error,omitempty" url:"-"`
-	Iss         *string  `json:"iss,omitempty" url:"-"`
-	State       string   `json:"state" url:"-"`
+	Platform Platform `json:"-" url:"-"`
+	Code     *string  `json:"code,omitempty" url:"-"`
+	Error    *string  `json:"error,omitempty" url:"-"`
+	Iss      *string  `json:"iss,omitempty" url:"-"`
+	State    string   `json:"state" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -112,13 +101,6 @@ func (c *ConnectCallback) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConnectCallback) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(connectCallbackFieldWorkspaceID)
 }
 
 // SetPlatform sets the Platform field and marks it as non-optional;
@@ -178,19 +160,17 @@ func (c *ConnectCallback) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	siteSignInCallbackFieldWorkspaceID = big.NewInt(1 << 0)
-	siteSignInCallbackFieldPlatform    = big.NewInt(1 << 1)
-	siteSignInCallbackFieldCode        = big.NewInt(1 << 2)
-	siteSignInCallbackFieldError       = big.NewInt(1 << 3)
-	siteSignInCallbackFieldState       = big.NewInt(1 << 4)
+	siteSignInCallbackFieldPlatform = big.NewInt(1 << 0)
+	siteSignInCallbackFieldCode     = big.NewInt(1 << 1)
+	siteSignInCallbackFieldError    = big.NewInt(1 << 2)
+	siteSignInCallbackFieldState    = big.NewInt(1 << 3)
 )
 
 type SiteSignInCallback struct {
-	WorkspaceID string            `json:"-" url:"-"`
-	Platform    OAuthSitePlatform `json:"-" url:"-"`
-	Code        *string           `json:"code,omitempty" url:"-"`
-	Error       *string           `json:"error,omitempty" url:"-"`
-	State       string            `json:"state" url:"-"`
+	Platform OAuthSitePlatform `json:"-" url:"-"`
+	Code     *string           `json:"code,omitempty" url:"-"`
+	Error    *string           `json:"error,omitempty" url:"-"`
+	State    string            `json:"state" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -203,13 +183,6 @@ func (s *SiteSignInCallback) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SiteSignInCallback) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(siteSignInCallbackFieldWorkspaceID)
 }
 
 // SetPlatform sets the Platform field and marks it as non-optional;
@@ -262,19 +235,17 @@ func (s *SiteSignInCallback) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	connectChannelFieldWorkspaceID = big.NewInt(1 << 0)
-	connectChannelFieldPlatform    = big.NewInt(1 << 1)
-	connectChannelFieldConnection  = big.NewInt(1 << 2)
-	connectChannelFieldHandle      = big.NewInt(1 << 3)
-	connectChannelFieldInstance    = big.NewInt(1 << 4)
+	connectChannelFieldPlatform   = big.NewInt(1 << 0)
+	connectChannelFieldConnection = big.NewInt(1 << 1)
+	connectChannelFieldHandle     = big.NewInt(1 << 2)
+	connectChannelFieldInstance   = big.NewInt(1 << 3)
 )
 
 type ConnectChannel struct {
-	WorkspaceID string             `json:"-" url:"-"`
-	Platform    Platform           `json:"-" url:"-"`
-	Connection  *ChannelConnection `json:"connection,omitempty" url:"-"`
-	Handle      *string            `json:"handle,omitempty" url:"-"`
-	Instance    *string            `json:"instance,omitempty" url:"-"`
+	Platform   Platform           `json:"-" url:"-"`
+	Connection *ChannelConnection `json:"connection,omitempty" url:"-"`
+	Handle     *string            `json:"handle,omitempty" url:"-"`
+	Instance   *string            `json:"instance,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -287,13 +258,6 @@ func (c *ConnectChannel) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConnectChannel) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(connectChannelFieldWorkspaceID)
 }
 
 // SetPlatform sets the Platform field and marks it as non-optional;
@@ -346,56 +310,13 @@ func (c *ConnectChannel) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	connectChatChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ConnectChatChannelsRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	Body        *ConnectChat `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (c *ConnectChatChannelsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConnectChatChannelsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(connectChatChannelsRequestFieldWorkspaceID)
-}
-
-func (c *ConnectChatChannelsRequest) UnmarshalJSON(data []byte) error {
-	body := new(ConnectChat)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	c.Body = body
-	return nil
-}
-
-func (c *ConnectChatChannelsRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.Body)
-}
-
-var (
-	connectSiteFieldWorkspaceID         = big.NewInt(1 << 0)
-	connectSiteFieldAddress             = big.NewInt(1 << 1)
-	connectSiteFieldApplicationPassword = big.NewInt(1 << 2)
-	connectSiteFieldPlatform            = big.NewInt(1 << 3)
-	connectSiteFieldUserName            = big.NewInt(1 << 4)
+	connectSiteFieldAddress             = big.NewInt(1 << 0)
+	connectSiteFieldApplicationPassword = big.NewInt(1 << 1)
+	connectSiteFieldPlatform            = big.NewInt(1 << 2)
+	connectSiteFieldUserName            = big.NewInt(1 << 3)
 )
 
 type ConnectSite struct {
-	WorkspaceID         string       `json:"-" url:"-"`
 	Address             string       `json:"address" url:"-"`
 	ApplicationPassword string       `json:"applicationPassword" url:"-"`
 	Platform            SitePlatform `json:"platform" url:"-"`
@@ -412,13 +333,6 @@ func (c *ConnectSite) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConnectSite) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(connectSiteFieldWorkspaceID)
 }
 
 // SetAddress sets the Address field and marks it as non-optional;
@@ -471,14 +385,12 @@ func (c *ConnectSite) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	connectSiteWithKeyFieldWorkspaceID = big.NewInt(1 << 0)
-	connectSiteWithKeyFieldAPIKey      = big.NewInt(1 << 1)
-	connectSiteWithKeyFieldPlatform    = big.NewInt(1 << 2)
-	connectSiteWithKeyFieldPublication = big.NewInt(1 << 3)
+	connectSiteWithKeyFieldAPIKey      = big.NewInt(1 << 0)
+	connectSiteWithKeyFieldPlatform    = big.NewInt(1 << 1)
+	connectSiteWithKeyFieldPublication = big.NewInt(1 << 2)
 )
 
 type ConnectSiteWithKey struct {
-	WorkspaceID string          `json:"-" url:"-"`
 	APIKey      string          `json:"apiKey" url:"-"`
 	Platform    KeySitePlatform `json:"platform" url:"-"`
 	Publication *string         `json:"publication,omitempty" url:"-"`
@@ -494,13 +406,6 @@ func (c *ConnectSiteWithKey) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConnectSiteWithKey) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(connectSiteWithKeyFieldWorkspaceID)
 }
 
 // SetAPIKey sets the APIKey field and marks it as non-optional;
@@ -546,13 +451,11 @@ func (c *ConnectSiteWithKey) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	disableChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	disableChannelsRequestFieldChannelID   = big.NewInt(1 << 1)
+	disableChannelsRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type DisableChannelsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -567,13 +470,6 @@ func (d *DisableChannelsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DisableChannelsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(disableChannelsRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DisableChannelsRequest) SetChannelID(channelID string) {
@@ -582,13 +478,11 @@ func (d *DisableChannelsRequest) SetChannelID(channelID string) {
 }
 
 var (
-	disconnectChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	disconnectChannelsRequestFieldChannelID   = big.NewInt(1 << 1)
+	disconnectChannelsRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type DisconnectChannelsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -603,13 +497,6 @@ func (d *DisconnectChannelsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DisconnectChannelsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(disconnectChannelsRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DisconnectChannelsRequest) SetChannelID(channelID string) {
@@ -618,13 +505,11 @@ func (d *DisconnectChannelsRequest) SetChannelID(channelID string) {
 }
 
 var (
-	enableChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	enableChannelsRequestFieldChannelID   = big.NewInt(1 << 1)
+	enableChannelsRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type EnableChannelsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -639,13 +524,6 @@ func (e *EnableChannelsRequest) require(field *big.Int) {
 	e.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EnableChannelsRequest) SetWorkspaceID(workspaceID string) {
-	e.WorkspaceID = workspaceID
-	e.require(enableChannelsRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (e *EnableChannelsRequest) SetChannelID(channelID string) {
@@ -654,21 +532,19 @@ func (e *EnableChannelsRequest) SetChannelID(channelID string) {
 }
 
 var (
-	findChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	findChannelsRequestFieldCursor      = big.NewInt(1 << 1)
-	findChannelsRequestFieldLimit       = big.NewInt(1 << 2)
-	findChannelsRequestFieldPlatform    = big.NewInt(1 << 3)
-	findChannelsRequestFieldQ           = big.NewInt(1 << 4)
-	findChannelsRequestFieldStatus      = big.NewInt(1 << 5)
+	findChannelsRequestFieldCursor   = big.NewInt(1 << 0)
+	findChannelsRequestFieldLimit    = big.NewInt(1 << 1)
+	findChannelsRequestFieldPlatform = big.NewInt(1 << 2)
+	findChannelsRequestFieldQ        = big.NewInt(1 << 3)
+	findChannelsRequestFieldStatus   = big.NewInt(1 << 4)
 )
 
 type FindChannelsRequest struct {
-	WorkspaceID string             `json:"-" url:"-"`
-	Cursor      *string            `json:"-" url:"cursor,omitempty"`
-	Limit       *string            `json:"-" url:"limit,omitempty"`
-	Platform    *Platform          `json:"-" url:"platform,omitempty"`
-	Q           *string            `json:"-" url:"q,omitempty"`
-	Status      *ChannelStatusName `json:"-" url:"status,omitempty"`
+	Cursor   *string            `json:"-" url:"cursor,omitempty"`
+	Limit    *string            `json:"-" url:"limit,omitempty"`
+	Platform *Platform          `json:"-" url:"platform,omitempty"`
+	Q        *string            `json:"-" url:"q,omitempty"`
+	Status   *ChannelStatusName `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -681,13 +557,6 @@ func (f *FindChannelsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	f.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (f *FindChannelsRequest) SetWorkspaceID(workspaceID string) {
-	f.WorkspaceID = workspaceID
-	f.require(findChannelsRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -726,71 +595,15 @@ func (f *FindChannelsRequest) SetStatus(status *ChannelStatusName) {
 }
 
 var (
-	listChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListChannelsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListChannelsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListChannelsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listChannelsRequestFieldWorkspaceID)
-}
-
-var (
-	platformsChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type PlatformsChannelsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (p *PlatformsChannelsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PlatformsChannelsRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(platformsChannelsRequestFieldWorkspaceID)
-}
-
-var (
-	reconnectChannelsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	reconnectChannelsRequestFieldChannelID   = big.NewInt(1 << 1)
-	reconnectChannelsRequestFieldMessages    = big.NewInt(1 << 2)
-	reconnectChannelsRequestFieldReposts     = big.NewInt(1 << 3)
+	reconnectChannelsRequestFieldChannelID = big.NewInt(1 << 0)
+	reconnectChannelsRequestFieldMessages  = big.NewInt(1 << 1)
+	reconnectChannelsRequestFieldReposts   = big.NewInt(1 << 2)
 )
 
 type ReconnectChannelsRequest struct {
-	WorkspaceID string                            `json:"-" url:"-"`
-	ChannelID   string                            `json:"-" url:"-"`
-	Messages    *ReconnectChannelsRequestMessages `json:"-" url:"messages,omitempty"`
-	Reposts     *ReconnectChannelsRequestReposts  `json:"-" url:"reposts,omitempty"`
+	ChannelID string                            `json:"-" url:"-"`
+	Messages  *ReconnectChannelsRequestMessages `json:"-" url:"messages,omitempty"`
+	Reposts   *ReconnectChannelsRequestReposts  `json:"-" url:"reposts,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -803,13 +616,6 @@ func (r *ReconnectChannelsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReconnectChannelsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(reconnectChannelsRequestFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -834,15 +640,13 @@ func (r *ReconnectChannelsRequest) SetReposts(reposts *ReconnectChannelsRequestR
 }
 
 var (
-	startSiteSignInFieldWorkspaceID = big.NewInt(1 << 0)
-	startSiteSignInFieldPlatform    = big.NewInt(1 << 1)
-	startSiteSignInFieldChannelID   = big.NewInt(1 << 2)
+	startSiteSignInFieldPlatform  = big.NewInt(1 << 0)
+	startSiteSignInFieldChannelID = big.NewInt(1 << 1)
 )
 
 type StartSiteSignIn struct {
-	WorkspaceID string            `json:"-" url:"-"`
-	Platform    OAuthSitePlatform `json:"-" url:"-"`
-	ChannelID   *string           `json:"channelId,omitempty" url:"-"`
+	Platform  OAuthSitePlatform `json:"-" url:"-"`
+	ChannelID *string           `json:"channelId,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -855,13 +659,6 @@ func (s *StartSiteSignIn) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *StartSiteSignIn) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(startSiteSignInFieldWorkspaceID)
 }
 
 // SetPlatform sets the Platform field and marks it as non-optional;
@@ -2464,15 +2261,13 @@ func (r ReconnectChannelsRequestReposts) Ptr() *ReconnectChannelsRequestReposts 
 }
 
 var (
-	channelUpdateFieldWorkspaceID = big.NewInt(1 << 0)
-	channelUpdateFieldChannelID   = big.NewInt(1 << 1)
-	channelUpdateFieldLabel       = big.NewInt(1 << 2)
+	channelUpdateFieldChannelID = big.NewInt(1 << 0)
+	channelUpdateFieldLabel     = big.NewInt(1 << 1)
 )
 
 type ChannelUpdate struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	ChannelID   string  `json:"-" url:"-"`
-	Label       *string `json:"label,omitempty" url:"-"`
+	ChannelID string  `json:"-" url:"-"`
+	Label     *string `json:"label,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2485,13 +2280,6 @@ func (c *ChannelUpdate) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ChannelUpdate) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(channelUpdateFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;

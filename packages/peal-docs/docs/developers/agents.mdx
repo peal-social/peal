@@ -81,7 +81,7 @@ An agent that runs on a schedule or on a server has no browser to sign in with. 
 - On the [HTTP API](#api), in the same header.
 - On the [command line](#cli), in the `PEAL_API_KEY` variable, never a flag, with the workspace named by its id ([Run it with an API key](/developers/cli#api-key)).
 
-A key has no scope. What it may do is the list of its permissions, which `whoami` answers, and `GET /api/credential` over HTTP ([SDKs](/developers/sdks#credential)). It puts posts out only when it holds `post:schedule`, and the tools only a person uses, such as inviting someone, refuse it.
+A key has no scope. What it may do is the list of its permissions, which `whoami` answers, and `GET /api/v1/credential` over HTTP ([SDKs](/developers/sdks#credential)). It puts posts out only when it holds `post:schedule`, and the tools only a person uses, such as inviting someone, refuse it.
 
 Keep the key in the agent's secrets. Revoke it under **API keys** the day the agent stops.
 
@@ -373,7 +373,7 @@ It teaches the command line and the HTTP API: setting up and checking with `peal
 
 ## Through the HTTP API [#api]
 
-Your own agent or script can call the endpoints the tools are built on, under `/api/workspaces/{workspaceId}/` ([API overview](/developers)). [API conventions](/developers/conventions) describes their errors, paging and limits. Each tool maps to these endpoints:
+Your own agent or script can call the endpoints the tools are built on, under `/api/v1/` ([API overview](/developers)). With an API key they act in the key's workspace, so no request names it. Another credential sends the `Peal-Workspace` header ([The workspace of a request](/developers/conventions#workspace)). [API conventions](/developers/conventions) describes their errors, paging and limits. Each tool maps to these endpoints:
 
 | Tool                                           | Endpoint                                                                                   |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -412,7 +412,6 @@ import { PealClient } from "peal-sdk";
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
 
 const post = await peal.posts.send({
-  workspaceId,
   "idempotency-key": "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channelIds: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -432,7 +431,6 @@ from peal import Peal, PostContent, PostTiming_At
 peal = Peal(token=os.environ["PEAL_API_KEY"])
 
 post = peal.posts.send(
-    workspace_id=workspace_id,
     idempotency_key="7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     channel_ids=["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
     content=PostContent(
@@ -459,7 +457,6 @@ import (
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
 
 post, err := client.Posts.Send(context.Background(), &peal.NewPost{
-	WorkspaceID:    workspaceID,
 	IdempotencyKey: peal.String("7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44"),
 	ChannelIDs:     []string{"019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"},
 	Content: &peal.PostContent{
@@ -479,7 +476,6 @@ require "peal"
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
 
 post = peal.posts.send_(
-  workspace_id: workspace_id,
   idempotency_key: "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
   channel_ids: ["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11"],
   content: {
@@ -504,7 +500,7 @@ PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
 
-Post post = peal.posts().send(workspaceId, NewPost.builder()
+Post post = peal.posts().send(NewPost.builder()
     .content(PostContent.builder()
         .text("Our spring catalogue is out. Read it at https://example.com/spring")
         .build())
@@ -527,7 +523,7 @@ use Peal\Types\PostTimingAt;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
 
-$post = $peal->posts->send($workspaceId, new NewPost([
+$post = $peal->posts->send(new NewPost([
     'idempotencyKey' => '7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44',
     'channelIds' => ['019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11'],
     'content' => new PostContent([
@@ -549,7 +545,6 @@ var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
 
 var post = await peal.Posts.SendAsync(new NewPost
 {
-    WorkspaceId = workspaceId,
     IdempotencyKey = "7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44",
     ChannelIds = new List<string> { "019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11" },
     Content = new PostContent
@@ -578,7 +573,6 @@ let peal = PealClient::new(ClientConfig {
 let post = peal
     .posts
     .send(
-        workspace_id,
         &NewPost::builder()
             .channel_ids(vec!["019a5f10-2c41-7a08-b3d2-6e1f4a9c0b11".to_string()])
             .content(PostContent {
@@ -600,7 +594,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send \
+curl -X POST https://api.example.com/api/v1/posts/send \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 7d1c9a52-0b7e-4f0a-9c1e-3a5b8e2f6d44" \

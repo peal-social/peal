@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         text: "text"
  *     }
  */
 export interface NewComment {
-    workspaceId: string;
     postId: string;
     anchor?: NewComment.Anchor;
     parentId?: string;

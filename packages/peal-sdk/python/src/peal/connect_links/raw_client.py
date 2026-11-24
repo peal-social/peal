@@ -10,6 +10,7 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.bad_request_error import BadRequestError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
@@ -32,15 +33,13 @@ class RawConnectLinksClient:
         self._client_wrapper = client_wrapper
 
     def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[ConnectLink]]:
         """
         Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -50,7 +49,7 @@ class RawConnectLinksClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links",
+            "api/v1/connect-links",
             method="GET",
             request_options=request_options,
         )
@@ -64,6 +63,17 @@ class RawConnectLinksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -119,7 +129,6 @@ class RawConnectLinksClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = OMIT,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -135,8 +144,6 @@ class RawConnectLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         connection : typing.Optional[ChannelConnection]
@@ -163,7 +170,7 @@ class RawConnectLinksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links",
+            "api/v1/connect-links",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -190,6 +197,17 @@ class RawConnectLinksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -255,15 +273,13 @@ class RawConnectLinksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ConnectLink]:
         """
         One connect link of the workspace: where it stands, the channels it connected once `completed`, and how its last sign-in failed. Read it when a browser comes back to your return address, or on `channel.connected`. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -275,7 +291,7 @@ class RawConnectLinksClient:
             ConnectLink
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links/{encode_path_param(link_id)}",
+            f"api/v1/connect-links/{encode_path_param(link_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -289,6 +305,17 @@ class RawConnectLinksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -343,15 +370,13 @@ class RawConnectLinksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def revoke(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ConnectLink]:
         """
         Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -363,7 +388,7 @@ class RawConnectLinksClient:
             ConnectLink
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links/{encode_path_param(link_id)}",
+            f"api/v1/connect-links/{encode_path_param(link_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -377,6 +402,17 @@ class RawConnectLinksClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -436,15 +472,13 @@ class AsyncRawConnectLinksClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[ConnectLink]]:
         """
         Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -454,7 +488,7 @@ class AsyncRawConnectLinksClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links",
+            "api/v1/connect-links",
             method="GET",
             request_options=request_options,
         )
@@ -468,6 +502,17 @@ class AsyncRawConnectLinksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -523,7 +568,6 @@ class AsyncRawConnectLinksClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = OMIT,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -539,8 +583,6 @@ class AsyncRawConnectLinksClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         connection : typing.Optional[ChannelConnection]
@@ -567,7 +609,7 @@ class AsyncRawConnectLinksClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links",
+            "api/v1/connect-links",
             method="POST",
             json={
                 "channelId": channel_id,
@@ -594,6 +636,17 @@ class AsyncRawConnectLinksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -659,15 +712,13 @@ class AsyncRawConnectLinksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ConnectLink]:
         """
         One connect link of the workspace: where it stands, the channels it connected once `completed`, and how its last sign-in failed. Read it when a browser comes back to your return address, or on `channel.connected`. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -679,7 +730,7 @@ class AsyncRawConnectLinksClient:
             ConnectLink
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links/{encode_path_param(link_id)}",
+            f"api/v1/connect-links/{encode_path_param(link_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -693,6 +744,17 @@ class AsyncRawConnectLinksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -747,15 +809,13 @@ class AsyncRawConnectLinksClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ConnectLink]:
         """
         Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -767,7 +827,7 @@ class AsyncRawConnectLinksClient:
             ConnectLink
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/connect-links/{encode_path_param(link_id)}",
+            f"api/v1/connect-links/{encode_path_param(link_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -781,6 +841,17 @@ class AsyncRawConnectLinksClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

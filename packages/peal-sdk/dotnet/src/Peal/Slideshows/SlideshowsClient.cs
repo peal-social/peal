@@ -33,10 +33,7 @@ public partial class SlideshowsClient : ISlideshowsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media/slideshows",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media/slideshows",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -87,6 +84,18 @@ public partial class SlideshowsClient : ISlideshowsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -175,10 +184,7 @@ public partial class SlideshowsClient : ISlideshowsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media/slideshows",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media/slideshows",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -232,6 +238,18 @@ public partial class SlideshowsClient : ISlideshowsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -356,10 +374,7 @@ public partial class SlideshowsClient : ISlideshowsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media/slideshows/edits",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media/slideshows/edits",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -413,6 +428,18 @@ public partial class SlideshowsClient : ISlideshowsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -538,8 +565,7 @@ public partial class SlideshowsClient : ISlideshowsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/slideshows/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/slideshows/{0}",
                         ValueConvert.ToPathParameterString(request.SlideshowId)
                     ),
                     QueryString = _queryString,
@@ -592,6 +618,18 @@ public partial class SlideshowsClient : ISlideshowsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -664,7 +702,7 @@ public partial class SlideshowsClient : ISlideshowsClient
     /// Lists the slide videos the workspace asked for, newest first, 50 at most, only those with `status` when given. Needs assistant:use.
     /// </summary>
     /// <example><code>
-    /// await client.Slideshows.ListAsync(new ListSlideshowsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Slideshows.ListAsync(new ListSlideshowsRequest());
     /// </code></example>
     public WithRawResponseTask<Slideshows> ListAsync(
         ListSlideshowsRequest request,
@@ -684,7 +722,6 @@ public partial class SlideshowsClient : ISlideshowsClient
     /// await client.Slideshows.CreateAsync(
     ///     new SlideshowRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Aspect = ImageAspect.Square,
     ///         Slides = new List&lt;Slide&gt;() { new Slide { MediaId = "mediaId" } },
     ///     }
@@ -706,11 +743,7 @@ public partial class SlideshowsClient : ISlideshowsClient
     /// </summary>
     /// <example><code>
     /// await client.Slideshows.CreateFromEditAsync(
-    ///     new EditRenderRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Edit = new Dictionary&lt;string, object?&gt;() { { "key", "value" } },
-    ///     }
+    ///     new EditRenderRequest { Edit = new Dictionary&lt;string, object?&gt;() { { "key", "value" } } }
     /// );
     /// </code></example>
     public WithRawResponseTask<Slideshow> CreateFromEditAsync(
@@ -728,9 +761,7 @@ public partial class SlideshowsClient : ISlideshowsClient
     /// Reads where a slide video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
     /// </summary>
     /// <example><code>
-    /// await client.Slideshows.GetAsync(
-    ///     new GetSlideshowsRequest { WorkspaceId = "workspaceId", SlideshowId = "slideshowId" }
-    /// );
+    /// await client.Slideshows.GetAsync(new GetSlideshowsRequest { SlideshowId = "slideshowId" });
     /// </code></example>
     public WithRawResponseTask<Slideshow> GetAsync(
         GetSlideshowsRequest request,

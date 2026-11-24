@@ -15,18 +15,14 @@ public class ClearTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/default-options")
+                    .WithPath("/api/v1/channels/channelId/default-options")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.ChannelDefaults.ClearAsync(
-                new ClearChannelDefaultsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ChannelId = "channelId",
-                }
+                new ClearChannelDefaultsRequest { ChannelId = "channelId" }
             )
         );
     }
@@ -38,18 +34,14 @@ public class ClearTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/default-options")
+                    .WithPath("/api/v1/channels/channelId/default-options")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.ChannelDefaults.ClearAsync(
-                new ClearChannelDefaultsRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    ChannelId = "channelId",
-                }
+                new ClearChannelDefaultsRequest { ChannelId = "channelId" }
             )
         );
     }

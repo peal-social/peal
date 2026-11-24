@@ -7,9 +7,6 @@ namespace Peal;
 public record DeleteArticlesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ArticleId { get; set; }
 
     /// <inheritdoc />

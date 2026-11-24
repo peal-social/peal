@@ -2,7 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, maxWebhookEndpoints } from "peal-contract";
+import { Api, maxWebhookEndpoints, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import type { WorkspaceId } from "#shared/domain/ids.ts";
@@ -59,17 +59,17 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       Effect.gen(function* lifecycle() {
         const workspaceId = yield* freshWorkspace;
         const client = yield* clientAs(owner(workspaceId));
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const created = yield* client.webhooks.create({
-          params,
+          headers,
           payload: {
             eventTypes: ["post.published", "post.failed"],
             url: `https://${host()}/hooks`,
           },
         });
 
-        const endpointParams = { ...params, endpointId: created.endpoint.id };
+        const endpointParams = { endpointId: created.endpoint.id };
 
         assert.match(created.secret, /^whsec_[A-Za-z0-9+/]{43}=$/u);
         assert.deepStrictEqual(
@@ -89,19 +89,20 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
           }
         );
 
-        const listed = yield* client.webhooks.list({ params });
+        const listed = yield* client.webhooks.list({ headers });
 
         assert.deepStrictEqual(listed, [created.endpoint]);
         // The secret is in that one answer and no other.
         assert.notInclude(JSON.stringify(listed), "whsec_");
         assert.notInclude(
           JSON.stringify(
-            yield* client.webhooks.get({ params: endpointParams })
+            yield* client.webhooks.get({ headers, params: endpointParams })
           ),
           "whsec_"
         );
 
         const off = yield* client.webhooks.update({
+          headers,
           params: endpointParams,
           payload: { description: "Synthetic receiver", enabled: false },
         });
@@ -112,23 +113,30 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         assert.strictEqual(off.url, created.endpoint.url);
         assert.strictEqual(
           yield* tagOf(
-            client.webhooks.sendTest({ params: endpointParams, query: {} })
+            client.webhooks.sendTest({
+              headers,
+              params: endpointParams,
+              query: {},
+            })
           ),
           "WebhookEndpointDisabled"
         );
 
         const rotated = yield* client.webhooks.rotateSecret({
+          headers,
           params: endpointParams,
         });
 
         assert.notStrictEqual(rotated.secret, created.secret);
         assert.isNotNull(rotated.endpoint.previousSecretExpiresAt);
 
-        yield* client.webhooks.delete({ params: endpointParams });
+        yield* client.webhooks.delete({ headers, params: endpointParams });
 
-        assert.deepStrictEqual(yield* client.webhooks.list({ params }), []);
+        assert.deepStrictEqual(yield* client.webhooks.list({ headers }), []);
         assert.strictEqual(
-          yield* tagOf(client.webhooks.get({ params: endpointParams })),
+          yield* tagOf(
+            client.webhooks.get({ headers, params: endpointParams })
+          ),
           "WebhookEndpointNotFound"
         );
       })
@@ -142,15 +150,20 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       const receiver = host();
 
       const { endpoint } = yield* client.webhooks.create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: {
           eventTypes: ["post.published"],
           url: `https://${receiver}/hooks`,
         },
       });
 
-      const params = { endpointId: endpoint.id, workspaceId };
-      const pending = yield* client.webhooks.sendTest({ params, query: {} });
+      const params = { endpointId: endpoint.id };
+
+      const pending = yield* client.webhooks.sendTest({
+        headers: forWorkspace(workspaceId),
+        params,
+        query: {},
+      });
 
       assert.deepStrictEqual(
         {
@@ -167,6 +180,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       );
 
       const [logged] = (yield* client.webhooks.listDeliveries({
+        headers: forWorkspace(workspaceId),
         params,
         query: {},
       })).items;
@@ -197,6 +211,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       assert.isNotNull(logged.nextAttemptAt);
 
       const again = yield* client.webhooks.redeliver({
+        headers: forWorkspace(workspaceId),
         params: { ...params, deliveryId: pending.id },
       });
 
@@ -204,6 +219,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       assert.notStrictEqual(again.id, pending.id);
 
       const page = yield* client.webhooks.listDeliveries({
+        headers: forWorkspace(workspaceId),
         params,
         query: { limit: 1 },
       });
@@ -215,6 +231,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       assert.strictEqual(page.nextCursor, again.id);
       assert.deepStrictEqual(
         (yield* client.webhooks.listDeliveries({
+          headers: forWorkspace(workspaceId),
           params,
           query: { cursor: again.id },
         })).items.map(({ id }) => id),
@@ -223,6 +240,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       assert.strictEqual(
         yield* tagOf(
           client.webhooks.listDeliveries({
+            headers: forWorkspace(workspaceId),
             params,
             query: { cursor: "not-a-cursor" },
           })
@@ -232,6 +250,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       assert.strictEqual(
         yield* tagOf(
           client.webhooks.redeliver({
+            headers: forWorkspace(workspaceId),
             params: { ...params, deliveryId: "not-a-delivery" },
           })
         ),
@@ -246,11 +265,11 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       Effect.gen(function* refusals() {
         const workspaceId = yield* freshWorkspace;
         const client = yield* clientAs(owner(workspaceId));
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const refusal = (url: string) =>
           client.webhooks
-            .create({ params, payload: { eventTypes: ["media.ready"], url } })
+            .create({ headers, payload: { eventTypes: ["media.ready"], url } })
             .pipe(
               Effect.match({
                 onFailure: (failure) =>
@@ -285,7 +304,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
 
         const full = yield* client.webhooks
           .create({
-            params,
+            headers,
             payload: {
               eventTypes: ["media.ready"],
               url: `https://${host()}/a`,
@@ -306,21 +325,22 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         const asOwner = yield* clientAs(owner(workspaceId));
         const asReader = yield* clientAs(reader(workspaceId));
         const asEditor = yield* clientAs(editor(workspaceId));
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const { endpoint } = yield* asOwner.webhooks.create({
-          params,
+          headers,
           payload: {
             eventTypes: ["post.published"],
             url: `https://${host()}/hooks`,
           },
         });
 
-        const endpointParams = { ...params, endpointId: endpoint.id };
+        const endpointParams = { endpointId: endpoint.id };
 
-        assert.lengthOf(yield* asReader.webhooks.list({ params }), 1);
+        assert.lengthOf(yield* asReader.webhooks.list({ headers }), 1);
         assert.lengthOf(
           (yield* asReader.webhooks.listDeliveries({
+            headers,
             params: endpointParams,
             query: {},
           })).items,
@@ -328,11 +348,11 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         );
 
         const refused = yield* Effect.all([
-          tagOf(asEditor.webhooks.list({ params })),
-          tagOf(asEditor.webhooks.get({ params: endpointParams })),
+          tagOf(asEditor.webhooks.list({ headers })),
+          tagOf(asEditor.webhooks.get({ headers, params: endpointParams })),
           tagOf(
             asReader.webhooks.create({
-              params,
+              headers,
               payload: {
                 eventTypes: ["post.published"],
                 url: `https://${host()}/hooks`,
@@ -341,19 +361,26 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
           ),
           tagOf(
             asReader.webhooks.update({
+              headers,
               params: endpointParams,
               payload: { enabled: false },
             })
           ),
-          tagOf(asReader.webhooks.delete({ params: endpointParams })),
-          tagOf(asReader.webhooks.rotateSecret({ params: endpointParams })),
+          tagOf(asReader.webhooks.delete({ headers, params: endpointParams })),
           tagOf(
-            asReader.webhooks.sendTest({ params: endpointParams, query: {} })
+            asReader.webhooks.rotateSecret({ headers, params: endpointParams })
           ),
-          tagOf(asEditor.webhooks.searchDeliveries({ params, query: {} })),
+          tagOf(
+            asReader.webhooks.sendTest({
+              headers,
+              params: endpointParams,
+              query: {},
+            })
+          ),
+          tagOf(asEditor.webhooks.searchDeliveries({ headers, query: {} })),
           tagOf(
             asReader.webhooks.redeliverMany({
-              params,
+              headers,
               payload: { endpointId: endpoint.id },
             })
           ),
@@ -372,12 +399,12 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       Effect.gen(function* acrossEndpoints() {
         const workspaceId = yield* freshWorkspace;
         const client = yield* clientAs(owner(workspaceId));
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const transport = yield* FakeTransport;
         const receiver = host();
 
         const { endpoint } = yield* client.webhooks.create({
-          params,
+          headers,
           payload: {
             channelIds: ["01900000-0000-7000-8000-0000000000c1"],
             eventTypes: ["post.published"],
@@ -391,7 +418,8 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         assert.deepStrictEqual(endpoint.workspaceIds, []);
 
         const sample = yield* client.webhooks.sendTest({
-          params: { ...params, endpointId: endpoint.id },
+          headers,
+          params: { endpointId: endpoint.id },
           query: { eventType: "post.failed" },
         });
 
@@ -406,7 +434,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         );
 
         const page = yield* client.webhooks.searchDeliveries({
-          params,
+          headers,
           query: { status: "failed" },
         });
 
@@ -417,7 +445,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
 
         // The endpoint was turned off by 410 Gone: sending it again skips.
         const again = yield* client.webhooks.redeliverMany({
-          params,
+          headers,
           payload: { deliveryIds: [sample.id] },
         });
 
@@ -429,7 +457,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         assert.strictEqual(
           yield* tagOf(
             client.webhooks.redeliverMany({
-              params,
+              headers,
               payload: { endpointId: "not-an-endpoint" },
             })
           ),
@@ -442,10 +470,10 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
     Effect.gen(function* refused() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* clientAs(owner(workspaceId));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const { endpoint } = yield* client.webhooks.create({
-        params,
+        headers,
         payload: {
           eventTypes: ["post.published"],
           url: `https://${host()}/hooks`,
@@ -455,7 +483,8 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
       assert.strictEqual(
         yield* tagOf(
           client.webhooks.update({
-            params: { ...params, endpointId: endpoint.id },
+            headers,
+            params: { endpointId: endpoint.id },
             payload: {
               workspaceIds: ["5b1c5f7e-3d2a-4c1b-9e8f-7a6b5c4d3e2f"],
             },
@@ -469,14 +498,14 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
   it.effect(
     "take headers whose values they never answer, and replace the whole list",
     () =>
-      Effect.gen(function* headers() {
+      Effect.gen(function* endpointHeaders() {
         const workspaceId = yield* freshWorkspace;
         const client = yield* clientAs(owner(workspaceId));
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const value = "Bearer synthetic-api-header-value";
 
         const created = yield* client.webhooks.create({
-          params,
+          headers,
           payload: {
             eventTypes: ["post.published"],
             headers: [{ name: "Authorization", value }],
@@ -484,8 +513,12 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
           },
         });
 
-        const endpointParams = { ...params, endpointId: created.endpoint.id };
-        const read = yield* client.webhooks.get({ params: endpointParams });
+        const endpointParams = { endpointId: created.endpoint.id };
+
+        const read = yield* client.webhooks.get({
+          headers,
+          params: endpointParams,
+        });
 
         assert.deepStrictEqual(created.endpoint.headerNames, ["Authorization"]);
         assert.deepStrictEqual(read.headerNames, ["Authorization"]);
@@ -495,6 +528,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         assert.strictEqual(
           yield* tagOf(
             client.webhooks.update({
+              headers,
               params: endpointParams,
               payload: { url: `https://${host()}/hooks` },
             })
@@ -503,6 +537,7 @@ layer(WebhooksTest)("the webhooks endpoints", (it) => {
         );
 
         const cleared = yield* client.webhooks.update({
+          headers,
           params: endpointParams,
           payload: { headers: [] },
         });

@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         reviewId: "reviewId",
  *         answered: true
  *     }
  */
 export interface SetReviewAnsweredInboxReviewsRequest {
-    workspaceId: string;
     reviewId: string;
     answered: boolean;
 }

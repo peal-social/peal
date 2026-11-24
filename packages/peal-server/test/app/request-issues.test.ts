@@ -2,6 +2,7 @@
 // one field a round trip.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Option, Schema } from "effect";
+import { forWorkspace } from "peal-contract";
 
 import {
   IntegrationLive,
@@ -31,9 +32,10 @@ const refused = (name: string, path: string, body: Schema.Json) =>
     const response = yield* Effect.promise(
       async () =>
         await app.handler(
-          new Request(`${origin}/api/workspaces/${workspaceId}${path}`, {
+          new Request(`${origin}/api/v1${path}`, {
             body: JSON.stringify(body),
             headers: {
+              ...forWorkspace(workspaceId),
               "content-type": "application/json",
               cookie: owner.cookies,
               origin,

@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         boostId: "boostId"
  *     }
  */
 export interface ResumeBoostAdsRequest {
-    workspaceId: string;
     boostId: string;
 }

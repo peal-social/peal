@@ -37,7 +37,7 @@ public class SendPrivateReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/private-replies")
+                    .WithPath("/api/v1/inbox/messages/private-replies")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -50,12 +50,7 @@ public class SendPrivateReplyTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SendPrivateReplyAsync(
-            new NewInboxPrivateReply
-            {
-                WorkspaceId = "workspaceId",
-                CommentId = "commentId",
-                Text = "x",
-            }
+            new NewInboxPrivateReply { CommentId = "commentId", Text = "x" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -88,7 +83,7 @@ public class SendPrivateReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/private-replies")
+                    .WithPath("/api/v1/inbox/messages/private-replies")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -101,12 +96,7 @@ public class SendPrivateReplyTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.SendPrivateReplyAsync(
-            new NewInboxPrivateReply
-            {
-                WorkspaceId = "workspaceId",
-                CommentId = "commentId",
-                Text = "text",
-            }
+            new NewInboxPrivateReply { CommentId = "commentId", Text = "text" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

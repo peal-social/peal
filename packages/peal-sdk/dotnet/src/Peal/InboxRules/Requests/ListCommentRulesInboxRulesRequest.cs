@@ -7,9 +7,6 @@ namespace Peal;
 public record ListCommentRulesInboxRulesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Cursor { get; set; }
 
     [JsonIgnore]

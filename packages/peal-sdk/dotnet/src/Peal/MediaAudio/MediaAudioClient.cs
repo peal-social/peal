@@ -32,10 +32,7 @@ public partial class MediaAudioClient : IMediaAudioClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media/voiceovers",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media/voiceovers",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -89,6 +86,18 @@ public partial class MediaAudioClient : IMediaAudioClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -238,8 +247,7 @@ public partial class MediaAudioClient : IMediaAudioClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/{1}/transcription",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/{0}/transcription",
                         ValueConvert.ToPathParameterString(request.MediaId)
                     ),
                     Body = request,
@@ -295,6 +303,18 @@ public partial class MediaAudioClient : IMediaAudioClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -415,9 +435,7 @@ public partial class MediaAudioClient : IMediaAudioClient
     /// Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models/speech`) to speak the text, in `voice` when given, and answers with the audio as a new file of the media library, marked `aiGenerated`, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
     /// </summary>
     /// <example><code>
-    /// await client.MediaAudio.CreateVoiceoverAsync(
-    ///     new VoiceoverRequest { WorkspaceId = "workspaceId", Text = "text" }
-    /// );
+    /// await client.MediaAudio.CreateVoiceoverAsync(new VoiceoverRequest { Text = "text" });
     /// </code></example>
     public WithRawResponseTask<Media> CreateVoiceoverAsync(
         VoiceoverRequest request,
@@ -434,9 +452,7 @@ public partial class MediaAudioClient : IMediaAudioClient
     /// Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (`PUT .../assistant/models/transcription`), and answers with what is said in it. With `saveAsDescription`, the transcript becomes the file's description when it fits one (`descriptionSaved`). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
     /// </summary>
     /// <example><code>
-    /// await client.MediaAudio.TranscribeAsync(
-    ///     new TranscriptionRequest { WorkspaceId = "workspaceId", MediaId = "mediaId" }
-    /// );
+    /// await client.MediaAudio.TranscribeAsync(new TranscriptionRequest { MediaId = "mediaId" });
     /// </code></example>
     public WithRawResponseTask<Transcript> TranscribeAsync(
         TranscriptionRequest request,

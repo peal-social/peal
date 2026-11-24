@@ -64,12 +64,12 @@ Over HTTP:
 
 ```sh
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/targets/<target-id>/unpublish?wait=30"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/unpublish?wait=30"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/unpublish"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/unpublish"
 curl -sS -X POST -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" -d '{"text": "The corrected text.", "part": 0}' \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/targets/<target-id>/edit?wait=30"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/targets/<target-id>/edit?wait=30"
 curl -sS -H "Authorization: Bearer $PEAL_API_KEY" \
-  "$PEAL_API_URL/api/workspaces/$PEAL_WORKSPACE/posts/<post-id>/changes"
+  "$PEAL_API_URL/api/v1/posts/<post-id>/changes"
 ```

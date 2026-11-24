@@ -39,16 +39,12 @@ class ChannelsClient:
         """
         return self._raw_client
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Channel]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Channel]:
         """
         Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -62,18 +58,16 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.channels.list(
-            workspace_id="workspaceId",
-        )
+        client.channels.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
     def find(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -87,8 +81,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -112,33 +104,22 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.channels.find(
-            workspace_id="workspaceId",
-        )
+        client.channels.find()
         """
         _response = self._raw_client.find(
-            workspace_id,
-            cursor=cursor,
-            limit=limit,
-            platform=platform,
-            q=q,
-            status=status,
-            request_options=request_options,
+            cursor=cursor, limit=limit, platform=platform, q=q, status=status, request_options=request_options
         )
         return _response.data
 
-    def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ConnectablePlatforms:
+    def platforms(self, *, request_options: typing.Optional[RequestOptions] = None) -> ConnectablePlatforms:
         """
         Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -152,18 +133,16 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.channels.platforms(
-            workspace_id="workspaceId",
-        )
+        client.channels.platforms()
         """
-        _response = self._raw_client.platforms(workspace_id, request_options=request_options)
+        _response = self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     def connect_site(
         self,
-        workspace_id: str,
         *,
         address: str,
         application_password: str,
@@ -176,8 +155,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         address : str
 
         application_password : str
@@ -199,10 +176,10 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.connect_site(
-            workspace_id="workspaceId",
             address="address",
             application_password="applicationPassword",
             platform="wordpress",
@@ -210,7 +187,6 @@ class ChannelsClient:
         )
         """
         _response = self._raw_client.connect_site(
-            workspace_id,
             address=address,
             application_password=application_password,
             platform=platform,
@@ -221,7 +197,6 @@ class ChannelsClient:
 
     def connect_site_with_key(
         self,
-        workspace_id: str,
         *,
         api_key: str,
         platform: KeySitePlatform,
@@ -233,8 +208,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key : str
 
         platform : KeySitePlatform
@@ -254,29 +227,25 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.connect_site_with_key(
-            workspace_id="workspaceId",
             api_key="apiKey",
             platform="devto",
         )
         """
         _response = self._raw_client.connect_site_with_key(
-            workspace_id, api_key=api_key, platform=platform, publication=publication, request_options=request_options
+            api_key=api_key, platform=platform, publication=publication, request_options=request_options
         )
         return _response.data
 
-    def connect_chat(
-        self, workspace_id: str, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
-    ) -> Channel:
+    def connect_chat(self, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None) -> Channel:
         """
         Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : ConnectChat
 
         request_options : typing.Optional[RequestOptions]
@@ -292,21 +261,20 @@ class ChannelsClient:
         from peal import ConnectChat_Discord, Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.connect_chat(
-            workspace_id="workspaceId",
             request=ConnectChat_Discord(
                 webhook_url="webhookUrl",
             ),
         )
         """
-        _response = self._raw_client.connect_chat(workspace_id, request=request, request_options=request_options)
+        _response = self._raw_client.connect_chat(request=request, request_options=request_options)
         return _response.data
 
     def start_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         channel_id: typing.Optional[str] = OMIT,
@@ -317,8 +285,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         channel_id : typing.Optional[str]
@@ -336,21 +302,20 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.start_site_sign_in(
-            workspace_id="workspaceId",
             platform="wordpressCom",
         )
         """
         _response = self._raw_client.start_site_sign_in(
-            workspace_id, platform, channel_id=channel_id, request_options=request_options
+            platform, channel_id=channel_id, request_options=request_options
         )
         return _response.data
 
     def complete_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         state: str,
@@ -363,8 +328,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         state : str
@@ -386,22 +349,21 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.complete_site_sign_in(
-            workspace_id="workspaceId",
             platform="wordpressCom",
             state="state",
         )
         """
         _response = self._raw_client.complete_site_sign_in(
-            workspace_id, platform, state=state, code=code, error=error, request_options=request_options
+            platform, state=state, code=code, error=error, request_options=request_options
         )
         return _response.data
 
     def connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -414,8 +376,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         connection : typing.Optional[ChannelConnection]
@@ -437,26 +397,20 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.connect(
-            workspace_id="workspaceId",
             platform="x",
         )
         """
         _response = self._raw_client.connect(
-            workspace_id,
-            platform,
-            connection=connection,
-            handle=handle,
-            instance=instance,
-            request_options=request_options,
+            platform, connection=connection, handle=handle, instance=instance, request_options=request_options
         )
         return _response.data
 
     def complete_connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         state: str,
@@ -470,8 +424,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         state : str
@@ -495,22 +447,21 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.complete_connect(
-            workspace_id="workspaceId",
             platform="x",
             state="state",
         )
         """
         _response = self._raw_client.complete_connect(
-            workspace_id, platform, state=state, code=code, error=error, iss=iss, request_options=request_options
+            platform, state=state, code=code, error=error, iss=iss, request_options=request_options
         )
         return _response.data
 
     def choose_accounts(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         account_ids: typing.Sequence[str],
@@ -522,8 +473,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         account_ids : typing.Sequence[str]
@@ -543,23 +492,22 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.choose_accounts(
-            workspace_id="workspaceId",
             platform="x",
             account_ids=["accountIds"],
             selection="selection",
         )
         """
         _response = self._raw_client.choose_accounts(
-            workspace_id, platform, account_ids=account_ids, selection=selection, request_options=request_options
+            platform, account_ids=account_ids, selection=selection, request_options=request_options
         )
         return _response.data
 
     def reconnect(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         messages: typing.Optional[ReconnectChannelsRequestMessages] = None,
@@ -571,8 +519,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         messages : typing.Optional[ReconnectChannelsRequestMessages]
@@ -592,28 +538,24 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.reconnect(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
         _response = self._raw_client.reconnect(
-            workspace_id, channel_id, messages=messages, reposts=reposts, request_options=request_options
+            channel_id, messages=messages, reposts=reposts, request_options=request_options
         )
         return _response.data
 
-    def disconnect(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def disconnect(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -628,19 +570,18 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.disconnect(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.disconnect(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.disconnect(channel_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         label: typing.Optional[str] = OMIT,
@@ -651,8 +592,6 @@ class ChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         label : typing.Optional[str]
@@ -670,26 +609,22 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.update(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.update(workspace_id, channel_id, label=label, request_options=request_options)
+        _response = self._raw_client.update(channel_id, label=label, request_options=request_options)
         return _response.data
 
-    def disable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Channel:
+    def disable(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Channel:
         """
         Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (`channelDisabled`) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -705,26 +640,22 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.disable(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.disable(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.disable(channel_id, request_options=request_options)
         return _response.data
 
-    def enable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Channel:
+    def enable(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Channel:
         """
         Turns a channel back on. It posts again at once, or has the status `refreshNeeded` when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -740,14 +671,14 @@ class ChannelsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channels.enable(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.enable(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.enable(channel_id, request_options=request_options)
         return _response.data
 
 
@@ -766,16 +697,12 @@ class AsyncChannelsClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[Channel]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[Channel]:
         """
         Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -791,24 +718,22 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.channels.list(
-                workspace_id="workspaceId",
-            )
+            await client.channels.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def find(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -822,8 +747,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -849,39 +772,28 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.channels.find(
-                workspace_id="workspaceId",
-            )
+            await client.channels.find()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.find(
-            workspace_id,
-            cursor=cursor,
-            limit=limit,
-            platform=platform,
-            q=q,
-            status=status,
-            request_options=request_options,
+            cursor=cursor, limit=limit, platform=platform, q=q, status=status, request_options=request_options
         )
         return _response.data
 
-    async def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ConnectablePlatforms:
+    async def platforms(self, *, request_options: typing.Optional[RequestOptions] = None) -> ConnectablePlatforms:
         """
         Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -897,24 +809,22 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.channels.platforms(
-                workspace_id="workspaceId",
-            )
+            await client.channels.platforms()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.platforms(workspace_id, request_options=request_options)
+        _response = await self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     async def connect_site(
         self,
-        workspace_id: str,
         *,
         address: str,
         application_password: str,
@@ -927,8 +837,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         address : str
 
         application_password : str
@@ -952,13 +860,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.connect_site(
-                workspace_id="workspaceId",
                 address="address",
                 application_password="applicationPassword",
                 platform="wordpress",
@@ -969,7 +877,6 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.connect_site(
-            workspace_id,
             address=address,
             application_password=application_password,
             platform=platform,
@@ -980,7 +887,6 @@ class AsyncChannelsClient:
 
     async def connect_site_with_key(
         self,
-        workspace_id: str,
         *,
         api_key: str,
         platform: KeySitePlatform,
@@ -992,8 +898,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key : str
 
         platform : KeySitePlatform
@@ -1015,13 +919,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.connect_site_with_key(
-                workspace_id="workspaceId",
                 api_key="apiKey",
                 platform="devto",
             )
@@ -1030,20 +934,18 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.connect_site_with_key(
-            workspace_id, api_key=api_key, platform=platform, publication=publication, request_options=request_options
+            api_key=api_key, platform=platform, publication=publication, request_options=request_options
         )
         return _response.data
 
     async def connect_chat(
-        self, workspace_id: str, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: ConnectChat, request_options: typing.Optional[RequestOptions] = None
     ) -> Channel:
         """
         Connects a chat, to post to it, with a secret its member pastes, no sign-in page: a Discord channel (`discord`) by its webhook's address, from the channel's settings (Integrations, Webhooks); a Telegram channel or group (`telegram`) by the token of the member's own bot and the chat, its public name (`@name`) or its id. Peal checks on the platform that the secret posts there, and keeps it encrypted: both platforms carry it in their addresses, which Peal never logs. An address that is not a Discord webhook's is ChatNotConnected `addressNotAWebhook`, before any call; a webhook Discord does not have `webhookNotFound`, one that does not post messages `webhookKindNotSupported`; a bot's token Telegram refuses `credentialsRefused`, a chat it does not know or the bot is not in `chatNotFound`, a private chat `chatKindNotSupported`, and a chat the bot may not post in `cannotPost` (in a channel, the bot must be an administrator who may post messages). A platform that does not answer, or fails on its side, is PlatformUnreachable. One channel per chat: the same chat again (another webhook of the same Discord channel, say) reconnects its channel with the new secret. With `channelId`, it reconnects that channel, and the secret must reach its chat again (ConnectFailed `accountMismatch`). A chat counts as one channel: a new one needs room in the workspace's plan (PlanLimitReached), checked before the platform is called when the workspace has no chat of that platform. A workspace tries 30 times an hour at most (ChatConnectLimited). A server without its token keyring answers ConnectFailed `notConfigured`. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request : ConnectChat
 
         request_options : typing.Optional[RequestOptions]
@@ -1061,13 +963,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal, ConnectChat_Discord
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.connect_chat(
-                workspace_id="workspaceId",
                 request=ConnectChat_Discord(
                     webhook_url="webhookUrl",
                 ),
@@ -1076,12 +978,11 @@ class AsyncChannelsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.connect_chat(workspace_id, request=request, request_options=request_options)
+        _response = await self._raw_client.connect_chat(request=request, request_options=request_options)
         return _response.data
 
     async def start_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         channel_id: typing.Optional[str] = OMIT,
@@ -1092,8 +993,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         channel_id : typing.Optional[str]
@@ -1113,13 +1012,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.start_site_sign_in(
-                workspace_id="workspaceId",
                 platform="wordpressCom",
             )
 
@@ -1127,13 +1026,12 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.start_site_sign_in(
-            workspace_id, platform, channel_id=channel_id, request_options=request_options
+            platform, channel_id=channel_id, request_options=request_options
         )
         return _response.data
 
     async def complete_site_sign_in(
         self,
-        workspace_id: str,
         platform: OAuthSitePlatform,
         *,
         state: str,
@@ -1146,8 +1044,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : OAuthSitePlatform
 
         state : str
@@ -1171,13 +1067,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.complete_site_sign_in(
-                workspace_id="workspaceId",
                 platform="wordpressCom",
                 state="state",
             )
@@ -1186,13 +1082,12 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.complete_site_sign_in(
-            workspace_id, platform, state=state, code=code, error=error, request_options=request_options
+            platform, state=state, code=code, error=error, request_options=request_options
         )
         return _response.data
 
     async def connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         connection: typing.Optional[ChannelConnection] = OMIT,
@@ -1205,8 +1100,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         connection : typing.Optional[ChannelConnection]
@@ -1230,13 +1123,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.connect(
-                workspace_id="workspaceId",
                 platform="x",
             )
 
@@ -1244,18 +1137,12 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.connect(
-            workspace_id,
-            platform,
-            connection=connection,
-            handle=handle,
-            instance=instance,
-            request_options=request_options,
+            platform, connection=connection, handle=handle, instance=instance, request_options=request_options
         )
         return _response.data
 
     async def complete_connect(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         state: str,
@@ -1269,8 +1156,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         state : str
@@ -1296,13 +1181,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.complete_connect(
-                workspace_id="workspaceId",
                 platform="x",
                 state="state",
             )
@@ -1311,13 +1196,12 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.complete_connect(
-            workspace_id, platform, state=state, code=code, error=error, iss=iss, request_options=request_options
+            platform, state=state, code=code, error=error, iss=iss, request_options=request_options
         )
         return _response.data
 
     async def choose_accounts(
         self,
-        workspace_id: str,
         platform: Platform,
         *,
         account_ids: typing.Sequence[str],
@@ -1329,8 +1213,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         platform : Platform
 
         account_ids : typing.Sequence[str]
@@ -1352,13 +1234,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.choose_accounts(
-                workspace_id="workspaceId",
                 platform="x",
                 account_ids=["accountIds"],
                 selection="selection",
@@ -1368,13 +1250,12 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.choose_accounts(
-            workspace_id, platform, account_ids=account_ids, selection=selection, request_options=request_options
+            platform, account_ids=account_ids, selection=selection, request_options=request_options
         )
         return _response.data
 
     async def reconnect(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         messages: typing.Optional[ReconnectChannelsRequestMessages] = None,
@@ -1386,8 +1267,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         messages : typing.Optional[ReconnectChannelsRequestMessages]
@@ -1409,13 +1288,13 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.reconnect(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
@@ -1423,20 +1302,16 @@ class AsyncChannelsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.reconnect(
-            workspace_id, channel_id, messages=messages, reposts=reposts, request_options=request_options
+            channel_id, messages=messages, reposts=reposts, request_options=request_options
         )
         return _response.data
 
-    async def disconnect(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def disconnect(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1453,25 +1328,24 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.disconnect(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.disconnect(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.disconnect(channel_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         label: typing.Optional[str] = OMIT,
@@ -1482,8 +1356,6 @@ class AsyncChannelsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         label : typing.Optional[str]
@@ -1503,34 +1375,28 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.update(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.update(
-            workspace_id, channel_id, label=label, request_options=request_options
-        )
+        _response = await self._raw_client.update(channel_id, label=label, request_options=request_options)
         return _response.data
 
-    async def disable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Channel:
+    async def disable(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Channel:
         """
         Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (`channelDisabled`) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1548,32 +1414,28 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.disable(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.disable(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.disable(channel_id, request_options=request_options)
         return _response.data
 
-    async def enable(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Channel:
+    async def enable(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Channel:
         """
         Turns a channel back on. It posts again at once, or has the status `refreshNeeded` when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1591,18 +1453,18 @@ class AsyncChannelsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channels.enable(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.enable(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.enable(channel_id, request_options=request_options)
         return _response.data

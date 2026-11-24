@@ -11,6 +11,7 @@ import {
   UploadIncomplete,
   UploadRejected,
   WorkspaceNotFound,
+  forWorkspace,
 } from "peal-contract";
 
 import type { PealApi } from "#api/client.ts";
@@ -88,14 +89,14 @@ export const uploadApiOf = (
 ): UploadApi => ({
   complete: (mediaId) =>
     client.media
-      .complete({ params: { mediaId, workspaceId } })
+      .complete({ headers: forWorkspace(workspaceId), params: { mediaId } })
       .pipe(Effect.mapError(failureOf)),
   create: (upload) =>
     client.media
-      .create({ params: { workspaceId }, payload: upload })
+      .create({ headers: forWorkspace(workspaceId), payload: upload })
       .pipe(Effect.mapError(failureOf)),
   discard: (mediaId) =>
     client.media
-      .delete({ params: { mediaId, workspaceId } })
+      .delete({ headers: forWorkspace(workspaceId), params: { mediaId } })
       .pipe(Effect.ignore),
 });

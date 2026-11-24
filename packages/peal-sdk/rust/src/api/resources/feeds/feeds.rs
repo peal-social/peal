@@ -38,7 +38,6 @@ impl FeedsClient {
     ///     client
     ///         .feeds
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &FeedsListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl FeedsClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &FeedsListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<FeedPage, ApiError> {
@@ -63,7 +61,7 @@ impl FeedsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/feeds", workspace_id),
+                "api/v1/feeds",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -99,7 +97,6 @@ impl FeedsClient {
     ///     client
     ///         .feeds
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewFeed {
     ///                 url: "url".to_string(),
     ///                 attach_picture: None,
@@ -116,7 +113,6 @@ impl FeedsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewFeed,
         options: Option<RequestOptions>,
     ) -> Result<CreatedFeed, ApiError> {
@@ -131,7 +127,7 @@ impl FeedsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/feeds", workspace_id),
+                "api/v1/feeds",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -164,7 +160,6 @@ impl FeedsClient {
     ///     client
     ///         .feeds
     ///         .preview(
-    ///             &"workspaceId".to_string(),
     ///             &FeedPreviewRequest {
     ///                 url: "url".to_string(),
     ///                 template: None,
@@ -176,7 +171,6 @@ impl FeedsClient {
     /// ```
     pub async fn preview(
         &self,
-        workspace_id: &str,
         request: &FeedPreviewRequest,
         options: Option<RequestOptions>,
     ) -> Result<FeedPreview, ApiError> {
@@ -191,7 +185,7 @@ impl FeedsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/feeds/preview", workspace_id),
+                "api/v1/feeds/preview",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -221,15 +215,11 @@ impl FeedsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .feeds
-    ///         .get(&"workspaceId".to_string(), &"feedId".to_string(), None)
-    ///         .await;
+    ///     client.feeds.get(&"feedId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         feed_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Feed, ApiError> {
@@ -243,7 +233,7 @@ impl FeedsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/feeds/{}", workspace_id, feed_id),
+                &format!("api/v1/feeds/{}", feed_id),
                 None,
                 None,
                 options,
@@ -273,15 +263,11 @@ impl FeedsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .feeds
-    ///         .delete(&"workspaceId".to_string(), &"feedId".to_string(), None)
-    ///         .await;
+    ///     client.feeds.delete(&"feedId".to_string(), None).await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         feed_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -295,7 +281,7 @@ impl FeedsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/feeds/{}", workspace_id, feed_id),
+                &format!("api/v1/feeds/{}", feed_id),
                 None,
                 None,
                 options,
@@ -328,7 +314,6 @@ impl FeedsClient {
     ///     client
     ///         .feeds
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"feedId".to_string(),
     ///             &FeedChange {
     ///                 ..Default::default()
@@ -340,7 +325,6 @@ impl FeedsClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         feed_id: &str,
         request: &FeedChange,
         options: Option<RequestOptions>,
@@ -356,7 +340,7 @@ impl FeedsClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/feeds/{}", workspace_id, feed_id),
+                &format!("api/v1/feeds/{}", feed_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -386,15 +370,11 @@ impl FeedsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .feeds
-    ///         .items(&"workspaceId".to_string(), &"feedId".to_string(), None)
-    ///         .await;
+    ///     client.feeds.items(&"feedId".to_string(), None).await;
     /// }
     /// ```
     pub async fn items(
         &self,
-        workspace_id: &str,
         feed_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<FeedItems, ApiError> {
@@ -408,7 +388,7 @@ impl FeedsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/feeds/{}/items", workspace_id, feed_id),
+                &format!("api/v1/feeds/{}/items", feed_id),
                 None,
                 None,
                 options,

@@ -1,6 +1,6 @@
 ---
 title: Conventions de l’API
-description: "Ce que tous les points d’accès ont en commun : identifiants de requête, forme des réponses et authentification."
+description: "Ce que tous les points d’accès ont en commun : identifiants de requête, forme des réponses, authentification et espace de travail d’une requête."
 sidebar:
   icon: book-open
 ---
@@ -57,7 +57,7 @@ Tous les points d’accès de l’[API](/developers) suivent les mêmes règles�
 
 ## Requêtes et réponses [#requests]
 
-Les requêtes vont à l’adresse où vous ouvrez Peal, sous `/api`. Les corps sont en JSON, envoyés avec `Content-Type: application/json`. Les réponses aussi, sauf celles qui n’ont pas de corps (204).
+Les requêtes vont à l’adresse où vous ouvrez Peal, sous `/api`, et celles d’un espace de travail sous `/api/v1` ([L’espace de travail d’une requête](#workspace)). Les corps sont en JSON, envoyés avec `Content-Type: application/json`. Les réponses aussi, sauf celles qui n’ont pas de corps (204).
 
 Chaque réponse porte un en-tête `X-Request-Id`, quel que soit ce qui a répondu, et que la requête ait abouti ou non. Voici comment fonctionne cet identifiant :
 
@@ -68,7 +68,7 @@ Chaque réponse porte un en-tête `X-Request-Id`, quel que soit ce qui a répond
 Cette requête envoie son propre identifiant :
 
 ```bash
-curl -i https://api.example.com/api/workspaces/$WORKSPACE_ID/channels \
+curl -i https://api.example.com/api/v1/channels \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "X-Request-Id: nightly-sync:2026-11-16:0042"
 ```
@@ -116,8 +116,37 @@ Chaque autorisation nomme la ressource à laquelle elle est destinée, l’API o
 
 Quand l’identifiant ne passe pas, vous recevez l’un de ces codes :
 
-| Statut | Code              | Quand                                                                                                                            |
-| ------ | ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| 401    | `unauthenticated` | Aucun moyen d’authentification, ou un moyen qui ne fonctionne plus : une clé révoquée ou expirée, un jeton périmé.               |
-| 403    | `forbidden`       | Le moyen fonctionne, mais ne permet pas la requête. `reason` dit pourquoi ([Erreurs](/developers/conventions/errors#forbidden)). |
-| 404    | `not_found`       | Aucune ressource de ce nom, ou un espace de travail auquel l’appelant n’appartient pas.                                          |
+| Statut | Code                 | Quand                                                                                                                                               |
+| ------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `workspace_required` | La requête ne nomme aucun espace de travail, et le moyen d’authentification n’appartient à aucun ([L’espace de travail d’une requête](#workspace)). |
+| 401    | `unauthenticated`    | Aucun moyen d’authentification, ou un moyen qui ne fonctionne plus : une clé révoquée ou expirée, un jeton périmé.                                  |
+| 403    | `forbidden`          | Le moyen fonctionne, mais ne permet pas la requête. `reason` dit pourquoi ([Erreurs](/developers/conventions/errors#forbidden)).                    |
+| 404    | `not_found`          | Aucune ressource de ce nom, ou un espace de travail auquel l’appelant n’appartient pas.                                                             |
+
+## L’espace de travail d’une requête [#workspace]
+
+Les points d’accès d’un espace de travail sont sous `/api/v1`, et leurs chemins ne nomment pas l’espace de travail. Chaque requête agit dans un espace de travail, choisi dans cet ordre :
+
+1. Celui dont l’en-tête `Peal-Workspace` donne l’identifiant, quand la requête l’envoie.
+2. Sinon, celui auquel appartient le moyen d’authentification : celui d’une clé d’API, ou celui auquel est lié le jeton OAuth d’une application, comme celui d’un client MCP.
+3. Sinon aucun, et l’API répond 400 `workspace_required` sans rien faire.
+
+| Moyen d’authentification                    | Sans `Peal-Workspace`        | Avec `Peal-Workspace`                                                            |
+| ------------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------- |
+| Une clé d’API                               | Son propre espace de travail | Son propre espace de travail. Un autre répond 403 `forbidden` (`wrongWorkspace`) |
+| Une application liée à un espace de travail | Cet espace de travail        | Cet espace de travail. Un autre répond 403 `forbidden` (`wrongWorkspace`)        |
+| La connexion de la ligne de commande        | 400 `workspace_required`     | Tout espace de travail auquel son utilisateur appartient                         |
+| Une clé partenaire                          | 400 `workspace_required`     | Tout espace de travail que possède son compte partenaire                         |
+| La session de l’application web             | 400 `workspace_required`     | Tout espace de travail auquel son utilisateur appartient                         |
+
+L’en-tête est facultatif pour une clé d’API : son premier appel est donc `POST /api/v1/posts`, avec la clé et rien d’autre. Un espace de travail auquel l’appelant n’appartient pas répond 404 `workspace_not_found`, comme une valeur qui n’est pas un identifiant d’espace de travail. Un en-tête vide ne nomme aucun espace de travail, comme s’il n’était pas envoyé.
+
+Une clé partenaire nomme l’espace de travail du client à chaque requête qu’elle y envoie :
+
+```bash
+curl https://api.example.com/api/v1/channels \
+  -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: 7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
+```
+
+L’API partenaire garde l’identifiant d’un espace de travail dans le chemin quand l’espace de travail est ce sur quoi elle agit, comme dans `DELETE /api/v1/partner/workspaces/{workspaceId}` ([Intégrer Peal](/developers/embedding#workspaces)).

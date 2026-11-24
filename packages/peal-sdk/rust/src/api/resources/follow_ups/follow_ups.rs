@@ -38,7 +38,6 @@ impl FollowUpsClient {
     ///     client
     ///         .follow_ups
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &FollowUpsListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl FollowUpsClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &FollowUpsListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<FollowUpRulePage, ApiError> {
@@ -63,7 +61,7 @@ impl FollowUpsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/follow-ups", workspace_id),
+                "api/v1/follow-ups",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -101,7 +99,6 @@ impl FollowUpsClient {
     ///     client
     ///         .follow_ups
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewFollowUpRule {
     ///                 likes: 1,
     ///                 channel_id: None,
@@ -116,7 +113,6 @@ impl FollowUpsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewFollowUpRule,
         options: Option<RequestOptions>,
     ) -> Result<FollowUpRule, ApiError> {
@@ -131,7 +127,7 @@ impl FollowUpsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/follow-ups", workspace_id),
+                "api/v1/follow-ups",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -161,15 +157,11 @@ impl FollowUpsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .follow_ups
-    ///         .get(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-    ///         .await;
+    ///     client.follow_ups.get(&"ruleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<FollowUpRule, ApiError> {
@@ -183,7 +175,7 @@ impl FollowUpsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/follow-ups/{}", workspace_id, rule_id),
+                &format!("api/v1/follow-ups/{}", rule_id),
                 None,
                 None,
                 options,
@@ -213,15 +205,11 @@ impl FollowUpsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .follow_ups
-    ///         .delete(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-    ///         .await;
+    ///     client.follow_ups.delete(&"ruleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -235,7 +223,7 @@ impl FollowUpsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/follow-ups/{}", workspace_id, rule_id),
+                &format!("api/v1/follow-ups/{}", rule_id),
                 None,
                 None,
                 options,
@@ -268,7 +256,6 @@ impl FollowUpsClient {
     ///     client
     ///         .follow_ups
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"ruleId".to_string(),
     ///             &FollowUpRuleChange {
     ///                 ..Default::default()
@@ -280,7 +267,6 @@ impl FollowUpsClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         request: &FollowUpRuleChange,
         options: Option<RequestOptions>,
@@ -296,7 +282,7 @@ impl FollowUpsClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/follow-ups/{}", workspace_id, rule_id),
+                &format!("api/v1/follow-ups/{}", rule_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -326,15 +312,11 @@ impl FollowUpsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .follow_ups
-    ///         .approve(&"workspaceId".to_string(), &"ruleId".to_string(), None)
-    ///         .await;
+    ///     client.follow_ups.approve(&"ruleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn approve(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<FollowUpRule, ApiError> {
@@ -349,10 +331,7 @@ impl FollowUpsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/follow-ups/{}/approve",
-                    workspace_id, rule_id
-                ),
+                &format!("api/v1/follow-ups/{}/approve", rule_id),
                 None,
                 None,
                 options,

@@ -8,6 +8,7 @@ import type {
   TooManyRequests,
   Unauthenticated,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import type { AiCapability, AiProviderId } from "peal-contract/ai-providers";
 
@@ -64,6 +65,7 @@ export type ModelFailure =
   | TooManyRequests
   | Unauthenticated
   | WorkspaceNotFound
+  | WorkspaceRequired
   | { readonly _tag: "Unexpected" };
 
 /** The message of `Assistant.models.errors` that says why. */
@@ -84,4 +86,5 @@ export const modelErrorKey = (failure: ModelFailure): ModelErrorKey =>
     Unauthenticated: (): ModelErrorKey => "generic",
     Unexpected: (): ModelErrorKey => "generic",
     WorkspaceNotFound: (): ModelErrorKey => "generic",
+    WorkspaceRequired: (): ModelErrorKey => "generic",
   });

@@ -55,7 +55,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/partner/usage",
+          path: "api/v1/partner/usage",
           query: query_params,
           request_options: request_options
         )

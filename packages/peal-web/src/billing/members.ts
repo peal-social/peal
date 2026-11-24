@@ -1,11 +1,12 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
 /** The workspace's members, as every member in person may list them. */
 export const membersOf = Atom.family((workspaceId: string) =>
   PealApi.query("members", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: [`members:${workspaceId}`],
   })
 );
@@ -17,7 +18,7 @@ export const membersOf = Atom.family((workspaceId: string) =>
  */
 export const standingOf = Atom.family((workspaceId: string) =>
   PealApi.query("billing", "standing", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: [`billing:${workspaceId}`],
   })
 );

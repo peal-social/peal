@@ -141,7 +141,7 @@ const summary = Command.make(
 
     const found = yield* client.analytics
       .summary({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: { from, timeZone: input.timeZone, to },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -152,7 +152,7 @@ const summary = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Console.log(
       `${workspace.name}, posts published from ${found.from} to ${found.to} (${found.timeZone}):`
@@ -184,10 +184,10 @@ const post = Command.make(
     postId,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const found = yield* client.analytics
-      .post({ params: { postId, workspaceId: workspace.id } })
+      .post({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -204,7 +204,7 @@ const post = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     for (const target of found.targets) {
       const read =
@@ -356,7 +356,7 @@ const dashboard = Command.make(
     const query = yield* rangeOf(input);
 
     const found = yield* client.analytics
-      .dashboard({ params: { workspaceId: workspace.id }, query })
+      .dashboard({ headers: {}, query })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -365,7 +365,7 @@ const dashboard = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Console.log(
       `${workspace.name}, from ${found.from} to ${found.to} (${found.timeZone}), against ${found.previous.from} to ${found.previous.to}:`
@@ -434,12 +434,13 @@ const channel = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("analytics.channel")(function* channel(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
     const query = yield* rangeOf(input);
 
     const found = yield* client.analytics
       .channel({
-        params: { channelId: input.channelId, workspaceId: workspace.id },
+        headers: {},
+        params: { channelId: input.channelId },
         query,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -450,7 +451,7 @@ const channel = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Console.log(
       `${named(names, found.channelId)}, from ${found.from} to ${found.to} (${found.timeZone}):`
@@ -502,7 +503,7 @@ const exportFile = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("analytics.export")(function* exportFile(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
     const query = yield* rangeOf(input);
 
     const file = yield* saveNew(
@@ -510,7 +511,7 @@ const exportFile = Command.make(
       "--output",
       client.analytics
         .export({
-          params: { workspaceId: workspace.id },
+          headers: {},
           query: { ...query, format: input.format, kind: input.kind },
         })
         .pipe(Effect.mapError(explain(url)))
@@ -569,11 +570,11 @@ const bestTimes = Command.make(
   Effect.fn("analytics.bestTimes")(function* showBestTimes(input) {
     yield* zoneNamed(input.timeZone);
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const found = yield* client.analytics
       .bestTimes({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           channelId: input.channel,
           days: bestTimesDays[input.days],

@@ -7,9 +7,6 @@ namespace Peal;
 public record NewInboxReviewReply
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ReviewId { get; set; }
 
     [JsonIgnore]

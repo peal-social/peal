@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.GetPartnerAccountRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.PartnerAccount.Get(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Get(
 	ctx context.Context,
-	request *peal.GetPartnerAccountRequest,
 	opts ...option.RequestOption,
 ) (*peal.PartnerStanding, error) {
 	response, err := c.WithRawResponse.Get(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -66,7 +60,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.OpenPartner{
-//	    WorkspaceID: "workspaceId",
 //	    Name: "name",
 //	}
 //	_, err := client.PartnerAccount.Open(
@@ -93,21 +86,15 @@ func (c *Client) Open(
 //
 // Example:
 //
-//	request := &peal.ClosePartnerAccountRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	err := client.PartnerAccount.Close(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Close(
 	ctx context.Context,
-	request *peal.ClosePartnerAccountRequest,
 	opts ...option.RequestOption,
 ) error {
 	_, err := c.WithRawResponse.Close(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -120,9 +107,7 @@ func (c *Client) Close(
 //
 // Example:
 //
-//	request := &peal.PartnerChange{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.PartnerChange{}
 //	_, err := client.PartnerAccount.Update(
 //	    context.TODO(),
 //	    request,
@@ -147,21 +132,15 @@ func (c *Client) Update(
 //
 // Example:
 //
-//	request := &peal.ListKeysPartnerAccountRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.PartnerAccount.ListKeys(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) ListKeys(
 	ctx context.Context,
-	request *peal.ListKeysPartnerAccountRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.PartnerKey, error) {
 	response, err := c.WithRawResponse.ListKeys(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -175,7 +154,6 @@ func (c *Client) ListKeys(
 // Example:
 //
 //	request := &peal.NewPartnerKey{
-//	    WorkspaceID: "workspaceId",
 //	    Name: "name",
 //	    Permissions: []peal.Permission{
 //	        peal.PermissionActivityRead,
@@ -209,7 +187,6 @@ func (c *Client) CreateKey(
 // Example:
 //
 //	request := &peal.RevokeKeyPartnerAccountRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PartnerKeyID: "partnerKeyId",
 //	}
 //	err := client.PartnerAccount.RevokeKey(
@@ -236,9 +213,7 @@ func (c *Client) RevokeKey(
 //
 // Example:
 //
-//	request := &peal.OverviewPartnerAccountRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.OverviewPartnerAccountRequest{}
 //	_, err := client.PartnerAccount.Overview(
 //	    context.TODO(),
 //	    request,
@@ -263,9 +238,7 @@ func (c *Client) Overview(
 //
 // Example:
 //
-//	request := &peal.ListWorkspacesPartnerAccountRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListWorkspacesPartnerAccountRequest{}
 //	_, err := client.PartnerAccount.ListWorkspaces(
 //	    context.TODO(),
 //	    request,

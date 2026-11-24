@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListMediaRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListMediaRequest{}
 //	_, err := client.Media.List(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewUpload{
-//	    WorkspaceID: "workspaceId",
 //	    ByteSize: int64(1000000),
 //	    ContentType: "contentType",
 //	}
@@ -95,7 +92,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.MediaImport{
-//	    WorkspaceID: "workspaceId",
 //	    URL: "url",
 //	}
 //	_, err := client.Media.ImportFromURL(
@@ -123,7 +119,6 @@ func (c *Client) ImportFromURL(
 // Example:
 //
 //	request := &peal.GetMediaRequest{
-//	    WorkspaceID: "workspaceId",
 //	    MediaID: "mediaId",
 //	}
 //	_, err := client.Media.Get(
@@ -151,7 +146,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.DeleteMediaRequest{
-//	    WorkspaceID: "workspaceId",
 //	    MediaID: "mediaId",
 //	}
 //	err := client.Media.Delete(
@@ -179,7 +173,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.MediaDescription{
-//	    WorkspaceID: "workspaceId",
 //	    MediaID: "mediaId",
 //	}
 //	_, err := client.Media.Describe(
@@ -207,7 +200,6 @@ func (c *Client) Describe(
 // Example:
 //
 //	request := &peal.CompleteMediaRequest{
-//	    WorkspaceID: "workspaceId",
 //	    MediaID: "mediaId",
 //	}
 //	_, err := client.Media.Complete(
@@ -235,7 +227,6 @@ func (c *Client) Complete(
 // Example:
 //
 //	request := &peal.UsageMediaRequest{
-//	    WorkspaceID: "workspaceId",
 //	    MediaID: "mediaId",
 //	}
 //	_, err := client.Media.Usage(

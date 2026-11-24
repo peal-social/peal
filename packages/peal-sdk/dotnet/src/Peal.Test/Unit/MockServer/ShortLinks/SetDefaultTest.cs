@@ -31,7 +31,7 @@ public class SetDefaultTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/short-links/settings")
+                    .WithPath("/api/v1/short-links/settings")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -44,7 +44,7 @@ public class SetDefaultTest : BaseMockServerTest
             );
 
         var response = await Client.ShortLinks.SetDefaultAsync(
-            new ShortLinkSettings { WorkspaceId = "workspaceId", ByDefault = true }
+            new ShortLinkSettings { ByDefault = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -71,7 +71,7 @@ public class SetDefaultTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/short-links/settings")
+                    .WithPath("/api/v1/short-links/settings")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -84,7 +84,7 @@ public class SetDefaultTest : BaseMockServerTest
             );
 
         var response = await Client.ShortLinks.SetDefaultAsync(
-            new ShortLinkSettings { WorkspaceId = "workspaceId", ByDefault = true }
+            new ShortLinkSettings { ByDefault = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

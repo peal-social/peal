@@ -1,3 +1,5 @@
+using OneOf;
+
 namespace Peal;
 
 public partial interface IWebhooksClient
@@ -6,7 +8,6 @@ public partial interface IWebhooksClient
     /// Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<WebhookEndpoint>> ListAsync(
-        ListWebhooksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -33,7 +34,7 @@ public partial interface IWebhooksClient
     /// Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, or the failed deliveries of the endpoint `endpointId` (made from `since`, before `until`, of `eventType`, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same `webhook-id` and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; `remaining` says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 `TooManyWebhookSends`). Needs webhook:manage.
     /// </summary>
     WithRawResponseTask<WebhookBulkRedelivery> RedeliverManyAsync(
-        RedeliverManyWebhooksRequest request,
+        OneOf<WebhookRedeliveryByIds, WebhookRedeliveryOfFailed> request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

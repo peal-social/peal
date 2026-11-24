@@ -186,7 +186,10 @@ public class GetTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock.RequestBuilders.Request.Create().WithPath("/api/partner/usage").UsingGet()
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/partner/usage")
+                    .UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -295,7 +298,10 @@ public class GetTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock.RequestBuilders.Request.Create().WithPath("/api/partner/usage").UsingGet()
+                WireMock
+                    .RequestBuilders.Request.Create()
+                    .WithPath("/api/v1/partner/usage")
+                    .UsingGet()
             )
             .RespondWith(
                 WireMock

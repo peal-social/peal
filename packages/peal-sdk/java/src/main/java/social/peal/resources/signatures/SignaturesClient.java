@@ -6,11 +6,10 @@ package social.peal.resources.signatures;
 import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
-import social.peal.resources.signatures.requests.CreateSignaturesRequest;
 import social.peal.resources.signatures.requests.DeleteSignaturesRequest;
-import social.peal.resources.signatures.requests.ListSignaturesRequest;
 import social.peal.resources.signatures.requests.UpdateSignaturesRequest;
 import social.peal.types.Signature;
+import social.peal.types.SignatureDetails;
 
 public class SignaturesClient {
     protected final ClientOptions clientOptions;
@@ -32,88 +31,70 @@ public class SignaturesClient {
     /**
      * Lists the workspace's signatures, oldest first. Needs post:read.
      */
-    public List<Signature> list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public List<Signature> list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's signatures, oldest first. Needs post:read.
      */
-    public List<Signature> list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Lists the workspace's signatures, oldest first. Needs post:read.
-     */
-    public List<Signature> list(String workspaceId, ListSignaturesRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
-    }
-
-    /**
-     * Lists the workspace's signatures, oldest first. Needs post:read.
-     */
-    public List<Signature> list(String workspaceId, ListSignaturesRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public List<Signature> list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the <code>scope</code> it is meant for (the whole <code>workspace</code>, a <code>platform</code>, or one <code>channel</code> of the workspace). With <code>isDefault</code>, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
      */
-    public Signature create(String workspaceId, CreateSignaturesRequest request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public Signature create(SignatureDetails request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the <code>scope</code> it is meant for (the whole <code>workspace</code>, a <code>platform</code>, or one <code>channel</code> of the workspace). With <code>isDefault</code>, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
      */
-    public Signature create(String workspaceId, CreateSignaturesRequest request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public Signature create(SignatureDetails request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Replaces a signature's name, text, scope and whether it is a default. Posts that already hold its text keep it as it was. Needs post:update, and channel:read for a channel's.
      */
-    public Signature update(String workspaceId, String signatureId, UpdateSignaturesRequest request) {
-        return this.rawClient.update(workspaceId, signatureId, request).body();
+    public Signature update(String signatureId, UpdateSignaturesRequest request) {
+        return this.rawClient.update(signatureId, request).body();
     }
 
     /**
      * Replaces a signature's name, text, scope and whether it is a default. Posts that already hold its text keep it as it was. Needs post:update, and channel:read for a channel's.
      */
-    public Signature update(
-            String workspaceId, String signatureId, UpdateSignaturesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .update(workspaceId, signatureId, request, requestOptions)
-                .body();
+    public Signature update(String signatureId, UpdateSignaturesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.update(signatureId, request, requestOptions).body();
     }
 
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public void delete(String workspaceId, String signatureId) {
-        this.rawClient.delete(workspaceId, signatureId).body();
+    public void delete(String signatureId) {
+        this.rawClient.delete(signatureId).body();
     }
 
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public void delete(String workspaceId, String signatureId, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, signatureId, requestOptions).body();
+    public void delete(String signatureId, RequestOptions requestOptions) {
+        this.rawClient.delete(signatureId, requestOptions).body();
     }
 
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public void delete(String workspaceId, String signatureId, DeleteSignaturesRequest request) {
-        this.rawClient.delete(workspaceId, signatureId, request).body();
+    public void delete(String signatureId, DeleteSignaturesRequest request) {
+        this.rawClient.delete(signatureId, request).body();
     }
 
     /**
      * Deletes a signature. Posts that already hold its text keep it. Needs post:update.
      */
-    public void delete(
-            String workspaceId, String signatureId, DeleteSignaturesRequest request, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, signatureId, request, requestOptions).body();
+    public void delete(String signatureId, DeleteSignaturesRequest request, RequestOptions requestOptions) {
+        this.rawClient.delete(signatureId, request, requestOptions).body();
     }
 }

@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface NewConnectLink {
-    workspaceId: string;
     channelId?: string;
     connection?: Peal.ChannelConnection;
     expiresInHours?: number;

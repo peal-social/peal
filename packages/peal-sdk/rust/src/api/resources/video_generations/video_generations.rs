@@ -38,7 +38,6 @@ impl VideoGenerationsClient {
     ///     client
     ///         .video_generations
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &VideoGenerationsListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl VideoGenerationsClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &VideoGenerationsListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<VideoGenerations, ApiError> {
@@ -63,7 +61,7 @@ impl VideoGenerationsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/media/videos/generations", workspace_id),
+                "api/v1/media/videos/generations",
                 None,
                 QueryBuilder::new()
                     .serialize("status", request.status.clone())
@@ -98,7 +96,6 @@ impl VideoGenerationsClient {
     ///     client
     ///         .video_generations
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &VideoGenerationRequest {
     ///                 aspect: ImageAspect::Square,
     ///                 prompt: "prompt".to_string(),
@@ -112,7 +109,6 @@ impl VideoGenerationsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &VideoGenerationRequest,
         options: Option<RequestOptions>,
     ) -> Result<VideoGeneration, ApiError> {
@@ -127,7 +123,7 @@ impl VideoGenerationsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/media/videos/generations", workspace_id),
+                "api/v1/media/videos/generations",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -159,17 +155,12 @@ impl VideoGenerationsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .video_generations
-    ///         .get(
-    ///             &"workspaceId".to_string(),
-    ///             &"generationId".to_string(),
-    ///             None,
-    ///         )
+    ///         .get(&"generationId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         generation_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<VideoGeneration, ApiError> {
@@ -183,10 +174,7 @@ impl VideoGenerationsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/media/videos/generations/{}",
-                    workspace_id, generation_id
-                ),
+                &format!("api/v1/media/videos/generations/{}", generation_id),
                 None,
                 None,
                 options,

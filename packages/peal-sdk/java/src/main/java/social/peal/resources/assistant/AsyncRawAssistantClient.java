@@ -27,6 +27,7 @@ import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
 import social.peal.errors.BadGatewayError;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.PaymentRequiredError;
@@ -38,17 +39,9 @@ import social.peal.resources.assistant.requests.AiCapabilityModelChange;
 import social.peal.resources.assistant.requests.AiProviderConnectionChange;
 import social.peal.resources.assistant.requests.AiProviderTest;
 import social.peal.resources.assistant.requests.DisconnectProviderAssistantRequest;
-import social.peal.resources.assistant.requests.ImageProviderAssistantRequest;
 import social.peal.resources.assistant.requests.ImageProviderChange;
 import social.peal.resources.assistant.requests.ImageRequest;
-import social.peal.resources.assistant.requests.ModelsAssistantRequest;
-import social.peal.resources.assistant.requests.ProvidersAssistantRequest;
-import social.peal.resources.assistant.requests.RemoveImageProviderAssistantRequest;
-import social.peal.resources.assistant.requests.RemoveTextProviderAssistantRequest;
-import social.peal.resources.assistant.requests.StatusAssistantRequest;
 import social.peal.resources.assistant.requests.SuggestionRequest;
-import social.peal.resources.assistant.requests.TestTextProviderAssistantRequest;
-import social.peal.resources.assistant.requests.TextProviderAssistantRequest;
 import social.peal.resources.assistant.requests.TextProviderChange;
 import social.peal.resources.assistant.requests.UnsetModelAssistantRequest;
 import social.peal.types.AiCapability;
@@ -76,47 +69,28 @@ public class AsyncRawAssistantClient {
     /**
      * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
      */
-    public CompletableFuture<PealClientHttpResponse<AssistantStatus>> status(String workspaceId) {
-        return status(workspaceId, StatusAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<AssistantStatus>> status() {
+        return status(null);
     }
 
     /**
      * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
      */
-    public CompletableFuture<PealClientHttpResponse<AssistantStatus>> status(
-            String workspaceId, RequestOptions requestOptions) {
-        return status(workspaceId, StatusAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
-     */
-    public CompletableFuture<PealClientHttpResponse<AssistantStatus>> status(
-            String workspaceId, StatusAssistantRequest request) {
-        return status(workspaceId, request, null);
-    }
-
-    /**
-     * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
-     */
-    public CompletableFuture<PealClientHttpResponse<AssistantStatus>> status(
-            String workspaceId, StatusAssistantRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<AssistantStatus>> status(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant");
+                .addPathSegments("api/v1/assistant");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -145,6 +119,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -198,22 +177,18 @@ public class AsyncRawAssistantClient {
     /**
      * Asks the language model to rewrite, shorten or translate a post's text, to suggest hashtags for it, or to write a first post from a subject (<code>write</code>), and answers once the whole suggestion is checked. The text is sent to the model as data, never as instructions. When the workspace brought its own text provider (<code>source</code> <code>workspace</code> in the status), the text goes there, with the workspace's key, and the request costs none of the workspace's daily requests, on any plan, within a number of such requests a day (OwnTextLimitReached past it) and a few at once (TextProviderBusy past them); if that provider refuses, the answer is TextProviderRefused and the server's model is never asked instead. Otherwise, on a server that does not bill, each request counts toward the workspace's daily quota, unless the model's provider could not be reached (AssistantQuotaExceeded past it). On a server that bills, the server's model needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked): each request counts toward the month's allowance across the account's workspaces (the status's <code>month</code>), then is billed at its price up to the ceiling the account set (UsageAllowanceReached <code>ceilingReached</code>); a request that brings no suggestion, a timeout included, is not counted. Needs assistant:use.
      */
-    public CompletableFuture<PealClientHttpResponse<Suggestion>> suggest(
-            String workspaceId, SuggestionRequest request) {
-        return suggest(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Suggestion>> suggest(SuggestionRequest request) {
+        return suggest(request, null);
     }
 
     /**
      * Asks the language model to rewrite, shorten or translate a post's text, to suggest hashtags for it, or to write a first post from a subject (<code>write</code>), and answers once the whole suggestion is checked. The text is sent to the model as data, never as instructions. When the workspace brought its own text provider (<code>source</code> <code>workspace</code> in the status), the text goes there, with the workspace's key, and the request costs none of the workspace's daily requests, on any plan, within a number of such requests a day (OwnTextLimitReached past it) and a few at once (TextProviderBusy past them); if that provider refuses, the answer is TextProviderRefused and the server's model is never asked instead. Otherwise, on a server that does not bill, each request counts toward the workspace's daily quota, unless the model's provider could not be reached (AssistantQuotaExceeded past it). On a server that bills, the server's model needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked): each request counts toward the month's allowance across the account's workspaces (the status's <code>month</code>), then is billed at its price up to the ceiling the account set (UsageAllowanceReached <code>ceilingReached</code>); a request that brings no suggestion, a timeout included, is not counted. Needs assistant:use.
      */
     public CompletableFuture<PealClientHttpResponse<Suggestion>> suggest(
-            String workspaceId, SuggestionRequest request, RequestOptions requestOptions) {
+            SuggestionRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("suggestions");
+                .addPathSegments("api/v1/assistant/suggestions");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -257,6 +232,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -330,21 +310,18 @@ public class AsyncRawAssistantClient {
     /**
      * Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked <code>aiGenerated</code> and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's <code>images.requestCost</code> of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked) and counts one of the month's images (<code>images.month</code>), billed past the allowance up to the account's ceiling (UsageAllowanceReached <code>ceilingReached</code>); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube <code>containsSyntheticMedia</code>, TikTok <code>aiGenerated</code>, X <code>madeWithAi</code>). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (<code>images.source</code>).
      */
-    public CompletableFuture<PealClientHttpResponse<Media>> generateImage(String workspaceId, ImageRequest request) {
-        return generateImage(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Media>> generateImage(ImageRequest request) {
+        return generateImage(request, null);
     }
 
     /**
      * Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked <code>aiGenerated</code> and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's <code>images.requestCost</code> of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked) and counts one of the month's images (<code>images.month</code>), billed past the allowance up to the account's ceiling (UsageAllowanceReached <code>ceilingReached</code>); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube <code>containsSyntheticMedia</code>, TikTok <code>aiGenerated</code>, X <code>madeWithAi</code>). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (<code>images.source</code>).
      */
     public CompletableFuture<PealClientHttpResponse<Media>> generateImage(
-            String workspaceId, ImageRequest request, RequestOptions requestOptions) {
+            ImageRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("images");
+                .addPathSegments("api/v1/assistant/images");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -388,6 +365,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -461,50 +443,29 @@ public class AsyncRawAssistantClient {
     /**
      * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> imageProvider(String workspaceId) {
-        return imageProvider(
-                workspaceId, ImageProviderAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> imageProvider() {
+        return imageProvider(null);
     }
 
     /**
      * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> imageProvider(
-            String workspaceId, RequestOptions requestOptions) {
-        return imageProvider(
-                workspaceId, ImageProviderAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> imageProvider(
-            String workspaceId, ImageProviderAssistantRequest request) {
-        return imageProvider(workspaceId, request, null);
-    }
-
-    /**
-     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> imageProvider(
-            String workspaceId, ImageProviderAssistantRequest request, RequestOptions requestOptions) {
+            RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("image-provider");
+                .addPathSegments("api/v1/assistant/image-provider");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -533,6 +494,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -586,22 +552,18 @@ public class AsyncRawAssistantClient {
     /**
      * Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> (the provider's own address when left out) with <code>apiKey</code>, through the API <code>provider</code> names (<code>openai-compatible</code> when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<PealClientHttpResponse<ImageProvider>> setImageProvider(
-            String workspaceId, ImageProviderChange request) {
-        return setImageProvider(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<ImageProvider>> setImageProvider(ImageProviderChange request) {
+        return setImageProvider(request, null);
     }
 
     /**
      * Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> (the provider's own address when left out) with <code>apiKey</code>, through the API <code>provider</code> names (<code>openai-compatible</code> when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public CompletableFuture<PealClientHttpResponse<ImageProvider>> setImageProvider(
-            String workspaceId, ImageProviderChange request, RequestOptions requestOptions) {
+            ImageProviderChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("image-provider");
+                .addPathSegments("api/v1/assistant/image-provider");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -651,6 +613,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -714,53 +681,31 @@ public class AsyncRawAssistantClient {
     /**
      * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeImageProvider(String workspaceId) {
-        return removeImageProvider(
-                workspaceId, RemoveImageProviderAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> removeImageProvider() {
+        return removeImageProvider(null);
     }
 
     /**
      * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeImageProvider(
-            String workspaceId, RequestOptions requestOptions) {
-        return removeImageProvider(
-                workspaceId, RemoveImageProviderAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeImageProvider(
-            String workspaceId, RemoveImageProviderAssistantRequest request) {
-        return removeImageProvider(workspaceId, request, null);
-    }
-
-    /**
-     * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeImageProvider(
-            String workspaceId, RemoveImageProviderAssistantRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Void>> removeImageProvider(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("image-provider");
+                .addPathSegments("api/v1/assistant/image-provider");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method(
                         "DELETE",
                         BodyProperties.toRequestBody(
                                 requestOptions != null ? requestOptions.getBodyProperties() : null, null))
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -787,6 +732,11 @@ public class AsyncRawAssistantClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -840,48 +790,28 @@ public class AsyncRawAssistantClient {
     /**
      * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
      */
-    public CompletableFuture<PealClientHttpResponse<TextProviderSetting>> textProvider(String workspaceId) {
-        return textProvider(workspaceId, TextProviderAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<TextProviderSetting>> textProvider() {
+        return textProvider(null);
     }
 
     /**
      * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
      */
-    public CompletableFuture<PealClientHttpResponse<TextProviderSetting>> textProvider(
-            String workspaceId, RequestOptions requestOptions) {
-        return textProvider(workspaceId, TextProviderAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
-     */
-    public CompletableFuture<PealClientHttpResponse<TextProviderSetting>> textProvider(
-            String workspaceId, TextProviderAssistantRequest request) {
-        return textProvider(workspaceId, request, null);
-    }
-
-    /**
-     * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
-     */
-    public CompletableFuture<PealClientHttpResponse<TextProviderSetting>> textProvider(
-            String workspaceId, TextProviderAssistantRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<TextProviderSetting>> textProvider(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("text-provider");
+                .addPathSegments("api/v1/assistant/text-provider");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -910,6 +840,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -963,22 +898,18 @@ public class AsyncRawAssistantClient {
     /**
      * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<TextProvider>> setTextProvider(
-            String workspaceId, TextProviderChange request) {
-        return setTextProvider(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<TextProvider>> setTextProvider(TextProviderChange request) {
+        return setTextProvider(request, null);
     }
 
     /**
      * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<TextProvider>> setTextProvider(
-            String workspaceId, TextProviderChange request, RequestOptions requestOptions) {
+            TextProviderChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("text-provider");
+                .addPathSegments("api/v1/assistant/text-provider");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -1027,6 +958,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1090,53 +1026,31 @@ public class AsyncRawAssistantClient {
     /**
      * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeTextProvider(String workspaceId) {
-        return removeTextProvider(
-                workspaceId, RemoveTextProviderAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> removeTextProvider() {
+        return removeTextProvider(null);
     }
 
     /**
      * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeTextProvider(
-            String workspaceId, RequestOptions requestOptions) {
-        return removeTextProvider(
-                workspaceId, RemoveTextProviderAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeTextProvider(
-            String workspaceId, RemoveTextProviderAssistantRequest request) {
-        return removeTextProvider(workspaceId, request, null);
-    }
-
-    /**
-     * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> removeTextProvider(
-            String workspaceId, RemoveTextProviderAssistantRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Void>> removeTextProvider(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("text-provider");
+                .addPathSegments("api/v1/assistant/text-provider");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method(
                         "DELETE",
                         BodyProperties.toRequestBody(
                                 requestOptions != null ? requestOptions.getBodyProperties() : null, null))
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -1163,6 +1077,11 @@ public class AsyncRawAssistantClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1216,45 +1135,23 @@ public class AsyncRawAssistantClient {
     /**
      * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> testTextProvider(String workspaceId) {
-        return testTextProvider(
-                workspaceId, TestTextProviderAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> testTextProvider() {
+        return testTextProvider(null);
     }
 
     /**
      * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> testTextProvider(
-            String workspaceId, RequestOptions requestOptions) {
-        return testTextProvider(
-                workspaceId, TestTextProviderAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> testTextProvider(
-            String workspaceId, TestTextProviderAssistantRequest request) {
-        return testTextProvider(workspaceId, request, null);
-    }
-
-    /**
-     * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> testTextProvider(
-            String workspaceId, TestTextProviderAssistantRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Void>> testTextProvider(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant/text-provider")
-                .addPathSegments("test");
+                .addPathSegments("api/v1/assistant/text-provider/test");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method(
                         "POST",
@@ -1262,8 +1159,8 @@ public class AsyncRawAssistantClient {
                                 requestOptions != null ? requestOptions.getBodyProperties() : null,
                                 RequestBody.create("", null)))
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -1285,6 +1182,11 @@ public class AsyncRawAssistantClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1343,48 +1245,28 @@ public class AsyncRawAssistantClient {
     /**
      * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<AiProviderConnections>> providers(String workspaceId) {
-        return providers(workspaceId, ProvidersAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<AiProviderConnections>> providers() {
+        return providers(null);
     }
 
     /**
      * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<AiProviderConnections>> providers(
-            String workspaceId, RequestOptions requestOptions) {
-        return providers(workspaceId, ProvidersAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<PealClientHttpResponse<AiProviderConnections>> providers(
-            String workspaceId, ProvidersAssistantRequest request) {
-        return providers(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<PealClientHttpResponse<AiProviderConnections>> providers(
-            String workspaceId, ProvidersAssistantRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<AiProviderConnections>> providers(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("providers");
+                .addPathSegments("api/v1/assistant/providers");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -1413,6 +1295,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1466,42 +1353,34 @@ public class AsyncRawAssistantClient {
     /**
      * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<AiProviderConnection>> connectProvider(
-            String workspaceId, AiProvider provider) {
-        return connectProvider(
-                workspaceId, provider, AiProviderConnectionChange.builder().build());
+    public CompletableFuture<PealClientHttpResponse<AiProviderConnection>> connectProvider(AiProvider provider) {
+        return connectProvider(provider, AiProviderConnectionChange.builder().build());
     }
 
     /**
      * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<AiProviderConnection>> connectProvider(
-            String workspaceId, AiProvider provider, RequestOptions requestOptions) {
-        return connectProvider(
-                workspaceId, provider, AiProviderConnectionChange.builder().build(), requestOptions);
+            AiProvider provider, RequestOptions requestOptions) {
+        return connectProvider(provider, AiProviderConnectionChange.builder().build(), requestOptions);
     }
 
     /**
      * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<AiProviderConnection>> connectProvider(
-            String workspaceId, AiProvider provider, AiProviderConnectionChange request) {
-        return connectProvider(workspaceId, provider, request, null);
+            AiProvider provider, AiProviderConnectionChange request) {
+        return connectProvider(provider, request, null);
     }
 
     /**
      * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<AiProviderConnection>> connectProvider(
-            String workspaceId,
-            AiProvider provider,
-            AiProviderConnectionChange request,
-            RequestOptions requestOptions) {
+            AiProvider provider, AiProviderConnectionChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant/providers")
+                .addPathSegments("api/v1/assistant/providers")
                 .addPathSegment(PathSegments.validate(provider.toString()));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1552,6 +1431,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1615,46 +1499,36 @@ public class AsyncRawAssistantClient {
     /**
      * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> disconnectProvider(String workspaceId, AiProvider provider) {
+    public CompletableFuture<PealClientHttpResponse<Void>> disconnectProvider(AiProvider provider) {
         return disconnectProvider(
-                workspaceId,
-                provider,
-                DisconnectProviderAssistantRequest.builder().build());
+                provider, DisconnectProviderAssistantRequest.builder().build());
     }
 
     /**
      * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> disconnectProvider(
-            String workspaceId, AiProvider provider, RequestOptions requestOptions) {
+            AiProvider provider, RequestOptions requestOptions) {
         return disconnectProvider(
-                workspaceId,
-                provider,
-                DisconnectProviderAssistantRequest.builder().build(),
-                requestOptions);
+                provider, DisconnectProviderAssistantRequest.builder().build(), requestOptions);
     }
 
     /**
      * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> disconnectProvider(
-            String workspaceId, AiProvider provider, DisconnectProviderAssistantRequest request) {
-        return disconnectProvider(workspaceId, provider, request, null);
+            AiProvider provider, DisconnectProviderAssistantRequest request) {
+        return disconnectProvider(provider, request, null);
     }
 
     /**
      * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> disconnectProvider(
-            String workspaceId,
-            AiProvider provider,
-            DisconnectProviderAssistantRequest request,
-            RequestOptions requestOptions) {
+            AiProvider provider, DisconnectProviderAssistantRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant/providers")
+                .addPathSegments("api/v1/assistant/providers")
                 .addPathSegment(PathSegments.validate(provider.toString()));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1696,6 +1570,11 @@ public class AsyncRawAssistantClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1749,36 +1628,33 @@ public class AsyncRawAssistantClient {
     /**
      * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> testProvider(String workspaceId, AiProvider provider) {
-        return testProvider(workspaceId, provider, AiProviderTest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> testProvider(AiProvider provider) {
+        return testProvider(provider, AiProviderTest.builder().build());
     }
 
     /**
      * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> testProvider(
-            String workspaceId, AiProvider provider, RequestOptions requestOptions) {
-        return testProvider(workspaceId, provider, AiProviderTest.builder().build(), requestOptions);
+            AiProvider provider, RequestOptions requestOptions) {
+        return testProvider(provider, AiProviderTest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> testProvider(AiProvider provider, AiProviderTest request) {
+        return testProvider(provider, request, null);
     }
 
     /**
      * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> testProvider(
-            String workspaceId, AiProvider provider, AiProviderTest request) {
-        return testProvider(workspaceId, provider, request, null);
-    }
-
-    /**
-     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> testProvider(
-            String workspaceId, AiProvider provider, AiProviderTest request, RequestOptions requestOptions) {
+            AiProvider provider, AiProviderTest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant/providers")
+                .addPathSegments("api/v1/assistant/providers")
                 .addPathSegment(PathSegments.validate(provider.toString()))
                 .addPathSegments("test");
         if (requestOptions != null) {
@@ -1823,6 +1699,11 @@ public class AsyncRawAssistantClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1886,48 +1767,28 @@ public class AsyncRawAssistantClient {
     /**
      * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> models(String workspaceId) {
-        return models(workspaceId, ModelsAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> models() {
+        return models(null);
     }
 
     /**
      * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> models(
-            String workspaceId, RequestOptions requestOptions) {
-        return models(workspaceId, ModelsAssistantRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> models(
-            String workspaceId, ModelsAssistantRequest request) {
-        return models(workspaceId, request, null);
-    }
-
-    /**
-     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> models(
-            String workspaceId, ModelsAssistantRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> models(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant")
-                .addPathSegments("models");
+                .addPathSegments("api/v1/assistant/models");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -1956,6 +1817,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2010,23 +1876,18 @@ public class AsyncRawAssistantClient {
      * Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and <code>model</code> is required (AiModelRequired) but for <code>composition</code>, whose model is always <code>edit</code>. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<AiCapabilityModel>> setModel(
-            String workspaceId, AiCapability capability, AiCapabilityModelChange request) {
-        return setModel(workspaceId, capability, request, null);
+            AiCapability capability, AiCapabilityModelChange request) {
+        return setModel(capability, request, null);
     }
 
     /**
      * Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and <code>model</code> is required (AiModelRequired) but for <code>composition</code>, whose model is always <code>edit</code>. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<AiCapabilityModel>> setModel(
-            String workspaceId,
-            AiCapability capability,
-            AiCapabilityModelChange request,
-            RequestOptions requestOptions) {
+            AiCapability capability, AiCapabilityModelChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant/models")
+                .addPathSegments("api/v1/assistant/models")
                 .addPathSegment(PathSegments.validate(capability.toString()));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -2077,6 +1938,11 @@ public class AsyncRawAssistantClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2135,41 +2001,34 @@ public class AsyncRawAssistantClient {
     /**
      * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> unsetModel(String workspaceId, AiCapability capability) {
-        return unsetModel(
-                workspaceId, capability, UnsetModelAssistantRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> unsetModel(AiCapability capability) {
+        return unsetModel(capability, UnsetModelAssistantRequest.builder().build());
     }
 
     /**
      * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> unsetModel(
-            String workspaceId, AiCapability capability, RequestOptions requestOptions) {
-        return unsetModel(
-                workspaceId, capability, UnsetModelAssistantRequest.builder().build(), requestOptions);
+            AiCapability capability, RequestOptions requestOptions) {
+        return unsetModel(capability, UnsetModelAssistantRequest.builder().build(), requestOptions);
     }
 
     /**
      * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> unsetModel(
-            String workspaceId, AiCapability capability, UnsetModelAssistantRequest request) {
-        return unsetModel(workspaceId, capability, request, null);
+            AiCapability capability, UnsetModelAssistantRequest request) {
+        return unsetModel(capability, request, null);
     }
 
     /**
      * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> unsetModel(
-            String workspaceId,
-            AiCapability capability,
-            UnsetModelAssistantRequest request,
-            RequestOptions requestOptions) {
+            AiCapability capability, UnsetModelAssistantRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("assistant/models")
+                .addPathSegments("api/v1/assistant/models")
                 .addPathSegment(PathSegments.validate(capability.toString()));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -2211,6 +2070,11 @@ public class AsyncRawAssistantClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

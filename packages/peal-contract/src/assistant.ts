@@ -44,6 +44,7 @@ import { TextProviderNotFound } from "./text-provider-not-found.ts";
 import { TextProviderRefused } from "./text-provider-refused.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * The tones the assistant rewrites a post in. The server's list
@@ -665,17 +666,9 @@ export const AiProviderTestSchema = Schema.Struct({
 
 export type AiProviderTest = typeof AiProviderTestSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
+const providerParams = { provider: AiProviderIdSchema };
 
-const workspaceProvider = {
-  provider: AiProviderIdSchema,
-  workspaceId: Schema.String,
-};
-
-const workspaceCapability = {
-  capability: AiCapabilitySchema,
-  workspaceId: Schema.String,
-};
+const capabilityParams = { capability: AiCapabilitySchema };
 
 // The day the text and image provider endpoints gave way to connected
 // providers and a model for each use.
@@ -703,7 +696,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
   .add(
     HttpApiEndpoint.get("status", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: AssistantStatusSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -724,7 +718,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         OwnTextLimitReached,
         TextProviderBusy,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: SuggestionRequestSchema,
       success: SuggestionSchema,
     }).annotateMerge(
@@ -748,7 +743,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         MediaStoreUnavailable,
         MediaImportBusy,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: ImageRequestSchema,
       success: MediaSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -760,7 +756,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
     ),
     HttpApiEndpoint.get("imageProvider", "/image-provider", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: ImageProviderSettingSchema,
     })
       .annotateMerge(
@@ -777,7 +774,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         ImageProviderKeyRequired,
         AssistantSecretsNotConfigured,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: ImageProviderChangeSchema,
       success: ImageProviderSchema,
     })
@@ -790,7 +788,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
       .annotateMerge(providersSince),
     HttpApiEndpoint.delete("removeImageProvider", "/image-provider", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: HttpApiSchema.NoContent,
     })
       .annotateMerge(
@@ -803,7 +802,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
       .annotateMerge(providersSince),
     HttpApiEndpoint.get("textProvider", "/text-provider", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: TextProviderSettingSchema,
     })
       .annotateMerge(
@@ -821,7 +821,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         AssistantSecretsNotConfigured,
         AiCapabilityNotOffered,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: TextProviderChangeSchema,
       success: TextProviderSchema,
     })
@@ -834,7 +835,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
       .annotateMerge(providersSince),
     HttpApiEndpoint.delete("removeTextProvider", "/text-provider", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: HttpApiSchema.NoContent,
     })
       .annotateMerge(
@@ -854,7 +856,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         TextProviderBusy,
         AssistantFailed,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: HttpApiSchema.NoContent,
     })
       .annotateMerge(
@@ -867,7 +870,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
       .annotateMerge(providersSince),
     HttpApiEndpoint.get("providers", "/providers", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: AiProviderConnectionsSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -882,7 +886,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         AiProviderKeyRequired,
         AssistantSecretsNotConfigured,
       ],
-      params: workspaceProvider,
+      headers: workspaceHeaders,
+      params: providerParams,
       payload: AiProviderConnectionChangeSchema,
       success: AiProviderConnectionSchema,
     }).annotateMerge(
@@ -893,7 +898,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
     ),
     HttpApiEndpoint.delete("disconnectProvider", "/providers/:provider", {
       error: Forbidden,
-      params: workspaceProvider,
+      headers: workspaceHeaders,
+      params: providerParams,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -912,7 +918,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         TextProviderBusy,
         AssistantFailed,
       ],
-      params: workspaceProvider,
+      headers: workspaceHeaders,
+      params: providerParams,
       payload: AiProviderTestSchema,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -923,7 +930,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
     ),
     HttpApiEndpoint.get("models", "/models", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: AiCapabilityModelsSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -938,7 +946,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
         AiCapabilityNotOffered,
         AiModelRequired,
       ],
-      params: workspaceCapability,
+      headers: workspaceHeaders,
+      params: capabilityParams,
       payload: AiCapabilityModelChangeSchema,
       success: AiCapabilityModelSchema,
     }).annotateMerge(
@@ -949,7 +958,8 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
     ),
     HttpApiEndpoint.delete("unsetModel", "/models/:capability", {
       error: Forbidden,
-      params: workspaceCapability,
+      headers: workspaceHeaders,
+      params: capabilityParams,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -960,4 +970,4 @@ export class AssistantApi extends HttpApiGroup.make("assistant")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/assistant") {}
+  .prefix("/api/v1/assistant") {}

@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId"
  *     }
  */
 export interface ChangesPostsRequest {
-    workspaceId: string;
     postId: string;
 }

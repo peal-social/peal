@@ -28,9 +28,9 @@ export class WebhooksClient {
     /**
      * Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
      *
-     * @param {Peal.ListWebhooksRequest} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class WebhooksClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.webhooks.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.webhooks.list()
      */
-    public list(request: Peal.ListWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): core.HttpResponsePromise<Peal.WebhookEndpoint[]> {
-        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
+    public list(requestOptions?: WebhooksClient.RequestOptions): core.HttpResponsePromise<Peal.WebhookEndpoint[]> {
+        return core.HttpResponsePromise.fromPromise(this.__list(requestOptions));
     }
 
-    private async __list(request: Peal.ListWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpoint[]>> {
-        const { workspaceId } = request;
+    private async __list(requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpoint[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/webhooks"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,7 +78,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/webhooks");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/webhooks");
     }
 
     /**
@@ -89,6 +87,7 @@ export class WebhooksClient {
      * @param {Peal.NewWebhookEndpoint} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -101,7 +100,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.create({
-     *         workspaceId: "workspaceId",
      *         eventTypes: ["post.scheduled"],
      *         url: "url"
      *     })
@@ -111,17 +109,16 @@ export class WebhooksClient {
     }
 
     private async __create(request: Peal.NewWebhookEndpoint, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpointSecret>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/webhooks"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -134,6 +131,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -149,7 +147,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/webhooks");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/webhooks");
     }
 
     /**
@@ -167,16 +165,14 @@ export class WebhooksClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.webhooks.searchDeliveries({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.webhooks.searchDeliveries()
      */
-    public searchDeliveries(request: Peal.SearchDeliveriesWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): core.HttpResponsePromise<Peal.WebhookDeliveryPage> {
+    public searchDeliveries(request: Peal.SearchDeliveriesWebhooksRequest = {}, requestOptions?: WebhooksClient.RequestOptions): core.HttpResponsePromise<Peal.WebhookDeliveryPage> {
         return core.HttpResponsePromise.fromPromise(this.__searchDeliveries(request, requestOptions));
     }
 
-    private async __searchDeliveries(request: Peal.SearchDeliveriesWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookDeliveryPage>> {
-        const { workspaceId, cursor, limit, eventType, status, endpointId, since, until } = request;
+    private async __searchDeliveries(request: Peal.SearchDeliveriesWebhooksRequest = {}, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookDeliveryPage>> {
+        const { cursor, limit, eventType, status, endpointId, since, until } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             limit,
@@ -187,9 +183,9 @@ export class WebhooksClient {
             until
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/deliveries`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/webhooks/deliveries"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -218,15 +214,16 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/webhooks/deliveries");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/webhooks/deliveries");
     }
 
     /**
      * Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, or the failed deliveries of the endpoint `endpointId` (made from `since`, before `until`, of `eventType`, each left out for any), oldest first, the last of each event only. Each goes to its own endpoint whatever the endpoint's filters are now, as a new delivery of the same event: the same `webhook-id` and body, signed anew. A delivery is skipped when its endpoint is off, when it is not the workspace's, and when its event was sent again since and that delivery is pending or went through, so calling again after a partial run sends nothing twice; `remaining` says how many more failed deliveries the selection holds. The new deliveries of an endpoint start a quarter of a second apart. A workspace sends 1000 deliveries again this way an hour, apart from the test events and single sends: a call that would pass it sends nothing (429 `TooManyWebhookSends`). Needs webhook:manage.
      *
-     * @param {Peal.RedeliverManyWebhooksRequest} request
+     * @param {Peal.WebhookRedeliveryRequest} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -236,28 +233,24 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.redeliverMany({
-     *         workspaceId: "workspaceId",
-     *         body: {
-     *             deliveryIds: ["deliveryIds"]
-     *         }
+     *         deliveryIds: ["deliveryIds"]
      *     })
      */
-    public redeliverMany(request: Peal.RedeliverManyWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): core.HttpResponsePromise<Peal.WebhookBulkRedelivery> {
+    public redeliverMany(request: Peal.WebhookRedeliveryRequest, requestOptions?: WebhooksClient.RequestOptions): core.HttpResponsePromise<Peal.WebhookBulkRedelivery> {
         return core.HttpResponsePromise.fromPromise(this.__redeliverMany(request, requestOptions));
     }
 
-    private async __redeliverMany(request: Peal.RedeliverManyWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookBulkRedelivery>> {
-        const { workspaceId, body: _body } = request;
+    private async __redeliverMany(request: Peal.WebhookRedeliveryRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookBulkRedelivery>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/deliveries/redeliver`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/webhooks/deliveries/redeliver"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -270,6 +263,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -282,7 +276,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/webhooks/deliveries/redeliver");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/webhooks/deliveries/redeliver");
     }
 
     /**
@@ -291,6 +285,7 @@ export class WebhooksClient {
      * @param {Peal.GetWebhooksRequest} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -300,7 +295,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.get({
-     *         workspaceId: "workspaceId",
      *         endpointId: "endpointId"
      *     })
      */
@@ -309,11 +303,11 @@ export class WebhooksClient {
     }
 
     private async __get(request: Peal.GetWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpoint>> {
-        const { workspaceId, endpointId } = request;
+        const { endpointId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -329,6 +323,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -341,7 +336,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/webhooks/{endpointId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/webhooks/{endpointId}");
     }
 
     /**
@@ -350,6 +345,7 @@ export class WebhooksClient {
      * @param {Peal.DeleteWebhooksRequest} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -359,7 +355,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.delete({
-     *         workspaceId: "workspaceId",
      *         endpointId: "endpointId"
      *     })
      */
@@ -368,11 +363,11 @@ export class WebhooksClient {
     }
 
     private async __delete(request: Peal.DeleteWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, endpointId } = request;
+        const { endpointId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -388,6 +383,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -400,7 +396,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/webhooks/{endpointId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/webhooks/{endpointId}");
     }
 
     /**
@@ -409,6 +405,7 @@ export class WebhooksClient {
      * @param {Peal.WebhookEndpointChange} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -420,7 +417,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.update({
-     *         workspaceId: "workspaceId",
      *         endpointId: "endpointId"
      *     })
      */
@@ -429,11 +425,11 @@ export class WebhooksClient {
     }
 
     private async __update(request: Peal.WebhookEndpointChange, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpoint>> {
-        const { workspaceId, endpointId, ..._body } = request;
+        const { endpointId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}`),
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
@@ -452,6 +448,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -466,7 +463,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/workspaces/{workspaceId}/webhooks/{endpointId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/v1/webhooks/{endpointId}");
     }
 
     /**
@@ -475,6 +472,7 @@ export class WebhooksClient {
      * @param {Peal.RotateSecretWebhooksRequest} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -485,7 +483,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.rotateSecret({
-     *         workspaceId: "workspaceId",
      *         endpointId: "endpointId"
      *     })
      */
@@ -494,11 +491,11 @@ export class WebhooksClient {
     }
 
     private async __rotateSecret(request: Peal.RotateSecretWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookEndpointSecret>> {
-        const { workspaceId, endpointId } = request;
+        const { endpointId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/secret`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/secret`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -514,6 +511,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -527,7 +525,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/webhooks/{endpointId}/secret");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/webhooks/{endpointId}/secret");
     }
 
     /**
@@ -536,6 +534,7 @@ export class WebhooksClient {
      * @param {Peal.SendTestWebhooksRequest} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -546,7 +545,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.sendTest({
-     *         workspaceId: "workspaceId",
      *         endpointId: "endpointId"
      *     })
      */
@@ -555,14 +553,14 @@ export class WebhooksClient {
     }
 
     private async __sendTest(request: Peal.SendTestWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookDelivery>> {
-        const { workspaceId, endpointId, eventType } = request;
+        const { endpointId, eventType } = request;
         const _queryParams: Record<string, unknown> = {
             eventType: eventType != null ? eventType : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/test`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/test`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -578,6 +576,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -591,7 +590,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/webhooks/{endpointId}/test");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/webhooks/{endpointId}/test");
     }
 
     /**
@@ -610,7 +609,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.listDeliveries({
-     *         workspaceId: "workspaceId",
      *         endpointId: "endpointId"
      *     })
      */
@@ -619,7 +617,7 @@ export class WebhooksClient {
     }
 
     private async __listDeliveries(request: Peal.ListDeliveriesWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookDeliveryPage>> {
-        const { workspaceId, endpointId, cursor, limit, eventType, status } = request;
+        const { endpointId, cursor, limit, eventType, status } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             limit,
@@ -627,9 +625,9 @@ export class WebhooksClient {
             status: status != null ? status : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/deliveries`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/deliveries`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -658,7 +656,7 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/webhooks/{endpointId}/deliveries");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/webhooks/{endpointId}/deliveries");
     }
 
     /**
@@ -667,6 +665,7 @@ export class WebhooksClient {
      * @param {Peal.RedeliverWebhooksRequest} request
      * @param {WebhooksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -677,7 +676,6 @@ export class WebhooksClient {
      *
      * @example
      *     await client.webhooks.redeliver({
-     *         workspaceId: "workspaceId",
      *         endpointId: "endpointId",
      *         deliveryId: "deliveryId"
      *     })
@@ -687,11 +685,11 @@ export class WebhooksClient {
     }
 
     private async __redeliver(request: Peal.RedeliverWebhooksRequest, requestOptions?: WebhooksClient.RequestOptions): Promise<core.WithRawResponse<Peal.WebhookDelivery>> {
-        const { workspaceId, endpointId, deliveryId } = request;
+        const { endpointId, deliveryId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/deliveries/${core.url.encodePathParam(deliveryId, errors.PealError)}/redeliver`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/webhooks/${core.url.encodePathParam(endpointId, errors.PealError)}/deliveries/${core.url.encodePathParam(deliveryId, errors.PealError)}/redeliver`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -707,6 +705,7 @@ export class WebhooksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -720,6 +719,6 @@ export class WebhooksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/webhooks/{endpointId}/deliveries/{deliveryId}/redeliver");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/webhooks/{endpointId}/deliveries/{deliveryId}/redeliver");
     }
 }

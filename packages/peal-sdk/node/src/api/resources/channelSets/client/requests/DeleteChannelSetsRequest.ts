@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelSetId: "channelSetId"
  *     }
  */
 export interface DeleteChannelSetsRequest {
-    workspaceId: string;
     channelSetId: string;
 }

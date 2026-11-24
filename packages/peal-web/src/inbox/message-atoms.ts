@@ -1,5 +1,5 @@
 import { Atom } from "effect/reactivity";
-import { maxInboxPageSize } from "peal-contract";
+import { maxInboxPageSize, forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -29,7 +29,7 @@ export const conversationsChanged = (
 /** The workspace's latest conversations: one page of the most. */
 export const conversationList = Atom.family((workspaceId: string) =>
   PealApi.query("inboxMessages", "listConversations", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: { limit: maxInboxPageSize },
     reactivityKeys: conversationListChanged(workspaceId),
   })
@@ -39,7 +39,8 @@ const conversations = Atom.family((key: string) => {
   const [workspaceId = "", conversationId = "", cursor = ""] = key.split("/");
 
   return PealApi.query("inboxMessages", "getConversation", {
-    params: { conversationId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { conversationId },
     query: cursor === "" ? {} : { cursor },
     reactivityKeys: conversationChanged(conversationId),
   });
@@ -64,7 +65,7 @@ export const messageSettingsChanged = (workspaceId: string) => [
 /** The channels whose messages are on, and the applications let in. */
 export const messageSettings = Atom.family((workspaceId: string) =>
   PealApi.query("inboxMessages", "getMessageSettings", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: messageSettingsChanged(workspaceId),
   })
 );

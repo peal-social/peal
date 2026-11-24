@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListFeedsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListFeedsRequest{}
 //	_, err := client.Feeds.List(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewFeed{
-//	    WorkspaceID: "workspaceId",
 //	    URL: "url",
 //	}
 //	_, err := client.Feeds.Create(
@@ -94,7 +91,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.FeedPreviewRequest{
-//	    WorkspaceID: "workspaceId",
 //	    URL: "url",
 //	}
 //	_, err := client.Feeds.Preview(
@@ -122,7 +118,6 @@ func (c *Client) Preview(
 // Example:
 //
 //	request := &peal.GetFeedsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    FeedID: "feedId",
 //	}
 //	_, err := client.Feeds.Get(
@@ -150,7 +145,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.DeleteFeedsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    FeedID: "feedId",
 //	}
 //	err := client.Feeds.Delete(
@@ -178,7 +172,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.FeedChange{
-//	    WorkspaceID: "workspaceId",
 //	    FeedID: "feedId",
 //	}
 //	_, err := client.Feeds.Update(
@@ -206,7 +199,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.ItemsFeedsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    FeedID: "feedId",
 //	}
 //	_, err := client.Feeds.Items(

@@ -6,7 +6,6 @@ public partial interface IQueuesClient
     /// Lists the workspace's queues, the default first, then by name, each with its slots, its channels and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<Queue>> ListAsync(
-        ListQueuesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -15,7 +14,7 @@ public partial interface IQueuesClient
     /// Saves a queue. A slot is a weekday and a time of day (`HH:mm`) in the queue's IANA time zone, each pair once, 100 at most: a time daylight saving skips moves to the moment the clocks jump, and a time it repeats happens once. A queue may be for some of the workspace's channels (`channelIds`, connected ones, 50 at most) and one channel set (`channelSetId`), which a post added to it goes to when it names none. Its name is one no other queue of the workspace has, whatever its case. `isDefault` makes it the workspace's default queue, the one a post added to no queue in particular takes, instead of the one that was. The first queue of a workspace is its default. A workspace keeps 20 queues at most. Needs post:update and channel:read.
     /// </summary>
     WithRawResponseTask<Queue> CreateAsync(
-        CreateQueuesRequest request,
+        QueueDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

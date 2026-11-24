@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListSignaturesRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.Signature], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/signatures",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/signatures"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -79,7 +75,7 @@ func (r *RawClient) List(
 
 func (r *RawClient) Create(
 	ctx context.Context,
-	request *peal.CreateSignaturesRequest,
+	request *peal.SignatureDetails,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.Signature], error) {
 	options := core.NewRequestOptions(opts...)
@@ -88,15 +84,11 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/signatures",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/signatures"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.Signature
 	raw, err := r.caller.Call(
 		ctx,
@@ -136,8 +128,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/signatures/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/signatures/%v",
 		request.SignatureID,
 	)
 	headers := internal.MergeHeaders(
@@ -184,8 +175,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/signatures/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/signatures/%v",
 		request.SignatureID,
 	)
 	headers := internal.MergeHeaders(

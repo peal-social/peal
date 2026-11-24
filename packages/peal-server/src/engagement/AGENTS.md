@@ -1,7 +1,7 @@
 # Engagement (the inbox)
 
 - The context is `engagement`; the product, the API group and the pages
-  say "inbox" (`/api/workspaces/:workspaceId/inbox`, `peal inbox`,
+  say "inbox" (`/api/v1/inbox`, `peal inbox`,
   `…/inbox`), as "notices" already names a user's notifications. This
   slice is comments on posts Peal published, and the reviews of Google
   Business Profile locations (below); direct messages and mentions will

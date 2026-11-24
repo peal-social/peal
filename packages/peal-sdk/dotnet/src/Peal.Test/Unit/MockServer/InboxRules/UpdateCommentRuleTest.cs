@@ -75,7 +75,7 @@ public class UpdateCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules/ruleId")
+                    .WithPath("/api/v1/inbox/rules/ruleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -90,7 +90,6 @@ public class UpdateCommentRuleTest : BaseMockServerTest
         var response = await Client.InboxRules.UpdateCommentRuleAsync(
             new CommentRuleChange
             {
-                WorkspaceId = "workspaceId",
                 RuleId = "ruleId",
                 Keywords = null,
                 Paused = null,
@@ -150,7 +149,7 @@ public class UpdateCommentRuleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules/ruleId")
+                    .WithPath("/api/v1/inbox/rules/ruleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -163,7 +162,7 @@ public class UpdateCommentRuleTest : BaseMockServerTest
             );
 
         var response = await Client.InboxRules.UpdateCommentRuleAsync(
-            new CommentRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new CommentRuleChange { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

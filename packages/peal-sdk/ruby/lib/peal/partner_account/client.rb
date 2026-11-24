@@ -14,24 +14,22 @@ module Peal
       # themselves on this server (`canOpen`). Needs partner:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.partner_account.get(workspace_id: "workspaceId")
+      #   client.partner_account.get
       #
       # @return [Peal::Types::PartnerStanding]
-      def get(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def get(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner",
+          path: "api/v1/partner-account",
           request_options: request_options
         )
         begin
@@ -64,26 +62,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.partner_account.open(
-      #     workspace_id: "workspaceId",
-      #     name: "name"
-      #   )
+      #   client.partner_account.open(name: "name")
       #
       # @return [Peal::Types::Partner]
       def open(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::PartnerAccount::Types::OpenPartner.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner",
-          body: body,
+          path: "api/v1/partner-account",
+          body: Peal::PartnerAccount::Types::OpenPartner.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -110,24 +100,22 @@ module Peal
       # member rather than an API key or an OAuth client.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.partner_account.close(workspace_id: "workspaceId")
+      #   client.partner_account.close
       #
       # @return [untyped]
-      def close(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def close(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner",
+          path: "api/v1/partner-account",
           request_options: request_options
         )
         begin
@@ -162,23 +150,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.partner_account.update(workspace_id: "workspaceId")
+      #   client.partner_account.update
       #
       # @return [Peal::Types::Partner]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::PartnerAccount::Types::PartnerChange.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner",
-          body: body,
+          path: "api/v1/partner-account",
+          body: Peal::PartnerAccount::Types::PartnerChange.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -203,24 +186,22 @@ module Peal
       # Lists the partner account's keys. Needs partner:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.partner_account.list_keys(workspace_id: "workspaceId")
+      #   client.partner_account.list_keys
       #
       # @return [Array[Peal::Types::PartnerKey]]
-      def list_keys(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list_keys(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner/keys",
+          path: "api/v1/partner-account/keys",
           request_options: request_options
         )
         begin
@@ -256,11 +237,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.partner_account.create_key(
-      #     workspace_id: "workspaceId",
       #     name: "name",
       #     permissions: ["activity:read"],
       #     scopes: ["workspaces:read"]
@@ -269,15 +248,11 @@ module Peal
       # @return [Peal::Types::CreatedPartnerKey]
       def create_key(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::PartnerAccount::Types::NewPartnerKey.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner/keys",
-          body: body,
+          path: "api/v1/partner-account/keys",
+          body: Peal::PartnerAccount::Types::NewPartnerKey.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -308,14 +283,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :partner_key_id
       #
       # @example
-      #   client.partner_account.revoke_key(
-      #     workspace_id: "workspaceId",
-      #     partner_key_id: "partnerKeyId"
-      #   )
+      #   client.partner_account.revoke_key(partner_key_id: "partnerKeyId")
       #
       # @return [untyped]
       def revoke_key(request_options: {}, **params)
@@ -323,7 +294,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner/keys/#{URI.encode_uri_component(params[:partner_key_id].to_s)}",
+          path: "api/v1/partner-account/keys/#{URI.encode_uri_component(params[:partner_key_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -365,12 +336,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :before
       # @option params [String, nil] :limit
       #
       # @example
-      #   client.partner_account.overview(workspace_id: "workspaceId")
+      #   client.partner_account.overview
       #
       # @return [Peal::Types::PartnerHealth]
       def overview(request_options: {}, **params)
@@ -382,7 +352,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner/overview",
+          path: "api/v1/partner-account/overview",
           query: query_params,
           request_options: request_options
         )
@@ -415,14 +385,13 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :before
       # @option params [String, nil] :external_id
       # @option params [String, nil] :limit
       # @option params [String, nil] :name
       #
       # @example
-      #   client.partner_account.list_workspaces(workspace_id: "workspaceId")
+      #   client.partner_account.list_workspaces
       #
       # @return [Peal::Types::CustomerWorkspacePage]
       def list_workspaces(request_options: {}, **params)
@@ -436,7 +405,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/partner/workspaces",
+          path: "api/v1/partner-account/workspaces",
           query: query_params,
           request_options: request_options
         )

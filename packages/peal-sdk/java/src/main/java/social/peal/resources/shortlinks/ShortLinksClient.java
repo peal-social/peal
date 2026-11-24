@@ -8,7 +8,6 @@ import social.peal.core.RequestOptions;
 import social.peal.resources.shortlinks.requests.GetShortLinksRequest;
 import social.peal.resources.shortlinks.requests.ListShortLinksRequest;
 import social.peal.resources.shortlinks.requests.ShortLinkSettings;
-import social.peal.resources.shortlinks.requests.StatusShortLinksRequest;
 import social.peal.types.ShortLinkPage;
 import social.peal.types.ShortLinkReport;
 import social.peal.types.ShortLinkStatus;
@@ -33,99 +32,84 @@ public class ShortLinksClient {
     /**
      * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
      */
-    public ShortLinkStatus status(String workspaceId) {
-        return this.rawClient.status(workspaceId).body();
+    public ShortLinkStatus status() {
+        return this.rawClient.status().body();
     }
 
     /**
      * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
      */
-    public ShortLinkStatus status(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.status(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
-     */
-    public ShortLinkStatus status(String workspaceId, StatusShortLinksRequest request) {
-        return this.rawClient.status(workspaceId, request).body();
-    }
-
-    /**
-     * Answers whether this server shortens links (<code>available</code>), what a short address starts with (<code>base</code>) and how long it is (<code>shortLength</code>), and whether the workspace's new posts ask for short links by default (<code>byDefault</code>). A post that leaves <code>shortenLinks</code> out takes <code>byDefault</code> when it is made (the web app, the API, MCP, the command line and feeds alike), and <code>false</code> always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with <code>http://</code> or <code>https://</code> and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
-     */
-    public ShortLinkStatus status(String workspaceId, StatusShortLinksRequest request, RequestOptions requestOptions) {
-        return this.rawClient.status(workspaceId, request, requestOptions).body();
+    public ShortLinkStatus status(RequestOptions requestOptions) {
+        return this.rawClient.status(requestOptions).body();
     }
 
     /**
      * Sets whether the workspace's new posts ask for short links unless they say otherwise (<code>shortenLinks</code>), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
      */
-    public ShortLinkStatus setDefault(String workspaceId, ShortLinkSettings request) {
-        return this.rawClient.setDefault(workspaceId, request).body();
+    public ShortLinkStatus setDefault(ShortLinkSettings request) {
+        return this.rawClient.setDefault(request).body();
     }
 
     /**
      * Sets whether the workspace's new posts ask for short links unless they say otherwise (<code>shortenLinks</code>), whatever makes them: the web app, the API, MCP, the command line and feeds. Each post still chooses for itself, and takes the default when it is made, so a change reaches only posts made after it. Needs organization:update, which owners and admins hold.
      */
-    public ShortLinkStatus setDefault(String workspaceId, ShortLinkSettings request, RequestOptions requestOptions) {
-        return this.rawClient.setDefault(workspaceId, request, requestOptions).body();
+    public ShortLinkStatus setDefault(ShortLinkSettings request, RequestOptions requestOptions) {
+        return this.rawClient.setDefault(request, requestOptions).body();
     }
 
     /**
      * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkPage list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public ShortLinkPage list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkPage list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
+    public ShortLinkPage list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkPage list(String workspaceId, ListShortLinksRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
+    public ShortLinkPage list(ListShortLinksRequest request) {
+        return this.rawClient.list(request).body();
     }
 
     /**
      * Lists the workspace's short links, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of one post (<code>postId</code>) or one channel (<code>channelId</code>), each with its clicks from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today). Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkPage list(String workspaceId, ListShortLinksRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public ShortLinkPage list(ListShortLinksRequest request, RequestOptions requestOptions) {
+        return this.rawClient.list(request, requestOptions).body();
     }
 
     /**
      * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkReport get(String workspaceId, String linkId) {
-        return this.rawClient.get(workspaceId, linkId).body();
+    public ShortLinkReport get(String linkId) {
+        return this.rawClient.get(linkId).body();
     }
 
     /**
      * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkReport get(String workspaceId, String linkId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, linkId, requestOptions).body();
+    public ShortLinkReport get(String linkId, RequestOptions requestOptions) {
+        return this.rawClient.get(linkId, requestOptions).body();
     }
 
     /**
      * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkReport get(String workspaceId, String linkId, GetShortLinksRequest request) {
-        return this.rawClient.get(workspaceId, linkId, request).body();
+    public ShortLinkReport get(String linkId, GetShortLinksRequest request) {
+        return this.rawClient.get(linkId, request).body();
     }
 
     /**
      * Answers one short link with its clicks each day from <code>from</code> to <code>to</code> (UTC days, both included, at most 92; by default the 30 days that end today), oldest first. Clicks are counted by UTC day and kept 400 days; a request from an automated reader (a crawler, a link preview), a prefetch or a HEAD is redirected but not counted, so the figure is approximate, and nothing about the visitor is kept. Needs analytics:read.
      */
-    public ShortLinkReport get(
-            String workspaceId, String linkId, GetShortLinksRequest request, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, linkId, request, requestOptions).body();
+    public ShortLinkReport get(String linkId, GetShortLinksRequest request, RequestOptions requestOptions) {
+        return this.rawClient.get(linkId, request, requestOptions).body();
     }
 }

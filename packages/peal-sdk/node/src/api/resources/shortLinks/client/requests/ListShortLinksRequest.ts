@@ -4,12 +4,9 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListShortLinksRequest {
-    workspaceId: string;
     channelId?: string;
     cursor?: string;
     from?: Peal.CalendarDay;

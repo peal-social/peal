@@ -10,6 +10,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AgentSkill } from "peal-contract/agent";
 import {
   AlertDialog,
@@ -278,12 +279,13 @@ const SkillForm = ({
     const exit =
       skill === null
         ? await create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: skillRequestOf(draft),
             reactivityKeys,
           })
         : await update({
-            params: { skillId: skill.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { skillId: skill.id },
             payload: skillUpdateOf(skill, draft),
             reactivityKeys,
           });
@@ -303,7 +305,8 @@ const SkillForm = ({
     }
 
     const exit = await remove({
-      params: { skillId: skill.id, workspaceId },
+      headers: forWorkspace(workspaceId),
+      params: { skillId: skill.id },
       reactivityKeys,
     });
 

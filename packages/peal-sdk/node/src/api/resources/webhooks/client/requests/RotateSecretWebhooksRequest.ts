@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         endpointId: "endpointId"
  *     }
  */
 export interface RotateSecretWebhooksRequest {
-    workspaceId: string;
     endpointId: string;
 }

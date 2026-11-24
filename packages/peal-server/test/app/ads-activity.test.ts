@@ -5,7 +5,7 @@
 // amount, an audience or a party's name.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
-import { ActivityPageSchema } from "peal-contract";
+import { ActivityPageSchema, forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -48,7 +48,7 @@ layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails)), {
         const app = yield* TestApp;
         const owner = yield* signedUpUnconfirmed("ads-activity");
         const workspaceId = yield* workspaceOf(owner, "Ads activity");
-        const base = `/api/workspaces/${workspaceId}/ads`;
+        const base = `/api/v1/ads`;
 
         const desk = yield* apiKeyOf(owner, workspaceId, [
           "ads:read",
@@ -63,7 +63,10 @@ layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails)), {
 
         const quoted = yield* app.request(`${base}/boosts/quote`, {
           body: boost,
-          headers: asked("ads-activity-0001"),
+          headers: {
+            ...asked("ads-activity-0001"),
+            ...forWorkspace(workspaceId),
+          },
         });
 
         const requested = yield* app.request(`${base}/boosts`, {
@@ -71,11 +74,15 @@ layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails)), {
           headers: {
             ...asked("ads-activity-0002"),
             "idempotency-key": "ads-activity-key",
+            ...forWorkspace(workspaceId),
           },
         });
 
         const paused = yield* app.request(`${base}/boosts/${boostId}/pause`, {
-          headers: asked("ads-activity-0003"),
+          headers: {
+            ...asked("ads-activity-0003"),
+            ...forWorkspace(workspaceId),
+          },
           method: "POST",
         });
 
@@ -90,6 +97,7 @@ layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails)), {
             headers: {
               cookie: owner.cookies,
               "x-request-id": "ads-activity-0004",
+              ...forWorkspace(workspaceId),
             },
             method: "PUT",
           }
@@ -101,8 +109,8 @@ layer(Layer.mergeAll(TestApp.layerWith(unconfirmedEmails)), {
         }
 
         const log = yield* app
-          .request(`/api/workspaces/${workspaceId}/activity`, {
-            headers: { cookie: owner.cookies },
+          .request(`/api/v1/activity`, {
+            headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           })
           .pipe(Effect.flatMap((reply) => bodyOf(PageJsonSchema, reply)));
 

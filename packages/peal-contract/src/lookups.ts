@@ -14,6 +14,7 @@ import { PlatformUnreachable } from "./platform-unreachable.ts";
 import { PlatformSchema } from "./platform.ts";
 import { TikTokAccountSchema } from "./tiktok.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // What a platform tells about an account that a post's options refer to,
 // read from the platform when asked. The server's lookups
@@ -162,13 +163,14 @@ export const LookupResultSchema = Schema.Union([
 
 export type LookupResult = typeof LookupResultSchema.Type;
 
-const channel = { channelId: Schema.String, workspaceId: Schema.String };
+const channel = { channelId: Schema.String };
 
 /** What platforms tell about a channel's account. */
 export class LookupsApi extends HttpApiGroup.make("lookups")
   .add(
     HttpApiEndpoint.get("list", "/:channelId/lookups", {
       error: [Forbidden, ChannelNotFound],
+      headers: workspaceHeaders,
       params: channel,
       success: Schema.Array(LookupDescriptionSchema),
     }).annotateMerge(
@@ -188,6 +190,7 @@ export class LookupsApi extends HttpApiGroup.make("lookups")
         PlatformUnreachable,
         PlatformRateLimited,
       ],
+      headers: workspaceHeaders,
       params: { ...channel, name: Schema.String },
       payload: LookupInputSchema,
       success: LookupResultSchema,
@@ -201,4 +204,4 @@ export class LookupsApi extends HttpApiGroup.make("lookups")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/channels") {}
+  .prefix("/api/v1/channels") {}

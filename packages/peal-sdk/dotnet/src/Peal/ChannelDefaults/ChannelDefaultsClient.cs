@@ -33,8 +33,7 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/default-options",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/default-options",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -87,6 +86,18 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -176,8 +187,7 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/default-options",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/default-options",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     Body = request,
@@ -232,6 +242,18 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -333,8 +355,7 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/default-options",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/default-options",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -361,6 +382,18 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -433,9 +466,7 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
     /// Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.ChannelDefaults.GetAsync(
-    ///     new GetChannelDefaultsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.ChannelDefaults.GetAsync(new GetChannelDefaultsRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask<ChannelDefaults> GetAsync(
         GetChannelDefaultsRequest request,
@@ -455,7 +486,6 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
     /// await client.ChannelDefaults.SetAsync(
     ///     new NewChannelDefaults
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ChannelId = "channelId",
     ///         Options = new TargetOptions(new TargetOptions.Youtube(new YouTubeOptions())),
     ///     }
@@ -477,7 +507,7 @@ public partial class ChannelDefaultsClient : IChannelDefaultsClient
     /// </summary>
     /// <example><code>
     /// await client.ChannelDefaults.ClearAsync(
-    ///     new ClearChannelDefaultsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+    ///     new ClearChannelDefaultsRequest { ChannelId = "channelId" }
     /// );
     /// </code></example>
     public WithRawResponseTask ClearAsync(

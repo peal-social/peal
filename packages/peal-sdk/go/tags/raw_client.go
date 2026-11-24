@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListTagsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.Tag], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/tags",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/tags"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -79,7 +75,7 @@ func (r *RawClient) List(
 
 func (r *RawClient) Create(
 	ctx context.Context,
-	request *peal.CreateTagsRequest,
+	request *peal.TagDetails,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.Tag], error) {
 	options := core.NewRequestOptions(opts...)
@@ -88,15 +84,11 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/tags",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/tags"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.Tag
 	raw, err := r.caller.Call(
 		ctx,
@@ -136,8 +128,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/tags/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/tags/%v",
 		request.TagID,
 	)
 	headers := internal.MergeHeaders(
@@ -180,8 +171,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/tags/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/tags/%v",
 		request.TagID,
 	)
 	headers := internal.MergeHeaders(

@@ -38,7 +38,7 @@ func (b *BadGatewayError) GetBody() any {
 	return b.Body
 }
 
-// BadRequest
+// The request names no workspace, and its credential belongs to none: send the workspace's id in the `Peal-Workspace` header. Nothing was done.
 type BadRequestError struct {
 	*core.APIError
 	Body any

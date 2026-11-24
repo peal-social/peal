@@ -12,6 +12,7 @@ import { TagNameTaken } from "./tag-name-taken.ts";
 import { TagNotFound } from "./tag-not-found.ts";
 import { TooManyTags } from "./too-many-tags.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The longest name a tag has. */
 export const maxTagNameLength = 40;
@@ -82,16 +83,15 @@ export const PostTagIdsSchema = Schema.Array(Schema.String).check(
   )
 );
 
-const workspace = { workspaceId: Schema.String };
-
-const tag = { ...workspace, tagId: Schema.String };
+const tag = { tagId: Schema.String };
 
 /** A workspace's tags: the labels it files its posts under. */
 export class TagsApi extends HttpApiGroup.make("tags")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(TagSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -102,7 +102,8 @@ export class TagsApi extends HttpApiGroup.make("tags")
     ),
     HttpApiEndpoint.post("create", "/", {
       error: [Forbidden, TagNameTaken, TooManyTags],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: TagDetailsSchema,
       success: TagSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -113,6 +114,7 @@ export class TagsApi extends HttpApiGroup.make("tags")
     ),
     HttpApiEndpoint.patch("update", "/:tagId", {
       error: [Forbidden, TagNotFound, TagNameTaken],
+      headers: workspaceHeaders,
       params: tag,
       payload: TagDetailsSchema,
       success: TagSchema,
@@ -125,6 +127,7 @@ export class TagsApi extends HttpApiGroup.make("tags")
     ),
     HttpApiEndpoint.delete("delete", "/:tagId", {
       error: [Forbidden, TagNotFound],
+      headers: workspaceHeaders,
       params: tag,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -137,4 +140,4 @@ export class TagsApi extends HttpApiGroup.make("tags")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/tags") {}
+  .prefix("/api/v1/tags") {}

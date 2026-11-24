@@ -5,7 +5,11 @@ import { DateTime, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { isSocialChannel, maxInboxMessageLength } from "peal-contract";
+import {
+  isSocialChannel,
+  maxInboxMessageLength,
+  forWorkspace,
+} from "peal-contract";
 import type {
   InboxConversationDetail,
   InboxOutgoingMessage,
@@ -148,7 +152,8 @@ const LoadedConversation = ({
   const [isSending, startSending] = useTransition();
   const [isActing, startActing] = useTransition();
 
-  const params = { conversationId: conversation.id, workspaceId };
+  const params = { conversationId: conversation.id };
+  const headers = forWorkspace(workspaceId);
 
   // Past Meta's 24 hours, a member answering by hand has until
   // `personClosesAt`, where the server's Meta app holds the Human Agent
@@ -164,7 +169,7 @@ const LoadedConversation = ({
       // The same key until the message is made: one sent again after a
       // lost answer is the one the first request made.
       const exit = await send({
-        headers: { "idempotency-key": attempt },
+        headers: { ...headers, "idempotency-key": attempt },
         params,
         payload: { text },
         reactivityKeys,
@@ -187,6 +192,7 @@ const LoadedConversation = ({
     startActing(async () => {
       const exit = await mark({
         params,
+        headers,
         payload: { read: conversation.unread },
         reactivityKeys,
       });
@@ -201,7 +207,8 @@ const LoadedConversation = ({
     setError(null);
     startActing(async () => {
       const exit = await confirm({
-        params: { messageId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { messageId },
         payload: { sent },
         reactivityKeys,
       });

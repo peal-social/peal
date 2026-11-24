@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         connectionId: "connectionId",
  *         externalIds: ["externalIds"]
  *     }
  */
 export interface AdAccountsToConnect {
-    workspaceId: string;
     connectionId: string;
     externalIds: string[];
 }

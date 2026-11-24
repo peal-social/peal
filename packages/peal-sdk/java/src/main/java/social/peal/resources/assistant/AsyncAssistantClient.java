@@ -11,17 +11,9 @@ import social.peal.resources.assistant.requests.AiCapabilityModelChange;
 import social.peal.resources.assistant.requests.AiProviderConnectionChange;
 import social.peal.resources.assistant.requests.AiProviderTest;
 import social.peal.resources.assistant.requests.DisconnectProviderAssistantRequest;
-import social.peal.resources.assistant.requests.ImageProviderAssistantRequest;
 import social.peal.resources.assistant.requests.ImageProviderChange;
 import social.peal.resources.assistant.requests.ImageRequest;
-import social.peal.resources.assistant.requests.ModelsAssistantRequest;
-import social.peal.resources.assistant.requests.ProvidersAssistantRequest;
-import social.peal.resources.assistant.requests.RemoveImageProviderAssistantRequest;
-import social.peal.resources.assistant.requests.RemoveTextProviderAssistantRequest;
-import social.peal.resources.assistant.requests.StatusAssistantRequest;
 import social.peal.resources.assistant.requests.SuggestionRequest;
-import social.peal.resources.assistant.requests.TestTextProviderAssistantRequest;
-import social.peal.resources.assistant.requests.TextProviderAssistantRequest;
 import social.peal.resources.assistant.requests.TextProviderChange;
 import social.peal.resources.assistant.requests.UnsetModelAssistantRequest;
 import social.peal.types.AiCapability;
@@ -58,8 +50,8 @@ public class AsyncAssistantClient {
     /**
      * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
      */
-    public CompletableFuture<AssistantStatus> status(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<AssistantStatus>> rawFuture = this.rawClient.status(workspaceId);
+    public CompletableFuture<AssistantStatus> status() {
+        CompletableFuture<PealClientHttpResponse<AssistantStatus>> rawFuture = this.rawClient.status();
         CompletableFuture<AssistantStatus> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -72,40 +64,8 @@ public class AsyncAssistantClient {
     /**
      * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
      */
-    public CompletableFuture<AssistantStatus> status(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AssistantStatus>> rawFuture =
-                this.rawClient.status(workspaceId, requestOptions);
-        CompletableFuture<AssistantStatus> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
-     */
-    public CompletableFuture<AssistantStatus> status(String workspaceId, StatusAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<AssistantStatus>> rawFuture =
-                this.rawClient.status(workspaceId, request);
-        CompletableFuture<AssistantStatus> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (<code>source</code>: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (<code>images.source</code>: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, <code>month</code> and <code>images.month</code> tell the billing account's month of the server's models (included, used, price and ceiling), and <code>reason</code> <code>paymentMethod</code> why they are off without a payment method. Needs assistant:use.
-     */
-    public CompletableFuture<AssistantStatus> status(
-            String workspaceId, StatusAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AssistantStatus>> rawFuture =
-                this.rawClient.status(workspaceId, request, requestOptions);
+    public CompletableFuture<AssistantStatus> status(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<AssistantStatus>> rawFuture = this.rawClient.status(requestOptions);
         CompletableFuture<AssistantStatus> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -118,8 +78,8 @@ public class AsyncAssistantClient {
     /**
      * Asks the language model to rewrite, shorten or translate a post's text, to suggest hashtags for it, or to write a first post from a subject (<code>write</code>), and answers once the whole suggestion is checked. The text is sent to the model as data, never as instructions. When the workspace brought its own text provider (<code>source</code> <code>workspace</code> in the status), the text goes there, with the workspace's key, and the request costs none of the workspace's daily requests, on any plan, within a number of such requests a day (OwnTextLimitReached past it) and a few at once (TextProviderBusy past them); if that provider refuses, the answer is TextProviderRefused and the server's model is never asked instead. Otherwise, on a server that does not bill, each request counts toward the workspace's daily quota, unless the model's provider could not be reached (AssistantQuotaExceeded past it). On a server that bills, the server's model needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked): each request counts toward the month's allowance across the account's workspaces (the status's <code>month</code>), then is billed at its price up to the ceiling the account set (UsageAllowanceReached <code>ceilingReached</code>); a request that brings no suggestion, a timeout included, is not counted. Needs assistant:use.
      */
-    public CompletableFuture<Suggestion> suggest(String workspaceId, SuggestionRequest request) {
-        CompletableFuture<PealClientHttpResponse<Suggestion>> rawFuture = this.rawClient.suggest(workspaceId, request);
+    public CompletableFuture<Suggestion> suggest(SuggestionRequest request) {
+        CompletableFuture<PealClientHttpResponse<Suggestion>> rawFuture = this.rawClient.suggest(request);
         CompletableFuture<Suggestion> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -132,10 +92,9 @@ public class AsyncAssistantClient {
     /**
      * Asks the language model to rewrite, shorten or translate a post's text, to suggest hashtags for it, or to write a first post from a subject (<code>write</code>), and answers once the whole suggestion is checked. The text is sent to the model as data, never as instructions. When the workspace brought its own text provider (<code>source</code> <code>workspace</code> in the status), the text goes there, with the workspace's key, and the request costs none of the workspace's daily requests, on any plan, within a number of such requests a day (OwnTextLimitReached past it) and a few at once (TextProviderBusy past them); if that provider refuses, the answer is TextProviderRefused and the server's model is never asked instead. Otherwise, on a server that does not bill, each request counts toward the workspace's daily quota, unless the model's provider could not be reached (AssistantQuotaExceeded past it). On a server that bills, the server's model needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked): each request counts toward the month's allowance across the account's workspaces (the status's <code>month</code>), then is billed at its price up to the ceiling the account set (UsageAllowanceReached <code>ceilingReached</code>); a request that brings no suggestion, a timeout included, is not counted. Needs assistant:use.
      */
-    public CompletableFuture<Suggestion> suggest(
-            String workspaceId, SuggestionRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Suggestion> suggest(SuggestionRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Suggestion>> rawFuture =
-                this.rawClient.suggest(workspaceId, request, requestOptions);
+                this.rawClient.suggest(request, requestOptions);
         CompletableFuture<Suggestion> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -148,8 +107,8 @@ public class AsyncAssistantClient {
     /**
      * Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked <code>aiGenerated</code> and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's <code>images.requestCost</code> of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked) and counts one of the month's images (<code>images.month</code>), billed past the allowance up to the account's ceiling (UsageAllowanceReached <code>ceilingReached</code>); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube <code>containsSyntheticMedia</code>, TikTok <code>aiGenerated</code>, X <code>madeWithAi</code>). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (<code>images.source</code>).
      */
-    public CompletableFuture<Media> generateImage(String workspaceId, ImageRequest request) {
-        CompletableFuture<PealClientHttpResponse<Media>> rawFuture = this.rawClient.generateImage(workspaceId, request);
+    public CompletableFuture<Media> generateImage(ImageRequest request) {
+        CompletableFuture<PealClientHttpResponse<Media>> rawFuture = this.rawClient.generateImage(request);
         CompletableFuture<Media> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -162,10 +121,9 @@ public class AsyncAssistantClient {
     /**
      * Asks for one image from the prompt, in the aspect asked for, and answers with it as a new file of the media library, ready to attach, marked <code>aiGenerated</code> and without a description. When the workspace brought its own image provider, the prompt goes there, with the workspace's key, and the image costs none of the workspace's daily requests, on any plan, a trial and the free plan included, within a number of such images a day (OwnImageLimitReached past it); if that provider refuses, the answer is ImageProviderRefused and the server's model is never asked instead. Otherwise the prompt goes to the image provider the server's operator chose. On a server that does not bill, an image costs the status's <code>images.requestCost</code> of the workspace's daily requests, given back only when the provider could not be reached. On a server that bills, it needs a payment method on the billing account (UsageAllowanceReached <code>paymentMethodRequired</code> without one, before anything is asked) and counts one of the month's images (<code>images.month</code>), billed past the allowance up to the account's ceiling (UsageAllowanceReached <code>ceilingReached</code>); an image that is not stored, whatever the reason, is not counted. Neither the prompt nor the image is logged. Either way the image takes room in the plan's media storage, which must hold the largest image before anything is asked. The file is stored as the provider gave it. Peal sets no platform's AI label on its own: set it in the post's options (YouTube <code>containsSyntheticMedia</code>, TikTok <code>aiGenerated</code>, X <code>madeWithAi</code>). Needs assistant:use and media:upload. Off unless the workspace brought a provider or the server has an image model (<code>images.source</code>).
      */
-    public CompletableFuture<Media> generateImage(
-            String workspaceId, ImageRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Media> generateImage(ImageRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Media>> rawFuture =
-                this.rawClient.generateImage(workspaceId, request, requestOptions);
+                this.rawClient.generateImage(request, requestOptions);
         CompletableFuture<Media> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -178,9 +136,8 @@ public class AsyncAssistantClient {
     /**
      * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<ImageProviderSetting> imageProvider(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> rawFuture =
-                this.rawClient.imageProvider(workspaceId);
+    public CompletableFuture<ImageProviderSetting> imageProvider() {
+        CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> rawFuture = this.rawClient.imageProvider();
         CompletableFuture<ImageProviderSetting> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -193,41 +150,9 @@ public class AsyncAssistantClient {
     /**
      * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<ImageProviderSetting> imageProvider(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<ImageProviderSetting> imageProvider(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> rawFuture =
-                this.rawClient.imageProvider(workspaceId, requestOptions);
-        CompletableFuture<ImageProviderSetting> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<ImageProviderSetting> imageProvider(
-            String workspaceId, ImageProviderAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> rawFuture =
-                this.rawClient.imageProvider(workspaceId, request);
-        CompletableFuture<ImageProviderSetting> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<ImageProviderSetting> imageProvider(
-            String workspaceId, ImageProviderAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ImageProviderSetting>> rawFuture =
-                this.rawClient.imageProvider(workspaceId, request, requestOptions);
+                this.rawClient.imageProvider(requestOptions);
         CompletableFuture<ImageProviderSetting> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -240,9 +165,8 @@ public class AsyncAssistantClient {
     /**
      * Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> (the provider's own address when left out) with <code>apiKey</code>, through the API <code>provider</code> names (<code>openai-compatible</code> when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<ImageProvider> setImageProvider(String workspaceId, ImageProviderChange request) {
-        CompletableFuture<PealClientHttpResponse<ImageProvider>> rawFuture =
-                this.rawClient.setImageProvider(workspaceId, request);
+    public CompletableFuture<ImageProvider> setImageProvider(ImageProviderChange request) {
+        CompletableFuture<PealClientHttpResponse<ImageProvider>> rawFuture = this.rawClient.setImageProvider(request);
         CompletableFuture<ImageProvider> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -256,9 +180,9 @@ public class AsyncAssistantClient {
      * Sets the image provider the workspace brings, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (<code>POST {baseUrl}/images/generations</code>), whose images then spend none of the workspace's daily assistant requests. The workspace's image prompts then go to <code>baseUrl</code> (the provider's own address when left out) with <code>apiKey</code>, through the API <code>provider</code> names (<code>openai-compatible</code> when left out); the images still take room in the plan's media storage. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. The provider is not called: the first image tells whether the settings work. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
     public CompletableFuture<ImageProvider> setImageProvider(
-            String workspaceId, ImageProviderChange request, RequestOptions requestOptions) {
+            ImageProviderChange request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ImageProvider>> rawFuture =
-                this.rawClient.setImageProvider(workspaceId, request, requestOptions);
+                this.rawClient.setImageProvider(request, requestOptions);
         CompletableFuture<ImageProvider> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -271,8 +195,8 @@ public class AsyncAssistantClient {
     /**
      * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<Void> removeImageProvider(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeImageProvider(workspaceId);
+    public CompletableFuture<Void> removeImageProvider() {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeImageProvider();
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -285,41 +209,8 @@ public class AsyncAssistantClient {
     /**
      * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      */
-    public CompletableFuture<Void> removeImageProvider(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeImageProvider(workspaceId, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<Void> removeImageProvider(
-            String workspaceId, RemoveImageProviderAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeImageProvider(workspaceId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
-     */
-    public CompletableFuture<Void> removeImageProvider(
-            String workspaceId, RemoveImageProviderAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeImageProvider(workspaceId, request, requestOptions);
+    public CompletableFuture<Void> removeImageProvider(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeImageProvider(requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -332,9 +223,8 @@ public class AsyncAssistantClient {
     /**
      * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
      */
-    public CompletableFuture<TextProviderSetting> textProvider(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<TextProviderSetting>> rawFuture =
-                this.rawClient.textProvider(workspaceId);
+    public CompletableFuture<TextProviderSetting> textProvider() {
+        CompletableFuture<PealClientHttpResponse<TextProviderSetting>> rawFuture = this.rawClient.textProvider();
         CompletableFuture<TextProviderSetting> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -347,41 +237,9 @@ public class AsyncAssistantClient {
     /**
      * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
      */
-    public CompletableFuture<TextProviderSetting> textProvider(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<TextProviderSetting> textProvider(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<TextProviderSetting>> rawFuture =
-                this.rawClient.textProvider(workspaceId, requestOptions);
-        CompletableFuture<TextProviderSetting> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
-     */
-    public CompletableFuture<TextProviderSetting> textProvider(
-            String workspaceId, TextProviderAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<TextProviderSetting>> rawFuture =
-                this.rawClient.textProvider(workspaceId, request);
-        CompletableFuture<TextProviderSetting> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
-     */
-    public CompletableFuture<TextProviderSetting> textProvider(
-            String workspaceId, TextProviderAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<TextProviderSetting>> rawFuture =
-                this.rawClient.textProvider(workspaceId, request, requestOptions);
+                this.rawClient.textProvider(requestOptions);
         CompletableFuture<TextProviderSetting> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -394,9 +252,8 @@ public class AsyncAssistantClient {
     /**
      * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<TextProvider> setTextProvider(String workspaceId, TextProviderChange request) {
-        CompletableFuture<PealClientHttpResponse<TextProvider>> rawFuture =
-                this.rawClient.setTextProvider(workspaceId, request);
+    public CompletableFuture<TextProvider> setTextProvider(TextProviderChange request) {
+        CompletableFuture<PealClientHttpResponse<TextProvider>> rawFuture = this.rawClient.setTextProvider(request);
         CompletableFuture<TextProvider> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -409,10 +266,9 @@ public class AsyncAssistantClient {
     /**
      * Sets the text provider the workspace brings, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests. The workspace's drafts, and the subjects of the posts it asks the assistant to write, then go to <code>baseUrl</code> with <code>apiKey</code>, under that provider's terms. Peal keeps the key encrypted for this workspace and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same (to change the model alone). The address must be public HTTPS; it is checked now, and before every call. A provider that writes no text (ElevenLabs, fal) is AiCapabilityNotOffered. The provider is not called: test it with <code>POST .../text-provider/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<TextProvider> setTextProvider(
-            String workspaceId, TextProviderChange request, RequestOptions requestOptions) {
+    public CompletableFuture<TextProvider> setTextProvider(TextProviderChange request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<TextProvider>> rawFuture =
-                this.rawClient.setTextProvider(workspaceId, request, requestOptions);
+                this.rawClient.setTextProvider(request, requestOptions);
         CompletableFuture<TextProvider> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -425,8 +281,8 @@ public class AsyncAssistantClient {
     /**
      * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
      */
-    public CompletableFuture<Void> removeTextProvider(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeTextProvider(workspaceId);
+    public CompletableFuture<Void> removeTextProvider() {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeTextProvider();
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -439,40 +295,8 @@ public class AsyncAssistantClient {
     /**
      * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
      */
-    public CompletableFuture<Void> removeTextProvider(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeTextProvider(workspaceId, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
-     */
-    public CompletableFuture<Void> removeTextProvider(String workspaceId, RemoveTextProviderAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeTextProvider(workspaceId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
-     */
-    public CompletableFuture<Void> removeTextProvider(
-            String workspaceId, RemoveTextProviderAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.removeTextProvider(workspaceId, request, requestOptions);
+    public CompletableFuture<Void> removeTextProvider(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.removeTextProvider(requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -485,8 +309,8 @@ public class AsyncAssistantClient {
     /**
      * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
      */
-    public CompletableFuture<Void> testTextProvider(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.testTextProvider(workspaceId);
+    public CompletableFuture<Void> testTextProvider() {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.testTextProvider();
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -499,40 +323,8 @@ public class AsyncAssistantClient {
     /**
      * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
      */
-    public CompletableFuture<Void> testTextProvider(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.testTextProvider(workspaceId, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
-     */
-    public CompletableFuture<Void> testTextProvider(String workspaceId, TestTextProviderAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.testTextProvider(workspaceId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
-     */
-    public CompletableFuture<Void> testTextProvider(
-            String workspaceId, TestTextProviderAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.testTextProvider(workspaceId, request, requestOptions);
+    public CompletableFuture<Void> testTextProvider(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.testTextProvider(requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -545,9 +337,8 @@ public class AsyncAssistantClient {
     /**
      * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<AiProviderConnections> providers(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<AiProviderConnections>> rawFuture =
-                this.rawClient.providers(workspaceId);
+    public CompletableFuture<AiProviderConnections> providers() {
+        CompletableFuture<PealClientHttpResponse<AiProviderConnections>> rawFuture = this.rawClient.providers();
         CompletableFuture<AiProviderConnections> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -560,40 +351,9 @@ public class AsyncAssistantClient {
     /**
      * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<AiProviderConnections> providers(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<AiProviderConnections> providers(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AiProviderConnections>> rawFuture =
-                this.rawClient.providers(workspaceId, requestOptions);
-        CompletableFuture<AiProviderConnections> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<AiProviderConnections> providers(String workspaceId, ProvidersAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<AiProviderConnections>> rawFuture =
-                this.rawClient.providers(workspaceId, request);
-        CompletableFuture<AiProviderConnections> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is <code>GET .../assistant/models</code>'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<AiProviderConnections> providers(
-            String workspaceId, ProvidersAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AiProviderConnections>> rawFuture =
-                this.rawClient.providers(workspaceId, request, requestOptions);
+                this.rawClient.providers(requestOptions);
         CompletableFuture<AiProviderConnections> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -606,9 +366,24 @@ public class AsyncAssistantClient {
     /**
      * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<AiProviderConnection> connectProvider(String workspaceId, AiProvider provider) {
+    public CompletableFuture<AiProviderConnection> connectProvider(AiProvider provider) {
         CompletableFuture<PealClientHttpResponse<AiProviderConnection>> rawFuture =
-                this.rawClient.connectProvider(workspaceId, provider);
+                this.rawClient.connectProvider(provider);
+        CompletableFuture<AiProviderConnection> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<AiProviderConnection> connectProvider(AiProvider provider, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<AiProviderConnection>> rawFuture =
+                this.rawClient.connectProvider(provider, requestOptions);
         CompletableFuture<AiProviderConnection> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -622,9 +397,9 @@ public class AsyncAssistantClient {
      * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<AiProviderConnection> connectProvider(
-            String workspaceId, AiProvider provider, RequestOptions requestOptions) {
+            AiProvider provider, AiProviderConnectionChange request) {
         CompletableFuture<PealClientHttpResponse<AiProviderConnection>> rawFuture =
-                this.rawClient.connectProvider(workspaceId, provider, requestOptions);
+                this.rawClient.connectProvider(provider, request);
         CompletableFuture<AiProviderConnection> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -638,28 +413,9 @@ public class AsyncAssistantClient {
      * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<AiProviderConnection> connectProvider(
-            String workspaceId, AiProvider provider, AiProviderConnectionChange request) {
+            AiProvider provider, AiProviderConnectionChange request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AiProviderConnection>> rawFuture =
-                this.rawClient.connectProvider(workspaceId, provider, request);
-        CompletableFuture<AiProviderConnection> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Connects a provider of Peal's catalogue (<code>peal-contract/ai-providers</code>), or <code>openai-compatible</code>, any endpoint of the OpenAI chat completions and images APIs, with the workspace's own key, or changes its address or key. It is then offered for each use it serves (<code>PUT .../assistant/models/{capability}</code>), whose requests spend none of Peal's allowance. Peal keeps the key encrypted for this workspace, this provider and this address, never shows it again, and never sends it to another address: <code>apiKey</code> may be left out to keep the stored one only while <code>baseUrl</code> stays exactly the same. The address must be public HTTPS; it is checked now, and before every call. A provider reached at its own address alone (<code>fixedAddress</code>: ElevenLabs, fal, Shotstack) takes no other (AiProviderAddressRefused <code>fixedAddress</code>): Shotstack takes its production API (<code>https://api.shotstack.io/edit/v1</code>, the default) or its sandbox (<code>https://api.shotstack.io/edit/stage</code>, free and watermarked), each with its own key. The provider is not called: test it with <code>POST .../providers/{provider}/test</code>. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<AiProviderConnection> connectProvider(
-            String workspaceId,
-            AiProvider provider,
-            AiProviderConnectionChange request,
-            RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AiProviderConnection>> rawFuture =
-                this.rawClient.connectProvider(workspaceId, provider, request, requestOptions);
+                this.rawClient.connectProvider(provider, request, requestOptions);
         CompletableFuture<AiProviderConnection> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -672,9 +428,38 @@ public class AsyncAssistantClient {
     /**
      * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<Void> disconnectProvider(String workspaceId, AiProvider provider) {
+    public CompletableFuture<Void> disconnectProvider(AiProvider provider) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.disconnectProvider(provider);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<Void> disconnectProvider(AiProvider provider, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnectProvider(workspaceId, provider);
+                this.rawClient.disconnectProvider(provider, requestOptions);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<Void> disconnectProvider(AiProvider provider, DisconnectProviderAssistantRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
+                this.rawClient.disconnectProvider(provider, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -688,44 +473,9 @@ public class AsyncAssistantClient {
      * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<Void> disconnectProvider(
-            String workspaceId, AiProvider provider, RequestOptions requestOptions) {
+            AiProvider provider, DisconnectProviderAssistantRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnectProvider(workspaceId, provider, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<Void> disconnectProvider(
-            String workspaceId, AiProvider provider, DisconnectProviderAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnectProvider(workspaceId, provider, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Removes the provider and its key, and the uses it served: the server's model works for them again, if it has one, within the workspace's allowance. Answers 204 whether or not the provider was connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<Void> disconnectProvider(
-            String workspaceId,
-            AiProvider provider,
-            DisconnectProviderAssistantRequest request,
-            RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.disconnectProvider(workspaceId, provider, request, requestOptions);
+                this.rawClient.disconnectProvider(provider, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -738,8 +488,37 @@ public class AsyncAssistantClient {
     /**
      * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<Void> testProvider(String workspaceId, AiProvider provider) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.testProvider(workspaceId, provider);
+    public CompletableFuture<Void> testProvider(AiProvider provider) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.testProvider(provider);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<Void> testProvider(AiProvider provider, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
+                this.rawClient.testProvider(provider, requestOptions);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<Void> testProvider(AiProvider provider, AiProviderTest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.testProvider(provider, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -753,40 +532,9 @@ public class AsyncAssistantClient {
      * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<Void> testProvider(
-            String workspaceId, AiProvider provider, RequestOptions requestOptions) {
+            AiProvider provider, AiProviderTest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.testProvider(workspaceId, provider, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<Void> testProvider(String workspaceId, AiProvider provider, AiProviderTest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.testProvider(workspaceId, provider, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Sends a connected provider one short request for text, a rewrite of a fixed sentence, as a member's request would go, with <code>model</code> (left out, the model the workspace's text is written with when this provider writes it, else the first Peal suggests for it), and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to the workspace's own providers, and nothing of Peal's. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<Void> testProvider(
-            String workspaceId, AiProvider provider, AiProviderTest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.testProvider(workspaceId, provider, request, requestOptions);
+                this.rawClient.testProvider(provider, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -799,8 +547,8 @@ public class AsyncAssistantClient {
     /**
      * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<AiCapabilityModels> models(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> rawFuture = this.rawClient.models(workspaceId);
+    public CompletableFuture<AiCapabilityModels> models() {
+        CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> rawFuture = this.rawClient.models();
         CompletableFuture<AiCapabilityModels> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -813,40 +561,8 @@ public class AsyncAssistantClient {
     /**
      * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<AiCapabilityModels> models(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> rawFuture =
-                this.rawClient.models(workspaceId, requestOptions);
-        CompletableFuture<AiCapabilityModels> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<AiCapabilityModels> models(String workspaceId, ModelsAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> rawFuture =
-                this.rawClient.models(workspaceId, request);
-        CompletableFuture<AiCapabilityModels> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<AiCapabilityModels> models(
-            String workspaceId, ModelsAssistantRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> rawFuture =
-                this.rawClient.models(workspaceId, request, requestOptions);
+    public CompletableFuture<AiCapabilityModels> models(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<AiCapabilityModels>> rawFuture = this.rawClient.models(requestOptions);
         CompletableFuture<AiCapabilityModels> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -859,10 +575,9 @@ public class AsyncAssistantClient {
     /**
      * Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and <code>model</code> is required (AiModelRequired) but for <code>composition</code>, whose model is always <code>edit</code>. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<AiCapabilityModel> setModel(
-            String workspaceId, AiCapability capability, AiCapabilityModelChange request) {
+    public CompletableFuture<AiCapabilityModel> setModel(AiCapability capability, AiCapabilityModelChange request) {
         CompletableFuture<PealClientHttpResponse<AiCapabilityModel>> rawFuture =
-                this.rawClient.setModel(workspaceId, capability, request);
+                this.rawClient.setModel(capability, request);
         CompletableFuture<AiCapabilityModel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -876,12 +591,9 @@ public class AsyncAssistantClient {
      * Chooses the provider and the model for one use: the provider must be connected (AiProviderNotConnected otherwise) and offer the use (AiCapabilityNotOffered otherwise), and <code>model</code> is required (AiModelRequired) but for <code>composition</code>, whose model is always <code>edit</code>. The workspace's drafts or prompts for that use then go to it, with the workspace's key, and spend none of Peal's allowance, within a number of such requests a day. The model is not checked: test the provider, or make a first request. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<AiCapabilityModel> setModel(
-            String workspaceId,
-            AiCapability capability,
-            AiCapabilityModelChange request,
-            RequestOptions requestOptions) {
+            AiCapability capability, AiCapabilityModelChange request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<AiCapabilityModel>> rawFuture =
-                this.rawClient.setModel(workspaceId, capability, request, requestOptions);
+                this.rawClient.setModel(capability, request, requestOptions);
         CompletableFuture<AiCapabilityModel> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -894,8 +606,37 @@ public class AsyncAssistantClient {
     /**
      * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
-    public CompletableFuture<Void> unsetModel(String workspaceId, AiCapability capability) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.unsetModel(workspaceId, capability);
+    public CompletableFuture<Void> unsetModel(AiCapability capability) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.unsetModel(capability);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<Void> unsetModel(AiCapability capability, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
+                this.rawClient.unsetModel(capability, requestOptions);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
+     */
+    public CompletableFuture<Void> unsetModel(AiCapability capability, UnsetModelAssistantRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.unsetModel(capability, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -909,44 +650,9 @@ public class AsyncAssistantClient {
      * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      */
     public CompletableFuture<Void> unsetModel(
-            String workspaceId, AiCapability capability, RequestOptions requestOptions) {
+            AiCapability capability, UnsetModelAssistantRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.unsetModel(workspaceId, capability, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<Void> unsetModel(
-            String workspaceId, AiCapability capability, UnsetModelAssistantRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.unsetModel(workspaceId, capability, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Leaves a use to the server's model, if it has one (<code>serverModel</code>), within the workspace's allowance, or off; the provider stays connected. Needs assistant:configure, which no OAuth client holds but Peal's command line.
-     */
-    public CompletableFuture<Void> unsetModel(
-            String workspaceId,
-            AiCapability capability,
-            UnsetModelAssistantRequest request,
-            RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.unsetModel(workspaceId, capability, request, requestOptions);
+                this.rawClient.unsetModel(capability, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

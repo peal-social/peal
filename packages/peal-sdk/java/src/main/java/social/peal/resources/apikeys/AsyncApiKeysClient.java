@@ -8,7 +8,6 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.apikeys.requests.ListApiKeysRequest;
 import social.peal.resources.apikeys.requests.NewApiKey;
 import social.peal.resources.apikeys.requests.RevokeApiKeysRequest;
 import social.peal.types.ApiKey;
@@ -34,8 +33,8 @@ public class AsyncApiKeysClient {
     /**
      * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
-    public CompletableFuture<List<ApiKey>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<ApiKey>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<ApiKey>> list() {
+        CompletableFuture<PealClientHttpResponse<List<ApiKey>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<ApiKey>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -48,39 +47,8 @@ public class AsyncApiKeysClient {
     /**
      * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
-    public CompletableFuture<List<ApiKey>> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<ApiKey>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<ApiKey>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
-     */
-    public CompletableFuture<List<ApiKey>> list(String workspaceId, ListApiKeysRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<ApiKey>>> rawFuture = this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<ApiKey>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
-     */
-    public CompletableFuture<List<ApiKey>> list(
-            String workspaceId, ListApiKeysRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<ApiKey>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<List<ApiKey>> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<ApiKey>>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<List<ApiKey>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -93,9 +61,8 @@ public class AsyncApiKeysClient {
     /**
      * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
-    public CompletableFuture<CreatedApiKey> create(String workspaceId, NewApiKey request) {
-        CompletableFuture<PealClientHttpResponse<CreatedApiKey>> rawFuture =
-                this.rawClient.create(workspaceId, request);
+    public CompletableFuture<CreatedApiKey> create(NewApiKey request) {
+        CompletableFuture<PealClientHttpResponse<CreatedApiKey>> rawFuture = this.rawClient.create(request);
         CompletableFuture<CreatedApiKey> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -108,10 +75,9 @@ public class AsyncApiKeysClient {
     /**
      * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
-    public CompletableFuture<CreatedApiKey> create(
-            String workspaceId, NewApiKey request, RequestOptions requestOptions) {
+    public CompletableFuture<CreatedApiKey> create(NewApiKey request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CreatedApiKey>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+                this.rawClient.create(request, requestOptions);
         CompletableFuture<CreatedApiKey> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -124,8 +90,8 @@ public class AsyncApiKeysClient {
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public CompletableFuture<Void> revoke(String workspaceId, String apiKeyId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.revoke(workspaceId, apiKeyId);
+    public CompletableFuture<Void> revoke(String apiKeyId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.revoke(apiKeyId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -138,9 +104,8 @@ public class AsyncApiKeysClient {
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public CompletableFuture<Void> revoke(String workspaceId, String apiKeyId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.revoke(workspaceId, apiKeyId, requestOptions);
+    public CompletableFuture<Void> revoke(String apiKeyId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.revoke(apiKeyId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -153,9 +118,8 @@ public class AsyncApiKeysClient {
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public CompletableFuture<Void> revoke(String workspaceId, String apiKeyId, RevokeApiKeysRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.revoke(workspaceId, apiKeyId, request);
+    public CompletableFuture<Void> revoke(String apiKeyId, RevokeApiKeysRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.revoke(apiKeyId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -169,9 +133,9 @@ public class AsyncApiKeysClient {
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
     public CompletableFuture<Void> revoke(
-            String workspaceId, String apiKeyId, RevokeApiKeysRequest request, RequestOptions requestOptions) {
+            String apiKeyId, RevokeApiKeysRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.revoke(workspaceId, apiKeyId, request, requestOptions);
+                this.rawClient.revoke(apiKeyId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

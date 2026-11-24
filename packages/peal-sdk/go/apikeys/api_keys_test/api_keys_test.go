@@ -88,19 +88,15 @@ func TestAPIKeysListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListAPIKeysRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.APIKeys.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAPIKeysListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAPIKeysListWithWireMock", "GET", "/api/workspaces/workspaceId/api-keys", nil, 1)
+	VerifyRequestCount(t, "TestAPIKeysListWithWireMock", "GET", "/api/v1/api-keys", nil, 1)
 }
 
 func TestAPIKeysCreateWithWireMock(
@@ -115,8 +111,7 @@ func TestAPIKeysCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewAPIKey{
-		WorkspaceID: "workspaceId",
-		Name:        "name",
+		Name: "name",
 		Permissions: []peal.Permission{
 			peal.PermissionActivityRead,
 		},
@@ -130,7 +125,7 @@ func TestAPIKeysCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAPIKeysCreateWithWireMock", "POST", "/api/workspaces/workspaceId/api-keys", nil, 1)
+	VerifyRequestCount(t, "TestAPIKeysCreateWithWireMock", "POST", "/api/v1/api-keys", nil, 1)
 }
 
 func TestAPIKeysRevokeWithWireMock(
@@ -145,8 +140,7 @@ func TestAPIKeysRevokeWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RevokeAPIKeysRequest{
-		WorkspaceID: "workspaceId",
-		APIKeyID:    "apiKeyId",
+		APIKeyID: "apiKeyId",
 	}
 	invocationErr := client.APIKeys.Revoke(
 		context.TODO(),
@@ -157,5 +151,5 @@ func TestAPIKeysRevokeWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAPIKeysRevokeWithWireMock", "DELETE", "/api/workspaces/workspaceId/api-keys/apiKeyId", nil, 1)
+	VerifyRequestCount(t, "TestAPIKeysRevokeWithWireMock", "DELETE", "/api/v1/api-keys/apiKeyId", nil, 1)
 }

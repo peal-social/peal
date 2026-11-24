@@ -10,42 +10,13 @@ import (
 )
 
 var (
-	closePartnerAccountRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ClosePartnerAccountRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (c *ClosePartnerAccountRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ClosePartnerAccountRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(closePartnerAccountRequestFieldWorkspaceID)
-}
-
-var (
-	newPartnerKeyFieldWorkspaceID   = big.NewInt(1 << 0)
-	newPartnerKeyFieldExpiresInDays = big.NewInt(1 << 1)
-	newPartnerKeyFieldName          = big.NewInt(1 << 2)
-	newPartnerKeyFieldPermissions   = big.NewInt(1 << 3)
-	newPartnerKeyFieldScopes        = big.NewInt(1 << 4)
+	newPartnerKeyFieldExpiresInDays = big.NewInt(1 << 0)
+	newPartnerKeyFieldName          = big.NewInt(1 << 1)
+	newPartnerKeyFieldPermissions   = big.NewInt(1 << 2)
+	newPartnerKeyFieldScopes        = big.NewInt(1 << 3)
 )
 
 type NewPartnerKey struct {
-	WorkspaceID   string         `json:"-" url:"-"`
 	ExpiresInDays *int           `json:"expiresInDays,omitempty" url:"-"`
 	Name          string         `json:"name" url:"-"`
 	Permissions   []Permission   `json:"permissions" url:"-"`
@@ -62,13 +33,6 @@ func (n *NewPartnerKey) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewPartnerKey) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newPartnerKeyFieldWorkspaceID)
 }
 
 // SetExpiresInDays sets the ExpiresInDays field and marks it as non-optional;
@@ -121,73 +85,17 @@ func (n *NewPartnerKey) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	getPartnerAccountRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type GetPartnerAccountRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (g *GetPartnerAccountRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if g.explicitFields != nil {
-		next.Set(g.explicitFields)
-	}
-	next.Or(next, field)
-	g.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetPartnerAccountRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getPartnerAccountRequestFieldWorkspaceID)
-}
-
-var (
-	listKeysPartnerAccountRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListKeysPartnerAccountRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListKeysPartnerAccountRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListKeysPartnerAccountRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listKeysPartnerAccountRequestFieldWorkspaceID)
-}
-
-var (
-	listWorkspacesPartnerAccountRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listWorkspacesPartnerAccountRequestFieldBefore      = big.NewInt(1 << 1)
-	listWorkspacesPartnerAccountRequestFieldExternalID  = big.NewInt(1 << 2)
-	listWorkspacesPartnerAccountRequestFieldLimit       = big.NewInt(1 << 3)
-	listWorkspacesPartnerAccountRequestFieldName        = big.NewInt(1 << 4)
+	listWorkspacesPartnerAccountRequestFieldBefore     = big.NewInt(1 << 0)
+	listWorkspacesPartnerAccountRequestFieldExternalID = big.NewInt(1 << 1)
+	listWorkspacesPartnerAccountRequestFieldLimit      = big.NewInt(1 << 2)
+	listWorkspacesPartnerAccountRequestFieldName       = big.NewInt(1 << 3)
 )
 
 type ListWorkspacesPartnerAccountRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Before      *string `json:"-" url:"before,omitempty"`
-	ExternalID  *string `json:"-" url:"externalId,omitempty"`
-	Limit       *string `json:"-" url:"limit,omitempty"`
-	Name        *string `json:"-" url:"name,omitempty"`
+	Before     *string `json:"-" url:"before,omitempty"`
+	ExternalID *string `json:"-" url:"externalId,omitempty"`
+	Limit      *string `json:"-" url:"limit,omitempty"`
+	Name       *string `json:"-" url:"name,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -200,13 +108,6 @@ func (l *ListWorkspacesPartnerAccountRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListWorkspacesPartnerAccountRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listWorkspacesPartnerAccountRequestFieldWorkspaceID)
 }
 
 // SetBefore sets the Before field and marks it as non-optional;
@@ -238,13 +139,11 @@ func (l *ListWorkspacesPartnerAccountRequest) SetName(name *string) {
 }
 
 var (
-	openPartnerFieldWorkspaceID = big.NewInt(1 << 0)
-	openPartnerFieldName        = big.NewInt(1 << 1)
+	openPartnerFieldName = big.NewInt(1 << 0)
 )
 
 type OpenPartner struct {
-	WorkspaceID string `json:"-" url:"-"`
-	Name        string `json:"name" url:"-"`
+	Name string `json:"name" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -257,13 +156,6 @@ func (o *OpenPartner) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	o.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (o *OpenPartner) SetWorkspaceID(workspaceID string) {
-	o.WorkspaceID = workspaceID
-	o.require(openPartnerFieldWorkspaceID)
 }
 
 // SetName sets the Name field and marks it as non-optional;
@@ -295,15 +187,13 @@ func (o *OpenPartner) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	overviewPartnerAccountRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	overviewPartnerAccountRequestFieldBefore      = big.NewInt(1 << 1)
-	overviewPartnerAccountRequestFieldLimit       = big.NewInt(1 << 2)
+	overviewPartnerAccountRequestFieldBefore = big.NewInt(1 << 0)
+	overviewPartnerAccountRequestFieldLimit  = big.NewInt(1 << 1)
 )
 
 type OverviewPartnerAccountRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Before      *string `json:"-" url:"before,omitempty"`
-	Limit       *string `json:"-" url:"limit,omitempty"`
+	Before *string `json:"-" url:"before,omitempty"`
+	Limit  *string `json:"-" url:"limit,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -316,13 +206,6 @@ func (o *OverviewPartnerAccountRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	o.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (o *OverviewPartnerAccountRequest) SetWorkspaceID(workspaceID string) {
-	o.WorkspaceID = workspaceID
-	o.require(overviewPartnerAccountRequestFieldWorkspaceID)
 }
 
 // SetBefore sets the Before field and marks it as non-optional;
@@ -340,12 +223,10 @@ func (o *OverviewPartnerAccountRequest) SetLimit(limit *string) {
 }
 
 var (
-	revokeKeyPartnerAccountRequestFieldWorkspaceID  = big.NewInt(1 << 0)
-	revokeKeyPartnerAccountRequestFieldPartnerKeyID = big.NewInt(1 << 1)
+	revokeKeyPartnerAccountRequestFieldPartnerKeyID = big.NewInt(1 << 0)
 )
 
 type RevokeKeyPartnerAccountRequest struct {
-	WorkspaceID  string `json:"-" url:"-"`
 	PartnerKeyID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -359,13 +240,6 @@ func (r *RevokeKeyPartnerAccountRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RevokeKeyPartnerAccountRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(revokeKeyPartnerAccountRequestFieldWorkspaceID)
 }
 
 // SetPartnerKeyID sets the PartnerKeyID field and marks it as non-optional;
@@ -820,15 +694,13 @@ func (p *PartnerStanding) String() string {
 }
 
 var (
-	partnerChangeFieldWorkspaceID   = big.NewInt(1 << 0)
-	partnerChangeFieldAccentColor   = big.NewInt(1 << 1)
-	partnerChangeFieldLogoURL       = big.NewInt(1 << 2)
-	partnerChangeFieldName          = big.NewInt(1 << 3)
-	partnerChangeFieldReturnOrigins = big.NewInt(1 << 4)
+	partnerChangeFieldAccentColor   = big.NewInt(1 << 0)
+	partnerChangeFieldLogoURL       = big.NewInt(1 << 1)
+	partnerChangeFieldName          = big.NewInt(1 << 2)
+	partnerChangeFieldReturnOrigins = big.NewInt(1 << 3)
 )
 
 type PartnerChange struct {
-	WorkspaceID   string   `json:"-" url:"-"`
 	AccentColor   *string  `json:"accentColor,omitempty" url:"-"`
 	LogoURL       *string  `json:"logoUrl,omitempty" url:"-"`
 	Name          *string  `json:"name,omitempty" url:"-"`
@@ -845,13 +717,6 @@ func (p *PartnerChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PartnerChange) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(partnerChangeFieldWorkspaceID)
 }
 
 // SetAccentColor sets the AccentColor field and marks it as non-optional;

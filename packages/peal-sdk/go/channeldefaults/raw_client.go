@@ -44,8 +44,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/default-options",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/default-options",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -90,8 +89,7 @@ func (r *RawClient) Set(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/default-options",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/default-options",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -138,8 +136,7 @@ func (r *RawClient) Clear(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/default-options",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/default-options",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(

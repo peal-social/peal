@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         platform: "x"
  *     }
  */
 export interface ConnectChannel {
-    workspaceId: string;
     platform: Peal.Platform;
     connection?: Peal.ChannelConnection;
     handle?: string;

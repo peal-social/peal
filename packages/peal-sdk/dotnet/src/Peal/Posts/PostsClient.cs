@@ -34,10 +34,7 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts/drafts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/posts/drafts",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -190,10 +187,7 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/posts",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -325,7 +319,7 @@ public partial class PostsClient : IPostsClient
     }
 
     private async Task<WithRawResponse<Post>> CreateAsyncCore(
-        CreatePostsRequest request,
+        PostDraft request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -344,14 +338,10 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/posts",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -401,6 +391,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -516,10 +518,7 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts/search",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/posts/search",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -672,10 +671,7 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts/send",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/posts/send",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -729,6 +725,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -854,10 +862,7 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts/bulk",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/posts/bulk",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -911,6 +916,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1000,10 +1017,7 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts/import",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/posts/import",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -1057,6 +1071,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1157,10 +1183,7 @@ public partial class PostsClient : IPostsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/posts/validate",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/posts/validate",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -1214,6 +1237,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1303,8 +1338,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -1357,6 +1391,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1446,8 +1492,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request.Body,
@@ -1502,6 +1547,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1615,8 +1672,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -1643,6 +1699,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1745,8 +1813,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/outcome",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/outcome",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -1799,6 +1866,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1888,8 +1967,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/attempts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/attempts",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -1944,6 +2022,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2033,8 +2123,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/tags",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/tags",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request,
@@ -2089,6 +2178,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2190,8 +2291,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/duplicate",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/duplicate",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -2245,6 +2345,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2346,8 +2458,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/schedule",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/schedule",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request,
@@ -2403,6 +2514,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2528,8 +2651,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/reschedule",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/reschedule",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request.Body,
@@ -2585,6 +2707,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2710,8 +2844,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/queue",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/queue",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     Body = request,
@@ -2767,6 +2900,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2892,8 +3037,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/unschedule",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/unschedule",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -2947,6 +3091,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3048,8 +3204,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/targets/{2}/repost",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/targets/{1}/repost",
                         ValueConvert.ToPathParameterString(request.PostId),
                         ValueConvert.ToPathParameterString(request.TargetId)
                     ),
@@ -3104,6 +3259,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3205,8 +3372,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/targets/{2}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/targets/{1}",
                         ValueConvert.ToPathParameterString(request.PostId),
                         ValueConvert.ToPathParameterString(request.TargetId)
                     ),
@@ -3260,6 +3426,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3361,8 +3539,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/targets/{2}/confirm",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/targets/{1}/confirm",
                         ValueConvert.ToPathParameterString(request.PostId),
                         ValueConvert.ToPathParameterString(request.TargetId)
                     ),
@@ -3419,6 +3596,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3520,8 +3709,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/targets/{2}/leave-out-rest",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/targets/{1}/leave-out-rest",
                         ValueConvert.ToPathParameterString(request.PostId),
                         ValueConvert.ToPathParameterString(request.TargetId)
                     ),
@@ -3576,6 +3764,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3678,8 +3878,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/targets/{2}/unpublish",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/targets/{1}/unpublish",
                         ValueConvert.ToPathParameterString(request.PostId),
                         ValueConvert.ToPathParameterString(request.TargetId)
                     ),
@@ -3734,6 +3933,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -3836,8 +4047,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/targets/{2}/edit",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/targets/{1}/edit",
                         ValueConvert.ToPathParameterString(request.PostId),
                         ValueConvert.ToPathParameterString(request.TargetId)
                     ),
@@ -3894,6 +4104,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -4007,8 +4229,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/unpublish",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/unpublish",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -4062,6 +4283,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -4151,8 +4384,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/changes",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/changes",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -4205,6 +4437,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -4294,8 +4538,7 @@ public partial class PostsClient : IPostsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/posts/{1}/cancel",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/posts/{0}/cancel",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -4349,6 +4592,18 @@ public partial class PostsClient : IPostsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -4433,7 +4688,7 @@ public partial class PostsClient : IPostsClient
     /// Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50) says otherwise. Pass the page's `nextCursor` as `cursor` for the next one. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.DraftsAsync(new DraftsPostsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Posts.DraftsAsync(new DraftsPostsRequest());
     /// </code></example>
     public WithRawResponseTask<DraftPage> DraftsAsync(
         DraftsPostsRequest request,
@@ -4450,14 +4705,7 @@ public partial class PostsClient : IPostsClient
     /// Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.ListAsync(
-    ///     new ListPostsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         From = "from",
-    ///         To = "to",
-    ///     }
-    /// );
+    /// await client.Posts.ListAsync(new ListPostsRequest { From = "from", To = "to" });
     /// </code></example>
     public WithRawResponseTask<IEnumerable<Post>> ListAsync(
         ListPostsRequest request,
@@ -4475,30 +4723,26 @@ public partial class PostsClient : IPostsClient
     /// </summary>
     /// <example><code>
     /// await client.Posts.CreateAsync(
-    ///     new CreatePostsRequest
+    ///     new PostDraft
     ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new PostDraft
+    ///         ChannelIds = new List&lt;string&gt;() { "channelIds" },
+    ///         Content = new PostContent
     ///         {
-    ///             ChannelIds = new List&lt;string&gt;() { "channelIds" },
-    ///             Content = new PostContent
+    ///             Media = new List&lt;MediaAttachment&gt;()
     ///             {
-    ///                 Media = new List&lt;MediaAttachment&gt;()
-    ///                 {
-    ///                     new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
-    ///                 },
-    ///                 Overrides = new List&lt;TextOverride&gt;()
-    ///                 {
-    ///                     new TextOverride { ChannelId = "channelId", Text = "text" },
-    ///                 },
-    ///                 Text = "text",
+    ///                 new MediaAttachment { AltText = "altText", MediaId = "mediaId" },
     ///             },
+    ///             Overrides = new List&lt;TextOverride&gt;()
+    ///             {
+    ///                 new TextOverride { ChannelId = "channelId", Text = "text" },
+    ///             },
+    ///             Text = "text",
     ///         },
     ///     }
     /// );
     /// </code></example>
     public WithRawResponseTask<Post> CreateAsync(
-        CreatePostsRequest request,
+        PostDraft request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -4510,7 +4754,7 @@ public partial class PostsClient : IPostsClient
     /// Lists the workspace's posts, whatever their state, a page at a time: 20 unless `limit` (at most 100) says otherwise. Every filter given must hold: `status` (draft, scheduled, publishing, finished, cancelled), `outcome` (how a finished post ended, such as `failed` or `partiallyPublished`), `channelId` (posts with a target on that channel), `platform` (posts with a target on a connected channel of that platform), `tagId` (posts filed under that tag), `queueId` (posts that queue placed), `recyclingId` (posts that recycling rule made), `removed` (`true`: posts Peal deleted from at least one channel's platform; `false`: posts deleted from none), `from` (included) and `to` (excluded), on the scheduled instant, which leave out posts without a time, `createdVia` (`web`, `apiKey` or `application`) and `authorId`. `sort` orders them by creation (`createdDesc`, the default, or `createdAsc`) or by scheduled instant (`scheduledDesc`, `scheduledAsc`, which list only posts with a time). Pass the page's `nextCursor` as `cursor`, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and `channels` gives the platform of each channel the page names. Needs post:read and channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.SearchAsync(new SearchPostsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Posts.SearchAsync(new SearchPostsRequest());
     /// </code></example>
     public WithRawResponseTask<PostPage> SearchAsync(
         SearchPostsRequest request,
@@ -4530,7 +4774,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.SendAsync(
     ///     new NewPost
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ChannelIds = new List&lt;string&gt;() { "channelIds" },
     ///         Content = new PostContent
     ///         {
@@ -4564,7 +4807,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.BulkAsync(
     ///     new BulkPosts
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Posts = new List&lt;BulkPost&gt;()
     ///         {
     ///             new BulkPost
@@ -4603,7 +4845,7 @@ public partial class PostsClient : IPostsClient
     /// Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: `text` and `channels` (channel ids separated by spaces, commas or semicolons) are required columns, `at` too (`now`, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's `time_zone`, an IANA zone, UTC if left out); `media` (ids of ready media of the workspace), `allow_duplicate` (`true` or `false`) and `idempotency_key` are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (`strayQuote`). Blank lines are no rows. The file is checked first, every row, as `validate` checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and `rows` says which are `valid`, `refused` (with what `send` would have answered) or `unreadable` (with the cells at fault). `dryRun` stops there even when every row is valid. Otherwise the rows are then made in order as `bulk` makes its items, each `created` or, when something changed since the check or a row repeats an earlier one, `refused`. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An `Idempotency-Key` header works as on `bulk`, by row. A file has no column for short links: each post takes the workspace's default (`shortLinks.status`'s `byDefault`). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.ImportAsync(new PostImport { WorkspaceId = "workspaceId", Csv = "csv" });
+    /// await client.Posts.ImportAsync(new PostImport { Csv = "csv" });
     /// </code></example>
     public WithRawResponseTask<ImportResult> ImportAsync(
         PostImport request,
@@ -4623,7 +4865,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.ValidateAsync(
     ///     new PostToValidate
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ChannelIds = new List&lt;string&gt;() { "channelIds" },
     ///         Content = new PostContent
     ///         {
@@ -4655,7 +4896,7 @@ public partial class PostsClient : IPostsClient
     /// Answers with a post of the workspace. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.GetAsync(new GetPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" });
+    /// await client.Posts.GetAsync(new GetPostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<Post> GetAsync(
         GetPostsRequest request,
@@ -4673,7 +4914,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.UpdateAsync(
     ///     new UpdatePostsRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         Body = new PostDraft
     ///         {
@@ -4707,9 +4947,7 @@ public partial class PostsClient : IPostsClient
     /// Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.DiscardAsync(
-    ///     new DiscardPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.DiscardAsync(new DiscardPostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask DiscardAsync(
         DiscardPostsRequest request,
@@ -4724,9 +4962,7 @@ public partial class PostsClient : IPostsClient
     /// Answers with a post once it has gone out: it waits up to `wait` seconds (60 at most; none unless given) until every channel has its result, and answers the post then (`status` `finished`), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.OutcomeAsync(
-    ///     new OutcomePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.OutcomeAsync(new OutcomePostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<Post> OutcomeAsync(
         OutcomePostsRequest request,
@@ -4741,9 +4977,7 @@ public partial class PostsClient : IPostsClient
     /// Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.AttemptsAsync(
-    ///     new AttemptsPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.AttemptsAsync(new AttemptsPostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<IEnumerable<PublicationAttempt>> AttemptsAsync(
         AttemptsPostsRequest request,
@@ -4763,7 +4997,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.TagAsync(
     ///     new PostTags
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         TagIds = new List&lt;string&gt;() { "tagIds" },
     ///     }
@@ -4782,9 +5015,7 @@ public partial class PostsClient : IPostsClient
     /// Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.DuplicateAsync(
-    ///     new DuplicatePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.DuplicateAsync(new DuplicatePostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<Post> DuplicateAsync(
         DuplicatePostsRequest request,
@@ -4804,7 +5035,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.ScheduleAsync(
     ///     new SchedulePost
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         At = "at",
     ///         ChannelIds = new List&lt;string&gt;() { "channelIds" },
@@ -4830,7 +5060,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.RescheduleAsync(
     ///     new ReschedulePostsRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         Body = new PostSchedule { At = "at", TimeZone = "timeZone" },
     ///     }
@@ -4851,7 +5080,7 @@ public partial class PostsClient : IPostsClient
     /// Puts a post on the next free slot of a queue (`queueId`, or the workspace's default queue), decided when the request is received so that posts added together never take the same slot. A draft is scheduled there as `schedule` schedules it, on `channelIds` when given, on the channels it has otherwise, or, when it has none, where the same content sent with `when: queue` would go: the queue's connected channels and its channel set's, with the options the set keeps and the channels' default options; a channel of either that is no longer connected is left out and told in `warnings` (`queueChannelsDropped`, `channelsDropped`), and none left is UnknownChannels; a scheduled post, or one awaiting approval, is moved there as `reschedule` moves it, on the channels it has. Every rule of scheduling applies at that time, the approval gate and the plan's room in the slot's month included (PlanLimitReached, never a later month). A queue without a free slot within 366 days is QueueHasNoRoom, and nothing is changed. Needs post:schedule and channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.EnqueueAsync(new QueuePost { WorkspaceId = "workspaceId", PostId = "postId" });
+    /// await client.Posts.EnqueueAsync(new QueuePost { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<Post> EnqueueAsync(
         QueuePost request,
@@ -4866,9 +5095,7 @@ public partial class PostsClient : IPostsClient
     /// Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.UnscheduleAsync(
-    ///     new UnschedulePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.UnscheduleAsync(new UnschedulePostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<Post> UnscheduleAsync(
         UnschedulePostsRequest request,
@@ -4885,14 +5112,7 @@ public partial class PostsClient : IPostsClient
     /// Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as `partsNotSent` is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.RepostAsync(
-    ///     new RepostPostsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PostId = "postId",
-    ///         TargetId = "targetId",
-    ///     }
-    /// );
+    /// await client.Posts.RepostAsync(new RepostPostsRequest { PostId = "postId", TargetId = "targetId" });
     /// </code></example>
     public WithRawResponseTask<Post> RepostAsync(
         RepostPostsRequest request,
@@ -4908,12 +5128,7 @@ public partial class PostsClient : IPostsClient
     /// </summary>
     /// <example><code>
     /// await client.Posts.RemoveTargetAsync(
-    ///     new RemoveTargetPostsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PostId = "postId",
-    ///         TargetId = "targetId",
-    ///     }
+    ///     new RemoveTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<Post> RemoveTargetAsync(
@@ -4934,7 +5149,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.ConfirmAsync(
     ///     new ConfirmPostsRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         TargetId = "targetId",
     ///         Body = new TargetConfirmation(
@@ -4957,12 +5171,7 @@ public partial class PostsClient : IPostsClient
     /// </summary>
     /// <example><code>
     /// await client.Posts.LeaveOutRestAsync(
-    ///     new LeaveOutRestPostsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PostId = "postId",
-    ///         TargetId = "targetId",
-    ///     }
+    ///     new LeaveOutRestPostsRequest { PostId = "postId", TargetId = "targetId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<Post> LeaveOutRestAsync(
@@ -4981,12 +5190,7 @@ public partial class PostsClient : IPostsClient
     /// </summary>
     /// <example><code>
     /// await client.Posts.UnpublishTargetAsync(
-    ///     new UnpublishTargetPostsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PostId = "postId",
-    ///         TargetId = "targetId",
-    ///     }
+    ///     new UnpublishTargetPostsRequest { PostId = "postId", TargetId = "targetId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<LivePostChange> UnpublishTargetAsync(
@@ -5007,7 +5211,6 @@ public partial class PostsClient : IPostsClient
     /// await client.Posts.EditTargetAsync(
     ///     new LivePostEdit
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         PostId = "postId",
     ///         TargetId = "targetId",
     ///         Text = "text",
@@ -5029,9 +5232,7 @@ public partial class PostsClient : IPostsClient
     /// Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (`changes`) and, beside them, why it could not be on the others (`refused`, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.UnpublishAsync(
-    ///     new UnpublishPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.UnpublishAsync(new UnpublishPostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<PostUnpublish> UnpublishAsync(
         UnpublishPostsRequest request,
@@ -5048,9 +5249,7 @@ public partial class PostsClient : IPostsClient
     /// Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its `kind` and where it stands: `pending`, `done` or `failed` with its `code`. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.ChangesAsync(
-    ///     new ChangesPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.ChangesAsync(new ChangesPostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<LivePostChanges> ChangesAsync(
         ChangesPostsRequest request,
@@ -5067,9 +5266,7 @@ public partial class PostsClient : IPostsClient
     /// Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
     /// </summary>
     /// <example><code>
-    /// await client.Posts.CancelAsync(
-    ///     new CancelPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Posts.CancelAsync(new CancelPostsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<Post> CancelAsync(
         CancelPostsRequest request,

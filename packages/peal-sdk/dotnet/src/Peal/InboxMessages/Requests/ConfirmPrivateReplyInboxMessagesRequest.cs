@@ -7,9 +7,6 @@ namespace Peal;
 public record ConfirmPrivateReplyInboxMessagesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PrivateReplyId { get; set; }
 
     [JsonPropertyName("went")]

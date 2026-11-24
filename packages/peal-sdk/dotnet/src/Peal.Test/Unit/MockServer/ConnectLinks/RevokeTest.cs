@@ -43,7 +43,7 @@ public class RevokeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/connect-links/linkId")
+                    .WithPath("/api/v1/connect-links/linkId")
                     .UsingDelete()
             )
             .RespondWith(
@@ -54,7 +54,7 @@ public class RevokeTest : BaseMockServerTest
             );
 
         var response = await Client.ConnectLinks.RevokeAsync(
-            new RevokeConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
+            new RevokeConnectLinksRequest { LinkId = "linkId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -90,7 +90,7 @@ public class RevokeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/connect-links/linkId")
+                    .WithPath("/api/v1/connect-links/linkId")
                     .UsingDelete()
             )
             .RespondWith(
@@ -101,7 +101,7 @@ public class RevokeTest : BaseMockServerTest
             );
 
         var response = await Client.ConnectLinks.RevokeAsync(
-            new RevokeConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
+            new RevokeConnectLinksRequest { LinkId = "linkId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

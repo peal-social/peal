@@ -26,6 +26,7 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
@@ -47,36 +48,34 @@ public class AsyncRawChannelDefaultsClient {
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ChannelDefaults>> get(String workspaceId, String channelId) {
-        return get(workspaceId, channelId, GetChannelDefaultsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<ChannelDefaults>> get(String channelId) {
+        return get(channelId, GetChannelDefaultsRequest.builder().build());
     }
 
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelDefaults>> get(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return get(workspaceId, channelId, GetChannelDefaultsRequest.builder().build(), requestOptions);
+            String channelId, RequestOptions requestOptions) {
+        return get(channelId, GetChannelDefaultsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelDefaults>> get(
-            String workspaceId, String channelId, GetChannelDefaultsRequest request) {
-        return get(workspaceId, channelId, request, null);
+            String channelId, GetChannelDefaultsRequest request) {
+        return get(channelId, request, null);
     }
 
     /**
      * Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelDefaults>> get(
-            String workspaceId, String channelId, GetChannelDefaultsRequest request, RequestOptions requestOptions) {
+            String channelId, GetChannelDefaultsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("default-options");
         if (requestOptions != null) {
@@ -118,6 +117,11 @@ public class AsyncRawChannelDefaultsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -172,20 +176,18 @@ public class AsyncRawChannelDefaultsClient {
      * Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (<code>TargetOptions</code>), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelDefaults>> set(
-            String workspaceId, String channelId, NewChannelDefaults request) {
-        return set(workspaceId, channelId, request, null);
+            String channelId, NewChannelDefaults request) {
+        return set(channelId, request, null);
     }
 
     /**
      * Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (<code>TargetOptions</code>), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelDefaults>> set(
-            String workspaceId, String channelId, NewChannelDefaults request, RequestOptions requestOptions) {
+            String channelId, NewChannelDefaults request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("default-options");
         if (requestOptions != null) {
@@ -237,6 +239,11 @@ public class AsyncRawChannelDefaultsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -295,38 +302,33 @@ public class AsyncRawChannelDefaultsClient {
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> clear(String workspaceId, String channelId) {
-        return clear(
-                workspaceId, channelId, ClearChannelDefaultsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> clear(String channelId) {
+        return clear(channelId, ClearChannelDefaultsRequest.builder().build());
+    }
+
+    /**
+     * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> clear(String channelId, RequestOptions requestOptions) {
+        return clear(channelId, ClearChannelDefaultsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> clear(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return clear(
-                workspaceId, channelId, ClearChannelDefaultsRequest.builder().build(), requestOptions);
+            String channelId, ClearChannelDefaultsRequest request) {
+        return clear(channelId, request, null);
     }
 
     /**
      * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> clear(
-            String workspaceId, String channelId, ClearChannelDefaultsRequest request) {
-        return clear(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> clear(
-            String workspaceId, String channelId, ClearChannelDefaultsRequest request, RequestOptions requestOptions) {
+            String channelId, ClearChannelDefaultsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("default-options");
         if (requestOptions != null) {
@@ -369,6 +371,11 @@ public class AsyncRawChannelDefaultsClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

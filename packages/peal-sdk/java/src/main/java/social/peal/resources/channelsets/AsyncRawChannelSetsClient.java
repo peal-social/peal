@@ -28,17 +28,17 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.errors.UnprocessableEntityError;
-import social.peal.resources.channelsets.requests.CreateChannelSetsRequest;
 import social.peal.resources.channelsets.requests.DeleteChannelSetsRequest;
-import social.peal.resources.channelsets.requests.ListChannelSetsRequest;
 import social.peal.resources.channelsets.requests.UpdateChannelSetsRequest;
 import social.peal.types.ChannelSet;
+import social.peal.types.ChannelSetDetails;
 import social.peal.types.UnauthenticatedEncoded;
 
 public class AsyncRawChannelSetsClient {
@@ -51,47 +51,28 @@ public class AsyncRawChannelSetsClient {
     /**
      * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> list(String workspaceId) {
-        return list(workspaceId, ListChannelSetsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListChannelSetsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> list(
-            String workspaceId, ListChannelSetsRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> list(
-            String workspaceId, ListChannelSetsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channel-sets");
+                .addPathSegments("api/v1/channel-sets");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -121,6 +102,11 @@ public class AsyncRawChannelSetsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -174,21 +160,18 @@ public class AsyncRawChannelSetsClient {
     /**
      * Saves a selection of the workspace's channels under a name no other set of the workspace has whatever its case, 50 channels at most, with the options posts take on those whose platform has some (<code>TargetOptions</code>, of the channel's platform; unfinished options are kept, and checked when a post that takes them is scheduled). A post names a set by its id or its name (<code>channelSets</code>) instead of listing its channels. A workspace keeps 50 sets at most. Needs post:update and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<ChannelSet>> create(
-            String workspaceId, CreateChannelSetsRequest request) {
-        return create(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<ChannelSet>> create(ChannelSetDetails request) {
+        return create(request, null);
     }
 
     /**
      * Saves a selection of the workspace's channels under a name no other set of the workspace has whatever its case, 50 channels at most, with the options posts take on those whose platform has some (<code>TargetOptions</code>, of the channel's platform; unfinished options are kept, and checked when a post that takes them is scheduled). A post names a set by its id or its name (<code>channelSets</code>) instead of listing its channels. A workspace keeps 50 sets at most. Needs post:update and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelSet>> create(
-            String workspaceId, CreateChannelSetsRequest request, RequestOptions requestOptions) {
+            ChannelSetDetails request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channel-sets");
+                .addPathSegments("api/v1/channel-sets");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -198,7 +181,7 @@ public class AsyncRawChannelSetsClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -232,6 +215,11 @@ public class AsyncRawChannelSetsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -296,20 +284,18 @@ public class AsyncRawChannelSetsClient {
      * Replaces a set's name, channels and options: every channel must be connected now, so this is also how a disconnected one is taken out. Posts made with the set before keep their channels. Needs post:update and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelSet>> update(
-            String workspaceId, String channelSetId, UpdateChannelSetsRequest request) {
-        return update(workspaceId, channelSetId, request, null);
+            String channelSetId, UpdateChannelSetsRequest request) {
+        return update(channelSetId, request, null);
     }
 
     /**
      * Replaces a set's name, channels and options: every channel must be connected now, so this is also how a disconnected one is taken out. Posts made with the set before keep their channels. Needs post:update and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<ChannelSet>> update(
-            String workspaceId, String channelSetId, UpdateChannelSetsRequest request, RequestOptions requestOptions) {
+            String channelSetId, UpdateChannelSetsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channel-sets")
+                .addPathSegments("api/v1/channel-sets")
                 .addPathSegment(PathSegments.validate(channelSetId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -359,6 +345,11 @@ public class AsyncRawChannelSetsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -422,38 +413,33 @@ public class AsyncRawChannelSetsClient {
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(String workspaceId, String channelSetId) {
-        return delete(
-                workspaceId, channelSetId, DeleteChannelSetsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String channelSetId) {
+        return delete(channelSetId, DeleteChannelSetsRequest.builder().build());
+    }
+
+    /**
+     * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String channelSetId, RequestOptions requestOptions) {
+        return delete(channelSetId, DeleteChannelSetsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String channelSetId, RequestOptions requestOptions) {
-        return delete(
-                workspaceId, channelSetId, DeleteChannelSetsRequest.builder().build(), requestOptions);
+            String channelSetId, DeleteChannelSetsRequest request) {
+        return delete(channelSetId, request, null);
     }
 
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String channelSetId, DeleteChannelSetsRequest request) {
-        return delete(workspaceId, channelSetId, request, null);
-    }
-
-    /**
-     * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String channelSetId, DeleteChannelSetsRequest request, RequestOptions requestOptions) {
+            String channelSetId, DeleteChannelSetsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channel-sets")
+                .addPathSegments("api/v1/channel-sets")
                 .addPathSegment(PathSegments.validate(channelSetId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -495,6 +481,11 @@ public class AsyncRawChannelSetsClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

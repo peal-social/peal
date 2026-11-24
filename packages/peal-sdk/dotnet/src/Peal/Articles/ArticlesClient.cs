@@ -35,10 +35,7 @@ public partial class ArticlesClient : IArticlesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/articles",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/articles",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -189,10 +186,7 @@ public partial class ArticlesClient : IArticlesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/articles",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/articles",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -246,6 +240,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -371,8 +377,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     QueryString = _queryString,
@@ -425,6 +430,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -514,8 +531,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     QueryString = _queryString,
@@ -542,6 +558,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -643,8 +671,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     Body = request.Body,
@@ -700,6 +727,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -825,8 +864,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}/schedule",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}/schedule",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     Body = request.Body,
@@ -882,6 +920,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1007,8 +1057,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}/unschedule",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}/unschedule",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     QueryString = _queryString,
@@ -1062,6 +1111,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1163,8 +1224,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}/retry",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}/retry",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     QueryString = _queryString,
@@ -1218,6 +1278,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1343,8 +1415,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}/unpublish",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}/unpublish",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     QueryString = _queryString,
@@ -1398,6 +1469,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1535,8 +1618,7 @@ public partial class ArticlesClient : IArticlesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/articles/{1}/site",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/articles/{0}/site",
                         ValueConvert.ToPathParameterString(request.ArticleId)
                     ),
                     Body = request.Body,
@@ -1592,6 +1674,18 @@ public partial class ArticlesClient : IArticlesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1712,7 +1806,7 @@ public partial class ArticlesClient : IArticlesClient
     /// Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 100) says otherwise, those in one `status` when it is given. Pass the page's `nextCursor` as `cursor` for the next. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Articles.ListAsync(new ListArticlesRequest { WorkspaceId = "workspaceId" });
+    /// await client.Articles.ListAsync(new ListArticlesRequest());
     /// </code></example>
     public WithRawResponseTask<ArticlePage> ListAsync(
         ListArticlesRequest request,
@@ -1732,7 +1826,6 @@ public partial class ArticlesClient : IArticlesClient
     /// await client.Articles.CreateAsync(
     ///     new NewArticle
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Body = new ArticleBody
     ///         {
     ///             Content = new List&lt;object&gt;() { },
@@ -1758,9 +1851,7 @@ public partial class ArticlesClient : IArticlesClient
     /// Reads an article. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Articles.GetAsync(
-    ///     new GetArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-    /// );
+    /// await client.Articles.GetAsync(new GetArticlesRequest { ArticleId = "articleId" });
     /// </code></example>
     public WithRawResponseTask<Article> GetAsync(
         GetArticlesRequest request,
@@ -1775,9 +1866,7 @@ public partial class ArticlesClient : IArticlesClient
     /// Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
     /// </summary>
     /// <example><code>
-    /// await client.Articles.DeleteAsync(
-    ///     new DeleteArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-    /// );
+    /// await client.Articles.DeleteAsync(new DeleteArticlesRequest { ArticleId = "articleId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteArticlesRequest request,
@@ -1795,7 +1884,6 @@ public partial class ArticlesClient : IArticlesClient
     /// await client.Articles.UpdateAsync(
     ///     new UpdateArticlesRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ArticleId = "articleId",
     ///         Body = new ArticleInput
     ///         {
@@ -1827,7 +1915,6 @@ public partial class ArticlesClient : IArticlesClient
     /// await client.Articles.ScheduleAsync(
     ///     new ScheduleArticlesRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ArticleId = "articleId",
     ///         Body = new ArticleTime { TimeZone = "timeZone" },
     ///     }
@@ -1848,9 +1935,7 @@ public partial class ArticlesClient : IArticlesClient
     /// Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
     /// </summary>
     /// <example><code>
-    /// await client.Articles.UnscheduleAsync(
-    ///     new UnscheduleArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-    /// );
+    /// await client.Articles.UnscheduleAsync(new UnscheduleArticlesRequest { ArticleId = "articleId" });
     /// </code></example>
     public WithRawResponseTask<Article> UnscheduleAsync(
         UnscheduleArticlesRequest request,
@@ -1867,9 +1952,7 @@ public partial class ArticlesClient : IArticlesClient
     /// Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected `approvalRequired`) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
     /// </summary>
     /// <example><code>
-    /// await client.Articles.RetryAsync(
-    ///     new RetryArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-    /// );
+    /// await client.Articles.RetryAsync(new RetryArticlesRequest { ArticleId = "articleId" });
     /// </code></example>
     public WithRawResponseTask<Article> RetryAsync(
         RetryArticlesRequest request,
@@ -1886,9 +1969,7 @@ public partial class ArticlesClient : IArticlesClient
     /// Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with `removedAt`. Needs post:publish; an OAuth client needs the scope workspace:publish.
     /// </summary>
     /// <example><code>
-    /// await client.Articles.UnpublishAsync(
-    ///     new UnpublishArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
-    /// );
+    /// await client.Articles.UnpublishAsync(new UnpublishArticlesRequest { ArticleId = "articleId" });
     /// </code></example>
     public WithRawResponseTask<Article> UnpublishAsync(
         UnpublishArticlesRequest request,
@@ -1908,7 +1989,6 @@ public partial class ArticlesClient : IArticlesClient
     /// await client.Articles.UpdateOnSiteAsync(
     ///     new UpdateOnSiteArticlesRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ArticleId = "articleId",
     ///         Body = new ArticleInput
     ///         {

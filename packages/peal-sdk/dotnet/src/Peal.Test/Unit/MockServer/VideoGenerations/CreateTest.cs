@@ -38,7 +38,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/videos/generations")
+                    .WithPath("/api/v1/media/videos/generations")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -53,7 +53,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.VideoGenerations.CreateAsync(
             new VideoGenerationRequest
             {
-                WorkspaceId = "workspaceId",
                 Aspect = ImageAspect.Square,
                 DurationSeconds = null,
                 ImageMediaId = null,
@@ -92,7 +91,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/videos/generations")
+                    .WithPath("/api/v1/media/videos/generations")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -105,12 +104,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.VideoGenerations.CreateAsync(
-            new VideoGenerationRequest
-            {
-                WorkspaceId = "workspaceId",
-                Aspect = ImageAspect.Square,
-                Prompt = "prompt",
-            }
+            new VideoGenerationRequest { Aspect = ImageAspect.Square, Prompt = "prompt" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

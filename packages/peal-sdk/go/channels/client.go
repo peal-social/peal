@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListChannelsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Channels.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListChannelsRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.Channel, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,9 +59,7 @@ func (c *Client) List(
 //
 // Example:
 //
-//	request := &peal.FindChannelsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.FindChannelsRequest{}
 //	_, err := client.Channels.Find(
 //	    context.TODO(),
 //	    request,
@@ -92,21 +84,15 @@ func (c *Client) Find(
 //
 // Example:
 //
-//	request := &peal.PlatformsChannelsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Channels.Platforms(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Platforms(
 	ctx context.Context,
-	request *peal.PlatformsChannelsRequest,
 	opts ...option.RequestOption,
 ) (*peal.ConnectablePlatforms, error) {
 	response, err := c.WithRawResponse.Platforms(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -120,7 +106,6 @@ func (c *Client) Platforms(
 // Example:
 //
 //	request := &peal.ConnectSite{
-//	    WorkspaceID: "workspaceId",
 //	    Address: "address",
 //	    ApplicationPassword: "applicationPassword",
 //	    Platform: peal.SitePlatformWordpress,
@@ -151,7 +136,6 @@ func (c *Client) ConnectSite(
 // Example:
 //
 //	request := &peal.ConnectSiteWithKey{
-//	    WorkspaceID: "workspaceId",
 //	    APIKey: "apiKey",
 //	    Platform: peal.KeySitePlatformDevto,
 //	}
@@ -179,12 +163,9 @@ func (c *Client) ConnectSiteWithKey(
 //
 // Example:
 //
-//	request := &peal.ConnectChatChannelsRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.ConnectChat{
-//	        Discord: &peal.ConnectDiscordChat{
-//	            WebhookURL: "webhookUrl",
-//	        },
+//	request := &peal.ConnectChat{
+//	    Discord: &peal.ConnectDiscordChat{
+//	        WebhookURL: "webhookUrl",
 //	    },
 //	}
 //	_, err := client.Channels.ConnectChat(
@@ -193,7 +174,7 @@ func (c *Client) ConnectSiteWithKey(
 //	)
 func (c *Client) ConnectChat(
 	ctx context.Context,
-	request *peal.ConnectChatChannelsRequest,
+	request *peal.ConnectChat,
 	opts ...option.RequestOption,
 ) (*peal.Channel, error) {
 	response, err := c.WithRawResponse.ConnectChat(
@@ -212,7 +193,6 @@ func (c *Client) ConnectChat(
 // Example:
 //
 //	request := &peal.StartSiteSignIn{
-//	    WorkspaceID: "workspaceId",
 //	    Platform: peal.OAuthSitePlatformWordpressCom,
 //	}
 //	_, err := client.Channels.StartSiteSignIn(
@@ -240,7 +220,6 @@ func (c *Client) StartSiteSignIn(
 // Example:
 //
 //	request := &peal.SiteSignInCallback{
-//	    WorkspaceID: "workspaceId",
 //	    Platform: peal.OAuthSitePlatformWordpressCom,
 //	    State: "state",
 //	}
@@ -269,7 +248,6 @@ func (c *Client) CompleteSiteSignIn(
 // Example:
 //
 //	request := &peal.ConnectChannel{
-//	    WorkspaceID: "workspaceId",
 //	    Platform: peal.PlatformX,
 //	}
 //	_, err := client.Channels.Connect(
@@ -297,7 +275,6 @@ func (c *Client) Connect(
 // Example:
 //
 //	request := &peal.ConnectCallback{
-//	    WorkspaceID: "workspaceId",
 //	    Platform: peal.PlatformX,
 //	    State: "state",
 //	}
@@ -326,7 +303,6 @@ func (c *Client) CompleteConnect(
 // Example:
 //
 //	request := &peal.ChooseAccounts{
-//	    WorkspaceID: "workspaceId",
 //	    Platform: peal.PlatformX,
 //	    AccountIDs: []string{
 //	        "accountIds",
@@ -358,7 +334,6 @@ func (c *Client) ChooseAccounts(
 // Example:
 //
 //	request := &peal.ReconnectChannelsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Channels.Reconnect(
@@ -386,7 +361,6 @@ func (c *Client) Reconnect(
 // Example:
 //
 //	request := &peal.DisconnectChannelsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	err := client.Channels.Disconnect(
@@ -414,7 +388,6 @@ func (c *Client) Disconnect(
 // Example:
 //
 //	request := &peal.ChannelUpdate{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Channels.Update(
@@ -442,7 +415,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.DisableChannelsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Channels.Disable(
@@ -470,7 +442,6 @@ func (c *Client) Disable(
 // Example:
 //
 //	request := &peal.EnableChannelsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Channels.Enable(

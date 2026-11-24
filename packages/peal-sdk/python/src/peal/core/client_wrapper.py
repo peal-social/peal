@@ -11,6 +11,7 @@ class BaseClientWrapper:
     def __init__(
         self,
         *,
+        workspace: typing.Optional[str] = None,
         token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
@@ -21,6 +22,7 @@ class BaseClientWrapper:
         logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,
         peal_version: typing.Optional[str] = None,
     ):
+        self._workspace = workspace
         self._token = token
         self._headers = headers
         self._base_url = base_url
@@ -43,6 +45,8 @@ class BaseClientWrapper:
             "X-Fern-SDK-Version": "0.3.0",
             **(self.get_custom_headers() or {}),
         }
+        if self._workspace is not None:
+            headers["Peal-Workspace"] = self._workspace
         if include_token:
             token = self._get_token()
             if token is not None:
@@ -79,6 +83,7 @@ class SyncClientWrapper(BaseClientWrapper):
     def __init__(
         self,
         *,
+        workspace: typing.Optional[str] = None,
         token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
@@ -91,6 +96,7 @@ class SyncClientWrapper(BaseClientWrapper):
         httpx_client: httpx.Client,
     ):
         super().__init__(
+            workspace=workspace,
             token=token,
             headers=headers,
             base_url=base_url,
@@ -115,6 +121,7 @@ class AsyncClientWrapper(BaseClientWrapper):
     def __init__(
         self,
         *,
+        workspace: typing.Optional[str] = None,
         token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         base_url: str,
@@ -128,6 +135,7 @@ class AsyncClientWrapper(BaseClientWrapper):
         httpx_client: httpx.AsyncClient,
     ):
         super().__init__(
+            workspace=workspace,
             token=token,
             headers=headers,
             base_url=base_url,

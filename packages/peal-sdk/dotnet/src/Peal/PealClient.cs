@@ -6,7 +6,7 @@ public partial class PealClient : IPealClient
 {
     private readonly RawClient _client;
 
-    public PealClient(string token, ClientOptions? clientOptions = null)
+    public PealClient(string token, string? workspace = null, ClientOptions? clientOptions = null)
     {
         clientOptions ??= new ClientOptions();
         var platformHeaders = new Headers(
@@ -39,6 +39,10 @@ public partial class PealClient : IPealClient
         foreach (var header in authHeaders)
         {
             clientOptionsWithAuth.Headers[header.Key] = header.Value;
+        }
+        if (workspace is not null)
+        {
+            clientOptionsWithAuth.Headers["Peal-Workspace"] = workspace;
         }
         _client = new RawClient(clientOptionsWithAuth);
         System = new SystemClient(_client);

@@ -56,7 +56,7 @@ A request that doesn't match what its endpoint takes answers 400 `invalid_reques
 This request asks for more media than a page holds:
 
 ```bash
-curl -i "https://api.example.com/api/workspaces/$WORKSPACE_ID/media?limit=500" \
+curl -i "https://api.example.com/api/v1/media?limit=500" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -103,8 +103,9 @@ A 403 says why in `reason`. When a permission is missing, it names the `permissi
 A token that lacks a scope also gets the challenge OAuth clients read, in `WWW-Authenticate`. Here an application without `workspace:publish` tries to cancel a post:
 
 ```bash
-curl -i -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/019a6c3f-1b72-7d3c-8e90-4f5a6b7c8d02/cancel \
-  -H "Authorization: Bearer $PEAL_ACCESS_TOKEN"
+curl -i -X POST https://api.example.com/api/v1/posts/019a6c3f-1b72-7d3c-8e90-4f5a6b7c8d02/cancel \
+  -H "Authorization: Bearer $PEAL_ACCESS_TOKEN" \
+  -H "Peal-Workspace: $WORKSPACE_ID"
 ```
 
 It answers:
@@ -377,4 +378,5 @@ The codes, in alphabetical order:
 | `workspace_name_mismatch`          | 400    | The name you sent to confirm the deletion isn't the workspace's.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `workspace_not_found`              | 404    | No workspace with this id is open to the caller.                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `workspace_over_plan`              | 409    | The workspace holds more than its plan allows, and it schedules nothing until it's back within it. Nothing was approved.                                                                                                                                                                                                                                                                                                                                                       |
+| `workspace_required`               | 400    | The request names no workspace, and its credential belongs to none. Send the workspace's id in the `Peal-Workspace` header ([The workspace of a request](/developers/conventions#workspace)).                                                                                                                                                                                                                                                                                  |
 | `workspace_subscribed`             | 409    | A workspace the deletion would erase has a subscription that may still bill, and the request didn't agree to cancel it.                                                                                                                                                                                                                                                                                                                                                        |

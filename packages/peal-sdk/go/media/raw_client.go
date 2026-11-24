@@ -43,10 +43,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -142,10 +136,7 @@ func (r *RawClient) ImportFromURL(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/import",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media/import"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -190,8 +181,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/%v",
 		request.MediaID,
 	)
 	headers := internal.MergeHeaders(
@@ -236,8 +226,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/%v",
 		request.MediaID,
 	)
 	headers := internal.MergeHeaders(
@@ -280,8 +269,7 @@ func (r *RawClient) Describe(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/%v",
 		request.MediaID,
 	)
 	headers := internal.MergeHeaders(
@@ -328,8 +316,7 @@ func (r *RawClient) Complete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/%v/complete",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/%v/complete",
 		request.MediaID,
 	)
 	headers := internal.MergeHeaders(
@@ -374,8 +361,7 @@ func (r *RawClient) Usage(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/%v/usage",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/%v/usage",
 		request.MediaID,
 	)
 	headers := internal.MergeHeaders(

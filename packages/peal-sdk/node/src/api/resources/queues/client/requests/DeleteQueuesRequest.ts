@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         queueId: "queueId"
  *     }
  */
 export interface DeleteQueuesRequest {
-    workspaceId: string;
     queueId: string;
 }

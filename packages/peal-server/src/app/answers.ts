@@ -86,13 +86,20 @@ export const apiAnswers = <
             })
           );
 
-          // What handlers and middlewares leave for the answer, error or not.
+          // What handlers and middlewares leave for the answer, error or not,
+          // and what it carries unless it has its own.
           const left = new Map<string, string>();
+          const fallbacks = new Map<string, string>();
 
           const path = pathOf(request.url);
 
           const named = (response: HttpServerResponse.HttpServerResponse) =>
             HttpServerResponse.setHeaders(response, {
+              ...Object.fromEntries(
+                [...fallbacks].filter(
+                  ([name]) => response.headers[name] === undefined
+                )
+              ),
               ...versionHeaders,
               ...deprecationOf(deprecations, request.method, path),
               ...Object.fromEntries(left),
@@ -145,6 +152,10 @@ export const apiAnswers = <
                 set: (name, value) =>
                   Effect.sync(() => {
                     left.set(name, value);
+                  }),
+                setUnlessAnswered: (name, value) =>
+                  Effect.sync(() => {
+                    fallbacks.set(name, value);
                   }),
               })
             ),

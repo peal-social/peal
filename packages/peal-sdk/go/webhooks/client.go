@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Webhooks.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListWebhooksRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.WebhookEndpoint, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -66,7 +60,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewWebhookEndpoint{
-//	    WorkspaceID: "workspaceId",
 //	    EventTypes: []peal.SubscribableWebhookEventType{
 //	        peal.SubscribableWebhookEventTypePostScheduled,
 //	    },
@@ -96,9 +89,7 @@ func (c *Client) Create(
 //
 // Example:
 //
-//	request := &peal.SearchDeliveriesWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.SearchDeliveriesWebhooksRequest{}
 //	_, err := client.Webhooks.SearchDeliveries(
 //	    context.TODO(),
 //	    request,
@@ -123,13 +114,10 @@ func (c *Client) SearchDeliveries(
 //
 // Example:
 //
-//	request := &peal.RedeliverManyWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.WebhookRedeliveryRequest{
-//	        WebhookRedeliveryByIDs: &peal.WebhookRedeliveryByIDs{
-//	            DeliveryIDs: []string{
-//	                "deliveryIds",
-//	            },
+//	request := &peal.WebhookRedeliveryRequest{
+//	    WebhookRedeliveryByIDs: &peal.WebhookRedeliveryByIDs{
+//	        DeliveryIDs: []string{
+//	            "deliveryIds",
 //	        },
 //	    },
 //	}
@@ -139,7 +127,7 @@ func (c *Client) SearchDeliveries(
 //	)
 func (c *Client) RedeliverMany(
 	ctx context.Context,
-	request *peal.RedeliverManyWebhooksRequest,
+	request *peal.WebhookRedeliveryRequest,
 	opts ...option.RequestOption,
 ) (*peal.WebhookBulkRedelivery, error) {
 	response, err := c.WithRawResponse.RedeliverMany(
@@ -158,7 +146,6 @@ func (c *Client) RedeliverMany(
 // Example:
 //
 //	request := &peal.GetWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    EndpointID: "endpointId",
 //	}
 //	_, err := client.Webhooks.Get(
@@ -186,7 +173,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.DeleteWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    EndpointID: "endpointId",
 //	}
 //	err := client.Webhooks.Delete(
@@ -214,7 +200,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.WebhookEndpointChange{
-//	    WorkspaceID: "workspaceId",
 //	    EndpointID: "endpointId",
 //	}
 //	_, err := client.Webhooks.Update(
@@ -242,7 +227,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.RotateSecretWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    EndpointID: "endpointId",
 //	}
 //	_, err := client.Webhooks.RotateSecret(
@@ -270,7 +254,6 @@ func (c *Client) RotateSecret(
 // Example:
 //
 //	request := &peal.SendTestWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    EndpointID: "endpointId",
 //	}
 //	_, err := client.Webhooks.SendTest(
@@ -298,7 +281,6 @@ func (c *Client) SendTest(
 // Example:
 //
 //	request := &peal.ListDeliveriesWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    EndpointID: "endpointId",
 //	}
 //	_, err := client.Webhooks.ListDeliveries(
@@ -326,7 +308,6 @@ func (c *Client) ListDeliveries(
 // Example:
 //
 //	request := &peal.RedeliverWebhooksRequest{
-//	    WorkspaceID: "workspaceId",
 //	    EndpointID: "endpointId",
 //	    DeliveryID: "deliveryId",
 //	}

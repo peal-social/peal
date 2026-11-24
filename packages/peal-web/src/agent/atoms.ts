@@ -1,5 +1,6 @@
 import { DateTime, Effect, Exit, Stream } from "effect";
 import { Atom, Reactivity } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 import type {
   AgentEvent,
   AgentMedia,
@@ -19,13 +20,13 @@ export const agentChatsChanged = (workspaceId: string) => [
 
 /** Whether the agent answers this person in the workspace, and who. */
 export const agentStatus = Atom.family((workspaceId: string) =>
-  PealAgentApi.query("agent", "status", { params: { workspaceId } })
+  PealAgentApi.query("agent", "status", { headers: forWorkspace(workspaceId) })
 );
 
 /** The person's latest chats in the workspace: the history's first page. */
 export const agentChats = Atom.family((workspaceId: string) =>
   PealAgentApi.query("agent", "chats", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: {},
     reactivityKeys: agentChatsChanged(workspaceId),
   })
@@ -33,7 +34,10 @@ export const agentChats = Atom.family((workspaceId: string) =>
 
 /** A chat with its messages, as the server saved them. */
 export const agentChatDetail = (workspaceId: string, chatId: string) =>
-  PealAgentApi.query("agent", "chat", { params: { chatId, workspaceId } });
+  PealAgentApi.query("agent", "chat", {
+    headers: forWorkspace(workspaceId),
+    params: { chatId },
+  });
 
 export const createAgentChat = PealAgentApi.mutation("agent", "createChat");
 
@@ -102,7 +106,8 @@ export const agentRun = Atom.family((chatId: string) =>
 
         const client = yield* PealAgentApi;
         const { ask, workspaceId } = request;
-        const params = { chatId, workspaceId };
+        const params = { chatId };
+        const headers = forWorkspace(workspaceId);
 
         if (ask._tag === "send") {
           dispatch({
@@ -129,6 +134,7 @@ export const agentRun = Atom.family((chatId: string) =>
           ? yield* Effect.exit(
               client.agent.send({
                 params,
+                headers,
                 payload: {
                   mediaIds: ask.media.map(({ id }) => id),
                   skillIds: ask.skills.map(({ id }) => id),
@@ -139,6 +145,7 @@ export const agentRun = Atom.family((chatId: string) =>
             )
           : yield* Effect.exit(
               client.agent.answer({
+                headers,
                 params: { ...params, callId: ask.callId },
                 payload: { approved: ask.approved, ...timeZoneOf() },
               })

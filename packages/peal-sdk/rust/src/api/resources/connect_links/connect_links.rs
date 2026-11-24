@@ -35,15 +35,11 @@ impl ConnectLinksClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .connect_links
-    ///         .list(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.connect_links.list(None).await;
     /// }
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<ConnectLink>, ApiError> {
         let options = {
@@ -54,13 +50,7 @@ impl ConnectLinksClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/connect-links", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/connect-links", None, None, options)
             .await
     }
 
@@ -89,7 +79,6 @@ impl ConnectLinksClient {
     ///     client
     ///         .connect_links
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewConnectLink {
     ///                 ..Default::default()
     ///             },
@@ -100,7 +89,6 @@ impl ConnectLinksClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewConnectLink,
         options: Option<RequestOptions>,
     ) -> Result<CreatedConnectLink, ApiError> {
@@ -115,7 +103,7 @@ impl ConnectLinksClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/connect-links", workspace_id),
+                "api/v1/connect-links",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -145,15 +133,11 @@ impl ConnectLinksClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .connect_links
-    ///         .get(&"workspaceId".to_string(), &"linkId".to_string(), None)
-    ///         .await;
+    ///     client.connect_links.get(&"linkId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         link_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ConnectLink, ApiError> {
@@ -167,7 +151,7 @@ impl ConnectLinksClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/connect-links/{}", workspace_id, link_id),
+                &format!("api/v1/connect-links/{}", link_id),
                 None,
                 None,
                 options,
@@ -199,13 +183,12 @@ impl ConnectLinksClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .connect_links
-    ///         .revoke(&"workspaceId".to_string(), &"linkId".to_string(), None)
+    ///         .revoke(&"linkId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn revoke(
         &self,
-        workspace_id: &str,
         link_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ConnectLink, ApiError> {
@@ -219,7 +202,7 @@ impl ConnectLinksClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/connect-links/{}", workspace_id, link_id),
+                &format!("api/v1/connect-links/{}", link_id),
                 None,
                 None,
                 options,

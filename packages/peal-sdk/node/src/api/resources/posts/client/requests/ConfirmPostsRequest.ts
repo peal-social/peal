@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         targetId: "targetId",
  *         body: {
@@ -15,7 +14,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface ConfirmPostsRequest {
-    workspaceId: string;
     postId: string;
     targetId: string;
     body: Peal.TargetConfirmation;

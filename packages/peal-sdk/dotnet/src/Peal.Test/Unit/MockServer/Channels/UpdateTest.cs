@@ -36,7 +36,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId")
+                    .WithPath("/api/v1/channels/channelId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -49,12 +49,7 @@ public class UpdateTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.UpdateAsync(
-            new ChannelUpdate
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                Label = null,
-            }
+            new ChannelUpdate { ChannelId = "channelId", Label = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -86,7 +81,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId")
+                    .WithPath("/api/v1/channels/channelId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -99,12 +94,7 @@ public class UpdateTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.UpdateAsync(
-            new ChannelUpdate
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                Label = null,
-            }
+            new ChannelUpdate { ChannelId = "channelId", Label = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

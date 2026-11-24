@@ -171,9 +171,9 @@ Les brouillons peuvent toujours être écrits, et un article peut toujours quitt
 
 Les [points d’accès des articles](/reference) font de même :
 
-- `POST /api/workspaces/{workspaceId}/channels/websites` connecte un site WordPress.
+- `POST /api/v1/channels/websites` connecte un site WordPress.
 - `…/channels/websites/keys` connecte un compte DEV ou Hashnode.
 - `…/channels/websites/sign-in/wordpressCom` commence la connexion à WordPress.com.
-- `/api/workspaces/{workspaceId}/articles` écrit, programme, renvoie, met à jour et dépublie les articles.
+- `/api/v1/articles` écrit, programme, renvoie, met à jour et dépublie les articles.
 
 Les événements webhook [`article.published` et `article.failed`](/developers/webhooks/events/articles) disent comment chacun a fini. La ligne de commande a `peal channels connect-website`, `peal channels connect-website-key` et `peal articles`.

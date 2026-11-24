@@ -36,10 +36,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/inbox/reviews/threads",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/inbox/reviews/threads",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -191,8 +188,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/reviews/threads/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/reviews/threads/{0}",
                         ValueConvert.ToPathParameterString(request.ThreadId)
                     ),
                     QueryString = _queryString,
@@ -245,6 +241,18 @@ public partial class InboxReviewsClient : IInboxReviewsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -335,8 +343,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/reviews/{1}/reply",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/reviews/{0}/reply",
                         ValueConvert.ToPathParameterString(request.ReviewId)
                     ),
                     Body = request,
@@ -391,6 +398,18 @@ public partial class InboxReviewsClient : IInboxReviewsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -504,8 +523,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/reviews/{1}/reply",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/reviews/{0}/reply",
                         ValueConvert.ToPathParameterString(request.ReviewId)
                     ),
                     QueryString = _queryString,
@@ -558,6 +576,18 @@ public partial class InboxReviewsClient : IInboxReviewsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -671,8 +701,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/reviews/{1}/answered",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/reviews/{0}/answered",
                         ValueConvert.ToPathParameterString(request.ReviewId)
                     ),
                     Body = request,
@@ -728,6 +757,18 @@ public partial class InboxReviewsClient : IInboxReviewsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -800,9 +841,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
     /// Lists the locations that have reviews, one per channel: those with a review waiting for an answer first, then by latest review, 30 a page unless `limit` (at most 100) says otherwise. `channelId` and `unanswered` narrow the list. Pass the page's `nextCursor` as `cursor` for the next one. Peal reads reviews on Google Business Profile locations where the server's operator turned it on, and keeps a review 29 days after it was written or last changed, as Google lets what its API gives be stored 30 days at most. Needs engagement:read.
     /// </summary>
     /// <example><code>
-    /// await client.InboxReviews.ListReviewThreadsAsync(
-    ///     new ListReviewThreadsInboxReviewsRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.InboxReviews.ListReviewThreadsAsync(new ListReviewThreadsInboxReviewsRequest());
     /// </code></example>
     public WithRawResponseTask<InboxReviewThreadPage> ListReviewThreadsAsync(
         ListReviewThreadsInboxReviewsRequest request,
@@ -820,7 +859,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
     /// </summary>
     /// <example><code>
     /// await client.InboxReviews.GetReviewThreadAsync(
-    ///     new GetReviewThreadInboxReviewsRequest { WorkspaceId = "workspaceId", ThreadId = "threadId" }
+    ///     new GetReviewThreadInboxReviewsRequest { ThreadId = "threadId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxReviewThreadDetail> GetReviewThreadAsync(
@@ -839,12 +878,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
     /// </summary>
     /// <example><code>
     /// await client.InboxReviews.ReplyToReviewAsync(
-    ///     new NewInboxReviewReply
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ReviewId = "reviewId",
-    ///         Text = "text",
-    ///     }
+    ///     new NewInboxReviewReply { ReviewId = "reviewId", Text = "text" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxReviewReply> ReplyToReviewAsync(
@@ -863,11 +897,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
     /// </summary>
     /// <example><code>
     /// await client.InboxReviews.WithdrawReviewReplyAsync(
-    ///     new WithdrawReviewReplyInboxReviewsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ReviewId = "reviewId",
-    ///     }
+    ///     new WithdrawReviewReplyInboxReviewsRequest { ReviewId = "reviewId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxReview> WithdrawReviewReplyAsync(
@@ -886,12 +916,7 @@ public partial class InboxReviewsClient : IInboxReviewsClient
     /// </summary>
     /// <example><code>
     /// await client.InboxReviews.SetReviewAnsweredAsync(
-    ///     new SetReviewAnsweredInboxReviewsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ReviewId = "reviewId",
-    ///         Answered = true,
-    ///     }
+    ///     new SetReviewAnsweredInboxReviewsRequest { ReviewId = "reviewId", Answered = true }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxReview> SetReviewAnsweredAsync(

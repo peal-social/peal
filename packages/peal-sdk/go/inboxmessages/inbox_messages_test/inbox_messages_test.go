@@ -88,9 +88,7 @@ func TestInboxMessagesListConversationsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListConversationsInboxMessagesRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListConversationsInboxMessagesRequest{}
 	_, invocationErr := client.InboxMessages.ListConversations(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestInboxMessagesListConversationsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesListConversationsWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/messages/conversations", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesListConversationsWithWireMock", "GET", "/api/v1/inbox/messages/conversations", nil, 1)
 }
 
 func TestInboxMessagesGetConversationWithWireMock(
@@ -115,7 +113,6 @@ func TestInboxMessagesGetConversationWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetConversationInboxMessagesRequest{
-		WorkspaceID:    "workspaceId",
 		ConversationID: "conversationId",
 	}
 	_, invocationErr := client.InboxMessages.GetConversation(
@@ -127,7 +124,7 @@ func TestInboxMessagesGetConversationWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesGetConversationWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesGetConversationWithWireMock", "GET", "/api/v1/inbox/messages/conversations/conversationId", nil, 1)
 }
 
 func TestInboxMessagesSendMessageWithWireMock(
@@ -142,7 +139,6 @@ func TestInboxMessagesSendMessageWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewInboxMessage{
-		WorkspaceID:    "workspaceId",
 		ConversationID: "conversationId",
 		Text:           "text",
 	}
@@ -155,7 +151,7 @@ func TestInboxMessagesSendMessageWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesSendMessageWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId/messages", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesSendMessageWithWireMock", "POST", "/api/v1/inbox/messages/conversations/conversationId/messages", nil, 1)
 }
 
 func TestInboxMessagesSendPrivateReplyWithWireMock(
@@ -170,9 +166,8 @@ func TestInboxMessagesSendPrivateReplyWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewInboxPrivateReply{
-		WorkspaceID: "workspaceId",
-		CommentID:   "commentId",
-		Text:        "text",
+		CommentID: "commentId",
+		Text:      "text",
 	}
 	_, invocationErr := client.InboxMessages.SendPrivateReply(
 		context.TODO(),
@@ -183,7 +178,7 @@ func TestInboxMessagesSendPrivateReplyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesSendPrivateReplyWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/private-replies", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesSendPrivateReplyWithWireMock", "POST", "/api/v1/inbox/messages/private-replies", nil, 1)
 }
 
 func TestInboxMessagesGetPrivateReplyWithWireMock(
@@ -198,7 +193,6 @@ func TestInboxMessagesGetPrivateReplyWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetPrivateReplyInboxMessagesRequest{
-		WorkspaceID:    "workspaceId",
 		PrivateReplyID: "privateReplyId",
 	}
 	_, invocationErr := client.InboxMessages.GetPrivateReply(
@@ -210,7 +204,7 @@ func TestInboxMessagesGetPrivateReplyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesGetPrivateReplyWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesGetPrivateReplyWithWireMock", "GET", "/api/v1/inbox/messages/private-replies/privateReplyId", nil, 1)
 }
 
 func TestInboxMessagesConfirmPrivateReplyWithWireMock(
@@ -225,7 +219,6 @@ func TestInboxMessagesConfirmPrivateReplyWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConfirmPrivateReplyInboxMessagesRequest{
-		WorkspaceID:    "workspaceId",
 		PrivateReplyID: "privateReplyId",
 		Went:           true,
 	}
@@ -238,7 +231,7 @@ func TestInboxMessagesConfirmPrivateReplyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesConfirmPrivateReplyWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/private-replies/privateReplyId/confirm", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesConfirmPrivateReplyWithWireMock", "POST", "/api/v1/inbox/messages/private-replies/privateReplyId/confirm", nil, 1)
 }
 
 func TestInboxMessagesSetConversationReadWithWireMock(
@@ -253,7 +246,6 @@ func TestInboxMessagesSetConversationReadWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SetConversationReadInboxMessagesRequest{
-		WorkspaceID:    "workspaceId",
 		ConversationID: "conversationId",
 		Read:           true,
 	}
@@ -266,7 +258,7 @@ func TestInboxMessagesSetConversationReadWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesSetConversationReadWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId/read", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesSetConversationReadWithWireMock", "POST", "/api/v1/inbox/messages/conversations/conversationId/read", nil, 1)
 }
 
 func TestInboxMessagesGetMessageSettingsWithWireMock(
@@ -280,19 +272,15 @@ func TestInboxMessagesGetMessageSettingsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.GetMessageSettingsInboxMessagesRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.InboxMessages.GetMessageSettings(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestInboxMessagesGetMessageSettingsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesGetMessageSettingsWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/messages/settings", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesGetMessageSettingsWithWireMock", "GET", "/api/v1/inbox/messages/settings", nil, 1)
 }
 
 func TestInboxMessagesSetChannelMessagesWithWireMock(
@@ -307,9 +295,8 @@ func TestInboxMessagesSetChannelMessagesWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SetChannelMessagesInboxMessagesRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
-		Enabled:     true,
+		ChannelID: "channelId",
+		Enabled:   true,
 	}
 	_, invocationErr := client.InboxMessages.SetChannelMessages(
 		context.TODO(),
@@ -320,7 +307,7 @@ func TestInboxMessagesSetChannelMessagesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesSetChannelMessagesWithWireMock", "PUT", "/api/workspaces/workspaceId/inbox/messages/channels/channelId", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesSetChannelMessagesWithWireMock", "PUT", "/api/v1/inbox/messages/channels/channelId", nil, 1)
 }
 
 func TestInboxMessagesSetMessageApplicationWithWireMock(
@@ -335,9 +322,8 @@ func TestInboxMessagesSetMessageApplicationWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SetMessageApplicationInboxMessagesRequest{
-		WorkspaceID: "workspaceId",
-		Allowed:     true,
-		ClientID:    "clientId",
+		Allowed:  true,
+		ClientID: "clientId",
 	}
 	_, invocationErr := client.InboxMessages.SetMessageApplication(
 		context.TODO(),
@@ -348,7 +334,7 @@ func TestInboxMessagesSetMessageApplicationWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesSetMessageApplicationWithWireMock", "PUT", "/api/workspaces/workspaceId/inbox/messages/applications", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesSetMessageApplicationWithWireMock", "PUT", "/api/v1/inbox/messages/applications", nil, 1)
 }
 
 func TestInboxMessagesConfirmMessageWithWireMock(
@@ -363,9 +349,8 @@ func TestInboxMessagesConfirmMessageWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConfirmMessageInboxMessagesRequest{
-		WorkspaceID: "workspaceId",
-		MessageID:   "messageId",
-		Sent:        true,
+		MessageID: "messageId",
+		Sent:      true,
 	}
 	_, invocationErr := client.InboxMessages.ConfirmMessage(
 		context.TODO(),
@@ -376,5 +361,5 @@ func TestInboxMessagesConfirmMessageWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxMessagesConfirmMessageWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/messages/outgoing/messageId/confirmation", nil, 1)
+	VerifyRequestCount(t, "TestInboxMessagesConfirmMessageWithWireMock", "POST", "/api/v1/inbox/messages/outgoing/messageId/confirmation", nil, 1)
 }

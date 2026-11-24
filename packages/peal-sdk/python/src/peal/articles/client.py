@@ -33,7 +33,6 @@ class ArticlesClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -45,8 +44,6 @@ class ArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -66,20 +63,16 @@ class ArticlesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.articles.list(
-            workspace_id="workspaceId",
-        )
+        client.articles.list()
         """
-        _response = self._raw_client.list(
-            workspace_id, cursor=cursor, limit=limit, status=status, request_options=request_options
-        )
+        _response = self._raw_client.list(cursor=cursor, limit=limit, status=status, request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         body: ArticleBody,
         title: str,
@@ -97,8 +90,6 @@ class ArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         body : ArticleBody
 
         title : str
@@ -130,10 +121,10 @@ class ArticlesClient:
         from peal import ArticleBody, Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.create(
-            workspace_id="workspaceId",
             body=ArticleBody(
                 content=[],
                 type="doc",
@@ -143,7 +134,6 @@ class ArticlesClient:
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             body=body,
             title=title,
             channel_id=channel_id,
@@ -157,16 +147,12 @@ class ArticlesClient:
         )
         return _response.data
 
-    def get(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    def get(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Reads an article. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -182,26 +168,22 @@ class ArticlesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.get(
-            workspace_id="workspaceId",
             article_id="articleId",
         )
         """
-        _response = self._raw_client.get(workspace_id, article_id, request_options=request_options)
+        _response = self._raw_client.get(article_id, request_options=request_options)
         return _response.data
 
-    def delete(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def delete(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -216,19 +198,18 @@ class ArticlesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.delete(
-            workspace_id="workspaceId",
             article_id="articleId",
         )
         """
-        _response = self._raw_client.delete(workspace_id, article_id, request_options=request_options)
+        _response = self._raw_client.delete(article_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -245,8 +226,6 @@ class ArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -276,10 +255,10 @@ class ArticlesClient:
         from peal import ArticleBody, Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.update(
-            workspace_id="workspaceId",
             article_id="articleId",
             body=ArticleBody(
                 content=[],
@@ -289,7 +268,6 @@ class ArticlesClient:
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
             article_id,
             body=body,
             title=title,
@@ -304,7 +282,6 @@ class ArticlesClient:
 
     def schedule(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         time_zone: str,
@@ -316,8 +293,6 @@ class ArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         time_zone : str
@@ -337,29 +312,23 @@ class ArticlesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.schedule(
-            workspace_id="workspaceId",
             article_id="articleId",
             time_zone="timeZone",
         )
         """
-        _response = self._raw_client.schedule(
-            workspace_id, article_id, time_zone=time_zone, at=at, request_options=request_options
-        )
+        _response = self._raw_client.schedule(article_id, time_zone=time_zone, at=at, request_options=request_options)
         return _response.data
 
-    def unschedule(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    def unschedule(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -375,26 +344,22 @@ class ArticlesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.unschedule(
-            workspace_id="workspaceId",
             article_id="articleId",
         )
         """
-        _response = self._raw_client.unschedule(workspace_id, article_id, request_options=request_options)
+        _response = self._raw_client.unschedule(article_id, request_options=request_options)
         return _response.data
 
-    def retry(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    def retry(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected `approvalRequired`) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -410,26 +375,22 @@ class ArticlesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.retry(
-            workspace_id="workspaceId",
             article_id="articleId",
         )
         """
-        _response = self._raw_client.retry(workspace_id, article_id, request_options=request_options)
+        _response = self._raw_client.retry(article_id, request_options=request_options)
         return _response.data
 
-    def unpublish(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    def unpublish(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with `removedAt`. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -445,19 +406,18 @@ class ArticlesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.unpublish(
-            workspace_id="workspaceId",
             article_id="articleId",
         )
         """
-        _response = self._raw_client.unpublish(workspace_id, article_id, request_options=request_options)
+        _response = self._raw_client.unpublish(article_id, request_options=request_options)
         return _response.data
 
     def update_on_site(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -474,8 +434,6 @@ class ArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -505,10 +463,10 @@ class ArticlesClient:
         from peal import ArticleBody, Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.articles.update_on_site(
-            workspace_id="workspaceId",
             article_id="articleId",
             body=ArticleBody(
                 content=[],
@@ -518,7 +476,6 @@ class ArticlesClient:
         )
         """
         _response = self._raw_client.update_on_site(
-            workspace_id,
             article_id,
             body=body,
             title=title,
@@ -549,7 +506,6 @@ class AsyncArticlesClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -561,8 +517,6 @@ class AsyncArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -584,26 +538,24 @@ class AsyncArticlesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.articles.list(
-                workspace_id="workspaceId",
-            )
+            await client.articles.list()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            workspace_id, cursor=cursor, limit=limit, status=status, request_options=request_options
+            cursor=cursor, limit=limit, status=status, request_options=request_options
         )
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         body: ArticleBody,
         title: str,
@@ -621,8 +573,6 @@ class AsyncArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         body : ArticleBody
 
         title : str
@@ -656,13 +606,13 @@ class AsyncArticlesClient:
         from peal import ArticleBody, AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.create(
-                workspace_id="workspaceId",
                 body=ArticleBody(
                     content=[],
                     type="doc",
@@ -675,7 +625,6 @@ class AsyncArticlesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             body=body,
             title=title,
             channel_id=channel_id,
@@ -689,16 +638,12 @@ class AsyncArticlesClient:
         )
         return _response.data
 
-    async def get(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    async def get(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Reads an article. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -716,32 +661,28 @@ class AsyncArticlesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.get(
-                workspace_id="workspaceId",
                 article_id="articleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, article_id, request_options=request_options)
+        _response = await self._raw_client.get(article_id, request_options=request_options)
         return _response.data
 
-    async def delete(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def delete(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -758,25 +699,24 @@ class AsyncArticlesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.delete(
-                workspace_id="workspaceId",
                 article_id="articleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.delete(workspace_id, article_id, request_options=request_options)
+        _response = await self._raw_client.delete(article_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -793,8 +733,6 @@ class AsyncArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -826,13 +764,13 @@ class AsyncArticlesClient:
         from peal import ArticleBody, AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.update(
-                workspace_id="workspaceId",
                 article_id="articleId",
                 body=ArticleBody(
                     content=[],
@@ -845,7 +783,6 @@ class AsyncArticlesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
             article_id,
             body=body,
             title=title,
@@ -860,7 +797,6 @@ class AsyncArticlesClient:
 
     async def schedule(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         time_zone: str,
@@ -872,8 +808,6 @@ class AsyncArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         time_zone : str
@@ -895,13 +829,13 @@ class AsyncArticlesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.schedule(
-                workspace_id="workspaceId",
                 article_id="articleId",
                 time_zone="timeZone",
             )
@@ -910,20 +844,16 @@ class AsyncArticlesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.schedule(
-            workspace_id, article_id, time_zone=time_zone, at=at, request_options=request_options
+            article_id, time_zone=time_zone, at=at, request_options=request_options
         )
         return _response.data
 
-    async def unschedule(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    async def unschedule(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -941,32 +871,28 @@ class AsyncArticlesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.unschedule(
-                workspace_id="workspaceId",
                 article_id="articleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.unschedule(workspace_id, article_id, request_options=request_options)
+        _response = await self._raw_client.unschedule(article_id, request_options=request_options)
         return _response.data
 
-    async def retry(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    async def retry(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected `approvalRequired`) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -984,32 +910,28 @@ class AsyncArticlesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.retry(
-                workspace_id="workspaceId",
                 article_id="articleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.retry(workspace_id, article_id, request_options=request_options)
+        _response = await self._raw_client.retry(article_id, request_options=request_options)
         return _response.data
 
-    async def unpublish(
-        self, workspace_id: str, article_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Article:
+    async def unpublish(self, article_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Article:
         """
         Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with `removedAt`. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1027,25 +949,24 @@ class AsyncArticlesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.unpublish(
-                workspace_id="workspaceId",
                 article_id="articleId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.unpublish(workspace_id, article_id, request_options=request_options)
+        _response = await self._raw_client.unpublish(article_id, request_options=request_options)
         return _response.data
 
     async def update_on_site(
         self,
-        workspace_id: str,
         article_id: str,
         *,
         body: ArticleBody,
@@ -1062,8 +983,6 @@ class AsyncArticlesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         article_id : str
 
         body : ArticleBody
@@ -1095,13 +1014,13 @@ class AsyncArticlesClient:
         from peal import ArticleBody, AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.articles.update_on_site(
-                workspace_id="workspaceId",
                 article_id="articleId",
                 body=ArticleBody(
                     content=[],
@@ -1114,7 +1033,6 @@ class AsyncArticlesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update_on_site(
-            workspace_id,
             article_id,
             body=body,
             title=title,

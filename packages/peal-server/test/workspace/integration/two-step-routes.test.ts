@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { assert, layer } from "@effect/vitest";
 import { Config, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import { enrolled, joined, withCookies } from "#test/workspace/support.ts";
 
@@ -183,14 +184,11 @@ layer(BillingLive, { excludeTestServices: true, timeout: "180 seconds" })(
             Effect.orDie
           );
 
-          const required = yield* app.request(
-            `/api/workspaces/${workspaceId}/security`,
-            {
-              body: { twoStepRequired: true },
-              headers: { cookie: cookies },
-              method: "PUT",
-            }
-          );
+          const required = yield* app.request(`/api/v1/workspace/security`, {
+            body: { twoStepRequired: true },
+            headers: { cookie: cookies, ...forWorkspace(workspaceId) },
+            method: "PUT",
+          });
 
           assert.strictEqual(required.status, 200);
 
@@ -359,9 +357,9 @@ layer(BillingLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const strict = yield* workspaceOf(owner, "Strict");
           const { cookies } = yield* enrolled(owner);
 
-          yield* app.request(`/api/workspaces/${strict}/security`, {
+          yield* app.request(`/api/v1/workspace/security`, {
             body: { twoStepRequired: true },
-            headers: { cookie: cookies },
+            headers: { cookie: cookies, ...forWorkspace(strict) },
             method: "PUT",
           });
 
@@ -370,9 +368,9 @@ layer(BillingLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const sent = yield* bodyOf(
             Schema.Struct({ id: Schema.String }),
-            yield* app.request(`/api/workspaces/${strict}/invitations`, {
+            yield* app.request(`/api/v1/invitations`, {
               body: { email: person.email, role: "viewer" },
-              headers: { cookie: cookies },
+              headers: { cookie: cookies, ...forWorkspace(strict) },
             })
           );
 
@@ -438,9 +436,9 @@ layer(BillingLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const ownerSession = (yield* enrolled(owner)).cookies;
           const { cookies } = yield* enrolled(member);
 
-          yield* app.request(`/api/workspaces/${workspaceId}/security`, {
+          yield* app.request(`/api/v1/workspace/security`, {
             body: { twoStepRequired: true },
-            headers: { cookie: ownerSession },
+            headers: { cookie: ownerSession, ...forWorkspace(workspaceId) },
             method: "PUT",
           });
 

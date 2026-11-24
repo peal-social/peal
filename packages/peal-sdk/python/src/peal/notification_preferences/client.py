@@ -46,6 +46,7 @@ class NotificationPreferencesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.notification_preferences.get()
@@ -82,6 +83,7 @@ class NotificationPreferencesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.notification_preferences.update()
@@ -126,6 +128,7 @@ class AsyncNotificationPreferencesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
@@ -170,6 +173,7 @@ class AsyncNotificationPreferencesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 

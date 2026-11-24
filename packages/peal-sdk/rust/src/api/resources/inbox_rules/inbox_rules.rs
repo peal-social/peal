@@ -38,7 +38,6 @@ impl InboxRulesClient {
     ///     client
     ///         .inbox_rules
     ///         .list_comment_rules(
-    ///             &"workspaceId".to_string(),
     ///             &ListCommentRulesQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl InboxRulesClient {
     /// ```
     pub async fn list_comment_rules(
         &self,
-        workspace_id: &str,
         request: &ListCommentRulesQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<CommentRulePage, ApiError> {
@@ -63,7 +61,7 @@ impl InboxRulesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/inbox/rules", workspace_id),
+                "api/v1/inbox/rules",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -100,7 +98,6 @@ impl InboxRulesClient {
     ///     client
     ///         .inbox_rules
     ///         .create_comment_rule(
-    ///             &"workspaceId".to_string(),
     ///             &NewCommentRule {
     ///                 keywords: vec!["keywords".to_string()],
     ///                 reply: "reply".to_string(),
@@ -115,7 +112,6 @@ impl InboxRulesClient {
     /// ```
     pub async fn create_comment_rule(
         &self,
-        workspace_id: &str,
         request: &NewCommentRule,
         options: Option<RequestOptions>,
     ) -> Result<CommentRule, ApiError> {
@@ -130,7 +126,7 @@ impl InboxRulesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/inbox/rules", workspace_id),
+                "api/v1/inbox/rules",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -162,13 +158,12 @@ impl InboxRulesClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .inbox_rules
-    ///         .get_comment_rule(&"workspaceId".to_string(), &"ruleId".to_string(), None)
+    ///         .get_comment_rule(&"ruleId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn get_comment_rule(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<CommentRule, ApiError> {
@@ -182,7 +177,7 @@ impl InboxRulesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/inbox/rules/{}", workspace_id, rule_id),
+                &format!("api/v1/inbox/rules/{}", rule_id),
                 None,
                 None,
                 options,
@@ -214,13 +209,12 @@ impl InboxRulesClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .inbox_rules
-    ///         .delete_comment_rule(&"workspaceId".to_string(), &"ruleId".to_string(), None)
+    ///         .delete_comment_rule(&"ruleId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn delete_comment_rule(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -234,7 +228,7 @@ impl InboxRulesClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/inbox/rules/{}", workspace_id, rule_id),
+                &format!("api/v1/inbox/rules/{}", rule_id),
                 None,
                 None,
                 options,
@@ -267,7 +261,6 @@ impl InboxRulesClient {
     ///     client
     ///         .inbox_rules
     ///         .update_comment_rule(
-    ///             &"workspaceId".to_string(),
     ///             &"ruleId".to_string(),
     ///             &CommentRuleChange {
     ///                 ..Default::default()
@@ -279,7 +272,6 @@ impl InboxRulesClient {
     /// ```
     pub async fn update_comment_rule(
         &self,
-        workspace_id: &str,
         rule_id: &str,
         request: &CommentRuleChange,
         options: Option<RequestOptions>,
@@ -295,7 +287,7 @@ impl InboxRulesClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/inbox/rules/{}", workspace_id, rule_id),
+                &format!("api/v1/inbox/rules/{}", rule_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

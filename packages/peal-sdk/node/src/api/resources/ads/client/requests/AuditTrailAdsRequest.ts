@@ -2,11 +2,8 @@
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface AuditTrailAdsRequest {
-    workspaceId: string;
     cursor?: string;
 }

@@ -139,10 +139,10 @@ const status = Command.make(
   "status",
   { json: jsonFlag, workspace: workspaceFlag },
   Effect.fn("ads.status")(function* status({ json, workspace: choice }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const found = yield* client.ads
-      .status({ params: { workspaceId: workspace.id } })
+      .status({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -173,7 +173,7 @@ const accounts = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const found = yield* client.ads
-      .listAccounts({ params: { workspaceId: workspace.id } })
+      .listAccounts({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -224,7 +224,7 @@ const account = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const found = yield* client.ads
-      .getAccount({ params: { accountId, workspaceId: workspace.id } })
+      .getAccount({ headers: {}, params: { accountId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -286,11 +286,12 @@ const campaigns = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("ads.campaigns")(function* campaigns(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const report = yield* client.ads
       .listCampaigns({
-        params: { accountId: input.accountId, workspaceId: workspace.id },
+        headers: {},
+        params: { accountId: input.accountId },
         query: daysOf(input.from, input.to),
       })
       .pipe(Effect.mapError(explain(url)));
@@ -348,11 +349,12 @@ const list = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("ads.list")(function* list(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const report = yield* client.ads
       .listAds({
-        params: { accountId: input.accountId, workspaceId: workspace.id },
+        headers: {},
+        params: { accountId: input.accountId },
         query: {
           ...daysOf(input.from, input.to),
           ...Option.match(input.campaign, {
@@ -418,11 +420,12 @@ const insights = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("ads.insights")(function* insights(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const report = yield* client.ads
       .listInsights({
-        params: { accountId: input.accountId, workspaceId: workspace.id },
+        headers: {},
+        params: { accountId: input.accountId },
         query: daysOf(input.from, input.to),
       })
       .pipe(Effect.mapError(explain(url)));
@@ -472,10 +475,10 @@ const post = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("ads.post")(function* post({ json, postId, workspace: choice }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const found = yield* client.ads
-      .postPerformance({ params: { postId, workspaceId: workspace.id } })
+      .postPerformance({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -484,8 +487,8 @@ const post = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
-    const amounts = yield* amountsIn(client, workspace.id);
+    const names = yield* channelNames(client);
+    const amounts = yield* amountsIn(client);
 
     yield* Console.log(
       `Post ${postId}, organic and paid side by side. Paid numbers are part of what a platform counts on the post: never add the two.`
@@ -561,7 +564,7 @@ const boosts = Command.make(
 
     const page = yield* client.ads
       .listBoosts({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(input.cursor, {
             onNone: () => ({}),
@@ -592,7 +595,7 @@ const boosts = Command.make(
       return;
     }
 
-    const amounts = yield* amountsIn(client, workspace.id);
+    const amounts = yield* amountsIn(client);
 
     yield* Console.log(`Boosts of ${workspace.name}, newest first:`);
 
@@ -623,7 +626,7 @@ const audit = Command.make(
 
     const page = yield* client.ads
       .auditTrail({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: Option.match(cursor, {
           onNone: () => ({}),
           onSome: (after) => ({ cursor: after }),
@@ -658,7 +661,7 @@ const audit = Command.make(
       return;
     }
 
-    const amounts = yield* amountsIn(client, workspace.id);
+    const amounts = yield* amountsIn(client);
 
     yield* Console.log(
       `The ads audit trail of ${workspace.name}, newest first:`

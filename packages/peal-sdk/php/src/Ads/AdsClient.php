@@ -30,7 +30,7 @@ use Peal\Types\AdReport;
 use Peal\Ads\Requests\ListInsightsAdsRequest;
 use Peal\Types\AdInsightReport;
 use Peal\Types\PostAdPerformance;
-use Peal\Ads\Requests\QuoteBoostAdsRequest;
+use Peal\Types\NewBoost;
 use Peal\Types\BoostQuote;
 use Peal\Ads\Requests\ListBoostsAdsRequest;
 use Peal\Types\BoostPage;
@@ -81,12 +81,9 @@ class AdsClient
      *
      * Example:
      * ```php
-     * $client->ads->status(
-     *     'workspaceId',
-     * );
+     * $client->ads->status();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -99,14 +96,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function status(string $workspaceId, ?array $options = null): ?AdsStatus
+    public function status(?array $options = null): ?AdsStatus
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads",
+                    path: "api/v1/ads",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -136,12 +133,9 @@ class AdsClient
      *
      * Example:
      * ```php
-     * $client->ads->listConnections(
-     *     'workspaceId',
-     * );
+     * $client->ads->listConnections();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -154,14 +148,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listConnections(string $workspaceId, ?array $options = null): ?array
+    public function listConnections(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/connections",
+                    path: "api/v1/ads/connections",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -192,12 +186,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->connect(
-     *     'workspaceId',
      *     AdNetwork::Meta->value,
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<AdNetwork> $network
      * @param ?array{
      *   baseUrl?: string,
@@ -211,7 +203,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function connect(string $workspaceId, string $network, ?array $options = null): ?AdSignIn
+    public function connect(string $network, ?array $options = null): ?AdSignIn
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -219,7 +211,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/connections/{$network}",
+                    path: "api/v1/ads/connections/{$network}",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -250,7 +242,6 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->completeConnect(
-     *     'workspaceId',
      *     AdNetwork::Meta->value,
      *     new AdSignInCallback([
      *         'state' => 'state',
@@ -258,7 +249,6 @@ class AdsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param value-of<AdNetwork> $network
      * @param AdSignInCallback $request
      * @param ?array{
@@ -273,7 +263,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function completeConnect(string $workspaceId, string $network, AdSignInCallback $request, ?array $options = null): ?AdSignInResult
+    public function completeConnect(string $network, AdSignInCallback $request, ?array $options = null): ?AdSignInResult
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -281,7 +271,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/connections/{$network}/callback",
+                    path: "api/v1/ads/connections/{$network}/callback",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -313,12 +303,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->reachableAccounts(
-     *     'workspaceId',
      *     'connectionId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $connectionId
      * @param ?array{
      *   baseUrl?: string,
@@ -332,14 +320,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function reachableAccounts(string $workspaceId, string $connectionId, ?array $options = null): ?array
+    public function reachableAccounts(string $connectionId, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/connections/{$connectionId}/accounts",
+                    path: "api/v1/ads/connections/{$connectionId}/accounts",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -370,7 +358,6 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->connectAccounts(
-     *     'workspaceId',
      *     'connectionId',
      *     new AdAccountsToConnect([
      *         'externalIds' => [
@@ -380,7 +367,6 @@ class AdsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $connectionId
      * @param AdAccountsToConnect $request
      * @param ?array{
@@ -395,7 +381,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function connectAccounts(string $workspaceId, string $connectionId, AdAccountsToConnect $request, ?array $options = null): ?array
+    public function connectAccounts(string $connectionId, AdAccountsToConnect $request, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -403,7 +389,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/connections/{$connectionId}/accounts",
+                    path: "api/v1/ads/connections/{$connectionId}/accounts",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -435,12 +421,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->disconnect(
-     *     'workspaceId',
      *     'connectionId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $connectionId
      * @param ?array{
      *   baseUrl?: string,
@@ -453,14 +437,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function disconnect(string $workspaceId, string $connectionId, ?array $options = null): void
+    public function disconnect(string $connectionId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/connections/{$connectionId}",
+                    path: "api/v1/ads/connections/{$connectionId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -484,12 +468,9 @@ class AdsClient
      *
      * Example:
      * ```php
-     * $client->ads->listAccounts(
-     *     'workspaceId',
-     * );
+     * $client->ads->listAccounts();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -502,14 +483,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listAccounts(string $workspaceId, ?array $options = null): ?array
+    public function listAccounts(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/accounts",
+                    path: "api/v1/ads/accounts",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -540,12 +521,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->getAccount(
-     *     'workspaceId',
      *     'accountId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $accountId
      * @param ?array{
      *   baseUrl?: string,
@@ -559,14 +538,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getAccount(string $workspaceId, string $accountId, ?array $options = null): ?AdSpending
+    public function getAccount(string $accountId, ?array $options = null): ?AdSpending
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/accounts/{$accountId}",
+                    path: "api/v1/ads/accounts/{$accountId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -597,12 +576,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->removeAccount(
-     *     'workspaceId',
      *     'accountId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $accountId
      * @param ?array{
      *   baseUrl?: string,
@@ -615,14 +592,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function removeAccount(string $workspaceId, string $accountId, ?array $options = null): void
+    public function removeAccount(string $accountId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/accounts/{$accountId}",
+                    path: "api/v1/ads/accounts/{$accountId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -647,7 +624,6 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->setSpending(
-     *     'workspaceId',
      *     'accountId',
      *     new AdSpendingDecision([
      *         'enabled' => true,
@@ -655,7 +631,6 @@ class AdsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $accountId
      * @param AdSpendingDecision $request
      * @param ?array{
@@ -670,14 +645,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setSpending(string $workspaceId, string $accountId, AdSpendingDecision $request, ?array $options = null): ?AdSpending
+    public function setSpending(string $accountId, AdSpendingDecision $request, ?array $options = null): ?AdSpending
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/accounts/{$accountId}/spending",
+                    path: "api/v1/ads/accounts/{$accountId}/spending",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -709,13 +684,11 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->listCampaigns(
-     *     'workspaceId',
      *     'accountId',
      *     new ListCampaignsAdsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $accountId
      * @param ListCampaignsAdsRequest $request
      * @param ?array{
@@ -730,7 +703,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listCampaigns(string $workspaceId, string $accountId, ListCampaignsAdsRequest $request = new ListCampaignsAdsRequest(), ?array $options = null): ?AdCampaignReport
+    public function listCampaigns(string $accountId, ListCampaignsAdsRequest $request = new ListCampaignsAdsRequest(), ?array $options = null): ?AdCampaignReport
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -744,7 +717,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/accounts/{$accountId}/campaigns",
+                    path: "api/v1/ads/accounts/{$accountId}/campaigns",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -776,13 +749,11 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->listAds(
-     *     'workspaceId',
      *     'accountId',
      *     new ListAdsAdsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $accountId
      * @param ListAdsAdsRequest $request
      * @param ?array{
@@ -797,7 +768,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listAds(string $workspaceId, string $accountId, ListAdsAdsRequest $request = new ListAdsAdsRequest(), ?array $options = null): ?AdReport
+    public function listAds(string $accountId, ListAdsAdsRequest $request = new ListAdsAdsRequest(), ?array $options = null): ?AdReport
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -814,7 +785,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/accounts/{$accountId}/ads",
+                    path: "api/v1/ads/accounts/{$accountId}/ads",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -846,13 +817,11 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->listInsights(
-     *     'workspaceId',
      *     'accountId',
      *     new ListInsightsAdsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $accountId
      * @param ListInsightsAdsRequest $request
      * @param ?array{
@@ -867,7 +836,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listInsights(string $workspaceId, string $accountId, ListInsightsAdsRequest $request = new ListInsightsAdsRequest(), ?array $options = null): ?AdInsightReport
+    public function listInsights(string $accountId, ListInsightsAdsRequest $request = new ListInsightsAdsRequest(), ?array $options = null): ?AdInsightReport
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -881,7 +850,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/accounts/{$accountId}/insights",
+                    path: "api/v1/ads/accounts/{$accountId}/insights",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -913,12 +882,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->postPerformance(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -932,14 +899,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function postPerformance(string $workspaceId, string $postId, ?array $options = null): ?PostAdPerformance
+    public function postPerformance(string $postId, ?array $options = null): ?PostAdPerformance
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/posts/{$postId}",
+                    path: "api/v1/ads/posts/{$postId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -970,33 +937,29 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->quoteBoost(
-     *     'workspaceId',
-     *     new QuoteBoostAdsRequest([
-     *         'body' => new NewBoost([
-     *             'accountId' => 'accountId',
-     *             'audience' => new BoostAudience([
-     *                 'ageMax' => 1,
-     *                 'ageMin' => 1,
-     *                 'countries' => [
-     *                     'countries',
-     *                 ],
-     *             ]),
-     *             'budget' => new BoostBudget([
-     *                 'amount' => 1000000,
-     *                 'kind' => BoostBudgetKind::Total->value,
-     *             ]),
-     *             'channelId' => 'channelId',
-     *             'currency' => 'currency',
-     *             'endsAt' => 'endsAt',
-     *             'postId' => 'postId',
-     *             'specialAdCategory' => SpecialAdCategory::None->value,
+     *     new NewBoost([
+     *         'accountId' => 'accountId',
+     *         'audience' => new BoostAudience([
+     *             'ageMax' => 1,
+     *             'ageMin' => 1,
+     *             'countries' => [
+     *                 'countries',
+     *             ],
      *         ]),
+     *         'budget' => new BoostBudget([
+     *             'amount' => 1000000,
+     *             'kind' => BoostBudgetKind::Total->value,
+     *         ]),
+     *         'channelId' => 'channelId',
+     *         'currency' => 'currency',
+     *         'endsAt' => 'endsAt',
+     *         'postId' => 'postId',
+     *         'specialAdCategory' => SpecialAdCategory::None->value,
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param QuoteBoostAdsRequest $request
+     * @param NewBoost $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -1009,7 +972,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function quoteBoost(string $workspaceId, QuoteBoostAdsRequest $request, ?array $options = null): ?BoostQuote
+    public function quoteBoost(NewBoost $request, ?array $options = null): ?BoostQuote
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1017,9 +980,9 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/boosts/quote",
+                    path: "api/v1/ads/boosts/quote",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -1049,12 +1012,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->listBoosts(
-     *     'workspaceId',
      *     new ListBoostsAdsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListBoostsAdsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -1068,7 +1029,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listBoosts(string $workspaceId, ListBoostsAdsRequest $request = new ListBoostsAdsRequest(), ?array $options = null): ?BoostPage
+    public function listBoosts(ListBoostsAdsRequest $request = new ListBoostsAdsRequest(), ?array $options = null): ?BoostPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -1082,7 +1043,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/boosts",
+                    path: "api/v1/ads/boosts",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -1114,7 +1075,6 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->createBoost(
-     *     'workspaceId',
      *     new CreateBoostAdsRequest([
      *         'idempotencyKey' => 'idempotency-key',
      *         'body' => new NewBoost([
@@ -1140,7 +1100,6 @@ class AdsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param CreateBoostAdsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -1154,7 +1113,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function createBoost(string $workspaceId, CreateBoostAdsRequest $request, ?array $options = null): ?Boost
+    public function createBoost(CreateBoostAdsRequest $request, ?array $options = null): ?Boost
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1164,7 +1123,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/boosts",
+                    path: "api/v1/ads/boosts",
                     method: HttpMethod::POST,
                     headers: $headers,
                     body: $request->body,
@@ -1197,12 +1156,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->getBoost(
-     *     'workspaceId',
      *     'boostId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $boostId
      * @param ?array{
      *   baseUrl?: string,
@@ -1216,14 +1173,14 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getBoost(string $workspaceId, string $boostId, ?array $options = null): ?BoostDetail
+    public function getBoost(string $boostId, ?array $options = null): ?BoostDetail
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/boosts/{$boostId}",
+                    path: "api/v1/ads/boosts/{$boostId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -1254,12 +1211,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->pauseBoost(
-     *     'workspaceId',
      *     'boostId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $boostId
      * @param ?array{
      *   baseUrl?: string,
@@ -1273,7 +1228,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function pauseBoost(string $workspaceId, string $boostId, ?array $options = null): ?Boost
+    public function pauseBoost(string $boostId, ?array $options = null): ?Boost
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1281,7 +1236,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/boosts/{$boostId}/pause",
+                    path: "api/v1/ads/boosts/{$boostId}/pause",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1312,12 +1267,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->resumeBoost(
-     *     'workspaceId',
      *     'boostId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $boostId
      * @param ?array{
      *   baseUrl?: string,
@@ -1331,7 +1284,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function resumeBoost(string $workspaceId, string $boostId, ?array $options = null): ?Boost
+    public function resumeBoost(string $boostId, ?array $options = null): ?Boost
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1339,7 +1292,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/boosts/{$boostId}/resume",
+                    path: "api/v1/ads/boosts/{$boostId}/resume",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1370,12 +1323,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->stopBoost(
-     *     'workspaceId',
      *     'boostId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $boostId
      * @param ?array{
      *   baseUrl?: string,
@@ -1389,7 +1340,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function stopBoost(string $workspaceId, string $boostId, ?array $options = null): ?Boost
+    public function stopBoost(string $boostId, ?array $options = null): ?Boost
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -1397,7 +1348,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/boosts/{$boostId}/stop",
+                    path: "api/v1/ads/boosts/{$boostId}/stop",
                     method: HttpMethod::POST,
                 ),
                 $options,
@@ -1428,12 +1379,10 @@ class AdsClient
      * Example:
      * ```php
      * $client->ads->auditTrail(
-     *     'workspaceId',
      *     new AuditTrailAdsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param AuditTrailAdsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -1447,7 +1396,7 @@ class AdsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function auditTrail(string $workspaceId, AuditTrailAdsRequest $request = new AuditTrailAdsRequest(), ?array $options = null): ?AdAuditPage
+    public function auditTrail(AuditTrailAdsRequest $request = new AuditTrailAdsRequest(), ?array $options = null): ?AdAuditPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -1458,7 +1407,7 @@ class AdsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/ads/audit",
+                    path: "api/v1/ads/audit",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

@@ -30,7 +30,7 @@ public class ConnectProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/providers/anthropic")
+                    .WithPath("/api/v1/assistant/providers/anthropic")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -45,7 +45,6 @@ public class ConnectProviderTest : BaseMockServerTest
         var response = await Client.Assistant.ConnectProviderAsync(
             new AiProviderConnectionChange
             {
-                WorkspaceId = "workspaceId",
                 Provider = AiProvider.Anthropic,
                 ApiKey = null,
                 BaseUrl = null,
@@ -75,7 +74,7 @@ public class ConnectProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/providers/anthropic")
+                    .WithPath("/api/v1/assistant/providers/anthropic")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -88,11 +87,7 @@ public class ConnectProviderTest : BaseMockServerTest
             );
 
         var response = await Client.Assistant.ConnectProviderAsync(
-            new AiProviderConnectionChange
-            {
-                WorkspaceId = "workspaceId",
-                Provider = AiProvider.Anthropic,
-            }
+            new AiProviderConnectionChange { Provider = AiProvider.Anthropic }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

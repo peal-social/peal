@@ -34,8 +34,8 @@ public class AsyncSlideshowsClient {
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public CompletableFuture<Slideshows> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<Slideshows> list() {
+        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture = this.rawClient.list();
         CompletableFuture<Slideshows> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -48,9 +48,8 @@ public class AsyncSlideshowsClient {
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public CompletableFuture<Slideshows> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
+    public CompletableFuture<Slideshows> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<Slideshows> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -63,8 +62,8 @@ public class AsyncSlideshowsClient {
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public CompletableFuture<Slideshows> list(String workspaceId, ListSlideshowsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture = this.rawClient.list(workspaceId, request);
+    public CompletableFuture<Slideshows> list(ListSlideshowsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture = this.rawClient.list(request);
         CompletableFuture<Slideshows> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -77,10 +76,8 @@ public class AsyncSlideshowsClient {
     /**
      * Lists the slide videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public CompletableFuture<Slideshows> list(
-            String workspaceId, ListSlideshowsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<Slideshows> list(ListSlideshowsRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Slideshows>> rawFuture = this.rawClient.list(request, requestOptions);
         CompletableFuture<Slideshows> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -93,8 +90,8 @@ public class AsyncSlideshowsClient {
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to compose 2 to 10 images of its library, in order, each with an optional caption and motion, optionally over a voice-over of its library, in the aspect asked, and answers 202 with the job, <code>queued</code>. Each slide lasts <code>secondsPerSlide</code>, or the voice-over's length shared between them, 90 seconds at most in all. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>, MP4 at 1080p), marked <code>aiGenerated</code> when a file it is made of was, and the member who asked is told in the app. The service receives each file through a link that works for an hour, and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. Its sandbox, when the connection names it, is free and watermarks every video. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One slide video at a time a workspace (CompositionBusy), 20 a UTC day (CompositionAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is composed fails it (<code>interrupted</code>). Neither the captions nor the video are logged, and the captions are kept only while the video is composed. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<Slideshow> create(String workspaceId, SlideshowRequest request) {
-        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<Slideshow> create(SlideshowRequest request) {
+        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture = this.rawClient.create(request);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -107,10 +104,8 @@ public class AsyncSlideshowsClient {
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to compose 2 to 10 images of its library, in order, each with an optional caption and motion, optionally over a voice-over of its library, in the aspect asked, and answers 202 with the job, <code>queued</code>. Each slide lasts <code>secondsPerSlide</code>, or the voice-over's length shared between them, 90 seconds at most in all. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>, MP4 at 1080p), marked <code>aiGenerated</code> when a file it is made of was, and the member who asked is told in the app. The service receives each file through a link that works for an hour, and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. Its sandbox, when the connection names it, is free and watermarks every video. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One slide video at a time a workspace (CompositionBusy), 20 a UTC day (CompositionAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is composed fails it (<code>interrupted</code>). Neither the captions nor the video are logged, and the captions are kept only while the video is composed. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<Slideshow> create(
-            String workspaceId, SlideshowRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+    public CompletableFuture<Slideshow> create(SlideshowRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture = this.rawClient.create(request, requestOptions);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -123,9 +118,8 @@ public class AsyncSlideshowsClient {
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<Slideshow> createFromEdit(String workspaceId, EditRenderRequest request) {
-        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
-                this.rawClient.createFromEdit(workspaceId, request);
+    public CompletableFuture<Slideshow> createFromEdit(EditRenderRequest request) {
+        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture = this.rawClient.createFromEdit(request);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -138,10 +132,9 @@ public class AsyncSlideshowsClient {
     /**
      * Asks the service the workspace chose for slide videos (<code>PUT .../assistant/models/composition</code>, Shotstack) to render a whole <a href="https://shotstack.io/docs/api/#tocs_edit">Shotstack Edit</a>, as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, <code>queued</code>, as a slide video's. A file of the workspace's library is named <code>peal:media/&lt;mediaId&gt;</code>: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from <code>https://fonts.gstatic.com/</code>; an asset Shotstack generates from a <code>prompt</code> needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (<code>format</code> <code>mp4</code> or none), at <code>preview</code>, <code>mobile</code>, <code>sd</code>, <code>hd</code> or <code>1080</code> (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's <code>aspect</code>), at 30 frames a second at most, without <code>size</code>, <code>range</code>, <code>scaleTo</code>, <code>repeat</code>, <code>poster</code> or <code>thumbnail</code>; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops <code>callback</code> and <code>disk</code>. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (<code>durationSeconds</code> is the latest such end). The job lists every library file the edit names in <code>imageMediaIds</code>, images or not. Follow it with <code>GET .../media/slideshows/{id}</code>; once <code>succeeded</code>, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
      */
-    public CompletableFuture<Slideshow> createFromEdit(
-            String workspaceId, EditRenderRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Slideshow> createFromEdit(EditRenderRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
-                this.rawClient.createFromEdit(workspaceId, request, requestOptions);
+                this.rawClient.createFromEdit(request, requestOptions);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -154,8 +147,8 @@ public class AsyncSlideshowsClient {
     /**
      * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public CompletableFuture<Slideshow> get(String workspaceId, String slideshowId) {
-        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture = this.rawClient.get(workspaceId, slideshowId);
+    public CompletableFuture<Slideshow> get(String slideshowId) {
+        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture = this.rawClient.get(slideshowId);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -168,9 +161,9 @@ public class AsyncSlideshowsClient {
     /**
      * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public CompletableFuture<Slideshow> get(String workspaceId, String slideshowId, RequestOptions requestOptions) {
+    public CompletableFuture<Slideshow> get(String slideshowId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
-                this.rawClient.get(workspaceId, slideshowId, requestOptions);
+                this.rawClient.get(slideshowId, requestOptions);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -183,9 +176,8 @@ public class AsyncSlideshowsClient {
     /**
      * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public CompletableFuture<Slideshow> get(String workspaceId, String slideshowId, GetSlideshowsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
-                this.rawClient.get(workspaceId, slideshowId, request);
+    public CompletableFuture<Slideshow> get(String slideshowId, GetSlideshowsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture = this.rawClient.get(slideshowId, request);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -199,9 +191,9 @@ public class AsyncSlideshowsClient {
      * Reads where a slide video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
     public CompletableFuture<Slideshow> get(
-            String workspaceId, String slideshowId, GetSlideshowsRequest request, RequestOptions requestOptions) {
+            String slideshowId, GetSlideshowsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Slideshow>> rawFuture =
-                this.rawClient.get(workspaceId, slideshowId, request, requestOptions);
+                this.rawClient.get(slideshowId, request, requestOptions);
         CompletableFuture<Slideshow> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

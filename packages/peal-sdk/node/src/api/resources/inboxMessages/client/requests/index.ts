@@ -1,7 +1,6 @@
 export type { ConfirmMessageInboxMessagesRequest } from "./ConfirmMessageInboxMessagesRequest.js";
 export type { ConfirmPrivateReplyInboxMessagesRequest } from "./ConfirmPrivateReplyInboxMessagesRequest.js";
 export type { GetConversationInboxMessagesRequest } from "./GetConversationInboxMessagesRequest.js";
-export type { GetMessageSettingsInboxMessagesRequest } from "./GetMessageSettingsInboxMessagesRequest.js";
 export type { GetPrivateReplyInboxMessagesRequest } from "./GetPrivateReplyInboxMessagesRequest.js";
 export type { ListConversationsInboxMessagesRequest } from "./ListConversationsInboxMessagesRequest.js";
 export type { NewInboxMessage } from "./NewInboxMessage.js";

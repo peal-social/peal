@@ -20,6 +20,7 @@ import {
   MediaStoreUnavailable,
   UploadIncomplete,
   UploadRejected,
+  forWorkspace,
 } from "peal-contract";
 import type { Member, PreparedUpload } from "peal-contract";
 import sharp from "sharp";
@@ -127,13 +128,16 @@ const started = Effect.fn("started")(function* started(
   payload: { readonly byteSize: number; readonly contentType: string }
 ) {
   const prepared = yield* client.media.create({
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     payload,
   });
 
   yield* Effect.addFinalizer(() =>
     client.media
-      .delete({ params: { mediaId: prepared.media.id, workspaceId } })
+      .delete({
+        headers: forWorkspace(workspaceId),
+        params: { mediaId: prepared.media.id },
+      })
       .pipe(Effect.ignore)
   );
 
@@ -201,7 +205,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       });
 
       const mediaId = prepared.media.id;
-      const params = { mediaId, workspaceId };
+      const params = { mediaId };
 
       assert.deepStrictEqual(prepared.media.status, { _tag: "pending" });
       assert.isNull(prepared.media.url);
@@ -210,7 +214,10 @@ layer(UseCasesTest)("the media endpoints", (it) => {
 
       assert.strictEqual(stored.status, 200);
 
-      const ready = yield* client.media.complete({ params });
+      const ready = yield* client.media.complete({
+        headers: forWorkspace(workspaceId),
+        params,
+      });
 
       assert.deepStrictEqual(ready.status, { _tag: "ready" });
       assert.deepStrictEqual(ready.dimensions, { height: 3, width: 4 });
@@ -219,12 +226,15 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       assert.isFalse(ready.aiGenerated);
 
       assert.deepStrictEqual(
-        (yield* client.media.get({ params })).dimensions,
+        (yield* client.media.get({
+          headers: forWorkspace(workspaceId),
+          params,
+        })).dimensions,
         ready.dimensions
       );
 
       const page = yield* client.media.list({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         query: {},
       });
 
@@ -235,13 +245,16 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       assert.isNull(page.nextCursor);
 
       const response = yield* client.media.delete({
+        headers: forWorkspace(workspaceId),
         params,
         responseMode: "response-only",
       });
 
       assert.strictEqual(response.status, 204);
       assert.instanceOf(
-        yield* Effect.flip(client.media.get({ params })),
+        yield* Effect.flip(
+          client.media.get({ headers: forWorkspace(workspaceId), params })
+        ),
         MediaNotFound
       );
     })
@@ -259,19 +272,27 @@ layer(UseCasesTest)("the media endpoints", (it) => {
         });
 
         const mediaId = prepared.media.id;
-        const params = { mediaId, workspaceId };
+        const params = { mediaId };
         const draft = yield* postShowing(workspaceId, mediaId, false);
         const scheduled = yield* postShowing(workspaceId, mediaId, true);
 
-        assert.deepStrictEqual(yield* client.media.usage({ params }), {
-          draftArticles: [],
-          drafts: [draft.id],
-          scheduled: [scheduled.id],
-          scheduledArticles: [],
-        });
+        assert.deepStrictEqual(
+          yield* client.media.usage({
+            headers: forWorkspace(workspaceId),
+            params,
+          }),
+          {
+            draftArticles: [],
+            drafts: [draft.id],
+            scheduled: [scheduled.id],
+            scheduledArticles: [],
+          }
+        );
 
         assert.deepStrictEqual(
-          yield* Effect.flip(client.media.delete({ params })),
+          yield* Effect.flip(
+            client.media.delete({ headers: forWorkspace(workspaceId), params })
+          ),
           new MediaInUse({ articleIds: [], postIds: [scheduled.id] })
         );
 
@@ -291,6 +312,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
         assert.isTrue(yield* posts.update(cancelled, scheduled));
 
         const deleted = yield* client.media.delete({
+          headers: forWorkspace(workspaceId),
           params,
           responseMode: "response-only",
         });
@@ -309,7 +331,9 @@ layer(UseCasesTest)("the media endpoints", (it) => {
 
         assert.lengthOf(stillCancelled.post.content.media, 1);
         assert.instanceOf(
-          yield* Effect.flip(client.media.usage({ params })),
+          yield* Effect.flip(
+            client.media.usage({ headers: forWorkspace(workspaceId), params })
+          ),
           MediaNotFound
         );
       })
@@ -320,7 +344,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       const { client, workspaceId } = yield* as("contributor");
 
       const response = yield* client.media.create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { byteSize: 10, contentType: "image/png" },
         responseMode: "response-only",
       });
@@ -343,14 +367,17 @@ layer(UseCasesTest)("the media endpoints", (it) => {
         contentType: "image/png",
       });
 
-      const params = { mediaId: prepared.media.id, workspaceId };
+      const params = { mediaId: prepared.media.id };
 
       assert.instanceOf(
-        yield* Effect.flip(client.media.complete({ params })),
+        yield* Effect.flip(
+          client.media.complete({ headers: forWorkspace(workspaceId), params })
+        ),
         UploadIncomplete
       );
 
       const response = yield* client.media.complete({
+        headers: forWorkspace(workspaceId),
         params,
         responseMode: "response-only",
       });
@@ -369,18 +396,26 @@ layer(UseCasesTest)("the media endpoints", (it) => {
         contentType: "image/png",
       });
 
-      const params = { mediaId: prepared.media.id, workspaceId };
+      const params = { mediaId: prepared.media.id };
 
       yield* sendSigned(yield* singleRequest(prepared), body);
 
-      const error = yield* Effect.flip(client.media.complete({ params }));
+      const error = yield* Effect.flip(
+        client.media.complete({ headers: forWorkspace(workspaceId), params })
+      );
 
       assert.instanceOf(error, UploadRejected);
       assert.include(error, { reason: "typeMismatch" });
-      assert.deepStrictEqual((yield* client.media.get({ params })).status, {
-        _tag: "rejected",
-        reason: "typeMismatch",
-      });
+      assert.deepStrictEqual(
+        (yield* client.media.get({
+          headers: forWorkspace(workspaceId),
+          params,
+        })).status,
+        {
+          _tag: "rejected",
+          reason: "typeMismatch",
+        }
+      );
     })
   );
 
@@ -397,7 +432,8 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       yield* sendSigned(yield* singleRequest(prepared), body);
 
       const uploaded = yield* client.media.complete({
-        params: { mediaId: prepared.media.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { mediaId: prepared.media.id },
       });
 
       assert.deepStrictEqual(uploaded.status, {
@@ -431,22 +467,22 @@ layer(UseCasesTest)("the media endpoints", (it) => {
   ])("answer 422 to $label", ({ error, payload }) =>
     Effect.gen(function* refused() {
       const { client, workspaceId } = yield* as("owner");
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       assert.strictEqual(
-        (yield* Effect.flip(client.media.create({ params, payload })))._tag,
+        (yield* Effect.flip(client.media.create({ headers, payload })))._tag,
         error
       );
 
       const response = yield* client.media.create({
-        params,
+        headers,
         payload,
         responseMode: "response-only",
       });
 
       assert.strictEqual(response.status, 422);
 
-      const page = yield* client.media.list({ params, query: {} });
+      const page = yield* client.media.list({ headers, query: {} });
 
       assert.deepStrictEqual(page.items, []);
     })
@@ -457,7 +493,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       const { client, workspaceId } = yield* as("contributor");
 
       const prepared = yield* client.media.create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: {
           altText: "  A white rectangle ",
           byteSize: 10,
@@ -465,11 +501,12 @@ layer(UseCasesTest)("the media endpoints", (it) => {
         },
       });
 
-      const params = { mediaId: prepared.media.id, workspaceId };
+      const params = { mediaId: prepared.media.id };
 
       assert.strictEqual(prepared.media.altText, "A white rectangle");
 
       const described = yield* client.media.describe({
+        headers: forWorkspace(workspaceId),
         params,
         payload: { altText: "A white rectangle, four by three" },
       });
@@ -478,6 +515,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       assert.deepStrictEqual(described.status, { _tag: "pending" });
 
       const cleared = yield* client.media.describe({
+        headers: forWorkspace(workspaceId),
         params,
         payload: { altText: null },
       });
@@ -489,19 +527,19 @@ layer(UseCasesTest)("the media endpoints", (it) => {
   it.effect("list media newest first, a page at a time", () =>
     Effect.gen(function* pages() {
       const { client, workspaceId } = yield* as("owner");
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
       const ids: string[] = [];
 
       for (let count = 0; count < 3; count += 1) {
         const prepared = yield* client.media.create({
-          params,
+          headers,
           payload: { byteSize: 10, contentType: "image/png" },
         });
 
         ids.unshift(prepared.media.id);
       }
 
-      const first = yield* client.media.list({ params, query: { limit: 2 } });
+      const first = yield* client.media.list({ headers, query: { limit: 2 } });
 
       assert.deepStrictEqual(
         first.items.map(({ id }) => id),
@@ -510,7 +548,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       assert.isString(first.nextCursor);
 
       const second = yield* client.media.list({
-        params,
+        headers,
         query: { cursor: first.nextCursor ?? "", limit: 2 },
       });
 
@@ -522,7 +560,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
 
       assert.instanceOf(
         yield* Effect.flip(
-          client.media.list({ params, query: { cursor: "not-a-cursor" } })
+          client.media.list({ headers, query: { cursor: "not-a-cursor" } })
         ),
         HttpApiError.BadRequest
       );
@@ -534,7 +572,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
     () =>
       Effect.gen(function* search() {
         const { client, workspaceId } = yield* as("owner");
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const upload = (
           contentType: string,
@@ -543,7 +581,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
         ) =>
           client.media
             .create({
-              params,
+              headers,
               payload: {
                 altText,
                 byteSize: 10,
@@ -560,7 +598,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
         assert.strictEqual(poster.fileName, "Launch poster.png");
         assert.isNull(other.fileName);
         assert.strictEqual(
-          (yield* client.media.get({ params: { ...params, mediaId: clip.id } }))
+          (yield* client.media.get({ headers, params: { mediaId: clip.id } }))
             .fileName,
           "clip.mp4"
         );
@@ -570,7 +608,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
           readonly q?: string;
         }) =>
           client.media
-            .list({ params, query })
+            .list({ headers, query })
             .pipe(Effect.map((page) => page.items.map(({ id }) => id)));
 
         assert.deepStrictEqual(yield* found({ q: "launch" }), [
@@ -613,36 +651,47 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       );
 
       const prepared = yield* owner.media.create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { byteSize: 10, contentType: "image/png" },
       });
 
-      const params = { mediaId: prepared.media.id, workspaceId };
+      const params = { mediaId: prepared.media.id };
 
       assert.deepStrictEqual(
         (yield* reader.media.list({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
           query: {},
         })).items.map(({ id }) => id),
         [prepared.media.id]
       );
       assert.strictEqual(
-        (yield* reader.media.get({ params })).id,
+        (yield* reader.media.get({
+          headers: forWorkspace(workspaceId),
+          params,
+        })).id,
         params.mediaId
       );
 
       const refusals = [
         yield* Effect.flip(
           reader.media.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { byteSize: 10, contentType: "image/png" },
           })
         ),
-        yield* Effect.flip(reader.media.complete({ params })),
         yield* Effect.flip(
-          reader.media.describe({ params, payload: { altText: "Mine now" } })
+          reader.media.complete({ headers: forWorkspace(workspaceId), params })
         ),
-        yield* Effect.flip(reader.media.delete({ params })),
+        yield* Effect.flip(
+          reader.media.describe({
+            headers: forWorkspace(workspaceId),
+            params,
+            payload: { altText: "Mine now" },
+          })
+        ),
+        yield* Effect.flip(
+          reader.media.delete({ headers: forWorkspace(workspaceId), params })
+        ),
       ];
 
       for (const refusal of refusals) {
@@ -650,13 +699,15 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       }
 
       const response = yield* reader.media.delete({
+        headers: forWorkspace(workspaceId),
         params,
         responseMode: "response-only",
       });
 
       assert.strictEqual(response.status, 403);
       assert.deepStrictEqual(
-        (yield* owner.media.get({ params })).altText,
+        (yield* owner.media.get({ headers: forWorkspace(workspaceId), params }))
+          .altText,
         null
       );
     })
@@ -669,7 +720,7 @@ layer(UseCasesTest)("the media endpoints", (it) => {
 
       assert.instanceOf(
         yield* Effect.flip(
-          client.media.list({ params: { workspaceId }, query: {} })
+          client.media.list({ headers: forWorkspace(workspaceId), query: {} })
         ),
         Forbidden
       );
@@ -682,15 +733,25 @@ layer(UseCasesTest)("the media endpoints", (it) => {
   ])("answer 404 for $label", ({ mediaId }) =>
     Effect.gen(function* notFound() {
       const { client, workspaceId } = yield* as("owner");
-      const params = { mediaId, workspaceId };
+      const params = { mediaId };
 
       const failures = [
-        yield* Effect.flip(client.media.get({ params })),
-        yield* Effect.flip(client.media.complete({ params })),
         yield* Effect.flip(
-          client.media.describe({ params, payload: { altText: null } })
+          client.media.get({ headers: forWorkspace(workspaceId), params })
         ),
-        yield* Effect.flip(client.media.delete({ params })),
+        yield* Effect.flip(
+          client.media.complete({ headers: forWorkspace(workspaceId), params })
+        ),
+        yield* Effect.flip(
+          client.media.describe({
+            headers: forWorkspace(workspaceId),
+            params,
+            payload: { altText: null },
+          })
+        ),
+        yield* Effect.flip(
+          client.media.delete({ headers: forWorkspace(workspaceId), params })
+        ),
       ];
 
       for (const failure of failures) {
@@ -705,29 +766,24 @@ layer(UseCasesTest)("the media endpoints", (it) => {
       const mine = yield* as("owner");
 
       const prepared = yield* theirs.client.media.create({
-        params: { workspaceId: theirs.workspaceId },
+        headers: forWorkspace(theirs.workspaceId),
         payload: { byteSize: 10, contentType: "image/png" },
       });
 
-      // The path names their workspace, but the member acts in their own.
-      const params = {
-        mediaId: prepared.media.id,
-        workspaceId: theirs.workspaceId,
-      };
+      // The request names their workspace, but the member acts in their own.
+      const headers = forWorkspace(theirs.workspaceId);
+      const params = { mediaId: prepared.media.id };
 
       assert.instanceOf(
-        yield* Effect.flip(mine.client.media.delete({ params })),
+        yield* Effect.flip(mine.client.media.delete({ headers, params })),
         MediaNotFound
       );
       assert.deepStrictEqual(
-        (yield* mine.client.media.list({
-          params: { workspaceId: theirs.workspaceId },
-          query: {},
-        })).items,
+        (yield* mine.client.media.list({ headers, query: {} })).items,
         []
       );
       assert.strictEqual(
-        (yield* theirs.client.media.get({ params })).id,
+        (yield* theirs.client.media.get({ headers, params })).id,
         prepared.media.id
       );
     })
@@ -750,22 +806,26 @@ layer(UnreachableStoreTest)("the media endpoints without a store", (it) => {
 
       // Signing needs no store, so an image can still be recorded.
       const image = yield* client.media.create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { byteSize: 10, contentType: "image/png" },
       });
 
-      const params = { mediaId: image.media.id, workspaceId };
+      const params = { mediaId: image.media.id };
 
       const failures = yield* Effect.all([
         // A large video opens its upload on the store first.
         Effect.flip(
           client.media.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { byteSize: mebibytes(20), contentType: "video/mp4" },
           })
         ),
-        Effect.flip(client.media.complete({ params })),
-        Effect.flip(client.media.delete({ params })),
+        Effect.flip(
+          client.media.complete({ headers: forWorkspace(workspaceId), params })
+        ),
+        Effect.flip(
+          client.media.delete({ headers: forWorkspace(workspaceId), params })
+        ),
       ]).pipe(Effect.provide(capture));
 
       for (const failure of failures) {
@@ -785,9 +845,15 @@ layer(UnreachableStoreTest)("the media endpoints without a store", (it) => {
 
       // The media is still there, to complete or delete once the store is
       // back.
-      assert.deepStrictEqual((yield* client.media.get({ params })).status, {
-        _tag: "pending",
-      });
+      assert.deepStrictEqual(
+        (yield* client.media.get({
+          headers: forWorkspace(workspaceId),
+          params,
+        })).status,
+        {
+          _tag: "pending",
+        }
+      );
     })
   );
 });

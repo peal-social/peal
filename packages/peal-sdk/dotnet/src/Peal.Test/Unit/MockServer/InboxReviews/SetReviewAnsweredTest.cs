@@ -43,7 +43,7 @@ public class SetReviewAnsweredTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/reviewId/answered")
+                    .WithPath("/api/v1/inbox/reviews/reviewId/answered")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -56,12 +56,7 @@ public class SetReviewAnsweredTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.SetReviewAnsweredAsync(
-            new SetReviewAnsweredInboxReviewsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ReviewId = "reviewId",
-                Answered = true,
-            }
+            new SetReviewAnsweredInboxReviewsRequest { ReviewId = "reviewId", Answered = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -100,7 +95,7 @@ public class SetReviewAnsweredTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/reviewId/answered")
+                    .WithPath("/api/v1/inbox/reviews/reviewId/answered")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -113,12 +108,7 @@ public class SetReviewAnsweredTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.SetReviewAnsweredAsync(
-            new SetReviewAnsweredInboxReviewsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ReviewId = "reviewId",
-                Answered = true,
-            }
+            new SetReviewAnsweredInboxReviewsRequest { ReviewId = "reviewId", Answered = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

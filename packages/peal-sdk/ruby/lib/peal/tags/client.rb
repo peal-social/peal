@@ -13,24 +13,22 @@ module Peal
       # Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.tags.list(workspace_id: "workspaceId")
+      #   client.tags.list
       #
       # @return [Array[Peal::Types::Tag]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/tags",
+          path: "api/v1/tags",
           request_options: request_options
         )
         begin
@@ -61,11 +59,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.tags.create(
-      #     workspace_id: "workspaceId",
       #     colour: "gray",
       #     name: "name"
       #   )
@@ -73,14 +69,11 @@ module Peal
       # @return [Peal::Types::Tag]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/tags",
-          body: Peal::Types::TagDetails.new(body_params).to_h,
+          path: "api/v1/tags",
+          body: Peal::Types::TagDetails.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -111,14 +104,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :tag_id
       #
       # @example
-      #   client.tags.delete(
-      #     workspace_id: "workspaceId",
-      #     tag_id: "tagId"
-      #   )
+      #   client.tags.delete(tag_id: "tagId")
       #
       # @return [untyped]
       def delete(request_options: {}, **params)
@@ -126,7 +115,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/tags/#{URI.encode_uri_component(params[:tag_id].to_s)}",
+          path: "api/v1/tags/#{URI.encode_uri_component(params[:tag_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -154,12 +143,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :tag_id
       #
       # @example
       #   client.tags.update(
-      #     workspace_id: "workspaceId",
       #     tag_id: "tagId",
       #     colour: "gray",
       #     name: "name"
@@ -168,13 +155,13 @@ module Peal
       # @return [Peal::Types::Tag]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id tag_id]
+        path_param_names = %i[tag_id]
         body_params = params.except(*path_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/tags/#{URI.encode_uri_component(params[:tag_id].to_s)}",
+          path: "api/v1/tags/#{URI.encode_uri_component(params[:tag_id].to_s)}",
           body: Peal::Types::TagDetails.new(body_params).to_h,
           request_options: request_options,
           max_retries: 0

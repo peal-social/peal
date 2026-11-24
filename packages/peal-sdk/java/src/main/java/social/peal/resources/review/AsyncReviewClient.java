@@ -13,12 +13,9 @@ import social.peal.resources.review.requests.ChangesRequest;
 import social.peal.resources.review.requests.LinksReviewRequest;
 import social.peal.resources.review.requests.NewComment;
 import social.peal.resources.review.requests.NewReviewLink;
-import social.peal.resources.review.requests.PendingReviewRequest;
 import social.peal.resources.review.requests.ResolveReviewRequest;
 import social.peal.resources.review.requests.RevokeLinkReviewRequest;
-import social.peal.resources.review.requests.SettingsReviewRequest;
 import social.peal.resources.review.requests.ThreadReviewRequest;
-import social.peal.resources.review.requests.UpdateSettingsReviewRequest;
 import social.peal.types.ApprovalOutcome;
 import social.peal.types.ApprovalRequest;
 import social.peal.types.ChangesOutcome;
@@ -48,8 +45,8 @@ public class AsyncReviewClient {
     /**
      * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
      */
-    public CompletableFuture<ReviewSettings> settings(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture = this.rawClient.settings(workspaceId);
+    public CompletableFuture<ReviewSettings> settings() {
+        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture = this.rawClient.settings();
         CompletableFuture<ReviewSettings> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -62,40 +59,8 @@ public class AsyncReviewClient {
     /**
      * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
      */
-    public CompletableFuture<ReviewSettings> settings(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture =
-                this.rawClient.settings(workspaceId, requestOptions);
-        CompletableFuture<ReviewSettings> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
-     */
-    public CompletableFuture<ReviewSettings> settings(String workspaceId, SettingsReviewRequest request) {
-        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture =
-                this.rawClient.settings(workspaceId, request);
-        CompletableFuture<ReviewSettings> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
-     */
-    public CompletableFuture<ReviewSettings> settings(
-            String workspaceId, SettingsReviewRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture =
-                this.rawClient.settings(workspaceId, request, requestOptions);
+    public CompletableFuture<ReviewSettings> settings(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture = this.rawClient.settings(requestOptions);
         CompletableFuture<ReviewSettings> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -108,9 +73,8 @@ public class AsyncReviewClient {
     /**
      * Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ReviewSettings> updateSettings(String workspaceId, UpdateSettingsReviewRequest request) {
-        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture =
-                this.rawClient.updateSettings(workspaceId, request);
+    public CompletableFuture<ReviewSettings> updateSettings(ReviewSettings request) {
+        CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture = this.rawClient.updateSettings(request);
         CompletableFuture<ReviewSettings> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -123,10 +87,9 @@ public class AsyncReviewClient {
     /**
      * Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ReviewSettings> updateSettings(
-            String workspaceId, UpdateSettingsReviewRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<ReviewSettings> updateSettings(ReviewSettings request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ReviewSettings>> rawFuture =
-                this.rawClient.updateSettings(workspaceId, request, requestOptions);
+                this.rawClient.updateSettings(request, requestOptions);
         CompletableFuture<ReviewSettings> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -139,9 +102,8 @@ public class AsyncReviewClient {
     /**
      * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
      */
-    public CompletableFuture<List<ApprovalRequest>> pending(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> rawFuture =
-                this.rawClient.pending(workspaceId);
+    public CompletableFuture<List<ApprovalRequest>> pending() {
+        CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> rawFuture = this.rawClient.pending();
         CompletableFuture<List<ApprovalRequest>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -154,40 +116,9 @@ public class AsyncReviewClient {
     /**
      * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
      */
-    public CompletableFuture<List<ApprovalRequest>> pending(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<List<ApprovalRequest>> pending(RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> rawFuture =
-                this.rawClient.pending(workspaceId, requestOptions);
-        CompletableFuture<List<ApprovalRequest>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
-     */
-    public CompletableFuture<List<ApprovalRequest>> pending(String workspaceId, PendingReviewRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> rawFuture =
-                this.rawClient.pending(workspaceId, request);
-        CompletableFuture<List<ApprovalRequest>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
-     */
-    public CompletableFuture<List<ApprovalRequest>> pending(
-            String workspaceId, PendingReviewRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<ApprovalRequest>>> rawFuture =
-                this.rawClient.pending(workspaceId, request, requestOptions);
+                this.rawClient.pending(requestOptions);
         CompletableFuture<List<ApprovalRequest>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -200,8 +131,8 @@ public class AsyncReviewClient {
     /**
      * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
      */
-    public CompletableFuture<PostReview> thread(String workspaceId, String postId) {
-        CompletableFuture<PealClientHttpResponse<PostReview>> rawFuture = this.rawClient.thread(workspaceId, postId);
+    public CompletableFuture<PostReview> thread(String postId) {
+        CompletableFuture<PealClientHttpResponse<PostReview>> rawFuture = this.rawClient.thread(postId);
         CompletableFuture<PostReview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -214,9 +145,8 @@ public class AsyncReviewClient {
     /**
      * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
      */
-    public CompletableFuture<PostReview> thread(String workspaceId, String postId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<PostReview>> rawFuture =
-                this.rawClient.thread(workspaceId, postId, requestOptions);
+    public CompletableFuture<PostReview> thread(String postId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<PostReview>> rawFuture = this.rawClient.thread(postId, requestOptions);
         CompletableFuture<PostReview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -229,9 +159,8 @@ public class AsyncReviewClient {
     /**
      * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
      */
-    public CompletableFuture<PostReview> thread(String workspaceId, String postId, ThreadReviewRequest request) {
-        CompletableFuture<PealClientHttpResponse<PostReview>> rawFuture =
-                this.rawClient.thread(workspaceId, postId, request);
+    public CompletableFuture<PostReview> thread(String postId, ThreadReviewRequest request) {
+        CompletableFuture<PealClientHttpResponse<PostReview>> rawFuture = this.rawClient.thread(postId, request);
         CompletableFuture<PostReview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -245,9 +174,9 @@ public class AsyncReviewClient {
      * Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
      */
     public CompletableFuture<PostReview> thread(
-            String workspaceId, String postId, ThreadReviewRequest request, RequestOptions requestOptions) {
+            String postId, ThreadReviewRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<PostReview>> rawFuture =
-                this.rawClient.thread(workspaceId, postId, request, requestOptions);
+                this.rawClient.thread(postId, request, requestOptions);
         CompletableFuture<PostReview> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -260,9 +189,8 @@ public class AsyncReviewClient {
     /**
      * Comments on a post, starts a thread about one of its channels or some words of its text there, or answers a thread. The text is kept as plain text, 2000 characters at most, without control characters. Those who follow the post are told. Needs post:create or post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ReviewComment> comment(String workspaceId, String postId, NewComment request) {
-        CompletableFuture<PealClientHttpResponse<ReviewComment>> rawFuture =
-                this.rawClient.comment(workspaceId, postId, request);
+    public CompletableFuture<ReviewComment> comment(String postId, NewComment request) {
+        CompletableFuture<PealClientHttpResponse<ReviewComment>> rawFuture = this.rawClient.comment(postId, request);
         CompletableFuture<ReviewComment> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -275,10 +203,24 @@ public class AsyncReviewClient {
     /**
      * Comments on a post, starts a thread about one of its channels or some words of its text there, or answers a thread. The text is kept as plain text, 2000 characters at most, without control characters. Those who follow the post are told. Needs post:create or post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ReviewComment> comment(
-            String workspaceId, String postId, NewComment request, RequestOptions requestOptions) {
+    public CompletableFuture<ReviewComment> comment(String postId, NewComment request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ReviewComment>> rawFuture =
-                this.rawClient.comment(workspaceId, postId, request, requestOptions);
+                this.rawClient.comment(postId, request, requestOptions);
+        CompletableFuture<ReviewComment> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, <code>parent</code>). Needs post:create or post:approve, and is refused to staff acting as a member.
+     */
+    public CompletableFuture<ReviewComment> resolve(String postId, String commentId, ResolveReviewRequest request) {
+        CompletableFuture<PealClientHttpResponse<ReviewComment>> rawFuture =
+                this.rawClient.resolve(postId, commentId, request);
         CompletableFuture<ReviewComment> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -292,29 +234,9 @@ public class AsyncReviewClient {
      * Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, <code>parent</code>). Needs post:create or post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<ReviewComment> resolve(
-            String workspaceId, String postId, String commentId, ResolveReviewRequest request) {
+            String postId, String commentId, ResolveReviewRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ReviewComment>> rawFuture =
-                this.rawClient.resolve(workspaceId, postId, commentId, request);
-        CompletableFuture<ReviewComment> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, <code>parent</code>). Needs post:create or post:approve, and is refused to staff acting as a member.
-     */
-    public CompletableFuture<ReviewComment> resolve(
-            String workspaceId,
-            String postId,
-            String commentId,
-            ResolveReviewRequest request,
-            RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ReviewComment>> rawFuture =
-                this.rawClient.resolve(workspaceId, postId, commentId, request, requestOptions);
+                this.rawClient.resolve(postId, commentId, request, requestOptions);
         CompletableFuture<ReviewComment> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -327,9 +249,8 @@ public class AsyncReviewClient {
     /**
      * Approves a post that waits for an approval, as the reviewer was shown it: send the <code>id</code> and the <code>subjectHash</code> of the approval that waits, as the post's review or the list of approvals gave them. When the post was asked again or says something else since, nothing is approved (ApprovalChanged): read it again. It is scheduled for the time it was asked for, and its job starts. Approved after that time (beyond a minute), nothing is published late: the post goes back to draft, still approved, and <code>late</code> is true; scheduling it again needs no new approval while it says the same. Recorded with who approved and when. In a workspace that holds more channels or members than its plan allows, which schedules nothing, nothing is approved (PlanLimitReached) and the post keeps waiting. Needs post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ApprovalOutcome> approve(String workspaceId, String postId, ApprovalDecision request) {
-        CompletableFuture<PealClientHttpResponse<ApprovalOutcome>> rawFuture =
-                this.rawClient.approve(workspaceId, postId, request);
+    public CompletableFuture<ApprovalOutcome> approve(String postId, ApprovalDecision request) {
+        CompletableFuture<PealClientHttpResponse<ApprovalOutcome>> rawFuture = this.rawClient.approve(postId, request);
         CompletableFuture<ApprovalOutcome> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -343,9 +264,9 @@ public class AsyncReviewClient {
      * Approves a post that waits for an approval, as the reviewer was shown it: send the <code>id</code> and the <code>subjectHash</code> of the approval that waits, as the post's review or the list of approvals gave them. When the post was asked again or says something else since, nothing is approved (ApprovalChanged): read it again. It is scheduled for the time it was asked for, and its job starts. Approved after that time (beyond a minute), nothing is published late: the post goes back to draft, still approved, and <code>late</code> is true; scheduling it again needs no new approval while it says the same. Recorded with who approved and when. In a workspace that holds more channels or members than its plan allows, which schedules nothing, nothing is approved (PlanLimitReached) and the post keeps waiting. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<ApprovalOutcome> approve(
-            String workspaceId, String postId, ApprovalDecision request, RequestOptions requestOptions) {
+            String postId, ApprovalDecision request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ApprovalOutcome>> rawFuture =
-                this.rawClient.approve(workspaceId, postId, request, requestOptions);
+                this.rawClient.approve(postId, request, requestOptions);
         CompletableFuture<ApprovalOutcome> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -358,9 +279,9 @@ public class AsyncReviewClient {
     /**
      * Sends a post that waits for an approval back to draft, with a comment that says what to change, and the <code>id</code> and <code>subjectHash</code> of the approval it refuses, as for approving. Its author and whoever asked are told. Needs post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ChangesOutcome> requestChanges(String workspaceId, String postId, ChangesRequest request) {
+    public CompletableFuture<ChangesOutcome> requestChanges(String postId, ChangesRequest request) {
         CompletableFuture<PealClientHttpResponse<ChangesOutcome>> rawFuture =
-                this.rawClient.requestChanges(workspaceId, postId, request);
+                this.rawClient.requestChanges(postId, request);
         CompletableFuture<ChangesOutcome> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -374,9 +295,9 @@ public class AsyncReviewClient {
      * Sends a post that waits for an approval back to draft, with a comment that says what to change, and the <code>id</code> and <code>subjectHash</code> of the approval it refuses, as for approving. Its author and whoever asked are told. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<ChangesOutcome> requestChanges(
-            String workspaceId, String postId, ChangesRequest request, RequestOptions requestOptions) {
+            String postId, ChangesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChangesOutcome>> rawFuture =
-                this.rawClient.requestChanges(workspaceId, postId, request, requestOptions);
+                this.rawClient.requestChanges(postId, request, requestOptions);
         CompletableFuture<ChangesOutcome> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -389,9 +310,8 @@ public class AsyncReviewClient {
     /**
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
-    public CompletableFuture<List<ReviewLink>> links(String workspaceId, String postId) {
-        CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> rawFuture =
-                this.rawClient.links(workspaceId, postId);
+    public CompletableFuture<List<ReviewLink>> links(String postId) {
+        CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> rawFuture = this.rawClient.links(postId);
         CompletableFuture<List<ReviewLink>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -404,9 +324,9 @@ public class AsyncReviewClient {
     /**
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
-    public CompletableFuture<List<ReviewLink>> links(String workspaceId, String postId, RequestOptions requestOptions) {
+    public CompletableFuture<List<ReviewLink>> links(String postId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> rawFuture =
-                this.rawClient.links(workspaceId, postId, requestOptions);
+                this.rawClient.links(postId, requestOptions);
         CompletableFuture<List<ReviewLink>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -419,9 +339,8 @@ public class AsyncReviewClient {
     /**
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
-    public CompletableFuture<List<ReviewLink>> links(String workspaceId, String postId, LinksReviewRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> rawFuture =
-                this.rawClient.links(workspaceId, postId, request);
+    public CompletableFuture<List<ReviewLink>> links(String postId, LinksReviewRequest request) {
+        CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> rawFuture = this.rawClient.links(postId, request);
         CompletableFuture<List<ReviewLink>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -435,9 +354,9 @@ public class AsyncReviewClient {
      * Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
      */
     public CompletableFuture<List<ReviewLink>> links(
-            String workspaceId, String postId, LinksReviewRequest request, RequestOptions requestOptions) {
+            String postId, LinksReviewRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<ReviewLink>>> rawFuture =
-                this.rawClient.links(workspaceId, postId, request, requestOptions);
+                this.rawClient.links(postId, request, requestOptions);
         CompletableFuture<List<ReviewLink>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -450,9 +369,9 @@ public class AsyncReviewClient {
     /**
      * Makes a link that shows a draft, a post that waits for an approval or a scheduled post to whoever holds it, without an account: the post as each channel will receive it, and nothing else of the workspace. It lets them view, comment, or approve, and works 14 days unless <code>expiresInHours</code> says otherwise (90 days at most), until it is revoked, or the post is published, cancelled or deleted. A post has 20 working links at most. The answer holds the link's address, which is not shown again. Needs post:approve, and is refused to staff acting as a member. A link that lets its holders approve is made in the web app only: an API key or an OAuth client is refused one, as it would approve its own posts with it.
      */
-    public CompletableFuture<CreatedReviewLink> createLink(String workspaceId, String postId, NewReviewLink request) {
+    public CompletableFuture<CreatedReviewLink> createLink(String postId, NewReviewLink request) {
         CompletableFuture<PealClientHttpResponse<CreatedReviewLink>> rawFuture =
-                this.rawClient.createLink(workspaceId, postId, request);
+                this.rawClient.createLink(postId, request);
         CompletableFuture<CreatedReviewLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -466,9 +385,9 @@ public class AsyncReviewClient {
      * Makes a link that shows a draft, a post that waits for an approval or a scheduled post to whoever holds it, without an account: the post as each channel will receive it, and nothing else of the workspace. It lets them view, comment, or approve, and works 14 days unless <code>expiresInHours</code> says otherwise (90 days at most), until it is revoked, or the post is published, cancelled or deleted. A post has 20 working links at most. The answer holds the link's address, which is not shown again. Needs post:approve, and is refused to staff acting as a member. A link that lets its holders approve is made in the web app only: an API key or an OAuth client is refused one, as it would approve its own posts with it.
      */
     public CompletableFuture<CreatedReviewLink> createLink(
-            String workspaceId, String postId, NewReviewLink request, RequestOptions requestOptions) {
+            String postId, NewReviewLink request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<CreatedReviewLink>> rawFuture =
-                this.rawClient.createLink(workspaceId, postId, request, requestOptions);
+                this.rawClient.createLink(postId, request, requestOptions);
         CompletableFuture<CreatedReviewLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -481,9 +400,8 @@ public class AsyncReviewClient {
     /**
      * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ReviewLink> revokeLink(String workspaceId, String linkId) {
-        CompletableFuture<PealClientHttpResponse<ReviewLink>> rawFuture =
-                this.rawClient.revokeLink(workspaceId, linkId);
+    public CompletableFuture<ReviewLink> revokeLink(String linkId) {
+        CompletableFuture<PealClientHttpResponse<ReviewLink>> rawFuture = this.rawClient.revokeLink(linkId);
         CompletableFuture<ReviewLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -496,9 +414,23 @@ public class AsyncReviewClient {
     /**
      * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
      */
-    public CompletableFuture<ReviewLink> revokeLink(String workspaceId, String linkId, RequestOptions requestOptions) {
+    public CompletableFuture<ReviewLink> revokeLink(String linkId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ReviewLink>> rawFuture =
-                this.rawClient.revokeLink(workspaceId, linkId, requestOptions);
+                this.rawClient.revokeLink(linkId, requestOptions);
+        CompletableFuture<ReviewLink> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
+     */
+    public CompletableFuture<ReviewLink> revokeLink(String linkId, RevokeLinkReviewRequest request) {
+        CompletableFuture<PealClientHttpResponse<ReviewLink>> rawFuture = this.rawClient.revokeLink(linkId, request);
         CompletableFuture<ReviewLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -512,25 +444,9 @@ public class AsyncReviewClient {
      * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
      */
     public CompletableFuture<ReviewLink> revokeLink(
-            String workspaceId, String linkId, RevokeLinkReviewRequest request) {
+            String linkId, RevokeLinkReviewRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ReviewLink>> rawFuture =
-                this.rawClient.revokeLink(workspaceId, linkId, request);
-        CompletableFuture<ReviewLink> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
-     */
-    public CompletableFuture<ReviewLink> revokeLink(
-            String workspaceId, String linkId, RevokeLinkReviewRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ReviewLink>> rawFuture =
-                this.rawClient.revokeLink(workspaceId, linkId, request, requestOptions);
+                this.rawClient.revokeLink(linkId, request, requestOptions);
         CompletableFuture<ReviewLink> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

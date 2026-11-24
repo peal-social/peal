@@ -448,58 +448,58 @@ const keyChecks = (choice: Option.Option<string>, up: boolean) =>
       return [credential, skipped("access", inClear), scope, ads, workspace];
     }
 
-    const client = yield* api.withApiKey(key.value).pipe(Effect.orDie);
+    const client = yield* api
+      .withApiKey(key.value, workspaceId.value)
+      .pipe(Effect.orDie);
 
-    const access = yield* client.channels
-      .list({ params: { workspaceId: workspaceId.value } })
-      .pipe(
-        Effect.timeout(checkTimeout),
-        Effect.map((channels) =>
-          ok(
-            "access",
-            `The key reads the workspace: ${String(channels.length)} ${channels.length === 1 ? "channel" : "channels"}.`
-          )
-        ),
-        Effect.catchTags({
-          Forbidden: ({ message, permission, reason }) =>
-            Effect.succeed(
-              reason === "missingPermission" && permission !== undefined
-                ? failing(
-                    "access",
-                    `The server takes the key, which lacks the permission ${permission}: it cannot list the workspace's channels.`,
-                    `An owner or an admin of the workspace creates a key with ${permission}, in the web app's settings.`
-                  )
-                : failing(
-                    "access",
-                    `The server takes the key, and refuses it here: ${message ?? "it belongs to another workspace, or lacks a permission"}`,
-                    "Check that the id is the key's own workspace's."
-                  )
-            ),
-          Unauthenticated: () =>
-            Effect.succeed(
-              failing(
-                "access",
-                "The server refused the key: it was revoked, it expired, or it is another server's.",
-                "An owner or an admin of the workspace creates a key, in the web app's settings."
-              )
-            ),
-          WorkspaceNotFound: () =>
-            Effect.succeed(
-              failing(
-                "access",
-                "The server knows no such workspace for this key.",
-                "Check that the id is the key's own workspace's."
-              )
-            ),
-        }),
-        Effect.orElseSucceed(() =>
-          failing(
-            "access",
-            "The server did not answer the key's request as expected.",
-            "Try again shortly."
-          )
+    const access = yield* client.channels.list({ headers: {} }).pipe(
+      Effect.timeout(checkTimeout),
+      Effect.map((channels) =>
+        ok(
+          "access",
+          `The key reads the workspace: ${String(channels.length)} ${channels.length === 1 ? "channel" : "channels"}.`
         )
-      );
+      ),
+      Effect.catchTags({
+        Forbidden: ({ message, permission, reason }) =>
+          Effect.succeed(
+            reason === "missingPermission" && permission !== undefined
+              ? failing(
+                  "access",
+                  `The server takes the key, which lacks the permission ${permission}: it cannot list the workspace's channels.`,
+                  `An owner or an admin of the workspace creates a key with ${permission}, in the web app's settings.`
+                )
+              : failing(
+                  "access",
+                  `The server takes the key, and refuses it here: ${message ?? "it belongs to another workspace, or lacks a permission"}`,
+                  "Check that the id is the key's own workspace's."
+                )
+          ),
+        Unauthenticated: () =>
+          Effect.succeed(
+            failing(
+              "access",
+              "The server refused the key: it was revoked, it expired, or it is another server's.",
+              "An owner or an admin of the workspace creates a key, in the web app's settings."
+            )
+          ),
+        WorkspaceNotFound: () =>
+          Effect.succeed(
+            failing(
+              "access",
+              "The server knows no such workspace for this key.",
+              "Check that the id is the key's own workspace's."
+            )
+          ),
+      }),
+      Effect.orElseSucceed(() =>
+        failing(
+          "access",
+          "The server did not answer the key's request as expected.",
+          "Try again shortly."
+        )
+      )
+    );
 
     return [credential, access, scope, ads, workspace];
   });

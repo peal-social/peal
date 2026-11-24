@@ -156,9 +156,11 @@ describe("threads, analytics and the inbox", { serial: true }, () => {
     // And the same numbers as files.
     const exports = screen.getByRole("article", "Export");
 
-    await expect(exports.getByRole("link", "Posts of the range")).toBeVisible();
     await expect(
-      exports.getByRole("link", "Accounts, day by day")
+      exports.getByRole("button", "Posts of the range")
+    ).toBeVisible();
+    await expect(
+      exports.getByRole("button", "Accounts, day by day")
     ).toBeVisible();
 
     // Each widget keeps a period of its own, chosen in its filter.

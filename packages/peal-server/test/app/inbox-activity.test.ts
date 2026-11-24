@@ -5,7 +5,7 @@
 import { assert, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer, Option, Schema } from "effect";
 import { SqlClient } from "effect/sql";
-import { ActivityPageSchema } from "peal-contract";
+import { ActivityPageSchema, forWorkspace } from "peal-contract";
 
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
@@ -60,7 +60,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const sql = yield* SqlClient.SqlClient;
           const owner = yield* signedUpUnconfirmed("inbox-activity");
           const workspaceId = yield* workspaceOf(owner, "Inbox activity");
-          const base = `/api/workspaces/${workspaceId}`;
+          const base = "/api/v1";
 
           const channel = yield* freshChannel(
             WorkspaceIdSchema.make(workspaceId)
@@ -154,7 +154,9 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           );
 
           const log = yield* app
-            .request(`${base}/activity`, { headers: { cookie: owner.cookies } })
+            .request(`${base}/activity`, {
+              headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+            })
             .pipe(Effect.flatMap((reply) => bodyOf(PageJsonSchema, reply)));
 
           const actor = { _tag: "apiKey" as const, apiKeyId: desk.apiKey.id };

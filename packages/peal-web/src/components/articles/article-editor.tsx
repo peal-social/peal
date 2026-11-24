@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { Article, Channel } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import {
@@ -286,7 +287,8 @@ export const ArticleEditor = ({
   const { failure, goTo, isPending, run } = useArticleRequests(workspaceId);
 
   const keys = articlesKeys(workspaceId);
-  const params = { articleId: article?.id ?? "", workspaceId };
+  const params = { articleId: article?.id ?? "" };
+  const headers = forWorkspace(workspaceId);
   const standing = standingOf(article);
   const may = (permission: string) => permissions.includes(permission);
 
@@ -316,11 +318,16 @@ export const ArticleEditor = ({
   const saved = async () =>
     article === undefined
       ? await create({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
           payload: { ...inputOf(draft), channelId: draft.channelId },
           reactivityKeys: keys,
         })
-      : await update({ params, payload: inputOf(draft), reactivityKeys: keys });
+      : await update({
+          params,
+          headers,
+          payload: inputOf(draft),
+          reactivityKeys: keys,
+        });
 
   const handleSave = () => {
     run(saved, "saved", opened);
@@ -331,7 +338,7 @@ export const ArticleEditor = ({
       async () => {
         if (article === undefined) {
           return await create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: {
               ...inputOf(draft),
               channelId: draft.channelId,
@@ -346,6 +353,7 @@ export const ArticleEditor = ({
         return Exit.isSuccess(written)
           ? await schedule({
               params,
+              headers,
               payload: timeInputOf(draft, timeZone),
               reactivityKeys: keys,
             })
@@ -381,7 +389,8 @@ export const ArticleEditor = ({
           handlers={{
             handleDelete: () => {
               run(
-                async () => await remove({ params, reactivityKeys: keys }),
+                async () =>
+                  await remove({ params, headers, reactivityKeys: keys }),
                 "deleted",
                 () => {
                   goTo("");
@@ -390,7 +399,8 @@ export const ArticleEditor = ({
             },
             handleRetry: () => {
               run(
-                async () => await retry({ params, reactivityKeys: keys }),
+                async () =>
+                  await retry({ params, headers, reactivityKeys: keys }),
                 "scheduled"
               );
             },
@@ -398,7 +408,8 @@ export const ArticleEditor = ({
             handleSend,
             handleUnschedule: () => {
               run(
-                async () => await unschedule({ params, reactivityKeys: keys }),
+                async () =>
+                  await unschedule({ params, headers, reactivityKeys: keys }),
                 "unscheduled"
               );
             },
@@ -413,7 +424,8 @@ export const ArticleEditor = ({
             disabled={isPending}
             onUnpublish={() => {
               run(
-                async () => await unpublish({ params, reactivityKeys: keys }),
+                async () =>
+                  await unpublish({ params, headers, reactivityKeys: keys }),
                 "unpublished"
               );
             }}
@@ -422,6 +434,7 @@ export const ArticleEditor = ({
                 async () =>
                   await updateOnSite({
                     params,
+                    headers,
                     payload: inputOf(draft),
                     reactivityKeys: keys,
                   }),

@@ -24,7 +24,7 @@ export const contentBodyLimit = ByteSize.mebibytes(8);
 export const largestBodyLimit = contentBodyLimit;
 
 const contentPaths: readonly RegExp[] = [
-  /^\/api\/workspaces\/[^/]+\/(?:posts|articles)(?:\/|$)/u,
+  /^\/api\/v1\/(?:posts|articles)(?:\/|$)/u,
   /^\/api\/mcp$/u,
 ];
 

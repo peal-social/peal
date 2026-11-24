@@ -10,7 +10,6 @@ import (
 	os "os"
 	testing "testing"
 
-	peal "github.com/peal-social/peal/packages/peal-sdk/go"
 	client "github.com/peal-social/peal/packages/peal-sdk/go/client"
 	option "github.com/peal-social/peal/packages/peal-sdk/go/option"
 	require "github.com/stretchr/testify/require"
@@ -88,17 +87,13 @@ func TestMembersListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListMembersRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Members.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestMembersListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMembersListWithWireMock", "GET", "/api/workspaces/workspaceId/members", nil, 1)
+	VerifyRequestCount(t, "TestMembersListWithWireMock", "GET", "/api/v1/members", nil, 1)
 }

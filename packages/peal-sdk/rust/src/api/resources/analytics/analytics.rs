@@ -38,7 +38,6 @@ impl AnalyticsClient {
     ///     client
     ///         .analytics
     ///         .summary(
-    ///             &"workspaceId".to_string(),
     ///             &SummaryQueryRequest {
     ///                 from: CalendarDay("from".to_string()),
     ///                 time_zone: "timeZone".to_string(),
@@ -51,7 +50,6 @@ impl AnalyticsClient {
     /// ```
     pub async fn summary(
         &self,
-        workspace_id: &str,
         request: &SummaryQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<AnalyticsSummary, ApiError> {
@@ -65,7 +63,7 @@ impl AnalyticsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/analytics/summary", workspace_id),
+                "api/v1/analytics/summary",
                 None,
                 QueryBuilder::new()
                     .serialize("from", Some(request.from.clone()))
@@ -102,7 +100,6 @@ impl AnalyticsClient {
     ///     client
     ///         .analytics
     ///         .dashboard(
-    ///             &"workspaceId".to_string(),
     ///             &DashboardQueryRequest {
     ///                 time_zone: "timeZone".to_string(),
     ///                 days: None,
@@ -117,7 +114,6 @@ impl AnalyticsClient {
     /// ```
     pub async fn dashboard(
         &self,
-        workspace_id: &str,
         request: &DashboardQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<AnalyticsDashboard, ApiError> {
@@ -131,7 +127,7 @@ impl AnalyticsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/analytics/dashboard", workspace_id),
+                "api/v1/analytics/dashboard",
                 None,
                 QueryBuilder::new()
                     .string("days", request.days.clone())
@@ -170,7 +166,6 @@ impl AnalyticsClient {
     ///     client
     ///         .analytics
     ///         .channel(
-    ///             &"workspaceId".to_string(),
     ///             &"channelId".to_string(),
     ///             &ChannelQueryRequest {
     ///                 time_zone: "timeZone".to_string(),
@@ -185,7 +180,6 @@ impl AnalyticsClient {
     /// ```
     pub async fn channel(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         request: &ChannelQueryRequest,
         options: Option<RequestOptions>,
@@ -200,10 +194,7 @@ impl AnalyticsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/analytics/channels/{}",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/analytics/channels/{}", channel_id),
                 None,
                 QueryBuilder::new()
                     .string("days", request.days.clone())
@@ -241,7 +232,6 @@ impl AnalyticsClient {
     ///     client
     ///         .analytics
     ///         .export(
-    ///             &"workspaceId".to_string(),
     ///             &ExportQueryRequest {
     ///                 time_zone: "timeZone".to_string(),
     ///                 kind: AnalyticsExportKind::Posts,
@@ -257,7 +247,6 @@ impl AnalyticsClient {
     /// ```
     pub async fn export(
         &self,
-        workspace_id: &str,
         request: &ExportQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ByteStream, ApiError> {
@@ -271,7 +260,7 @@ impl AnalyticsClient {
         self.http_client
             .execute_stream_request(
                 Method::GET,
-                &format!("api/workspaces/{}/analytics/export", workspace_id),
+                "api/v1/analytics/export",
                 None,
                 QueryBuilder::new()
                     .string("days", request.days.clone())
@@ -311,7 +300,6 @@ impl AnalyticsClient {
     ///     client
     ///         .analytics
     ///         .best_times(
-    ///             &"workspaceId".to_string(),
     ///             &BestTimesQueryRequest {
     ///                 channel_id: "channelId".to_string(),
     ///                 time_zone: "timeZone".to_string(),
@@ -324,7 +312,6 @@ impl AnalyticsClient {
     /// ```
     pub async fn best_times(
         &self,
-        workspace_id: &str,
         request: &BestTimesQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<BestTimes, ApiError> {
@@ -338,7 +325,7 @@ impl AnalyticsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/analytics/best-times", workspace_id),
+                "api/v1/analytics/best-times",
                 None,
                 QueryBuilder::new()
                     .string("channelId", request.channel_id.clone())
@@ -372,15 +359,11 @@ impl AnalyticsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .analytics
-    ///         .post(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.analytics.post(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn post(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<PostAnalytics, ApiError> {
@@ -394,10 +377,7 @@ impl AnalyticsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/analytics/posts/{}",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/analytics/posts/{}", post_id),
                 None,
                 None,
                 options,

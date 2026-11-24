@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListConversationsInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListConversationsInboxMessagesRequest{}
 //	_, err := client.InboxMessages.ListConversations(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) ListConversations(
 // Example:
 //
 //	request := &peal.GetConversationInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ConversationID: "conversationId",
 //	}
 //	_, err := client.InboxMessages.GetConversation(
@@ -94,7 +91,6 @@ func (c *Client) GetConversation(
 // Example:
 //
 //	request := &peal.NewInboxMessage{
-//	    WorkspaceID: "workspaceId",
 //	    ConversationID: "conversationId",
 //	    Text: "text",
 //	}
@@ -123,7 +119,6 @@ func (c *Client) SendMessage(
 // Example:
 //
 //	request := &peal.NewInboxPrivateReply{
-//	    WorkspaceID: "workspaceId",
 //	    CommentID: "commentId",
 //	    Text: "text",
 //	}
@@ -152,7 +147,6 @@ func (c *Client) SendPrivateReply(
 // Example:
 //
 //	request := &peal.GetPrivateReplyInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PrivateReplyID: "privateReplyId",
 //	}
 //	_, err := client.InboxMessages.GetPrivateReply(
@@ -180,7 +174,6 @@ func (c *Client) GetPrivateReply(
 // Example:
 //
 //	request := &peal.ConfirmPrivateReplyInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PrivateReplyID: "privateReplyId",
 //	    Went: true,
 //	}
@@ -209,7 +202,6 @@ func (c *Client) ConfirmPrivateReply(
 // Example:
 //
 //	request := &peal.SetConversationReadInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ConversationID: "conversationId",
 //	    Read: true,
 //	}
@@ -237,21 +229,15 @@ func (c *Client) SetConversationRead(
 //
 // Example:
 //
-//	request := &peal.GetMessageSettingsInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.InboxMessages.GetMessageSettings(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) GetMessageSettings(
 	ctx context.Context,
-	request *peal.GetMessageSettingsInboxMessagesRequest,
 	opts ...option.RequestOption,
 ) (*peal.InboxMessageSettings, error) {
 	response, err := c.WithRawResponse.GetMessageSettings(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -265,7 +251,6 @@ func (c *Client) GetMessageSettings(
 // Example:
 //
 //	request := &peal.SetChannelMessagesInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	    Enabled: true,
 //	}
@@ -294,7 +279,6 @@ func (c *Client) SetChannelMessages(
 // Example:
 //
 //	request := &peal.SetMessageApplicationInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Allowed: true,
 //	    ClientID: "clientId",
 //	}
@@ -323,7 +307,6 @@ func (c *Client) SetMessageApplication(
 // Example:
 //
 //	request := &peal.ConfirmMessageInboxMessagesRequest{
-//	    WorkspaceID: "workspaceId",
 //	    MessageID: "messageId",
 //	    Sent: true,
 //	}

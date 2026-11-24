@@ -8,7 +8,7 @@ sidebar:
 
 ## Ce que portent les événements des articles [#article-events]
 
-Un [article](/guides/channels/websites#articles) part vers un site web, par son canal. Ses événements nomment l’article et le canal, jamais ce que dit l’article. Pour cela, lisez-le par l’API, avec `GET /api/workspaces/{workspaceId}/articles/{articleId}`.
+Un [article](/guides/channels/websites#articles) part vers un site web, par son canal. Ses événements nomment l’article et le canal, jamais ce que dit l’article. Pour cela, lisez-le par l’API, avec `GET /api/v1/articles/{articleId}`.
 
 Quand la réponse d’un site se perd et que Peal ne retrouve pas l’article sur le site, l’article finit `unconfirmed`, et aucun événement ne le signale. Si votre intégration attend la fin d’un article, lisez son état dans l’API.
 

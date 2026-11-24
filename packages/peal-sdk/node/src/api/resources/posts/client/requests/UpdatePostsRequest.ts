@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         body: {
  *             channelIds: ["channelIds"],
@@ -24,7 +23,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface UpdatePostsRequest {
-    workspaceId: string;
     postId: string;
     body: Peal.PostDraft;
 }

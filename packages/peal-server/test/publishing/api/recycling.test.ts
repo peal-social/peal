@@ -12,6 +12,7 @@ import {
   RecyclingRuleEnded,
   RecyclingRuleNotFound,
   RecyclingVariantsInvalid,
+  forWorkspace,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -80,12 +81,11 @@ const studio = Effect.gen(function* studio() {
     memberOf(workspaceId, permissionsFor("viewer"))
   );
 
-  const params = { workspaceId };
+  const headers = forWorkspace(workspaceId);
 
   const sent = (text: string) =>
     editor.posts.send({
-      headers: {},
-      params,
+      headers,
       payload: {
         channelIds: [mastodon],
         content: { media: [], overrides: [], text },
@@ -98,7 +98,7 @@ const studio = Effect.gen(function* studio() {
       query: {},
     });
 
-  return { editor, mastodon, params, sent, viewer, workspaceId };
+  return { editor, mastodon, headers, sent, viewer, workspaceId };
 });
 
 describe("a recycling variant on a source with a channel's own media", () => {
@@ -107,11 +107,10 @@ describe("a recycling variant on a source with a channel's own media", () => {
     () =>
       onServer(
         Effect.gen(function* refusesEmpty() {
-          const { editor, mastodon, params } = yield* studio;
+          const { editor, mastodon, headers } = yield* studio;
 
           const source = yield* editor.posts.send({
-            headers: {},
-            params,
+            headers,
             payload: {
               channelIds: [mastodon],
               content: {
@@ -141,7 +140,7 @@ describe("a recycling variant on a source with a channel's own media", () => {
 
           const refused = yield* editor.recycling
             .create({
-              params,
+              headers,
               payload: {
                 count: 3,
                 every: { count: 1, unit: "weeks" },
@@ -171,7 +170,7 @@ describe("a recycling variant on a source with a channel's own media", () => {
 
           // The second variant alone keeps the channel's picture.
           const rule = yield* editor.recycling.create({
-            params,
+            headers,
             payload: {
               count: 3,
               every: { count: 1, unit: "weeks" },
@@ -183,7 +182,8 @@ describe("a recycling variant on a source with a channel's own media", () => {
           assert.strictEqual(rule.status, "active");
 
           yield* editor.posts.cancel({
-            params: { ...params, postId: source.id },
+            headers,
+            params: { postId: source.id },
           });
         })
       ),
@@ -197,11 +197,11 @@ describe("recycling rules", () => {
     () =>
       onServer(
         Effect.gen(function* starts() {
-          const { editor, params, sent, viewer } = yield* studio;
+          const { editor, headers, sent, viewer } = yield* studio;
           const source = yield* sent("Our opening hours, all summer.");
 
           const rule = yield* editor.recycling.create({
-            params,
+            headers,
             payload: {
               count: 4,
               every: { count: 2, unit: "weeks" },
@@ -233,10 +233,11 @@ describe("recycling rules", () => {
           });
 
           const read = yield* viewer.recycling.get({
-            params: { ...params, ruleId: rule.id },
+            headers,
+            params: { ruleId: rule.id },
           });
 
-          const listed = yield* viewer.recycling.list({ params, query: {} });
+          const listed = yield* viewer.recycling.list({ headers, query: {} });
 
           assert.strictEqual(read.id, rule.id);
           assert.deepStrictEqual(
@@ -254,12 +255,12 @@ describe("recycling rules", () => {
     () =>
       onServer(
         Effect.gen(function* refuses() {
-          const { editor, mastodon, params, sent, viewer } = yield* studio;
+          const { editor, mastodon, headers, sent, viewer } = yield* studio;
           const source = yield* sent("A post to repeat.");
           const every = { count: 1, unit: "weeks" } as const;
 
           const draft = yield* editor.posts.create({
-            params,
+            headers,
             payload: {
               channelIds: [mastodon],
               content: { media: [], overrides: [], text: "A draft." },
@@ -267,12 +268,12 @@ describe("recycling rules", () => {
           });
 
           const fromDraft = yield* editor.recycling
-            .create({ params, payload: { every, postId: draft.id } })
+            .create({ headers, payload: { every, postId: draft.id } })
             .pipe(Effect.flip);
 
           const tooLong = yield* editor.recycling
             .create({
-              params,
+              headers,
               payload: {
                 every,
                 postId: source.id,
@@ -283,22 +284,22 @@ describe("recycling rules", () => {
 
           const tooSoon = yield* editor.recycling
             .create({
-              params,
+              headers,
               payload: { every, postId: source.id, until: "2026-06-16" },
             })
             .pipe(Effect.flip);
 
           const byViewer = yield* viewer.recycling
-            .create({ params, payload: { every, postId: source.id } })
+            .create({ headers, payload: { every, postId: source.id } })
             .pipe(Effect.flip);
 
           yield* editor.recycling.create({
-            params,
+            headers,
             payload: { every, postId: source.id },
           });
 
           const second = yield* editor.recycling
-            .create({ params, payload: { every, postId: source.id } })
+            .create({ headers, payload: { every, postId: source.id } })
             .pipe(Effect.flip);
 
           assert.instanceOf(fromDraft, PostNotRecyclable);
@@ -319,15 +320,15 @@ describe("recycling rules", () => {
     () =>
       onServer(
         Effect.gen(function* lifecycle() {
-          const { editor, params, sent, viewer } = yield* studio;
+          const { editor, headers, sent, viewer } = yield* studio;
           const source = yield* sent("A post to pause.");
 
           const rule = yield* editor.recycling.create({
-            params,
+            headers,
             payload: { every: { count: 1, unit: "days" }, postId: source.id },
           });
 
-          const path = { params: { ...params, ruleId: rule.id } };
+          const path = { headers, params: { ruleId: rule.id } };
 
           const paused = yield* editor.recycling.update({
             ...path,
@@ -353,8 +354,8 @@ describe("recycling rules", () => {
 
           const missing = yield* editor.recycling
             .get({
+              headers,
               params: {
-                ...params,
                 ruleId: "00000000-0000-7000-8000-000000000000",
               },
             })
@@ -381,21 +382,21 @@ describe("recycling rules", () => {
     () =>
       onServer(
         Effect.gen(function* searches() {
-          const { editor, params, sent } = yield* studio;
+          const { editor, headers, sent } = yield* studio;
           const source = yield* sent("A post to find.");
 
           const rule = yield* editor.recycling.create({
-            params,
+            headers,
             payload: { every: { count: 1, unit: "weeks" }, postId: source.id },
           });
 
           const page = yield* editor.posts.search({
-            params,
+            headers,
             query: { recyclingId: rule.id },
           });
 
           const other = yield* editor.posts.search({
-            params,
+            headers,
             query: { recyclingId: "not-a-rule" },
           });
 

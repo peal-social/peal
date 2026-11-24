@@ -47,7 +47,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/short-links/linkId")
+                    .WithPath("/api/v1/short-links/linkId")
                     .UsingGet()
             )
             .RespondWith(
@@ -58,7 +58,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.ShortLinks.GetAsync(
-            new GetShortLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
+            new GetShortLinksRequest { LinkId = "linkId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -97,7 +97,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/short-links/linkId")
+                    .WithPath("/api/v1/short-links/linkId")
                     .UsingGet()
             )
             .RespondWith(
@@ -108,7 +108,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.ShortLinks.GetAsync(
-            new GetShortLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
+            new GetShortLinksRequest { LinkId = "linkId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

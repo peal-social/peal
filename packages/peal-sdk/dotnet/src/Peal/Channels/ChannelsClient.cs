@@ -13,7 +13,6 @@ public partial class ChannelsClient : IChannelsClient
     }
 
     private async Task<WithRawResponse<IEnumerable<Channel>>> ListAsyncCore(
-        ListChannelsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class ChannelsClient : IChannelsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channels",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/channels",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -179,10 +187,7 @@ public partial class ChannelsClient : IChannelsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channels/search",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/channels/search",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -314,7 +319,6 @@ public partial class ChannelsClient : IChannelsClient
     }
 
     private async Task<WithRawResponse<ConnectablePlatforms>> PlatformsAsyncCore(
-        PlatformsChannelsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -333,10 +337,7 @@ public partial class ChannelsClient : IChannelsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channels/platforms",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/channels/platforms",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -387,6 +388,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -475,10 +488,7 @@ public partial class ChannelsClient : IChannelsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channels/websites",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/channels/websites",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -532,6 +542,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -656,10 +678,7 @@ public partial class ChannelsClient : IChannelsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channels/websites/keys",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/channels/websites/keys",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -713,6 +732,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -818,7 +849,7 @@ public partial class ChannelsClient : IChannelsClient
     }
 
     private async Task<WithRawResponse<Channel>> ConnectChatAsyncCore(
-        ConnectChatChannelsRequest request,
+        ConnectChat request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -837,14 +868,10 @@ public partial class ChannelsClient : IChannelsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channels/chats",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/channels/chats",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -894,6 +921,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1019,8 +1058,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/websites/sign-in/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/websites/sign-in/{0}",
                         ValueConvert.ToPathParameterString(request.Platform)
                     ),
                     Body = request,
@@ -1076,6 +1114,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1201,8 +1251,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/websites/sign-in/{1}/callback",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/websites/sign-in/{0}/callback",
                         ValueConvert.ToPathParameterString(request.Platform)
                     ),
                     Body = request,
@@ -1258,6 +1307,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1383,8 +1444,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/connect/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/connect/{0}",
                         ValueConvert.ToPathParameterString(request.Platform)
                     ),
                     Body = request,
@@ -1440,6 +1500,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1565,8 +1637,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/connect/{1}/callback",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/connect/{0}/callback",
                         ValueConvert.ToPathParameterString(request.Platform)
                     ),
                     Body = request,
@@ -1622,6 +1693,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1747,8 +1830,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/connect/{1}/accounts",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/connect/{0}/accounts",
                         ValueConvert.ToPathParameterString(request.Platform)
                     ),
                     Body = request,
@@ -1804,6 +1886,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1931,8 +2025,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/reconnect",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/reconnect",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -1986,6 +2079,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2099,8 +2204,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -2127,6 +2231,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2216,8 +2332,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     Body = request,
@@ -2273,6 +2388,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2362,8 +2489,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/disable",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/disable",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -2417,6 +2543,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2506,8 +2644,7 @@ public partial class ChannelsClient : IChannelsClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/channels/{1}/enable",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channels/{0}/enable",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -2561,6 +2698,18 @@ public partial class ChannelsClient : IChannelsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -2633,16 +2782,15 @@ public partial class ChannelsClient : IChannelsClient
     /// Lists the channels connected to the workspace, oldest first. Their tokens are never shown. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.ListAsync(new ListChannelsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Channels.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<Channel>> ListAsync(
-        ListChannelsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<Channel>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -2650,7 +2798,7 @@ public partial class ChannelsClient : IChannelsClient
     /// Lists the workspace's channels a page at a time, oldest first: 50 unless `limit` (at most 100) says otherwise. Every filter given must hold: `platform`, `status` (`active`, `refreshNeeded` or `disabled`) and `q`, text the channel's handle, the name its platform shows or the name the workspace gave it holds, whatever its case. `counts` says how many channels the platform and text match in each status, whatever the status asked for. Pass the page's `nextCursor` as `cursor`, with the same filters, for the next page; a cursor no page gave is a bad request. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.FindAsync(new FindChannelsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Channels.FindAsync(new FindChannelsRequest());
     /// </code></example>
     public WithRawResponseTask<ChannelPage> FindAsync(
         FindChannelsRequest request,
@@ -2667,16 +2815,15 @@ public partial class ChannelsClient : IChannelsClient
     /// Lists the platforms this server can connect accounts of, in Peal's order. A platform that needs a setting the server lacks, such as an app registered on LinkedIn, X or Meta or a Google OAuth client, is left out. `platforms` are those with a sign-in page; the chats, which connect with a secret (connectChat), are in `chats`, and the websites in `sites`. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.PlatformsAsync(new PlatformsChannelsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Channels.PlatformsAsync();
     /// </code></example>
     public WithRawResponseTask<ConnectablePlatforms> PlatformsAsync(
-        PlatformsChannelsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<ConnectablePlatforms>(
-            PlatformsAsyncCore(request, options, cancellationToken)
+            PlatformsAsyncCore(options, cancellationToken)
         );
     }
 
@@ -2687,7 +2834,6 @@ public partial class ChannelsClient : IChannelsClient
     /// await client.Channels.ConnectSiteAsync(
     ///     new ConnectSite
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Address = "address",
     ///         ApplicationPassword = "applicationPassword",
     ///         Platform = SitePlatform.Wordpress,
@@ -2711,12 +2857,7 @@ public partial class ChannelsClient : IChannelsClient
     /// </summary>
     /// <example><code>
     /// await client.Channels.ConnectSiteWithKeyAsync(
-    ///     new ConnectSiteWithKey
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ApiKey = "apiKey",
-    ///         Platform = KeySitePlatform.Devto,
-    ///     }
+    ///     new ConnectSiteWithKey { ApiKey = "apiKey", Platform = KeySitePlatform.Devto }
     /// );
     /// </code></example>
     public WithRawResponseTask<Channel> ConnectSiteWithKeyAsync(
@@ -2735,17 +2876,11 @@ public partial class ChannelsClient : IChannelsClient
     /// </summary>
     /// <example><code>
     /// await client.Channels.ConnectChatAsync(
-    ///     new ConnectChatChannelsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new ConnectChat(
-    ///             new ConnectChat.Discord(new ConnectDiscordChat { WebhookUrl = "webhookUrl" })
-    ///         ),
-    ///     }
+    ///     new ConnectChat(new ConnectChat.Discord(new ConnectDiscordChat { WebhookUrl = "webhookUrl" }))
     /// );
     /// </code></example>
     public WithRawResponseTask<Channel> ConnectChatAsync(
-        ConnectChatChannelsRequest request,
+        ConnectChat request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -2760,7 +2895,7 @@ public partial class ChannelsClient : IChannelsClient
     /// </summary>
     /// <example><code>
     /// await client.Channels.StartSiteSignInAsync(
-    ///     new StartSiteSignIn { WorkspaceId = "workspaceId", Platform = OAuthSitePlatform.WordpressCom }
+    ///     new StartSiteSignIn { Platform = OAuthSitePlatform.WordpressCom }
     /// );
     /// </code></example>
     public WithRawResponseTask<Authorization> StartSiteSignInAsync(
@@ -2779,12 +2914,7 @@ public partial class ChannelsClient : IChannelsClient
     /// </summary>
     /// <example><code>
     /// await client.Channels.CompleteSiteSignInAsync(
-    ///     new SiteSignInCallback
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Platform = OAuthSitePlatform.WordpressCom,
-    ///         State = "state",
-    ///     }
+    ///     new SiteSignInCallback { Platform = OAuthSitePlatform.WordpressCom, State = "state" }
     /// );
     /// </code></example>
     public WithRawResponseTask<Channel> CompleteSiteSignInAsync(
@@ -2802,9 +2932,7 @@ public partial class ChannelsClient : IChannelsClient
     /// Starts connecting an account of the platform: answers with the platform's sign-in page, where the browser goes next. For Instagram, `connection` picks Instagram Login (the professional account itself, no Facebook Page needed), Facebook Login (the accounts linked to the caller's Pages) or Unified login (`unifiedLogin`: the accounts a business portfolio shares, signing in with Instagram or Facebook, no Facebook Page needed); without it, the server's preferred way. The connection is tied to the caller and the workspace, and must be completed within 15 minutes. On a server that bills, a workspace whose plan allows no more channels gets PlanLimitReached, and an X account needs a payment method on per-account pricing, as X's calls are billed at X's rates (UsageAllowanceReached `xApi`, `paymentMethodRequired` without one). Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.ConnectAsync(
-    ///     new ConnectChannel { WorkspaceId = "workspaceId", Platform = Platform.X }
-    /// );
+    /// await client.Channels.ConnectAsync(new ConnectChannel { Platform = Platform.X });
     /// </code></example>
     public WithRawResponseTask<Authorization> ConnectAsync(
         ConnectChannel request,
@@ -2822,12 +2950,7 @@ public partial class ChannelsClient : IChannelsClient
     /// </summary>
     /// <example><code>
     /// await client.Channels.CompleteConnectAsync(
-    ///     new ConnectCallback
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Platform = Platform.X,
-    ///         State = "state",
-    ///     }
+    ///     new ConnectCallback { Platform = Platform.X, State = "state" }
     /// );
     /// </code></example>
     public WithRawResponseTask<ConnectOutcome> CompleteConnectAsync(
@@ -2848,7 +2971,6 @@ public partial class ChannelsClient : IChannelsClient
     /// await client.Channels.ChooseAccountsAsync(
     ///     new ChooseAccounts
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Platform = Platform.X,
     ///         AccountIds = new List&lt;string&gt;() { "accountIds" },
     ///         Selection = "selection",
@@ -2870,9 +2992,7 @@ public partial class ChannelsClient : IChannelsClient
     /// Starts reconnecting a channel whose token stopped working or is about to: answers with the platform's sign-in page. Completing it must sign in to the same account. A channel the workspace has takes no room in its plan, so no plan limit refuses it. With `messages=true`, the sign-in also asks for the account's direct messages where the platform asks for them apart: on Bluesky, the chat methods' permissions; on a Facebook Page or an Instagram account, Meta's messaging permissions, where the server reads their messages. Turning a channel's messages on needs them (`setChannelMessages` answers 409 `InboxActionUnavailable`, `reconnect`, until they are granted). A reconnect of a Bluesky channel that granted them asks them again, so its messages stay readable. With `reposts=true`, a Bluesky sign-in also asks to repost the account's own posts, which a follow-up rule that reposts there needs (its channel shows `reconnect` until it is granted); a reconnect of a channel that granted it asks it again. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.ReconnectAsync(
-    ///     new ReconnectChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.Channels.ReconnectAsync(new ReconnectChannelsRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask<Authorization> ReconnectAsync(
         ReconnectChannelsRequest request,
@@ -2889,9 +3009,7 @@ public partial class ChannelsClient : IChannelsClient
     /// Disconnects a channel from the workspace: the channel and the tokens Peal holds for it are deleted, and nothing more is posted on it. Needs channel:disconnect.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.DisconnectAsync(
-    ///     new DisconnectChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.Channels.DisconnectAsync(new DisconnectChannelsRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask DisconnectAsync(
         DisconnectChannelsRequest request,
@@ -2906,14 +3024,7 @@ public partial class ChannelsClient : IChannelsClient
     /// Gives the channel the name the workspace calls it by (`label`, 60 characters at most, on one line), or takes it back with null. The name is Peal's own: it is shown beside the handle and name the platform gives the account, which stay, and is sent to no platform. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.UpdateAsync(
-    ///     new ChannelUpdate
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ChannelId = "channelId",
-    ///         Label = null,
-    ///     }
-    /// );
+    /// await client.Channels.UpdateAsync(new ChannelUpdate { ChannelId = "channelId", Label = null });
     /// </code></example>
     public WithRawResponseTask<Channel> UpdateAsync(
         ChannelUpdate request,
@@ -2930,9 +3041,7 @@ public partial class ChannelsClient : IChannelsClient
     /// Turns the channel off: nothing goes out on it until it is turned back on. It keeps its connection, its history, its name and its place in the plan's count, and no reconnect reminder is sent meanwhile. A post that reaches its time while the channel is off fails on that channel (`channelDisabled`) and goes out on its others; it is not sent later. A channel already off stays as it is. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.DisableAsync(
-    ///     new DisableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.Channels.DisableAsync(new DisableChannelsRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask<Channel> DisableAsync(
         DisableChannelsRequest request,
@@ -2949,9 +3058,7 @@ public partial class ChannelsClient : IChannelsClient
     /// Turns a channel back on. It posts again at once, or has the status `refreshNeeded` when its token stopped working or ran out while it was off: reconnect the account then. A channel that is on stays as it is. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.Channels.EnableAsync(
-    ///     new EnableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
-    /// );
+    /// await client.Channels.EnableAsync(new EnableChannelsRequest { ChannelId = "channelId" });
     /// </code></example>
     public WithRawResponseTask<Channel> EnableAsync(
         EnableChannelsRequest request,

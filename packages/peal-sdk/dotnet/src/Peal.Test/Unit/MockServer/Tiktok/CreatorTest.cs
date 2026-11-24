@@ -38,7 +38,7 @@ public class CreatorTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/tiktok-creator")
+                    .WithPath("/api/v1/channels/channelId/tiktok-creator")
                     .UsingGet()
             )
             .RespondWith(
@@ -49,7 +49,7 @@ public class CreatorTest : BaseMockServerTest
             );
 
         var response = await Client.Tiktok.CreatorAsync(
-            new CreatorTiktokRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new CreatorTiktokRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -82,7 +82,7 @@ public class CreatorTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/tiktok-creator")
+                    .WithPath("/api/v1/channels/channelId/tiktok-creator")
                     .UsingGet()
             )
             .RespondWith(
@@ -93,7 +93,7 @@ public class CreatorTest : BaseMockServerTest
             );
 
         var response = await Client.Tiktok.CreatorAsync(
-            new CreatorTiktokRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new CreatorTiktokRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

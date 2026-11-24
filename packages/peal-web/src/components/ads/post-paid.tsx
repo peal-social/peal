@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AdAccount, Boost } from "peal-contract";
 import {
   AlertDialog,
@@ -79,7 +80,8 @@ const BoostControls = ({
 
     startTransition(async () => {
       const exit = await send({
-        params: { boostId: boost.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { boostId: boost.id },
         reactivityKeys: adsChanged(workspaceId),
       });
 

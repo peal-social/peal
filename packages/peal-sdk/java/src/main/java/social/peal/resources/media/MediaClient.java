@@ -38,192 +38,182 @@ public class MediaClient {
     /**
      * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
-    public MediaPage list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public MediaPage list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
-    public MediaPage list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
+    public MediaPage list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
-    public MediaPage list(String workspaceId, ListMediaRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
+    public MediaPage list(ListMediaRequest request) {
+        return this.rawClient.list(request).body();
     }
 
     /**
      * Lists the workspace's media, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>kind</code> (<code>image</code>, <code>video</code>, <code>document</code> or <code>audio</code>), and <code>q</code>, text the file's name or its description holds, whatever its case (a file added before Peal kept names is found by its description only). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters, for the next one. Needs media:read.
      */
-    public MediaPage list(String workspaceId, ListMediaRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public MediaPage list(ListMediaRequest request, RequestOptions requestOptions) {
+        return this.rawClient.list(request, requestOptions).body();
     }
 
     /**
      * Records pending media and signs the upload of its file: one PUT for an image or a video up to 16 MiB, one PUT per part for a larger video. Send the file with them, then complete the upload. Give <code>fileName</code>, what the file is called on the device, so members find it in the library by its name. The requests only take the declared size and content type. On a server that bills, the declared size must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public PreparedUpload create(String workspaceId, NewUpload request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public PreparedUpload create(NewUpload request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Records pending media and signs the upload of its file: one PUT for an image or a video up to 16 MiB, one PUT per part for a larger video. Send the file with them, then complete the upload. Give <code>fileName</code>, what the file is called on the device, so members find it in the library by its name. The requests only take the declared size and content type. On a server that bills, the declared size must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public PreparedUpload create(String workspaceId, NewUpload request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public PreparedUpload create(NewUpload request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Fetches a file from a public address, stores it as media of the workspace and probes it, as completing an upload does: the answer is the media, ready, or uploaded with why it could not be probed. The media is named after the last segment of the address's path, once redirects are followed, never its query. The server fetches it itself, from HTTPS URLs on the default port whose host resolves to public addresses only, without credentials or cookies, following at most three redirects, each checked the same way (MediaSourceNotPublic otherwise). The file's type is read from its first bytes, not from what the host says: JPEG, PNG, GIF and WebP images up to 16 MiB, MP4 and QuickTime videos up to 1 GiB (UnsupportedMediaType, MediaTooLarge). It must arrive within 90 seconds (MediaSourceUnreachable <code>tooSlow</code>): upload larger or slower files instead. On a server that bills, it must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). A workspace imports two files at once, and the server eight (429 MediaImportBusy: ask again in a moment). Needs media:upload.
      */
-    public Media importFromUrl(String workspaceId, MediaImport request) {
-        return this.rawClient.importFromUrl(workspaceId, request).body();
+    public Media importFromUrl(MediaImport request) {
+        return this.rawClient.importFromUrl(request).body();
     }
 
     /**
      * Fetches a file from a public address, stores it as media of the workspace and probes it, as completing an upload does: the answer is the media, ready, or uploaded with why it could not be probed. The media is named after the last segment of the address's path, once redirects are followed, never its query. The server fetches it itself, from HTTPS URLs on the default port whose host resolves to public addresses only, without credentials or cookies, following at most three redirects, each checked the same way (MediaSourceNotPublic otherwise). The file's type is read from its first bytes, not from what the host says: JPEG, PNG, GIF and WebP images up to 16 MiB, MP4 and QuickTime videos up to 1 GiB (UnsupportedMediaType, MediaTooLarge). It must arrive within 90 seconds (MediaSourceUnreachable <code>tooSlow</code>): upload larger or slower files instead. On a server that bills, it must fit the plan's media storage with what the workspace stores (PlanLimitReached <code>mediaStorage</code>). A workspace imports two files at once, and the server eight (429 MediaImportBusy: ask again in a moment). Needs media:upload.
      */
-    public Media importFromUrl(String workspaceId, MediaImport request, RequestOptions requestOptions) {
-        return this.rawClient
-                .importFromUrl(workspaceId, request, requestOptions)
-                .body();
+    public Media importFromUrl(MediaImport request, RequestOptions requestOptions) {
+        return this.rawClient.importFromUrl(request, requestOptions).body();
     }
 
     /**
      * Shows one of the workspace's media. Needs media:read.
      */
-    public Media get(String workspaceId, String mediaId) {
-        return this.rawClient.get(workspaceId, mediaId).body();
+    public Media get(String mediaId) {
+        return this.rawClient.get(mediaId).body();
     }
 
     /**
      * Shows one of the workspace's media. Needs media:read.
      */
-    public Media get(String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, mediaId, requestOptions).body();
+    public Media get(String mediaId, RequestOptions requestOptions) {
+        return this.rawClient.get(mediaId, requestOptions).body();
     }
 
     /**
      * Shows one of the workspace's media. Needs media:read.
      */
-    public Media get(String workspaceId, String mediaId, GetMediaRequest request) {
-        return this.rawClient.get(workspaceId, mediaId, request).body();
+    public Media get(String mediaId, GetMediaRequest request) {
+        return this.rawClient.get(mediaId, request).body();
     }
 
     /**
      * Shows one of the workspace's media. Needs media:read.
      */
-    public Media get(String workspaceId, String mediaId, GetMediaRequest request, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, mediaId, request, requestOptions).body();
+    public Media get(String mediaId, GetMediaRequest request, RequestOptions requestOptions) {
+        return this.rawClient.get(mediaId, request, requestOptions).body();
     }
 
     /**
      * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
      */
-    public void delete(String workspaceId, String mediaId) {
-        this.rawClient.delete(workspaceId, mediaId).body();
+    public void delete(String mediaId) {
+        this.rawClient.delete(mediaId).body();
     }
 
     /**
      * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
      */
-    public void delete(String workspaceId, String mediaId, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, mediaId, requestOptions).body();
+    public void delete(String mediaId, RequestOptions requestOptions) {
+        this.rawClient.delete(mediaId, requestOptions).body();
     }
 
     /**
      * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
      */
-    public void delete(String workspaceId, String mediaId, DeleteMediaRequest request) {
-        this.rawClient.delete(workspaceId, mediaId, request).body();
+    public void delete(String mediaId, DeleteMediaRequest request) {
+        this.rawClient.delete(mediaId, request).body();
     }
 
     /**
      * Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (<code>MediaInUse</code>, listing them): take them back to draft first. Needs media:delete.
      */
-    public void delete(String workspaceId, String mediaId, DeleteMediaRequest request, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, mediaId, request, requestOptions).body();
+    public void delete(String mediaId, DeleteMediaRequest request, RequestOptions requestOptions) {
+        this.rawClient.delete(mediaId, request, requestOptions).body();
     }
 
     /**
      * Sets the media's description, which platforms show to people who cannot see it. It can be written while the file uploads. Needs media:upload.
      */
-    public Media describe(String workspaceId, String mediaId, MediaDescription request) {
-        return this.rawClient.describe(workspaceId, mediaId, request).body();
+    public Media describe(String mediaId, MediaDescription request) {
+        return this.rawClient.describe(mediaId, request).body();
     }
 
     /**
      * Sets the media's description, which platforms show to people who cannot see it. It can be written while the file uploads. Needs media:upload.
      */
-    public Media describe(String workspaceId, String mediaId, MediaDescription request, RequestOptions requestOptions) {
-        return this.rawClient
-                .describe(workspaceId, mediaId, request, requestOptions)
-                .body();
+    public Media describe(String mediaId, MediaDescription request, RequestOptions requestOptions) {
+        return this.rawClient.describe(mediaId, request, requestOptions).body();
     }
 
     /**
      * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public Media complete(String workspaceId, String mediaId) {
-        return this.rawClient.complete(workspaceId, mediaId).body();
+    public Media complete(String mediaId) {
+        return this.rawClient.complete(mediaId).body();
     }
 
     /**
      * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public Media complete(String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return this.rawClient.complete(workspaceId, mediaId, requestOptions).body();
+    public Media complete(String mediaId, RequestOptions requestOptions) {
+        return this.rawClient.complete(mediaId, requestOptions).body();
     }
 
     /**
      * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public Media complete(String workspaceId, String mediaId, CompleteMediaRequest request) {
-        return this.rawClient.complete(workspaceId, mediaId, request).body();
+    public Media complete(String mediaId, CompleteMediaRequest request) {
+        return this.rawClient.complete(mediaId, request).body();
     }
 
     /**
      * Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (<code>tooLarge</code>, <code>tooManyPages</code>, <code>unreadable</code>), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached <code>mediaStorage</code>). Needs media:upload.
      */
-    public Media complete(
-            String workspaceId, String mediaId, CompleteMediaRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .complete(workspaceId, mediaId, request, requestOptions)
-                .body();
+    public Media complete(String mediaId, CompleteMediaRequest request, RequestOptions requestOptions) {
+        return this.rawClient.complete(mediaId, request, requestOptions).body();
     }
 
     /**
      * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
      */
-    public MediaUsage usage(String workspaceId, String mediaId) {
-        return this.rawClient.usage(workspaceId, mediaId).body();
+    public MediaUsage usage(String mediaId) {
+        return this.rawClient.usage(mediaId).body();
     }
 
     /**
      * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
      */
-    public MediaUsage usage(String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return this.rawClient.usage(workspaceId, mediaId, requestOptions).body();
+    public MediaUsage usage(String mediaId, RequestOptions requestOptions) {
+        return this.rawClient.usage(mediaId, requestOptions).body();
     }
 
     /**
      * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
      */
-    public MediaUsage usage(String workspaceId, String mediaId, UsageMediaRequest request) {
-        return this.rawClient.usage(workspaceId, mediaId, request).body();
+    public MediaUsage usage(String mediaId, UsageMediaRequest request) {
+        return this.rawClient.usage(mediaId, request).body();
     }
 
     /**
      * Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
      */
-    public MediaUsage usage(
-            String workspaceId, String mediaId, UsageMediaRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .usage(workspaceId, mediaId, request, requestOptions)
-                .body();
+    public MediaUsage usage(String mediaId, UsageMediaRequest request, RequestOptions requestOptions) {
+        return this.rawClient.usage(mediaId, request, requestOptions).body();
     }
 }

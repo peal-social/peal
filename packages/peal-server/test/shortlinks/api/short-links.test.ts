@@ -5,7 +5,7 @@ import { ConfigProvider, Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import { TestClock } from "effect/testing";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import { newId } from "#shared/application/ids.ts";
@@ -68,7 +68,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
       const editor = yield* as("editor", workspaceId);
 
       assert.deepStrictEqual(
-        yield* editor.shortLinks.status({ params: { workspaceId } }),
+        yield* editor.shortLinks.status({ headers: forWorkspace(workspaceId) }),
         {
           available: true,
           base,
@@ -78,18 +78,23 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
       );
 
       const refused = yield* editor.shortLinks
-        .setDefault({ params: { workspaceId }, payload: { byDefault: true } })
+        .setDefault({
+          headers: forWorkspace(workspaceId),
+          payload: { byDefault: true },
+        })
         .pipe(Effect.flip);
 
       assert.strictEqual(refused._tag, "Forbidden");
 
       yield* owner.shortLinks.setDefault({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { byDefault: true },
       });
 
       assert.isTrue(
-        (yield* editor.shortLinks.status({ params: { workspaceId } })).byDefault
+        (yield* editor.shortLinks.status({
+          headers: forWorkspace(workspaceId),
+        })).byDefault
       );
     })
   );
@@ -120,7 +125,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         const owner = yield* as("owner", workspaceId);
 
         const page = yield* owner.shortLinks.list({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
           query: { from: "1890-05-01", postId, to: "1890-05-31" },
         });
 
@@ -153,7 +158,8 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         assert(linkB !== undefined);
 
         const one = yield* owner.shortLinks.get({
-          params: { linkId: page.items[1]?.id ?? "", workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { linkId: page.items[1]?.id ?? "" },
           query: { from: "1890-05-09", to: "1890-05-11" },
         });
 
@@ -166,7 +172,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
 
         const tooLong = yield* owner.shortLinks
           .list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: { from: "1890-01-01", to: "1890-05-31" },
           })
           .pipe(Effect.flip);
@@ -177,7 +183,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         // answers it; a cursor that is not one stays refused.
         for (const query of [{ channelId: "nope" }, { postId: "nope" }]) {
           const none = yield* owner.shortLinks.list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: { ...query, from: "1890-05-01", to: "1890-05-31" },
           });
 
@@ -186,14 +192,17 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         }
 
         const badCursor = yield* owner.shortLinks
-          .list({ params: { workspaceId }, query: { cursor: "nope" } })
+          .list({
+            headers: forWorkspace(workspaceId),
+            query: { cursor: "nope" },
+          })
           .pipe(Effect.flip);
 
         assert.strictEqual(badCursor._tag, "BadRequest");
 
         const badRange = yield* owner.shortLinks
           .list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: { channelId: "nope", from: "1890-01-01", to: "1890-05-31" },
           })
           .pipe(Effect.flip);
@@ -204,7 +213,11 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         const other = yield* as("owner", yield* freshWorkspace);
 
         const missing = yield* other.shortLinks
-          .get({ params: { linkId: linkB.id, workspaceId }, query: {} })
+          .get({
+            headers: forWorkspace(workspaceId),
+            params: { linkId: linkB.id },
+            query: {},
+          })
           .pipe(Effect.flip);
 
         assert.strictEqual(missing._tag, "ShortLinkNotFound");
@@ -213,7 +226,7 @@ layer(ShortLinksTest)("the short links' endpoints", (it) => {
         const postsOnly = yield* clientAs(memberOf(workspaceId, ["post:read"]));
 
         const denied = yield* postsOnly.shortLinks
-          .list({ params: { workspaceId }, query: {} })
+          .list({ headers: forWorkspace(workspaceId), query: {} })
           .pipe(Effect.flip);
 
         assert.strictEqual(denied._tag, "Forbidden");

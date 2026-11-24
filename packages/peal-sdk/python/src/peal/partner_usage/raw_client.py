@@ -54,7 +54,7 @@ class RawPartnerUsageClient:
             PartnerUsageReport
         """
         _response = self._client_wrapper.httpx_client.request(
-            "api/partner/usage",
+            "api/v1/partner/usage",
             method="GET",
             params={
                 "before": before,
@@ -163,7 +163,7 @@ class AsyncRawPartnerUsageClient:
             PartnerUsageReport
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "api/partner/usage",
+            "api/v1/partner/usage",
             method="GET",
             params={
                 "before": before,

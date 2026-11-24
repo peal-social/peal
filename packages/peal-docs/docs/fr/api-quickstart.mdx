@@ -23,11 +23,11 @@ Les identifiants de cette page sont inventés, les vôtres seront donc différen
 Ajoute l’API de Peal à ce projet, en suivant le démarrage rapide de l’API de Peal.
 
 1. Lis la clé d’API dans la variable d’environnement `PEAL_API_KEY`. Ne l’écris jamais en dur et ne la commite jamais.
-2. Appelle `GET /api/credential` et garde `workspace.id`.
-3. Liste les canaux avec `GET /api/workspaces/{workspaceId}/channels` et demande-moi sur lesquels publier.
-4. Vérifie la publication avec `POST /api/workspaces/{workspaceId}/posts/validate`. Si `valid` vaut false, montre-moi chaque violation et arrête-toi.
-5. Envoie le même corps à `POST /api/workspaces/{workspaceId}/posts/send`, avec un en-tête `Idempotency-Key` qui contient un nouvel UUID.
-6. Crée un point de réception de webhooks avec `POST /api/workspaces/{workspaceId}/webhooks` pour `post.published` et `post.failed`, et conserve son secret de signature, qui n’est montré qu’une fois.
+2. Appelle `GET /api/v1/credential` pour vérifier la clé. Il répond l’espace de travail de la clé et ses permissions. La clé agit dans cet espace de travail : aucune requête ne le nomme.
+3. Liste les canaux avec `GET /api/v1/channels` et demande-moi sur lesquels publier.
+4. Vérifie la publication avec `POST /api/v1/posts/validate`. Si `valid` vaut false, montre-moi chaque violation et arrête-toi.
+5. Envoie le même corps à `POST /api/v1/posts/send`, avec un en-tête `Idempotency-Key` qui contient un nouvel UUID.
+6. Crée un point de réception de webhooks avec `POST /api/v1/webhooks` pour `post.published` et `post.failed`, et conserve son secret de signature, qui n’est montré qu’une fois.
 
 Ce qui part atteint le public des plateformes et ne peut plus être repris depuis Peal. Montre-moi la publication et attends mon accord avant de l’envoyer. Arrête-toi pour me demander si un appel renvoie une erreur.
 
@@ -125,7 +125,7 @@ using Peal;
 
 var peal = new PealClient(
     Environment.GetEnvironmentVariable("PEAL_API_KEY")!,
-    new ClientOptions { BaseUrl = "https://api.example.com" }
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
 );
 ```
 
@@ -152,7 +152,7 @@ export PEAL_API_KEY="peal_…"
 
 ## 2. Vérifier la clé [#credential]
 
-`GET /api/credential` vous dit qui est la clé et ce qu’elle peut faire, sans lire aucune donnée. Copiez son `workspace.id` : toutes les autres requêtes nomment cet espace de travail.
+`GET /api/v1/credential` vous dit qui est la clé et ce qu’elle peut faire, sans lire aucune donnée. Son `workspace.id` est l’espace de travail auquel la clé appartient. Toutes les requêtes de la clé agissent dans celui-ci : aucune n’envoie son identifiant ([L’espace de travail d’une requête](/developers/conventions#workspace)).
 
 <CodeGroup>
 
@@ -162,8 +162,6 @@ const credential = await peal.credential.get();
 if (credential._tag === "apiKey") {
   console.log(credential.workspace.id, credential.permissions);
 }
-
-const workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
 ```
 
 ```python Python
@@ -172,7 +170,6 @@ credential = peal.credential.get()
 if credential.type == "apiKey":
     print(credential.workspace.id, credential.permissions)
 
-workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 ```
 
 ```go Go
@@ -185,7 +182,6 @@ if credential.APIKey != nil {
 	fmt.Println(credential.APIKey.Workspace.ID, credential.APIKey.Permissions)
 }
 
-workspaceID := "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 ```
 
 ```ruby Ruby
@@ -194,7 +190,6 @@ credential = peal.credential.get
 
 puts credential[:workspace][:id] if credential[:_tag] == "apiKey"
 
-workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 ```
 
 ```java Java
@@ -205,7 +200,6 @@ Credential credential = peal.credential().get();
 credential.getApiKey().ifPresent(key ->
     System.out.println(key.getWorkspace().getId() + " " + key.getPermissions()));
 
-String workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
 ```
 
 ```php PHP
@@ -215,7 +209,6 @@ if ($credential->isApiKey()) {
     echo $credential->asApiKey()->workspace->id, PHP_EOL;
 }
 
-$workspaceId = '7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90';
 ```
 
 ```csharp .NET
@@ -227,7 +220,6 @@ if (credential.IsApiKey)
     Console.WriteLine($"{key.Workspace.Id} {string.Join(", ", key.Permissions)}");
 }
 
-var workspaceId = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
 ```
 
 ```rust Rust
@@ -237,14 +229,11 @@ if let Credential::ApiKey { workspace, permissions, .. } = &credential {
     println!("{} {:?}", workspace.id, permissions);
 }
 
-let workspace_id = "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90";
 ```
 
 ```bash curl
-curl https://api.example.com/api/credential \
+curl https://api.example.com/api/v1/credential \
   -H "Authorization: Bearer $PEAL_API_KEY"
-
-export WORKSPACE_ID="7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
 ```
 
 ```sh CLI
@@ -262,42 +251,42 @@ Un canal est un compte sur lequel l’espace de travail publie. Connectez-en un 
 <CodeGroup>
 
 ```ts Node.js
-const channels = await peal.channels.list({ workspaceId });
+const channels = await peal.channels.list();
 ```
 
 ```python Python
-channels = peal.channels.list(workspace_id=workspace_id)
+channels = peal.channels.list()
 ```
 
 ```go Go
-channels, err := client.Channels.List(ctx, &peal.ListChannelsRequest{WorkspaceID: workspaceID})
+channels, err := client.Channels.List(ctx)
 ```
 
 ```ruby Ruby
-channels = peal.channels.list(workspace_id: workspace_id)
+channels = peal.channels.list
 ```
 
 ```java Java
 import java.util.List;
 import social.peal.types.Channel;
 
-List<Channel> channels = peal.channels().list(workspaceId);
+List<Channel> channels = peal.channels().list();
 ```
 
 ```php PHP
-$channels = $peal->channels->list($workspaceId);
+$channels = $peal->channels->list();
 ```
 
 ```csharp .NET
-var channels = await peal.Channels.ListAsync(new ListChannelsRequest { WorkspaceId = workspaceId });
+var channels = await peal.Channels.ListAsync();
 ```
 
 ```rust Rust
-let channels = peal.channels.list(workspace_id, None).await?;
+let channels = peal.channels.list(None).await?;
 ```
 
 ```bash curl
-curl https://api.example.com/api/workspaces/$WORKSPACE_ID/channels \
+curl https://api.example.com/api/v1/channels \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -315,7 +304,6 @@ peal channels list
 
 ```ts Node.js
 const post = {
-  workspaceId,
   channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
   content: { text: "Bonjour depuis l’API", media: [], overrides: [] },
   when: {
@@ -332,7 +320,6 @@ const check = await peal.posts.validate(post);
 from peal import PostContent, PostTiming_At
 
 post = dict(
-    workspace_id=workspace_id,
     channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
     content=PostContent(text="Bonjour depuis l’API", media=[], overrides=[]),
     when=PostTiming_At(at="2026-11-16T08:00:00Z", time_zone="Europe/Paris"),
@@ -353,16 +340,14 @@ when := &peal.PostTiming{
 }
 
 check, err := client.Posts.Validate(ctx, &peal.PostToValidate{
-	WorkspaceID: workspaceID,
-	ChannelIDs:  channelIDs,
-	Content:     content,
-	When:        when,
+	ChannelIDs: channelIDs,
+	Content:    content,
+	When:       when,
 })
 ```
 
 ```ruby Ruby
 post = {
-  workspace_id: workspace_id,
   channel_ids: ["0190f3a0-0000-7000-8000-00000000c001"],
   content: { text: "Bonjour depuis l’API", media: [], overrides: [] },
   when: { _tag: "at", at: "2026-11-16T08:00:00Z", timeZone: "Europe/Paris" }
@@ -385,7 +370,7 @@ PostTiming when = PostTiming.at(PostTimingAt.builder()
     .timeZone("Europe/Paris")
     .build());
 
-PostValidation check = peal.posts().validate(workspaceId, PostToValidate.builder()
+PostValidation check = peal.posts().validate(PostToValidate.builder()
     .content(content)
     .channelIds(channelIds)
     .when(when)
@@ -405,7 +390,7 @@ $when = PostTiming::at(new PostTimingAt([
     'timeZone' => 'Europe/Paris',
 ]));
 
-$check = $peal->posts->validate($workspaceId, new PostToValidate([
+$check = $peal->posts->validate(new PostToValidate([
     'channelIds' => $channelIds,
     'content' => $content,
     'when' => $when,
@@ -428,7 +413,6 @@ var when = new PostTiming(new PostTiming.At(new PostTimingAt
 
 var check = await peal.Posts.ValidateAsync(new PostToValidate
 {
-    WorkspaceId = workspaceId,
     ChannelIds = channelIds,
     Content = content,
     When = when,
@@ -446,7 +430,6 @@ let when = PostTiming::at("2026-11-16T08:00:00Z".to_string(), "Europe/Paris".to_
 let check = peal
     .posts
     .validate(
-        workspace_id,
         &PostToValidate::builder()
             .channel_ids(channel_ids.clone())
             .content(content.clone())
@@ -458,7 +441,7 @@ let check = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/validate \
+curl -X POST https://api.example.com/api/v1/posts/validate \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -492,7 +475,6 @@ sent = peal.posts.send(**post, idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f
 
 ```go Go
 sent, err := client.Posts.Send(ctx, &peal.NewPost{
-	WorkspaceID:    workspaceID,
 	ChannelIDs:     channelIDs,
 	Content:        content,
 	When:           when,
@@ -508,7 +490,7 @@ sent = peal.posts.send_(**post, idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e
 import social.peal.resources.posts.requests.NewPost;
 import social.peal.types.Post;
 
-Post sent = peal.posts().send(workspaceId, NewPost.builder()
+Post sent = peal.posts().send(NewPost.builder()
     .content(content)
     .when(when)
     .channelIds(channelIds)
@@ -519,7 +501,7 @@ Post sent = peal.posts().send(workspaceId, NewPost.builder()
 ```php PHP
 use Peal\Posts\Requests\NewPost;
 
-$sent = $peal->posts->send($workspaceId, new NewPost([
+$sent = $peal->posts->send(new NewPost([
     'channelIds' => $channelIds,
     'content' => $content,
     'when' => $when,
@@ -530,7 +512,6 @@ $sent = $peal->posts->send($workspaceId, new NewPost([
 ```csharp .NET
 var sent = await peal.Posts.SendAsync(new NewPost
 {
-    WorkspaceId = workspaceId,
     ChannelIds = channelIds,
     Content = content,
     When = when,
@@ -544,7 +525,6 @@ var sent = await peal.Posts.SendAsync(new NewPost
 let sent = peal
     .posts
     .send(
-        workspace_id,
         &NewPost::builder()
             .channel_ids(channel_ids)
             .content(content)
@@ -559,7 +539,7 @@ let sent = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send \
+curl -X POST https://api.example.com/api/v1/posts/send \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90" \
@@ -594,7 +574,6 @@ Plutôt que de demander, laissez Peal prévenir votre serveur. Créez un point d
 
 ```ts Node.js
 const endpoint = await peal.webhooks.create({
-  workspaceId,
   url: "https://example.com/peal-events",
   eventTypes: ["post.published", "post.failed"],
 });
@@ -602,7 +581,6 @@ const endpoint = await peal.webhooks.create({
 
 ```python Python
 endpoint = peal.webhooks.create(
-    workspace_id=workspace_id,
     url="https://example.com/peal-events",
     event_types=["post.published", "post.failed"],
 )
@@ -610,8 +588,7 @@ endpoint = peal.webhooks.create(
 
 ```go Go
 endpoint, err := client.Webhooks.Create(ctx, &peal.NewWebhookEndpoint{
-	WorkspaceID: workspaceID,
-	URL:         "https://example.com/peal-events",
+	URL: "https://example.com/peal-events",
 	EventTypes: []peal.SubscribableWebhookEventType{
 		peal.SubscribableWebhookEventTypePostPublished,
 		peal.SubscribableWebhookEventTypePostFailed,
@@ -621,7 +598,6 @@ endpoint, err := client.Webhooks.Create(ctx, &peal.NewWebhookEndpoint{
 
 ```ruby Ruby
 endpoint = peal.webhooks.create(
-  workspace_id: workspace_id,
   url: "https://example.com/peal-events",
   event_types: ["post.published", "post.failed"]
 )
@@ -632,7 +608,7 @@ import social.peal.resources.webhooks.requests.NewWebhookEndpoint;
 import social.peal.types.SubscribableWebhookEventType;
 import social.peal.types.WebhookEndpointSecret;
 
-WebhookEndpointSecret endpoint = peal.webhooks().create(workspaceId, NewWebhookEndpoint.builder()
+WebhookEndpointSecret endpoint = peal.webhooks().create(NewWebhookEndpoint.builder()
     .url("https://example.com/peal-events")
     .eventTypes(List.of(
         SubscribableWebhookEventType.POST_PUBLISHED,
@@ -644,7 +620,7 @@ WebhookEndpointSecret endpoint = peal.webhooks().create(workspaceId, NewWebhookE
 use Peal\Types\SubscribableWebhookEventType;
 use Peal\Webhooks\Requests\NewWebhookEndpoint;
 
-$endpoint = $peal->webhooks->create($workspaceId, new NewWebhookEndpoint([
+$endpoint = $peal->webhooks->create(new NewWebhookEndpoint([
     'url' => 'https://example.com/peal-events',
     'eventTypes' => [
         SubscribableWebhookEventType::PostPublished->value,
@@ -656,7 +632,6 @@ $endpoint = $peal->webhooks->create($workspaceId, new NewWebhookEndpoint([
 ```csharp .NET
 var endpoint = await peal.Webhooks.CreateAsync(new NewWebhookEndpoint
 {
-    WorkspaceId = workspaceId,
     Url = "https://example.com/peal-events",
     EventTypes = new List<SubscribableWebhookEventType>
     {
@@ -670,7 +645,6 @@ var endpoint = await peal.Webhooks.CreateAsync(new NewWebhookEndpoint
 let endpoint = peal
     .webhooks
     .create(
-        workspace_id,
         &NewWebhookEndpoint::builder()
             .url("https://example.com/peal-events")
             .event_types(vec![
@@ -684,7 +658,7 @@ let endpoint = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/webhooks \
+curl -X POST https://api.example.com/api/v1/webhooks \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{

@@ -5,7 +5,11 @@ import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { SparklesIcon } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { AssistantToneSchema, TranslationLanguageSchema } from "peal-contract";
+import {
+  AssistantToneSchema,
+  TranslationLanguageSchema,
+  forWorkspace,
+} from "peal-contract";
 import type {
   AssistantAction,
   AssistantStatus,
@@ -203,7 +207,7 @@ const Controls = ({
     setAsked({ action, state: { _tag: "asking" }, text: from });
 
     const exit = await suggest({
-      params: { workspaceId },
+      headers: forWorkspace(workspaceId),
       payload: { action, text: from },
     });
 

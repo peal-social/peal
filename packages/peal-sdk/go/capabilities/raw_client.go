@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) Platforms(
 	ctx context.Context,
-	request *peal.PlatformsCapabilitiesRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.PlatformCapabilities], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) Platforms(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/platforms/capabilities",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/platforms/capabilities"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -89,8 +85,7 @@ func (r *RawClient) Channel(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/channels/%v/capabilities",
-		request.WorkspaceID,
+		baseURL+"/api/v1/channels/%v/capabilities",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(

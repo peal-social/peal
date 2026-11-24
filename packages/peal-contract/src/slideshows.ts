@@ -17,6 +17,7 @@ import { PlanLimitReached } from "./plan-limit-reached.ts";
 import { SlideshowNotFound } from "./slideshow-not-found.ts";
 import { SlideshowRequestRejected } from "./slideshow-request-rejected.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * What a slide video holds: 2 to 10 images, a caption of at most 120
@@ -216,8 +217,6 @@ export const SlideshowsSchema = Schema.Struct({
 
 export type Slideshows = typeof SlideshowsSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
 /**
  * Slide videos composed for the workspace's media library from its own
  * images, captions and voice-over, by the service it chose for
@@ -236,7 +235,8 @@ export class SlideshowsApi extends HttpApiGroup.make("slideshows")
         CompositionAllowanceReached,
         PlanLimitReached,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: SlideshowRequestSchema,
       success: SlideshowSchema.pipe(HttpApiSchema.status(202)),
     }).annotateMerge(
@@ -255,7 +255,8 @@ export class SlideshowsApi extends HttpApiGroup.make("slideshows")
         CompositionAllowanceReached,
         PlanLimitReached,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: EditRenderRequestSchema,
       success: SlideshowSchema.pipe(HttpApiSchema.status(202)),
     }).annotateMerge(
@@ -266,7 +267,8 @@ export class SlideshowsApi extends HttpApiGroup.make("slideshows")
     ),
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: { status: Schema.optionalKey(SlideshowStatusSchema) },
       success: SlideshowsSchema,
     }).annotateMerge(
@@ -277,7 +279,8 @@ export class SlideshowsApi extends HttpApiGroup.make("slideshows")
     ),
     HttpApiEndpoint.get("get", "/:slideshowId", {
       error: [Forbidden, SlideshowNotFound],
-      params: { slideshowId: Schema.String, workspaceId: Schema.String },
+      headers: workspaceHeaders,
+      params: { slideshowId: Schema.String },
       success: SlideshowSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -289,4 +292,4 @@ export class SlideshowsApi extends HttpApiGroup.make("slideshows")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/media/slideshows") {}
+  .prefix("/api/v1/media/slideshows") {}

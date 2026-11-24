@@ -3,7 +3,6 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         approvalId: "approvalId",
  *         subjectHash: "subjectHash",
@@ -11,7 +10,6 @@
  *     }
  */
 export interface ChangesRequest {
-    workspaceId: string;
     postId: string;
     approvalId: string;
     subjectHash: string;

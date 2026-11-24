@@ -6,7 +6,6 @@ public partial interface IApiKeysClient
     /// Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<ApiKey>> ListAsync(
-        ListApiKeysRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

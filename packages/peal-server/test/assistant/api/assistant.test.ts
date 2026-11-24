@@ -9,6 +9,7 @@ import {
   AssistantQuotaExceeded,
   AssistantUnavailable,
   Forbidden,
+  forWorkspace,
 } from "peal-contract";
 import type { Member, SuggestionRequest } from "peal-contract";
 
@@ -55,7 +56,7 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
     Effect.gen(function* suggests() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       yield* FakeModel.use((model) =>
         model.replyWith(
@@ -63,7 +64,7 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
         )
       );
 
-      const before = yield* client.assistant.status({ params });
+      const before = yield* client.assistant.status({ headers });
 
       assert.deepStrictEqual(
         { ...before, resetsAt: DateTime.formatIso(before.resetsAt) },
@@ -122,7 +123,7 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
       );
 
       const suggestion = yield* client.assistant.suggest({
-        params,
+        headers,
         payload: translate,
       });
 
@@ -132,7 +133,7 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
       });
 
       assert.strictEqual(
-        (yield* client.assistant.status({ params })).remaining,
+        (yield* client.assistant.status({ headers })).remaining,
         1
       );
     }).pipe(Effect.provide(assistantTest({ dailyRequests: 2 })))
@@ -148,7 +149,7 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
       );
 
       const suggestion = yield* client.assistant.suggest({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: {
           action: { _tag: "write", language: "fr", platform: "bluesky" },
           text: "Our spring sale starts today.",
@@ -166,12 +167,12 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
     Effect.gen(function* quota() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
-      yield* client.assistant.suggest({ params, payload: translate });
+      yield* client.assistant.suggest({ headers, payload: translate });
 
       const refused = yield* client.assistant
-        .suggest({ params, payload: translate })
+        .suggest({ headers, payload: translate })
         .pipe(Effect.flip);
 
       // With the plan that allows more, and where to order it.
@@ -198,12 +199,12 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
     Effect.gen(function* off() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
-      assert.isFalse((yield* client.assistant.status({ params })).available);
+      assert.isFalse((yield* client.assistant.status({ headers })).available);
 
       const refused = yield* client.assistant
-        .suggest({ params, payload: translate })
+        .suggest({ headers, payload: translate })
         .pipe(Effect.flip);
 
       assert.instanceOf(refused, AssistantUnavailable);
@@ -214,14 +215,14 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
     Effect.gen(function* input() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId);
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const blank = yield* client.assistant
-        .suggest({ params, payload: { ...translate, text: "   " } })
+        .suggest({ headers, payload: { ...translate, text: "   " } })
         .pipe(Effect.flip);
 
       const long = yield* client.assistant
-        .suggest({ params, payload: { ...translate, text: "a".repeat(5001) } })
+        .suggest({ headers, payload: { ...translate, text: "a".repeat(5001) } })
         .pipe(Effect.flip);
 
       assert.deepStrictEqual(
@@ -248,7 +249,7 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
       );
 
       const refused = yield* client.assistant
-        .suggest({ params: { workspaceId }, payload: translate })
+        .suggest({ headers: forWorkspace(workspaceId), payload: translate })
         .pipe(Effect.flip);
 
       assert.instanceOf(refused, AssistantFailed);
@@ -263,14 +264,14 @@ layer(DatabaseTest)("the assistant endpoints", (it) => {
     Effect.gen(function* forbidden() {
       const workspaceId = yield* freshWorkspace;
       const client = yield* as(workspaceId, permissionsFor("viewer"));
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
 
       const status = yield* client.assistant
-        .status({ params })
+        .status({ headers })
         .pipe(Effect.flip);
 
       const suggest = yield* client.assistant
-        .suggest({ params, payload: translate })
+        .suggest({ headers, payload: translate })
         .pipe(Effect.flip);
 
       assert.instanceOf(status, Forbidden);

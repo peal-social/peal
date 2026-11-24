@@ -7,9 +7,6 @@ namespace Peal;
 public record ListActivityRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Actor { get; set; }
 
     [JsonIgnore]

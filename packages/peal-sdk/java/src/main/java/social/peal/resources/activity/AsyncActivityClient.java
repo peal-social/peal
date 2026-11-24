@@ -30,8 +30,8 @@ public class AsyncActivityClient {
     /**
      * Lists the requests that asked to change something in the workspace, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise: who asked (a member or an API key), how they authenticated, the key or the application it came through, the operation, the ids its path named, the status answered and, when it was refused or failed, the error's code. What the web app's settings change through the sign-in service's routes (roles, members, invitations, the subscription) is kept as <code>auth:</code> and the route's path. Requests that only read are not kept, and neither is anything a request or its answer carried. <code>operation</code> keeps one operation (<code>posts.schedule</code>), <code>actor</code> what one member (a user id) or one API key (its id) asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. An event is kept 90 days. Needs activity:read, which owners hold.
      */
-    public CompletableFuture<ActivityPage> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<ActivityPage>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<ActivityPage> list() {
+        CompletableFuture<PealClientHttpResponse<ActivityPage>> rawFuture = this.rawClient.list();
         CompletableFuture<ActivityPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -44,39 +44,37 @@ public class AsyncActivityClient {
     /**
      * Lists the requests that asked to change something in the workspace, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise: who asked (a member or an API key), how they authenticated, the key or the application it came through, the operation, the ids its path named, the status answered and, when it was refused or failed, the error's code. What the web app's settings change through the sign-in service's routes (roles, members, invitations, the subscription) is kept as <code>auth:</code> and the route's path. Requests that only read are not kept, and neither is anything a request or its answer carried. <code>operation</code> keeps one operation (<code>posts.schedule</code>), <code>actor</code> what one member (a user id) or one API key (its id) asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. An event is kept 90 days. Needs activity:read, which owners hold.
      */
-    public CompletableFuture<ActivityPage> list(String workspaceId, RequestOptions requestOptions) {
+    public CompletableFuture<ActivityPage> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<ActivityPage>> rawFuture = this.rawClient.list(requestOptions);
+        CompletableFuture<ActivityPage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the requests that asked to change something in the workspace, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise: who asked (a member or an API key), how they authenticated, the key or the application it came through, the operation, the ids its path named, the status answered and, when it was refused or failed, the error's code. What the web app's settings change through the sign-in service's routes (roles, members, invitations, the subscription) is kept as <code>auth:</code> and the route's path. Requests that only read are not kept, and neither is anything a request or its answer carried. <code>operation</code> keeps one operation (<code>posts.schedule</code>), <code>actor</code> what one member (a user id) or one API key (its id) asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. An event is kept 90 days. Needs activity:read, which owners hold.
+     */
+    public CompletableFuture<ActivityPage> list(ListActivityRequest request) {
+        CompletableFuture<PealClientHttpResponse<ActivityPage>> rawFuture = this.rawClient.list(request);
+        CompletableFuture<ActivityPage> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the requests that asked to change something in the workspace, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise: who asked (a member or an API key), how they authenticated, the key or the application it came through, the operation, the ids its path named, the status answered and, when it was refused or failed, the error's code. What the web app's settings change through the sign-in service's routes (roles, members, invitations, the subscription) is kept as <code>auth:</code> and the route's path. Requests that only read are not kept, and neither is anything a request or its answer carried. <code>operation</code> keeps one operation (<code>posts.schedule</code>), <code>actor</code> what one member (a user id) or one API key (its id) asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. An event is kept 90 days. Needs activity:read, which owners hold.
+     */
+    public CompletableFuture<ActivityPage> list(ListActivityRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ActivityPage>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<ActivityPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the requests that asked to change something in the workspace, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise: who asked (a member or an API key), how they authenticated, the key or the application it came through, the operation, the ids its path named, the status answered and, when it was refused or failed, the error's code. What the web app's settings change through the sign-in service's routes (roles, members, invitations, the subscription) is kept as <code>auth:</code> and the route's path. Requests that only read are not kept, and neither is anything a request or its answer carried. <code>operation</code> keeps one operation (<code>posts.schedule</code>), <code>actor</code> what one member (a user id) or one API key (its id) asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. An event is kept 90 days. Needs activity:read, which owners hold.
-     */
-    public CompletableFuture<ActivityPage> list(String workspaceId, ListActivityRequest request) {
-        CompletableFuture<PealClientHttpResponse<ActivityPage>> rawFuture = this.rawClient.list(workspaceId, request);
-        CompletableFuture<ActivityPage> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the requests that asked to change something in the workspace, newest first, 30 a page unless <code>limit</code> (at most 100) says otherwise: who asked (a member or an API key), how they authenticated, the key or the application it came through, the operation, the ids its path named, the status answered and, when it was refused or failed, the error's code. What the web app's settings change through the sign-in service's routes (roles, members, invitations, the subscription) is kept as <code>auth:</code> and the route's path. Requests that only read are not kept, and neither is anything a request or its answer carried. <code>operation</code> keeps one operation (<code>posts.schedule</code>), <code>actor</code> what one member (a user id) or one API key (its id) asked for. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. An event is kept 90 days. Needs activity:read, which owners hold.
-     */
-    public CompletableFuture<ActivityPage> list(
-            String workspaceId, ListActivityRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ActivityPage>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+                this.rawClient.list(request, requestOptions);
         CompletableFuture<ActivityPage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

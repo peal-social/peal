@@ -13,7 +13,6 @@ public partial class TagsClient : ITagsClient
     }
 
     private async Task<WithRawResponse<IEnumerable<Tag>>> ListAsyncCore(
-        ListTagsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class TagsClient : ITagsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/tags",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/tags",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class TagsClient : ITagsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -155,7 +163,7 @@ public partial class TagsClient : ITagsClient
     }
 
     private async Task<WithRawResponse<Tag>> CreateAsyncCore(
-        CreateTagsRequest request,
+        TagDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -174,14 +182,10 @@ public partial class TagsClient : ITagsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/tags",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/tags",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -231,6 +235,18 @@ public partial class TagsClient : ITagsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -332,8 +348,7 @@ public partial class TagsClient : ITagsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/tags/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/tags/{0}",
                         ValueConvert.ToPathParameterString(request.TagId)
                     ),
                     QueryString = _queryString,
@@ -360,6 +375,18 @@ public partial class TagsClient : ITagsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -449,8 +476,7 @@ public partial class TagsClient : ITagsClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/tags/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/tags/{0}",
                         ValueConvert.ToPathParameterString(request.TagId)
                     ),
                     Body = request.Body,
@@ -506,6 +532,18 @@ public partial class TagsClient : ITagsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -590,33 +628,24 @@ public partial class TagsClient : ITagsClient
     /// Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Tags.ListAsync(new ListTagsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Tags.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<Tag>> ListAsync(
-        ListTagsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask<IEnumerable<Tag>>(
-            ListAsyncCore(request, options, cancellationToken)
-        );
+        return new WithRawResponseTask<IEnumerable<Tag>>(ListAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
     /// </summary>
     /// <example><code>
-    /// await client.Tags.CreateAsync(
-    ///     new CreateTagsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new TagDetails { Colour = TagColour.Gray, Name = "name" },
-    ///     }
-    /// );
+    /// await client.Tags.CreateAsync(new TagDetails { Colour = TagColour.Gray, Name = "name" });
     /// </code></example>
     public WithRawResponseTask<Tag> CreateAsync(
-        CreateTagsRequest request,
+        TagDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -628,9 +657,7 @@ public partial class TagsClient : ITagsClient
     /// Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
     /// </summary>
     /// <example><code>
-    /// await client.Tags.DeleteAsync(
-    ///     new DeleteTagsRequest { WorkspaceId = "workspaceId", TagId = "tagId" }
-    /// );
+    /// await client.Tags.DeleteAsync(new DeleteTagsRequest { TagId = "tagId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteTagsRequest request,
@@ -648,7 +675,6 @@ public partial class TagsClient : ITagsClient
     /// await client.Tags.UpdateAsync(
     ///     new UpdateTagsRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         TagId = "tagId",
     ///         Body = new TagDetails { Colour = TagColour.Gray, Name = "name" },
     ///     }

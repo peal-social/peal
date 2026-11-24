@@ -100,7 +100,7 @@ public class GetReviewThreadTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/threads/threadId")
+                    .WithPath("/api/v1/inbox/reviews/threads/threadId")
                     .UsingGet()
             )
             .RespondWith(
@@ -111,11 +111,7 @@ public class GetReviewThreadTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.GetReviewThreadAsync(
-            new GetReviewThreadInboxReviewsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ThreadId = "threadId",
-            }
+            new GetReviewThreadInboxReviewsRequest { ThreadId = "threadId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -181,7 +177,7 @@ public class GetReviewThreadTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/threads/threadId")
+                    .WithPath("/api/v1/inbox/reviews/threads/threadId")
                     .UsingGet()
             )
             .RespondWith(
@@ -192,11 +188,7 @@ public class GetReviewThreadTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.GetReviewThreadAsync(
-            new GetReviewThreadInboxReviewsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ThreadId = "threadId",
-            }
+            new GetReviewThreadInboxReviewsRequest { ThreadId = "threadId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -11,8 +11,9 @@ import {
   Forbidden,
   SlideshowNotFound,
   SlideshowRequestRejected,
+  CurrentMember,
 } from "peal-contract";
-import type { CurrentMember, Permission, Slideshow } from "peal-contract";
+import type { Permission, Slideshow } from "peal-contract";
 
 import type { Studio } from "./studio.ts";
 
@@ -123,11 +124,11 @@ export const studioSlideshowsOf = (world: SlideshowsWorld) => {
   const groupLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "slideshows", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("assistant:use");
             yield* world.allowed("media:upload");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const said = payload.slides[0]?.caption ?? "";
 
@@ -217,11 +218,11 @@ export const studioSlideshowsOf = (world: SlideshowsWorld) => {
 
             return slideshow;
           }),
-        createFromEdit: ({ params, payload }) =>
+        createFromEdit: ({ payload }) =>
           Effect.gen(function* createFromEdit() {
             yield* world.allowed("assistant:use");
             yield* world.allowed("media:upload");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const given = decodeEditOutput(payload.edit);
 
@@ -263,7 +264,7 @@ export const studioSlideshowsOf = (world: SlideshowsWorld) => {
         get: ({ params }) =>
           Effect.gen(function* get() {
             yield* world.allowed("assistant:use");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const found = yield* read(studio, params.slideshowId);
 
@@ -272,10 +273,10 @@ export const studioSlideshowsOf = (world: SlideshowsWorld) => {
               onSome: Effect.succeed,
             });
           }),
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* world.allowed("assistant:use");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const { slideshows } = yield* Ref.get(studio.state);
 

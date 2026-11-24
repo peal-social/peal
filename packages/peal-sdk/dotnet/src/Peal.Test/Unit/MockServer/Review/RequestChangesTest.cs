@@ -85,7 +85,7 @@ public class RequestChangesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/request-changes")
+                    .WithPath("/api/v1/posts/postId/request-changes")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -100,7 +100,6 @@ public class RequestChangesTest : BaseMockServerTest
         var response = await Client.Review.RequestChangesAsync(
             new ChangesRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 ApprovalId = "approvalId",
                 SubjectHash = "subjectHash",
@@ -176,7 +175,7 @@ public class RequestChangesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/request-changes")
+                    .WithPath("/api/v1/posts/postId/request-changes")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -191,7 +190,6 @@ public class RequestChangesTest : BaseMockServerTest
         var response = await Client.Review.RequestChangesAsync(
             new ChangesRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 ApprovalId = "approvalId",
                 SubjectHash = "subjectHash",

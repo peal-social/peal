@@ -2,12 +2,9 @@
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListFeedsRequest {
-    workspaceId: string;
     cursor?: string;
     limit?: string;
 }

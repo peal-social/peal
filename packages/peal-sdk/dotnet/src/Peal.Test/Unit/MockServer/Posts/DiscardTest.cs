@@ -15,15 +15,13 @@ public class DiscardTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId")
+                    .WithPath("/api/v1/posts/postId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Posts.DiscardAsync(
-                new DiscardPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-            )
+            await Client.Posts.DiscardAsync(new DiscardPostsRequest { PostId = "postId" })
         );
     }
 
@@ -34,15 +32,13 @@ public class DiscardTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId")
+                    .WithPath("/api/v1/posts/postId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Posts.DiscardAsync(
-                new DiscardPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-            )
+            await Client.Posts.DiscardAsync(new DiscardPostsRequest { PostId = "postId" })
         );
     }
 }

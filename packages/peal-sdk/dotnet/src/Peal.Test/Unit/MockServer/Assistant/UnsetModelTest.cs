@@ -15,18 +15,14 @@ public class UnsetModelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/models/text")
+                    .WithPath("/api/v1/assistant/models/text")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Assistant.UnsetModelAsync(
-                new UnsetModelAssistantRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    Capability = AiCapability.Text,
-                }
+                new UnsetModelAssistantRequest { Capability = AiCapability.Text }
             )
         );
     }
@@ -38,18 +34,14 @@ public class UnsetModelTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/models/text")
+                    .WithPath("/api/v1/assistant/models/text")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Assistant.UnsetModelAsync(
-                new UnsetModelAssistantRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    Capability = AiCapability.Text,
-                }
+                new UnsetModelAssistantRequest { Capability = AiCapability.Text }
             )
         );
     }

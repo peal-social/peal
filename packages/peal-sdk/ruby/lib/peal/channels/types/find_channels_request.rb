@@ -4,8 +4,6 @@ module Peal
   module Channels
     module Types
       class FindChannelsRequest < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :cursor, -> { String }, optional: true, nullable: false
 
         field :limit, -> { String }, optional: true, nullable: false

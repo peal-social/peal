@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -30,7 +29,7 @@ public class TextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider")
+                    .WithPath("/api/v1/assistant/text-provider")
                     .UsingGet()
             )
             .RespondWith(
@@ -40,9 +39,7 @@ public class TextProviderTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.TextProviderAsync(
-            new TextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.TextProviderAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -67,7 +64,7 @@ public class TextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider")
+                    .WithPath("/api/v1/assistant/text-provider")
                     .UsingGet()
             )
             .RespondWith(
@@ -77,9 +74,7 @@ public class TextProviderTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.TextProviderAsync(
-            new TextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.TextProviderAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

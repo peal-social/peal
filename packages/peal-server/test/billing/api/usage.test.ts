@@ -3,7 +3,7 @@ import { DateTime, Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import { TestClock } from "effect/testing";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import { AccountDays } from "#billing/application/account-days.ts";
@@ -137,7 +137,7 @@ const as = (
     )
   );
 
-const params = { workspaceId };
+const headers = forWorkspace(workspaceId);
 
 // What went out, each post on the UTC day it went out, and the days'
 // states the snapshot wrote.
@@ -197,7 +197,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
           const client = yield* as(permissionsFor("admin"));
 
           const report = yield* client.usage.get({
-            params,
+            headers,
             query: { from: "2026-10-31", to: "2026-11-02" },
           });
 
@@ -284,7 +284,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
         yield* TestClock.setTime(DateTime.toEpochMillis(now));
 
         const client = yield* as(permissionsFor("admin"));
-        const report = yield* client.usage.get({ params, query: {} });
+        const report = yield* client.usage.get({ headers, query: {} });
 
         assert.deepStrictEqual(report.period, {
           from: "2026-10-13",
@@ -292,7 +292,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
         });
         assert.lengthOf(report.days, 30);
         assert.deepStrictEqual(
-          (yield* client.usage.get({ params, query: { to: "2026-10-31" } }))
+          (yield* client.usage.get({ headers, query: { to: "2026-10-31" } }))
             .period,
           { from: "2026-10-02", to: "2026-10-31" }
         );
@@ -313,7 +313,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
             { from: "2026-11-12" },
           ]) {
             const refused = yield* client.usage
-              .get({ params, query })
+              .get({ headers, query })
               .pipe(Effect.flip);
 
             assert.strictEqual(refused._tag, "InvalidDateRange");
@@ -321,7 +321,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
 
           // 92 days, both ends included, are taken.
           const longest = yield* client.usage.get({
-            params,
+            headers,
             query: { from: "2026-08-01", to: "2026-10-31" },
           });
 
@@ -334,7 +334,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
         const client = yield* as(permissionsFor("viewer"));
 
         const refused = yield* client.usage
-          .get({ params, query: {} })
+          .get({ headers, query: {} })
           .pipe(Effect.flip);
 
         assert.deepInclude(refused, {
@@ -353,7 +353,7 @@ layer(reportsOn(everyWorkspaceOn("pro")))(
           const client = yield* as(permissionsFor("admin"), tenantId);
 
           const report = yield* client.usage.get({
-            params: { workspaceId: tenantId },
+            headers: forWorkspace(tenantId),
             query: {},
           });
 
@@ -378,7 +378,7 @@ layer(reportsOn(UnmeteredTest))(
         const client = yield* as(permissionsFor("admin"));
 
         const report = yield* client.usage.get({
-          params,
+          headers,
           query: { from: "2026-11-01", to: "2026-11-01" },
         });
 

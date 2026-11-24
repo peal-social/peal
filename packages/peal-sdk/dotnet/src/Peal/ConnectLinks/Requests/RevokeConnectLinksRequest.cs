@@ -7,9 +7,6 @@ namespace Peal;
 public record RevokeConnectLinksRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string LinkId { get; set; }
 
     /// <inheritdoc />

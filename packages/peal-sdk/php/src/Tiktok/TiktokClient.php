@@ -55,12 +55,10 @@ class TiktokClient
      * Example:
      * ```php
      * $client->tiktok->creator(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -74,14 +72,14 @@ class TiktokClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function creator(string $workspaceId, string $channelId, ?array $options = null): ?TikTokAccount
+    public function creator(string $channelId, ?array $options = null): ?TikTokAccount
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/tiktok-creator",
+                    path: "api/v1/channels/{$channelId}/tiktok-creator",
                     method: HttpMethod::GET,
                 ),
                 $options,

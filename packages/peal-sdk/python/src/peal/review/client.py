@@ -36,14 +36,12 @@ class ReviewClient:
         """
         return self._raw_client
 
-    def settings(self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ReviewSettings:
+    def settings(self, *, request_options: typing.Optional[RequestOptions] = None) -> ReviewSettings:
         """
         Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -57,29 +55,22 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.review.settings(
-            workspace_id="workspaceId",
-        )
+        client.review.settings()
         """
-        _response = self._raw_client.settings(workspace_id, request_options=request_options)
+        _response = self._raw_client.settings(request_options=request_options)
         return _response.data
 
     def update_settings(
-        self,
-        workspace_id: str,
-        *,
-        approval_policy: ApprovalPolicy,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, approval_policy: ApprovalPolicy, request_options: typing.Optional[RequestOptions] = None
     ) -> ReviewSettings:
         """
         Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         approval_policy : ApprovalPolicy
 
         request_options : typing.Optional[RequestOptions]
@@ -95,28 +86,22 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.update_settings(
-            workspace_id="workspaceId",
             approval_policy="never",
         )
         """
-        _response = self._raw_client.update_settings(
-            workspace_id, approval_policy=approval_policy, request_options=request_options
-        )
+        _response = self._raw_client.update_settings(approval_policy=approval_policy, request_options=request_options)
         return _response.data
 
-    def pending(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ApprovalRequest]:
+    def pending(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ApprovalRequest]:
         """
         Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -130,25 +115,20 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.review.pending(
-            workspace_id="workspaceId",
-        )
+        client.review.pending()
         """
-        _response = self._raw_client.pending(workspace_id, request_options=request_options)
+        _response = self._raw_client.pending(request_options=request_options)
         return _response.data
 
-    def thread(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> PostReview:
+    def thread(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> PostReview:
         """
         Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -164,19 +144,18 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.thread(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.thread(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.thread(post_id, request_options=request_options)
         return _response.data
 
     def comment(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         text: str,
@@ -189,8 +168,6 @@ class ReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         text : str
@@ -212,35 +189,27 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.comment(
-            workspace_id="workspaceId",
             post_id="postId",
             text="text",
         )
         """
         _response = self._raw_client.comment(
-            workspace_id, post_id, text=text, anchor=anchor, parent_id=parent_id, request_options=request_options
+            post_id, text=text, anchor=anchor, parent_id=parent_id, request_options=request_options
         )
         return _response.data
 
     def resolve(
-        self,
-        workspace_id: str,
-        post_id: str,
-        comment_id: str,
-        *,
-        resolved: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, comment_id: str, *, resolved: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> ReviewComment:
         """
         Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, `parent`). Needs post:create or post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         comment_id : str
@@ -260,23 +229,20 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.resolve(
-            workspace_id="workspaceId",
             post_id="postId",
             comment_id="commentId",
             resolved=True,
         )
         """
-        _response = self._raw_client.resolve(
-            workspace_id, post_id, comment_id, resolved=resolved, request_options=request_options
-        )
+        _response = self._raw_client.resolve(post_id, comment_id, resolved=resolved, request_options=request_options)
         return _response.data
 
     def approve(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -288,8 +254,6 @@ class ReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -309,23 +273,22 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.approve(
-            workspace_id="workspaceId",
             post_id="postId",
             approval_id="approvalId",
             subject_hash="subjectHash",
         )
         """
         _response = self._raw_client.approve(
-            workspace_id, post_id, approval_id=approval_id, subject_hash=subject_hash, request_options=request_options
+            post_id, approval_id=approval_id, subject_hash=subject_hash, request_options=request_options
         )
         return _response.data
 
     def request_changes(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -338,8 +301,6 @@ class ReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -361,10 +322,10 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.request_changes(
-            workspace_id="workspaceId",
             post_id="postId",
             approval_id="approvalId",
             subject_hash="subjectHash",
@@ -372,7 +333,6 @@ class ReviewClient:
         )
         """
         _response = self._raw_client.request_changes(
-            workspace_id,
             post_id,
             approval_id=approval_id,
             subject_hash=subject_hash,
@@ -382,15 +342,13 @@ class ReviewClient:
         return _response.data
 
     def links(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[ReviewLink]:
         """
         Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -406,19 +364,18 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.links(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.links(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.links(post_id, request_options=request_options)
         return _response.data
 
     def create_link(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         access: ReviewLinkAccess,
@@ -430,8 +387,6 @@ class ReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         access : ReviewLinkAccess
@@ -451,29 +406,25 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.create_link(
-            workspace_id="workspaceId",
             post_id="postId",
             access="view",
         )
         """
         _response = self._raw_client.create_link(
-            workspace_id, post_id, access=access, expires_in_hours=expires_in_hours, request_options=request_options
+            post_id, access=access, expires_in_hours=expires_in_hours, request_options=request_options
         )
         return _response.data
 
-    def revoke_link(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ReviewLink:
+    def revoke_link(self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ReviewLink:
         """
         Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -489,14 +440,14 @@ class ReviewClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.review.revoke_link(
-            workspace_id="workspaceId",
             link_id="linkId",
         )
         """
-        _response = self._raw_client.revoke_link(workspace_id, link_id, request_options=request_options)
+        _response = self._raw_client.revoke_link(link_id, request_options=request_options)
         return _response.data
 
 
@@ -515,16 +466,12 @@ class AsyncReviewClient:
         """
         return self._raw_client
 
-    async def settings(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ReviewSettings:
+    async def settings(self, *, request_options: typing.Optional[RequestOptions] = None) -> ReviewSettings:
         """
         Answers with the workspace's approval policy: which of its posts wait for an approval before they are scheduled. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -540,35 +487,28 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.review.settings(
-                workspace_id="workspaceId",
-            )
+            await client.review.settings()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.settings(workspace_id, request_options=request_options)
+        _response = await self._raw_client.settings(request_options=request_options)
         return _response.data
 
     async def update_settings(
-        self,
-        workspace_id: str,
-        *,
-        approval_policy: ApprovalPolicy,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, approval_policy: ApprovalPolicy, request_options: typing.Optional[RequestOptions] = None
     ) -> ReviewSettings:
         """
         Chooses the workspace's approval policy. It applies to posts scheduled from then on: a post already scheduled stays scheduled, and one that waits still waits. Needs organization:update, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         approval_policy : ApprovalPolicy
 
         request_options : typing.Optional[RequestOptions]
@@ -586,13 +526,13 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.update_settings(
-                workspace_id="workspaceId",
                 approval_policy="never",
             )
 
@@ -600,20 +540,16 @@ class AsyncReviewClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update_settings(
-            workspace_id, approval_policy=approval_policy, request_options=request_options
+            approval_policy=approval_policy, request_options=request_options
         )
         return _response.data
 
-    async def pending(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ApprovalRequest]:
+    async def pending(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ApprovalRequest]:
         """
         Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -629,31 +565,26 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.review.pending(
-                workspace_id="workspaceId",
-            )
+            await client.review.pending()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.pending(workspace_id, request_options=request_options)
+        _response = await self._raw_client.pending(request_options=request_options)
         return _response.data
 
-    async def thread(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> PostReview:
+    async def thread(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> PostReview:
         """
         Answers with a post's review: its comments, oldest first, and the approvals asked for it and what was decided, newest first. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -671,25 +602,24 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.thread(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.thread(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.thread(post_id, request_options=request_options)
         return _response.data
 
     async def comment(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         text: str,
@@ -702,8 +632,6 @@ class AsyncReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         text : str
@@ -727,13 +655,13 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.comment(
-                workspace_id="workspaceId",
                 post_id="postId",
                 text="text",
             )
@@ -742,26 +670,18 @@ class AsyncReviewClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.comment(
-            workspace_id, post_id, text=text, anchor=anchor, parent_id=parent_id, request_options=request_options
+            post_id, text=text, anchor=anchor, parent_id=parent_id, request_options=request_options
         )
         return _response.data
 
     async def resolve(
-        self,
-        workspace_id: str,
-        post_id: str,
-        comment_id: str,
-        *,
-        resolved: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, comment_id: str, *, resolved: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> ReviewComment:
         """
         Resolves the thread a comment started, or reopens it. An answer is not resolved: its thread is (CommentInvalid, `parent`). Needs post:create or post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         comment_id : str
@@ -783,13 +703,13 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.resolve(
-                workspace_id="workspaceId",
                 post_id="postId",
                 comment_id="commentId",
                 resolved=True,
@@ -799,13 +719,12 @@ class AsyncReviewClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.resolve(
-            workspace_id, post_id, comment_id, resolved=resolved, request_options=request_options
+            post_id, comment_id, resolved=resolved, request_options=request_options
         )
         return _response.data
 
     async def approve(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -817,8 +736,6 @@ class AsyncReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -840,13 +757,13 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.approve(
-                workspace_id="workspaceId",
                 post_id="postId",
                 approval_id="approvalId",
                 subject_hash="subjectHash",
@@ -856,13 +773,12 @@ class AsyncReviewClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.approve(
-            workspace_id, post_id, approval_id=approval_id, subject_hash=subject_hash, request_options=request_options
+            post_id, approval_id=approval_id, subject_hash=subject_hash, request_options=request_options
         )
         return _response.data
 
     async def request_changes(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         approval_id: str,
@@ -875,8 +791,6 @@ class AsyncReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         approval_id : str
@@ -900,13 +814,13 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.request_changes(
-                workspace_id="workspaceId",
                 post_id="postId",
                 approval_id="approvalId",
                 subject_hash="subjectHash",
@@ -917,7 +831,6 @@ class AsyncReviewClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.request_changes(
-            workspace_id,
             post_id,
             approval_id=approval_id,
             subject_hash=subject_hash,
@@ -927,15 +840,13 @@ class AsyncReviewClient:
         return _response.data
 
     async def links(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[ReviewLink]:
         """
         Lists a post's review links, newest first, ended ones included. No token is shown: a link's address is told once, when it is made. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -953,25 +864,24 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.links(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.links(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.links(post_id, request_options=request_options)
         return _response.data
 
     async def create_link(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         access: ReviewLinkAccess,
@@ -983,8 +893,6 @@ class AsyncReviewClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         access : ReviewLinkAccess
@@ -1006,13 +914,13 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.create_link(
-                workspace_id="workspaceId",
                 post_id="postId",
                 access="view",
             )
@@ -1021,20 +929,16 @@ class AsyncReviewClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create_link(
-            workspace_id, post_id, access=access, expires_in_hours=expires_in_hours, request_options=request_options
+            post_id, access=access, expires_in_hours=expires_in_hours, request_options=request_options
         )
         return _response.data
 
-    async def revoke_link(
-        self, workspace_id: str, link_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ReviewLink:
+    async def revoke_link(self, link_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ReviewLink:
         """
         Ends a review link at once: whoever opens it is told it was revoked. Needs post:approve, and is refused to staff acting as a member.
 
         Parameters
         ----------
-        workspace_id : str
-
         link_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1052,18 +956,18 @@ class AsyncReviewClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.review.revoke_link(
-                workspace_id="workspaceId",
                 link_id="linkId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.revoke_link(workspace_id, link_id, request_options=request_options)
+        _response = await self._raw_client.revoke_link(link_id, request_options=request_options)
         return _response.data

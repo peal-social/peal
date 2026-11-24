@@ -326,7 +326,7 @@ public class ScheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/schedule")
+                    .WithPath("/api/v1/posts/postId/schedule")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -341,7 +341,6 @@ public class ScheduleTest : BaseMockServerTest
         var response = await Client.Posts.ScheduleAsync(
             new SchedulePost
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 At = "at",
                 ChannelIds = new List<string>() { "channelIds", "channelIds" },
@@ -479,7 +478,7 @@ public class ScheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/schedule")
+                    .WithPath("/api/v1/posts/postId/schedule")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -494,7 +493,6 @@ public class ScheduleTest : BaseMockServerTest
         var response = await Client.Posts.ScheduleAsync(
             new SchedulePost
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 At = "at",
                 ChannelIds = new List<string>() { "channelIds" },

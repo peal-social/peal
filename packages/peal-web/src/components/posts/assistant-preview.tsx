@@ -79,6 +79,7 @@ export const failureMessage = (
             }),
           }),
     WorkspaceNotFound: () => t("errors.generic"),
+    WorkspaceRequired: () => t("errors.generic"),
   });
 
 /**

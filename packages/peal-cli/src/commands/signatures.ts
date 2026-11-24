@@ -171,7 +171,7 @@ const create = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const made = yield* client.signatures
-      .create({ params: { workspaceId: workspace.id }, payload })
+      .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -302,7 +302,8 @@ const update = Command.make(
 
     const changed = yield* client.signatures
       .update({
-        params: { signatureId: signature.id, workspaceId: workspace.id },
+        headers: {},
+        params: { signatureId: signature.id },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -337,7 +338,8 @@ const remove = Command.make(
 
     yield* client.signatures
       .delete({
-        params: { signatureId: signature.id, workspaceId: workspace.id },
+        headers: {},
+        params: { signatureId: signature.id },
       })
       .pipe(Effect.mapError(explain(url)));
 

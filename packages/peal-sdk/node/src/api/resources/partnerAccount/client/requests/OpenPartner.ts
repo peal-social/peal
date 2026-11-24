@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         name: "name"
  *     }
  */
 export interface OpenPartner {
-    workspaceId: string;
     name: string;
 }

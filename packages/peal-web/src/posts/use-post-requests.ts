@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import type { DateTime } from "effect";
 import { Exit, Option } from "effect";
+import { forWorkspace } from "peal-contract";
 import type { Post, PostDraft, PostSchedule, QueuePost } from "peal-contract";
 import { useState } from "react";
 
@@ -59,17 +60,22 @@ export const usePostRequests = (workspaceId: string) => {
     return Option.none();
   };
 
-  const params = (postId: string) => ({ postId, workspaceId });
+  const headers = forWorkspace(workspaceId);
 
   return {
     cancel: async (postId: string) =>
       settled(
-        await cancel({ params: params(postId), reactivityKeys: postsKeys })
+        await cancel({
+          headers,
+          params: { postId },
+          reactivityKeys: postsKeys,
+        })
       ),
     /** Deletes the draft, and says whether it is gone. */
     discard: async (postId: string) => {
       const exit = await discard({
-        params: params(postId),
+        headers,
+        params: { postId },
         reactivityKeys: postsKeys,
       });
 
@@ -87,7 +93,8 @@ export const usePostRequests = (workspaceId: string) => {
     enqueue: async (postId: string, payload: QueuePost) =>
       settled(
         await enqueue({
-          params: params(postId),
+          headers,
+          params: { postId },
           payload,
           reactivityKeys: [...postsKeys, ...queuesChanged(workspaceId)],
         })
@@ -97,7 +104,8 @@ export const usePostRequests = (workspaceId: string) => {
     reschedule: async (postId: string, payload: PostSchedule) =>
       settled(
         await reschedule({
-          params: params(postId),
+          headers,
+          params: { postId },
           payload,
           reactivityKeys: postsKeys,
         })
@@ -107,12 +115,13 @@ export const usePostRequests = (workspaceId: string) => {
       settled(
         postId === undefined
           ? await create({
-              params: { workspaceId },
+              headers: forWorkspace(workspaceId),
               payload,
               reactivityKeys: postsKeys,
             })
           : await update({
-              params: params(postId),
+              headers,
+              params: { postId },
               payload,
               reactivityKeys: postsKeys,
             })
@@ -127,14 +136,19 @@ export const usePostRequests = (workspaceId: string) => {
     ) =>
       settled(
         await schedule({
-          params: params(postId),
+          headers,
+          params: { postId },
           payload,
           reactivityKeys: postsKeys,
         })
       ),
     unschedule: async (postId: string) =>
       settled(
-        await unschedule({ params: params(postId), reactivityKeys: postsKeys })
+        await unschedule({
+          headers,
+          params: { postId },
+          reactivityKeys: postsKeys,
+        })
       ),
   };
 };

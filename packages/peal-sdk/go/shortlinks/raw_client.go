@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) Status(
 	ctx context.Context,
-	request *peal.StatusShortLinksRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.ShortLinkStatus], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) Status(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/short-links/status",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/short-links/status"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) SetDefault(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/short-links/settings",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/short-links/settings"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -135,10 +128,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/short-links",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/short-links"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -188,8 +178,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/short-links/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/short-links/%v",
 		request.LinkID,
 	)
 	queryParams, err := internal.QueryValues(request)

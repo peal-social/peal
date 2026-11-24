@@ -58,7 +58,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds")
+                    .WithPath("/api/v1/feeds")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -73,7 +73,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Feeds.CreateAsync(
             new NewFeed
             {
-                WorkspaceId = "workspaceId",
                 AttachPicture = null,
                 ChannelIds = null,
                 ChannelSetId = null,
@@ -134,7 +133,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds")
+                    .WithPath("/api/v1/feeds")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -146,9 +145,7 @@ public class CreateTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Feeds.CreateAsync(
-            new NewFeed { WorkspaceId = "workspaceId", Url = "url" }
-        );
+        var response = await Client.Feeds.CreateAsync(new NewFeed { Url = "url" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

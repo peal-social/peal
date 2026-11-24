@@ -38,7 +38,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .list_conversations(
-    ///             &"workspaceId".to_string(),
     ///             &ListConversationsQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn list_conversations(
         &self,
-        workspace_id: &str,
         request: &ListConversationsQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxConversationPage, ApiError> {
@@ -63,10 +61,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/inbox/messages/conversations",
-                    workspace_id
-                ),
+                "api/v1/inbox/messages/conversations",
                 None,
                 QueryBuilder::new()
                     .string("channelId", request.channel_id.clone())
@@ -104,7 +99,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .get_conversation(
-    ///             &"workspaceId".to_string(),
     ///             &"conversationId".to_string(),
     ///             &GetConversationQueryRequest {
     ///                 ..Default::default()
@@ -116,7 +110,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn get_conversation(
         &self,
-        workspace_id: &str,
         conversation_id: &str,
         request: &GetConversationQueryRequest,
         options: Option<RequestOptions>,
@@ -131,10 +124,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/inbox/messages/conversations/{}",
-                    workspace_id, conversation_id
-                ),
+                &format!("api/v1/inbox/messages/conversations/{}", conversation_id),
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -170,7 +160,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .send_message(
-    ///             &"workspaceId".to_string(),
     ///             &"conversationId".to_string(),
     ///             &NewInboxMessage {
     ///                 text: "text".to_string(),
@@ -182,7 +171,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn send_message(
         &self,
-        workspace_id: &str,
         conversation_id: &str,
         request: &NewInboxMessage,
         options: Option<RequestOptions>,
@@ -199,8 +187,8 @@ impl InboxMessagesClient {
             .execute_request(
                 Method::POST,
                 &format!(
-                    "api/workspaces/{}/inbox/messages/conversations/{}/messages",
-                    workspace_id, conversation_id
+                    "api/v1/inbox/messages/conversations/{}/messages",
+                    conversation_id
                 ),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
@@ -234,7 +222,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .send_private_reply(
-    ///             &"workspaceId".to_string(),
     ///             &NewInboxPrivateReply {
     ///                 comment_id: "commentId".to_string(),
     ///                 text: "text".to_string(),
@@ -246,7 +233,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn send_private_reply(
         &self,
-        workspace_id: &str,
         request: &NewInboxPrivateReply,
         options: Option<RequestOptions>,
     ) -> Result<InboxPrivateReply, ApiError> {
@@ -261,10 +247,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/inbox/messages/private-replies",
-                    workspace_id
-                ),
+                "api/v1/inbox/messages/private-replies",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -296,17 +279,12 @@ impl InboxMessagesClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .inbox_messages
-    ///         .get_private_reply(
-    ///             &"workspaceId".to_string(),
-    ///             &"privateReplyId".to_string(),
-    ///             None,
-    ///         )
+    ///         .get_private_reply(&"privateReplyId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn get_private_reply(
         &self,
-        workspace_id: &str,
         private_reply_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxPrivateReply, ApiError> {
@@ -320,10 +298,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/inbox/messages/private-replies/{}",
-                    workspace_id, private_reply_id
-                ),
+                &format!("api/v1/inbox/messages/private-replies/{}", private_reply_id),
                 None,
                 None,
                 options,
@@ -356,7 +331,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .confirm_private_reply(
-    ///             &"workspaceId".to_string(),
     ///             &"privateReplyId".to_string(),
     ///             &ConfirmPrivateReplyInboxMessagesRequest { went: true },
     ///             None,
@@ -366,7 +340,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn confirm_private_reply(
         &self,
-        workspace_id: &str,
         private_reply_id: &str,
         request: &ConfirmPrivateReplyInboxMessagesRequest,
         options: Option<RequestOptions>,
@@ -383,8 +356,8 @@ impl InboxMessagesClient {
             .execute_request(
                 Method::POST,
                 &format!(
-                    "api/workspaces/{}/inbox/messages/private-replies/{}/confirm",
-                    workspace_id, private_reply_id
+                    "api/v1/inbox/messages/private-replies/{}/confirm",
+                    private_reply_id
                 ),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
@@ -418,7 +391,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .set_conversation_read(
-    ///             &"workspaceId".to_string(),
     ///             &"conversationId".to_string(),
     ///             &SetConversationReadInboxMessagesRequest { read: true },
     ///             None,
@@ -428,7 +400,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn set_conversation_read(
         &self,
-        workspace_id: &str,
         conversation_id: &str,
         request: &SetConversationReadInboxMessagesRequest,
         options: Option<RequestOptions>,
@@ -445,8 +416,8 @@ impl InboxMessagesClient {
             .execute_request(
                 Method::POST,
                 &format!(
-                    "api/workspaces/{}/inbox/messages/conversations/{}/read",
-                    workspace_id, conversation_id
+                    "api/v1/inbox/messages/conversations/{}/read",
+                    conversation_id
                 ),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
@@ -477,15 +448,11 @@ impl InboxMessagesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .inbox_messages
-    ///         .get_message_settings(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.inbox_messages.get_message_settings(None).await;
     /// }
     /// ```
     pub async fn get_message_settings(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxMessageSettings, ApiError> {
         let options = {
@@ -498,7 +465,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/inbox/messages/settings", workspace_id),
+                "api/v1/inbox/messages/settings",
                 None,
                 None,
                 options,
@@ -531,7 +498,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .set_channel_messages(
-    ///             &"workspaceId".to_string(),
     ///             &"channelId".to_string(),
     ///             &SetChannelMessagesInboxMessagesRequest { enabled: true },
     ///             None,
@@ -541,7 +507,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn set_channel_messages(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         request: &SetChannelMessagesInboxMessagesRequest,
         options: Option<RequestOptions>,
@@ -556,10 +521,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/inbox/messages/channels/{}",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/inbox/messages/channels/{}", channel_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -592,7 +554,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .set_message_application(
-    ///             &"workspaceId".to_string(),
     ///             &SetMessageApplicationInboxMessagesRequest {
     ///                 allowed: true,
     ///                 client_id: "clientId".to_string(),
@@ -604,7 +565,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn set_message_application(
         &self,
-        workspace_id: &str,
         request: &SetMessageApplicationInboxMessagesRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxMessageSettings, ApiError> {
@@ -618,10 +578,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/inbox/messages/applications",
-                    workspace_id
-                ),
+                "api/v1/inbox/messages/applications",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -654,7 +611,6 @@ impl InboxMessagesClient {
     ///     client
     ///         .inbox_messages
     ///         .confirm_message(
-    ///             &"workspaceId".to_string(),
     ///             &"messageId".to_string(),
     ///             &ConfirmMessageInboxMessagesRequest { sent: true },
     ///             None,
@@ -664,7 +620,6 @@ impl InboxMessagesClient {
     /// ```
     pub async fn confirm_message(
         &self,
-        workspace_id: &str,
         message_id: &str,
         request: &ConfirmMessageInboxMessagesRequest,
         options: Option<RequestOptions>,
@@ -680,10 +635,7 @@ impl InboxMessagesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/inbox/messages/outgoing/{}/confirmation",
-                    workspace_id, message_id
-                ),
+                &format!("api/v1/inbox/messages/outgoing/{}/confirmation", message_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

@@ -12,7 +12,7 @@ import {
 } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member, Principal } from "peal-contract";
 
 import { actorOf } from "#shared/api/actor.ts";
@@ -793,14 +793,14 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
     () =>
       Effect.gen(function* deletes() {
         const client = yield* as(user());
-        const params = { workspaceId: harbour };
+        const headers = forWorkspace(harbour);
         // What this test asks: others of the block delete Harbour too.
         const earlier = (yield* calls).length;
         const since = calls.pipe(Effect.map((all) => all.slice(earlier)));
 
         assert.strictEqual(
           yield* failureOf(
-            client.workspaces.delete({ params, payload: { name: "Harbor" } })
+            client.workspaces.delete({ headers, payload: { name: "Harbor" } })
           ),
           "WorkspaceNameMismatch"
         );
@@ -808,7 +808,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         assert.notInclude(yield* since, `forget:|${harbour}`);
 
         yield* client.workspaces.delete({
-          params,
+          headers,
           payload: { name: "Harbour" },
         });
 
@@ -915,7 +915,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
       Effect.gen(function* refuses() {
         const before = (yield* calls).length;
         const payload = { name: "Shared" };
-        const params = { workspaceId: shared };
+        const headers = forWorkspace(shared);
 
         for (const client of [
           yield* as(user(), shared, "admin"),
@@ -924,7 +924,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
           yield* as(impersonated, shared),
         ]) {
           assert.strictEqual(
-            yield* failureOf(client.workspaces.delete({ params, payload })),
+            yield* failureOf(client.workspaces.delete({ headers, payload })),
             "Forbidden"
           );
         }
@@ -934,7 +934,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         const anonymous = yield* clientWith(anonymousSecurityTest);
 
         assert.strictEqual(
-          yield* failureOf(anonymous.workspaces.delete({ params, payload })),
+          yield* failureOf(anonymous.workspaces.delete({ headers, payload })),
           "Unauthenticated"
         );
       })
@@ -947,7 +947,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
       assert.strictEqual(
         yield* failureOf(
           client.workspaces.delete({
-            params: { workspaceId: busy },
+            headers: forWorkspace(busy),
             payload: { name: "Busy" },
           })
         ),
@@ -963,13 +963,13 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
     () =>
       Effect.gen(function* refusesSubscribed() {
         const client = yield* as(user(), subscribed);
-        const params = { workspaceId: subscribed };
+        const headers = forWorkspace(subscribed);
 
         // A name typed wrong cancels nothing, agreed or not.
         assert.strictEqual(
           yield* failureOf(
             client.workspaces.delete({
-              params,
+              headers,
               payload: { cancelSubscriptions: true, name: "Subscribe" },
             })
           ),
@@ -978,7 +978,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         assert.notInclude(yield* calls, `cancel:${subscribed}`);
 
         const refused = yield* client.workspaces
-          .delete({ params, payload: { name: "Subscribed" } })
+          .delete({ headers, payload: { name: "Subscribed" } })
           .pipe(Effect.flip);
 
         assert.deepInclude(refused, {
@@ -990,7 +990,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         assert.notInclude(yield* calls, `deleteWorkspace:${subscribed}`);
 
         yield* client.workspaces.delete({
-          params,
+          headers,
           payload: { cancelSubscriptions: true, name: "Subscribed" },
         });
 
@@ -1027,7 +1027,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
 
         const failed = yield* client.workspaces
           .delete({
-            params: { workspaceId: cancelledThenBusy },
+            headers: forWorkspace(cancelledThenBusy),
             payload: { cancelSubscriptions: true, name: "Late" },
           })
           .pipe(Effect.flip);
@@ -1052,7 +1052,7 @@ layer(Fakes.layer)("the settings endpoints", (it) => {
         assert.strictEqual(
           yield* failureOf(
             client.workspaces.delete({
-              params: { workspaceId: unreachable },
+              headers: forWorkspace(unreachable),
               payload: { name: "Unreachable" },
             })
           ),

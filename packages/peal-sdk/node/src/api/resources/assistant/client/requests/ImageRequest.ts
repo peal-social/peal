@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         aspect: "square",
  *         prompt: "prompt"
  *     }
  */
 export interface ImageRequest {
-    workspaceId: string;
     aspect: Peal.ImageAspect;
     prompt: string;
 }

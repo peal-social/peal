@@ -8,6 +8,7 @@ import {
   inboxReviewRetentionDays,
   isSocialChannel,
   maxInboxReviewReplyBytes,
+  forWorkspace,
 } from "peal-contract";
 import type {
   InboxReview,
@@ -93,7 +94,8 @@ const ReviewActions = ({
   const withdraw = useAtomSet(withdrawReviewReply, { mode: "promiseExit" });
   const [isActing, startActing] = useTransition();
 
-  const params = { reviewId: review.id, workspaceId };
+  const params = { reviewId: review.id };
+  const headers = forWorkspace(workspaceId);
   const reactivityKeys = reviewsChanged(workspaceId, review.threadId);
 
   const failed = <A, E extends { readonly _tag: string }>(
@@ -111,6 +113,7 @@ const ReviewActions = ({
     startActing(async () => {
       const exit = await mark({
         params,
+        headers,
         payload: { answered: !review.markedAnswered },
         reactivityKeys,
       });
@@ -123,7 +126,7 @@ const ReviewActions = ({
 
   const handleWithdraw = () => {
     startActing(async () => {
-      const exit = await withdraw({ params, reactivityKeys });
+      const exit = await withdraw({ params, headers, reactivityKeys });
 
       if (Exit.isSuccess(exit)) {
         toast.success(t("review.withdrawn"));
@@ -236,8 +239,11 @@ const ReviewComposer = ({
     setFailure(null);
     startSending(async () => {
       const exit = await send({
-        headers: { "idempotency-key": current.key },
-        params: { reviewId: current.reviewId, workspaceId },
+        headers: {
+          ...forWorkspace(workspaceId),
+          "idempotency-key": current.key,
+        },
+        params: { reviewId: current.reviewId },
         payload: { text },
         reactivityKeys: reviewsChanged(workspaceId, review.threadId),
       });

@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         platform: "wordpressCom"
  *     }
  */
 export interface StartSiteSignIn {
-    workspaceId: string;
     platform: Peal.OAuthSitePlatform;
     channelId?: string;
 }

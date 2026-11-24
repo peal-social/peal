@@ -252,6 +252,7 @@ export const ComposerErrors = ({
     UnknownMedia: () => t("errors.unknownMedia"),
     UnknownTags: () => t("errors.unknownTags"),
     WorkspaceNotFound: generic,
+    WorkspaceRequired: generic,
   });
 
   return (

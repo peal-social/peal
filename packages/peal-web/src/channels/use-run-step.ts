@@ -2,6 +2,7 @@
 
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
+import { forWorkspace } from "peal-contract";
 import { useEffect, useTransition } from "react";
 
 import { connectChannel, failureOf } from "#channels/channels-api.ts";
@@ -180,7 +181,8 @@ export const useRunStep = ({
 
     startTransition(async () => {
       const exit = await connect({
-        params: { platform: step.platform, workspaceId: run.workspaceId },
+        headers: forWorkspace(run.workspaceId),
+        params: { platform: step.platform },
         payload: startOf(step),
       });
 

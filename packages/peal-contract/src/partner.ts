@@ -208,8 +208,8 @@ export const partnerHealthDescription = `Answers, for each workspace the partner
 /**
  * A partner's own account and the workspaces it owns, for its backend,
  * with a partner key. Inside each workspace, the same key calls the
- * workspace endpoints (`/api/workspaces/{workspaceId}/…`) with the
- * permissions it was given.
+ * workspace endpoints (`/api/v1/…`), naming the workspace in the
+ * `Peal-Workspace` header, with the permissions it was given.
  */
 export class PartnerApi extends HttpApiGroup.make("partner")
   .add(
@@ -335,4 +335,4 @@ export class PartnerApi extends HttpApiGroup.make("partner")
     )
   )
   .middleware(Authentication)
-  .prefix("/api/partner") {}
+  .prefix("/api/v1/partner") {}

@@ -53,7 +53,6 @@ class RawPostsClient:
 
     def drafts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -64,8 +63,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -79,7 +76,7 @@ class RawPostsClient:
             DraftPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/drafts",
+            "api/v1/posts/drafts",
             method="GET",
             params={
                 "cursor": cursor,
@@ -162,15 +159,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list(
-        self, workspace_id: str, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
+        self, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[Post]]:
         """
         Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : str
 
         to : str
@@ -184,7 +179,7 @@ class RawPostsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts",
+            "api/v1/posts",
             method="GET",
             params={
                 "from": from_,
@@ -268,7 +263,6 @@ class RawPostsClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -285,8 +279,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -315,7 +307,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts",
+            "api/v1/posts",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -331,9 +323,6 @@ class RawPostsClient:
                 "signatureId": signature_id,
                 "tagIds": tag_ids,
             },
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -347,6 +336,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -413,7 +413,6 @@ class RawPostsClient:
 
     def search(
         self,
-        workspace_id: str,
         *,
         author_id: typing.Optional[str] = None,
         channel_id: typing.Optional[str] = None,
@@ -437,8 +436,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         author_id : typing.Optional[str]
 
         channel_id : typing.Optional[str]
@@ -478,7 +475,7 @@ class RawPostsClient:
             PostPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/search",
+            "api/v1/posts/search",
             method="GET",
             params={
                 "authorId": author_id,
@@ -575,7 +572,6 @@ class RawPostsClient:
 
     def send(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -596,8 +592,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -634,7 +628,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/send",
+            "api/v1/posts/send",
             method="POST",
             params={
                 "wait": wait,
@@ -672,6 +666,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -760,7 +765,6 @@ class RawPostsClient:
 
     def bulk(
         self,
-        workspace_id: str,
         *,
         posts: typing.Sequence[BulkPost],
         idempotency_key: typing.Optional[str] = None,
@@ -771,8 +775,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         posts : typing.Sequence[BulkPost]
 
         idempotency_key : typing.Optional[str]
@@ -789,7 +791,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/bulk",
+            "api/v1/posts/bulk",
             method="POST",
             json={
                 "posts": convert_and_respect_annotation_metadata(
@@ -813,6 +815,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -868,7 +881,6 @@ class RawPostsClient:
 
     def import_(
         self,
-        workspace_id: str,
         *,
         csv: str,
         idempotency_key: typing.Optional[str] = None,
@@ -880,8 +892,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         csv : str
 
         idempotency_key : typing.Optional[str]
@@ -900,7 +910,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/import",
+            "api/v1/posts/import",
             method="POST",
             json={
                 "csv": csv,
@@ -923,6 +933,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -989,7 +1010,6 @@ class RawPostsClient:
 
     def validate(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -1007,8 +1027,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -1039,7 +1057,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/validate",
+            "api/v1/posts/validate",
             method="POST",
             json={
                 "allowDuplicate": allow_duplicate,
@@ -1072,6 +1090,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1125,16 +1154,12 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Post]:
+    def get(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Post]:
         """
         Answers with a post of the workspace. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1146,7 +1171,7 @@ class RawPostsClient:
             Post
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1160,6 +1185,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1215,7 +1251,6 @@ class RawPostsClient:
 
     def update(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -1233,8 +1268,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Sequence[str]
@@ -1262,7 +1295,7 @@ class RawPostsClient:
             Post
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}",
             method="PUT",
             json={
                 "channelIds": channel_ids,
@@ -1294,6 +1327,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1369,16 +1413,12 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def discard(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def discard(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1389,13 +1429,24 @@ class RawPostsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1462,7 +1513,6 @@ class RawPostsClient:
 
     def outcome(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         wait: typing.Optional[str] = None,
@@ -1473,8 +1523,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         wait : typing.Optional[str]
@@ -1488,7 +1536,7 @@ class RawPostsClient:
             Post
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/outcome",
+            f"api/v1/posts/{encode_path_param(post_id)}/outcome",
             method="GET",
             params={
                 "wait": wait,
@@ -1505,6 +1553,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1559,15 +1618,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def attempts(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[PublicationAttempt]]:
         """
         Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1579,7 +1636,7 @@ class RawPostsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/attempts",
+            f"api/v1/posts/{encode_path_param(post_id)}/attempts",
             method="GET",
             request_options=request_options,
         )
@@ -1593,6 +1650,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1647,20 +1715,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def tag(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        tag_ids: typing.Sequence[str],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Post]:
         """
         Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         tag_ids : typing.Sequence[str]
@@ -1674,7 +1735,7 @@ class RawPostsClient:
             Post
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/tags",
+            f"api/v1/posts/{encode_path_param(post_id)}/tags",
             method="PUT",
             json={
                 "tagIds": tag_ids,
@@ -1695,6 +1756,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1759,16 +1831,12 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def duplicate(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Post]:
+    def duplicate(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Post]:
         """
         Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1783,7 +1851,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/duplicate",
+            f"api/v1/posts/{encode_path_param(post_id)}/duplicate",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1797,6 +1865,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1863,7 +1942,6 @@ class RawPostsClient:
 
     def schedule(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         at: str,
@@ -1876,8 +1954,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -1898,7 +1974,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/schedule",
+            f"api/v1/posts/{encode_path_param(post_id)}/schedule",
             method="POST",
             json={
                 "at": at,
@@ -1921,6 +1997,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2008,21 +2095,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reschedule(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        at: str,
-        time_zone: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, at: str, time_zone: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Post]:
         """
         Moves a scheduled post, or one awaiting approval, to another instant, or schedules a draft on the channels it has. A post that needs an approval it does not have waits for it (`awaitingApproval`). Moved to another month, or scheduled, it must fit that month's posts in the workspace's plan (PlanLimitReached). Needs post:schedule, and channel:read for a draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -2041,7 +2120,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/reschedule",
+            f"api/v1/posts/{encode_path_param(post_id)}/reschedule",
             method="POST",
             json={
                 "at": at,
@@ -2063,6 +2142,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2151,7 +2241,6 @@ class RawPostsClient:
 
     def enqueue(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -2163,8 +2252,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -2183,7 +2270,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/queue",
+            f"api/v1/posts/{encode_path_param(post_id)}/queue",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -2205,6 +2292,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2292,15 +2390,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unschedule(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Post]:
         """
         Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2315,7 +2411,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/unschedule",
+            f"api/v1/posts/{encode_path_param(post_id)}/unschedule",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2329,6 +2425,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2394,20 +2501,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def repost(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Post]:
         """
         Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as `partsNotSent` is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2424,7 +2524,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/repost",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/repost",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2438,6 +2538,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2503,20 +2614,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove_target(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Post]:
         """
         Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is `cancelled` with `dropped`, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear `post.cancelled` naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2530,7 +2634,7 @@ class RawPostsClient:
             Post
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -2544,6 +2648,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2610,7 +2725,6 @@ class RawPostsClient:
 
     def confirm(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -2622,8 +2736,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2642,7 +2754,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/confirm",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/confirm",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=TargetConfirmation, direction="write"
@@ -2663,6 +2775,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2728,20 +2851,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def leave_out_rest(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Post]:
         """
         Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (`parts.live`); it becomes `published`, as that part, with `partsLeftOut`, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2758,7 +2874,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/leave-out-rest",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/leave-out-rest",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2772,6 +2888,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2838,7 +2965,6 @@ class RawPostsClient:
 
     def unpublish_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -2850,8 +2976,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2870,7 +2994,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/unpublish",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/unpublish",
             method="POST",
             params={
                 "wait": wait,
@@ -2887,6 +3011,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2953,7 +3088,6 @@ class RawPostsClient:
 
     def edit_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -2967,8 +3101,6 @@ class RawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2991,7 +3123,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/edit",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/edit",
             method="POST",
             params={
                 "wait": wait,
@@ -3016,6 +3148,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3092,15 +3235,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def unpublish(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[PostUnpublish]:
         """
         Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (`changes`) and, beside them, why it could not be on the others (`refused`, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3115,7 +3256,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/unpublish",
+            f"api/v1/posts/{encode_path_param(post_id)}/unpublish",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -3129,6 +3270,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3183,15 +3335,13 @@ class RawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def changes(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[LivePostChanges]:
         """
         Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its `kind` and where it stands: `pending`, `done` or `failed` with its `code`. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3203,7 +3353,7 @@ class RawPostsClient:
             LivePostChanges
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/changes",
+            f"api/v1/posts/{encode_path_param(post_id)}/changes",
             method="GET",
             request_options=request_options,
         )
@@ -3217,6 +3367,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3270,16 +3431,12 @@ class RawPostsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def cancel(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Post]:
+    def cancel(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Post]:
         """
         Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3294,7 +3451,7 @@ class RawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/cancel",
+            f"api/v1/posts/{encode_path_param(post_id)}/cancel",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -3308,6 +3465,17 @@ class RawPostsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3379,7 +3547,6 @@ class AsyncRawPostsClient:
 
     async def drafts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -3390,8 +3557,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -3405,7 +3570,7 @@ class AsyncRawPostsClient:
             DraftPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/drafts",
+            "api/v1/posts/drafts",
             method="GET",
             params={
                 "cursor": cursor,
@@ -3488,15 +3653,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list(
-        self, workspace_id: str, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
+        self, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[Post]]:
         """
         Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : str
 
         to : str
@@ -3510,7 +3673,7 @@ class AsyncRawPostsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts",
+            "api/v1/posts",
             method="GET",
             params={
                 "from": from_,
@@ -3594,7 +3757,6 @@ class AsyncRawPostsClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -3611,8 +3773,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -3641,7 +3801,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts",
+            "api/v1/posts",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -3657,9 +3817,6 @@ class AsyncRawPostsClient:
                 "signatureId": signature_id,
                 "tagIds": tag_ids,
             },
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -3673,6 +3830,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3739,7 +3907,6 @@ class AsyncRawPostsClient:
 
     async def search(
         self,
-        workspace_id: str,
         *,
         author_id: typing.Optional[str] = None,
         channel_id: typing.Optional[str] = None,
@@ -3763,8 +3930,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         author_id : typing.Optional[str]
 
         channel_id : typing.Optional[str]
@@ -3804,7 +3969,7 @@ class AsyncRawPostsClient:
             PostPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/search",
+            "api/v1/posts/search",
             method="GET",
             params={
                 "authorId": author_id,
@@ -3901,7 +4066,6 @@ class AsyncRawPostsClient:
 
     async def send(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -3922,8 +4086,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -3960,7 +4122,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/send",
+            "api/v1/posts/send",
             method="POST",
             params={
                 "wait": wait,
@@ -3998,6 +4160,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4086,7 +4259,6 @@ class AsyncRawPostsClient:
 
     async def bulk(
         self,
-        workspace_id: str,
         *,
         posts: typing.Sequence[BulkPost],
         idempotency_key: typing.Optional[str] = None,
@@ -4097,8 +4269,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         posts : typing.Sequence[BulkPost]
 
         idempotency_key : typing.Optional[str]
@@ -4115,7 +4285,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/bulk",
+            "api/v1/posts/bulk",
             method="POST",
             json={
                 "posts": convert_and_respect_annotation_metadata(
@@ -4139,6 +4309,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4194,7 +4375,6 @@ class AsyncRawPostsClient:
 
     async def import_(
         self,
-        workspace_id: str,
         *,
         csv: str,
         idempotency_key: typing.Optional[str] = None,
@@ -4206,8 +4386,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         csv : str
 
         idempotency_key : typing.Optional[str]
@@ -4226,7 +4404,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/import",
+            "api/v1/posts/import",
             method="POST",
             json={
                 "csv": csv,
@@ -4249,6 +4427,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4315,7 +4504,6 @@ class AsyncRawPostsClient:
 
     async def validate(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -4333,8 +4521,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -4365,7 +4551,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/validate",
+            "api/v1/posts/validate",
             method="POST",
             json={
                 "allowDuplicate": allow_duplicate,
@@ -4398,6 +4584,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4452,15 +4649,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Answers with a post of the workspace. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4472,7 +4667,7 @@ class AsyncRawPostsClient:
             Post
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -4486,6 +4681,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4541,7 +4747,6 @@ class AsyncRawPostsClient:
 
     async def update(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -4559,8 +4764,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Sequence[str]
@@ -4588,7 +4791,7 @@ class AsyncRawPostsClient:
             Post
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}",
             method="PUT",
             json={
                 "channelIds": channel_ids,
@@ -4620,6 +4823,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4696,15 +4910,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def discard(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4715,13 +4927,24 @@ class AsyncRawPostsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4788,7 +5011,6 @@ class AsyncRawPostsClient:
 
     async def outcome(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         wait: typing.Optional[str] = None,
@@ -4799,8 +5021,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         wait : typing.Optional[str]
@@ -4814,7 +5034,7 @@ class AsyncRawPostsClient:
             Post
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/outcome",
+            f"api/v1/posts/{encode_path_param(post_id)}/outcome",
             method="GET",
             params={
                 "wait": wait,
@@ -4831,6 +5051,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4885,15 +5116,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def attempts(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[PublicationAttempt]]:
         """
         Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4905,7 +5134,7 @@ class AsyncRawPostsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/attempts",
+            f"api/v1/posts/{encode_path_param(post_id)}/attempts",
             method="GET",
             request_options=request_options,
         )
@@ -4919,6 +5148,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4973,20 +5213,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def tag(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        tag_ids: typing.Sequence[str],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         tag_ids : typing.Sequence[str]
@@ -5000,7 +5233,7 @@ class AsyncRawPostsClient:
             Post
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/tags",
+            f"api/v1/posts/{encode_path_param(post_id)}/tags",
             method="PUT",
             json={
                 "tagIds": tag_ids,
@@ -5021,6 +5254,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5086,15 +5330,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def duplicate(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -5109,7 +5351,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/duplicate",
+            f"api/v1/posts/{encode_path_param(post_id)}/duplicate",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -5123,6 +5365,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5189,7 +5442,6 @@ class AsyncRawPostsClient:
 
     async def schedule(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         at: str,
@@ -5202,8 +5454,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -5224,7 +5474,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/schedule",
+            f"api/v1/posts/{encode_path_param(post_id)}/schedule",
             method="POST",
             json={
                 "at": at,
@@ -5247,6 +5497,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5334,21 +5595,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reschedule(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        at: str,
-        time_zone: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, at: str, time_zone: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Moves a scheduled post, or one awaiting approval, to another instant, or schedules a draft on the channels it has. A post that needs an approval it does not have waits for it (`awaitingApproval`). Moved to another month, or scheduled, it must fit that month's posts in the workspace's plan (PlanLimitReached). Needs post:schedule, and channel:read for a draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -5367,7 +5620,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/reschedule",
+            f"api/v1/posts/{encode_path_param(post_id)}/reschedule",
             method="POST",
             json={
                 "at": at,
@@ -5389,6 +5642,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5477,7 +5741,6 @@ class AsyncRawPostsClient:
 
     async def enqueue(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -5489,8 +5752,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -5509,7 +5770,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/queue",
+            f"api/v1/posts/{encode_path_param(post_id)}/queue",
             method="POST",
             json={
                 "channelIds": channel_ids,
@@ -5531,6 +5792,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5618,15 +5890,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unschedule(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -5641,7 +5911,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/unschedule",
+            f"api/v1/posts/{encode_path_param(post_id)}/unschedule",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -5655,6 +5925,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5720,20 +6001,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def repost(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as `partsNotSent` is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -5750,7 +6024,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/repost",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/repost",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -5764,6 +6038,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5829,20 +6114,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_target(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is `cancelled` with `dropped`, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear `post.cancelled` naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -5856,7 +6134,7 @@ class AsyncRawPostsClient:
             Post
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -5870,6 +6148,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -5936,7 +6225,6 @@ class AsyncRawPostsClient:
 
     async def confirm(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -5948,8 +6236,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -5968,7 +6254,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/confirm",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/confirm",
             method="POST",
             json=convert_and_respect_annotation_metadata(
                 object_=request, annotation=TargetConfirmation, direction="write"
@@ -5989,6 +6275,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -6054,20 +6351,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def leave_out_rest(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (`parts.live`); it becomes `published`, as that part, with `partsLeftOut`, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -6084,7 +6374,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/leave-out-rest",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/leave-out-rest",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -6098,6 +6388,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -6164,7 +6465,6 @@ class AsyncRawPostsClient:
 
     async def unpublish_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -6176,8 +6476,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -6196,7 +6494,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/unpublish",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/unpublish",
             method="POST",
             params={
                 "wait": wait,
@@ -6213,6 +6511,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -6279,7 +6588,6 @@ class AsyncRawPostsClient:
 
     async def edit_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -6293,8 +6601,6 @@ class AsyncRawPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -6317,7 +6623,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/edit",
+            f"api/v1/posts/{encode_path_param(post_id)}/targets/{encode_path_param(target_id)}/edit",
             method="POST",
             params={
                 "wait": wait,
@@ -6342,6 +6648,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -6418,15 +6735,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def unpublish(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[PostUnpublish]:
         """
         Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (`changes`) and, beside them, why it could not be on the others (`refused`, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -6441,7 +6756,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/unpublish",
+            f"api/v1/posts/{encode_path_param(post_id)}/unpublish",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -6455,6 +6770,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -6509,15 +6835,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def changes(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[LivePostChanges]:
         """
         Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its `kind` and where it stands: `pending`, `done` or `failed` with its `code`. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -6529,7 +6853,7 @@ class AsyncRawPostsClient:
             LivePostChanges
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/changes",
+            f"api/v1/posts/{encode_path_param(post_id)}/changes",
             method="GET",
             request_options=request_options,
         )
@@ -6543,6 +6867,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -6597,15 +6932,13 @@ class AsyncRawPostsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def cancel(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Post]:
         """
         Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -6620,7 +6953,7 @@ class AsyncRawPostsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/posts/{encode_path_param(post_id)}/cancel",
+            f"api/v1/posts/{encode_path_param(post_id)}/cancel",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -6634,6 +6967,17 @@ class AsyncRawPostsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

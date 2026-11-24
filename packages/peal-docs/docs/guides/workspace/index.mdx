@@ -240,7 +240,7 @@ Only owners can read the log. It needs the permission `activity:read`, which onl
 
 The log has no page in the web app yet. You can read it in three ways:
 
-- through the API, with `GET /api/workspaces/{workspaceId}/activity`, newest first, a page at a time ([Paging](/developers/conventions/paging#paging) shows an answer);
+- through the API, with `GET /api/v1/activity`, newest first, a page at a time ([Paging](/developers/conventions/paging#paging) shows an answer);
 - from the [command line](/developers/cli/workspace#activity), with `peal activity list`;
 - from an MCP client, with the tool `list_activity`.
 
@@ -333,7 +333,7 @@ These endpoints handle your workspace and your account:
 
 | Endpoint                                 | What it does                                     |
 | ---------------------------------------- | ------------------------------------------------ |
-| `DELETE /api/workspaces/{workspaceId}`   | Deletes the workspace, given its `name` (owners) |
+| `DELETE /api/v1/workspace`               | Deletes the workspace, given its `name` (owners) |
 | `GET /api/me/export`                     | Answers your data as a JSON file                 |
 | `DELETE /api/me`                         | Deletes your account, given its `password`       |
 | `GET /api/me/connected-apps`             | Lists your connected applications                |
@@ -343,13 +343,13 @@ They answer only you, signed in to the web app with your own session. API keys, 
 
 These endpoints handle members and invitations:
 
-| Endpoint                                                        | What it does                                                      |
-| --------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `GET /api/workspaces/{workspaceId}/members`                     | Lists the members, to every member                                |
-| `GET /api/workspaces/{workspaceId}/invitations`                 | Lists the pending invitations, to those who may invite            |
-| `POST /api/workspaces/{workspaceId}/invitations`                | Invites an `email` with a `role`, as **Send the invitation** does |
-| `DELETE /api/workspaces/{workspaceId}/invitations/{invitation}` | Revokes a pending invitation                                      |
+| Endpoint                                  | What it does                                                      |
+| ----------------------------------------- | ----------------------------------------------------------------- |
+| `GET /api/v1/members`                     | Lists the members, to every member                                |
+| `GET /api/v1/invitations`                 | Lists the pending invitations, to those who may invite            |
+| `POST /api/v1/invitations`                | Invites an `email` with a `role`, as **Send the invitation** does |
+| `DELETE /api/v1/invitations/{invitation}` | Revokes a pending invitation                                      |
 
 They answer members in person, through the web app, the command line or an MCP client allowed to. They never answer an API key or staff acting as you.
 
-Renaming a workspace, changing a member's role and removing a member go through the sign-in service's routes under `/api/auth/organization/`. API keys go through `/api/workspaces/{workspaceId}/api-keys`.
+Renaming a workspace, changing a member's role and removing a member go through the sign-in service's routes under `/api/auth/organization/`. API keys go through `/api/v1/api-keys`.

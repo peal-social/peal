@@ -88,19 +88,15 @@ func TestAdsStatusWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.StatusAdsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Ads.Status(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAdsStatusWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsStatusWithWireMock", "GET", "/api/workspaces/workspaceId/ads", nil, 1)
+	VerifyRequestCount(t, "TestAdsStatusWithWireMock", "GET", "/api/v1/ads", nil, 1)
 }
 
 func TestAdsListConnectionsWithWireMock(
@@ -114,19 +110,15 @@ func TestAdsListConnectionsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListConnectionsAdsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Ads.ListConnections(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAdsListConnectionsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsListConnectionsWithWireMock", "GET", "/api/workspaces/workspaceId/ads/connections", nil, 1)
+	VerifyRequestCount(t, "TestAdsListConnectionsWithWireMock", "GET", "/api/v1/ads/connections", nil, 1)
 }
 
 func TestAdsConnectWithWireMock(
@@ -141,8 +133,7 @@ func TestAdsConnectWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ConnectAdsRequest{
-		WorkspaceID: "workspaceId",
-		Network:     peal.AdNetworkMeta,
+		Network: peal.AdNetworkMeta,
 	}
 	_, invocationErr := client.Ads.Connect(
 		context.TODO(),
@@ -153,7 +144,7 @@ func TestAdsConnectWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsConnectWithWireMock", "POST", "/api/workspaces/workspaceId/ads/connections/meta", nil, 1)
+	VerifyRequestCount(t, "TestAdsConnectWithWireMock", "POST", "/api/v1/ads/connections/meta", nil, 1)
 }
 
 func TestAdsCompleteConnectWithWireMock(
@@ -168,9 +159,8 @@ func TestAdsCompleteConnectWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.AdSignInCallback{
-		WorkspaceID: "workspaceId",
-		Network:     peal.AdNetworkMeta,
-		State:       "state",
+		Network: peal.AdNetworkMeta,
+		State:   "state",
 	}
 	_, invocationErr := client.Ads.CompleteConnect(
 		context.TODO(),
@@ -181,7 +171,7 @@ func TestAdsCompleteConnectWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsCompleteConnectWithWireMock", "POST", "/api/workspaces/workspaceId/ads/connections/meta/callback", nil, 1)
+	VerifyRequestCount(t, "TestAdsCompleteConnectWithWireMock", "POST", "/api/v1/ads/connections/meta/callback", nil, 1)
 }
 
 func TestAdsReachableAccountsWithWireMock(
@@ -196,7 +186,6 @@ func TestAdsReachableAccountsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ReachableAccountsAdsRequest{
-		WorkspaceID:  "workspaceId",
 		ConnectionID: "connectionId",
 	}
 	_, invocationErr := client.Ads.ReachableAccounts(
@@ -208,7 +197,7 @@ func TestAdsReachableAccountsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsReachableAccountsWithWireMock", "GET", "/api/workspaces/workspaceId/ads/connections/connectionId/accounts", nil, 1)
+	VerifyRequestCount(t, "TestAdsReachableAccountsWithWireMock", "GET", "/api/v1/ads/connections/connectionId/accounts", nil, 1)
 }
 
 func TestAdsConnectAccountsWithWireMock(
@@ -223,7 +212,6 @@ func TestAdsConnectAccountsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.AdAccountsToConnect{
-		WorkspaceID:  "workspaceId",
 		ConnectionID: "connectionId",
 		ExternalIDs: []string{
 			"externalIds",
@@ -238,7 +226,7 @@ func TestAdsConnectAccountsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsConnectAccountsWithWireMock", "POST", "/api/workspaces/workspaceId/ads/connections/connectionId/accounts", nil, 1)
+	VerifyRequestCount(t, "TestAdsConnectAccountsWithWireMock", "POST", "/api/v1/ads/connections/connectionId/accounts", nil, 1)
 }
 
 func TestAdsDisconnectWithWireMock(
@@ -253,7 +241,6 @@ func TestAdsDisconnectWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DisconnectAdsRequest{
-		WorkspaceID:  "workspaceId",
 		ConnectionID: "connectionId",
 	}
 	invocationErr := client.Ads.Disconnect(
@@ -265,7 +252,7 @@ func TestAdsDisconnectWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsDisconnectWithWireMock", "DELETE", "/api/workspaces/workspaceId/ads/connections/connectionId", nil, 1)
+	VerifyRequestCount(t, "TestAdsDisconnectWithWireMock", "DELETE", "/api/v1/ads/connections/connectionId", nil, 1)
 }
 
 func TestAdsListAccountsWithWireMock(
@@ -279,19 +266,15 @@ func TestAdsListAccountsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListAccountsAdsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Ads.ListAccounts(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestAdsListAccountsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsListAccountsWithWireMock", "GET", "/api/workspaces/workspaceId/ads/accounts", nil, 1)
+	VerifyRequestCount(t, "TestAdsListAccountsWithWireMock", "GET", "/api/v1/ads/accounts", nil, 1)
 }
 
 func TestAdsGetAccountWithWireMock(
@@ -306,8 +289,7 @@ func TestAdsGetAccountWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetAccountAdsRequest{
-		WorkspaceID: "workspaceId",
-		AccountID:   "accountId",
+		AccountID: "accountId",
 	}
 	_, invocationErr := client.Ads.GetAccount(
 		context.TODO(),
@@ -318,7 +300,7 @@ func TestAdsGetAccountWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsGetAccountWithWireMock", "GET", "/api/workspaces/workspaceId/ads/accounts/accountId", nil, 1)
+	VerifyRequestCount(t, "TestAdsGetAccountWithWireMock", "GET", "/api/v1/ads/accounts/accountId", nil, 1)
 }
 
 func TestAdsRemoveAccountWithWireMock(
@@ -333,8 +315,7 @@ func TestAdsRemoveAccountWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RemoveAccountAdsRequest{
-		WorkspaceID: "workspaceId",
-		AccountID:   "accountId",
+		AccountID: "accountId",
 	}
 	invocationErr := client.Ads.RemoveAccount(
 		context.TODO(),
@@ -345,7 +326,7 @@ func TestAdsRemoveAccountWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsRemoveAccountWithWireMock", "DELETE", "/api/workspaces/workspaceId/ads/accounts/accountId", nil, 1)
+	VerifyRequestCount(t, "TestAdsRemoveAccountWithWireMock", "DELETE", "/api/v1/ads/accounts/accountId", nil, 1)
 }
 
 func TestAdsSetSpendingWithWireMock(
@@ -360,9 +341,8 @@ func TestAdsSetSpendingWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.AdSpendingDecision{
-		WorkspaceID: "workspaceId",
-		AccountID:   "accountId",
-		Enabled:     true,
+		AccountID: "accountId",
+		Enabled:   true,
 	}
 	_, invocationErr := client.Ads.SetSpending(
 		context.TODO(),
@@ -373,7 +353,7 @@ func TestAdsSetSpendingWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsSetSpendingWithWireMock", "PUT", "/api/workspaces/workspaceId/ads/accounts/accountId/spending", nil, 1)
+	VerifyRequestCount(t, "TestAdsSetSpendingWithWireMock", "PUT", "/api/v1/ads/accounts/accountId/spending", nil, 1)
 }
 
 func TestAdsListCampaignsWithWireMock(
@@ -388,8 +368,7 @@ func TestAdsListCampaignsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ListCampaignsAdsRequest{
-		WorkspaceID: "workspaceId",
-		AccountID:   "accountId",
+		AccountID: "accountId",
 	}
 	_, invocationErr := client.Ads.ListCampaigns(
 		context.TODO(),
@@ -400,7 +379,7 @@ func TestAdsListCampaignsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsListCampaignsWithWireMock", "GET", "/api/workspaces/workspaceId/ads/accounts/accountId/campaigns", nil, 1)
+	VerifyRequestCount(t, "TestAdsListCampaignsWithWireMock", "GET", "/api/v1/ads/accounts/accountId/campaigns", nil, 1)
 }
 
 func TestAdsListAdsWithWireMock(
@@ -415,8 +394,7 @@ func TestAdsListAdsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ListAdsAdsRequest{
-		WorkspaceID: "workspaceId",
-		AccountID:   "accountId",
+		AccountID: "accountId",
 	}
 	_, invocationErr := client.Ads.ListAds(
 		context.TODO(),
@@ -427,7 +405,7 @@ func TestAdsListAdsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsListAdsWithWireMock", "GET", "/api/workspaces/workspaceId/ads/accounts/accountId/ads", nil, 1)
+	VerifyRequestCount(t, "TestAdsListAdsWithWireMock", "GET", "/api/v1/ads/accounts/accountId/ads", nil, 1)
 }
 
 func TestAdsListInsightsWithWireMock(
@@ -442,8 +420,7 @@ func TestAdsListInsightsWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ListInsightsAdsRequest{
-		WorkspaceID: "workspaceId",
-		AccountID:   "accountId",
+		AccountID: "accountId",
 	}
 	_, invocationErr := client.Ads.ListInsights(
 		context.TODO(),
@@ -454,7 +431,7 @@ func TestAdsListInsightsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsListInsightsWithWireMock", "GET", "/api/workspaces/workspaceId/ads/accounts/accountId/insights", nil, 1)
+	VerifyRequestCount(t, "TestAdsListInsightsWithWireMock", "GET", "/api/v1/ads/accounts/accountId/insights", nil, 1)
 }
 
 func TestAdsPostPerformanceWithWireMock(
@@ -469,8 +446,7 @@ func TestAdsPostPerformanceWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.PostPerformanceAdsRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Ads.PostPerformance(
 		context.TODO(),
@@ -481,7 +457,7 @@ func TestAdsPostPerformanceWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsPostPerformanceWithWireMock", "GET", "/api/workspaces/workspaceId/ads/posts/postId", nil, 1)
+	VerifyRequestCount(t, "TestAdsPostPerformanceWithWireMock", "GET", "/api/v1/ads/posts/postId", nil, 1)
 }
 
 func TestAdsQuoteBoostWithWireMock(
@@ -495,27 +471,24 @@ func TestAdsQuoteBoostWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.QuoteBoostAdsRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.NewBoost{
-			AccountID: "accountId",
-			Audience: &peal.BoostAudience{
-				AgeMax: 1,
-				AgeMin: 1,
-				Countries: []string{
-					"countries",
-				},
+	request := &peal.NewBoost{
+		AccountID: "accountId",
+		Audience: &peal.BoostAudience{
+			AgeMax: 1,
+			AgeMin: 1,
+			Countries: []string{
+				"countries",
 			},
-			Budget: &peal.BoostBudget{
-				Amount: int64(1000000),
-				Kind:   peal.BoostBudgetKindTotal,
-			},
-			ChannelID:         "channelId",
-			Currency:          "currency",
-			EndsAt:            "endsAt",
-			PostID:            "postId",
-			SpecialAdCategory: peal.SpecialAdCategoryNone,
 		},
+		Budget: &peal.BoostBudget{
+			Amount: int64(1000000),
+			Kind:   peal.BoostBudgetKindTotal,
+		},
+		ChannelID:         "channelId",
+		Currency:          "currency",
+		EndsAt:            "endsAt",
+		PostID:            "postId",
+		SpecialAdCategory: peal.SpecialAdCategoryNone,
 	}
 	_, invocationErr := client.Ads.QuoteBoost(
 		context.TODO(),
@@ -526,7 +499,7 @@ func TestAdsQuoteBoostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsQuoteBoostWithWireMock", "POST", "/api/workspaces/workspaceId/ads/boosts/quote", nil, 1)
+	VerifyRequestCount(t, "TestAdsQuoteBoostWithWireMock", "POST", "/api/v1/ads/boosts/quote", nil, 1)
 }
 
 func TestAdsListBoostsWithWireMock(
@@ -540,9 +513,7 @@ func TestAdsListBoostsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListBoostsAdsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListBoostsAdsRequest{}
 	_, invocationErr := client.Ads.ListBoosts(
 		context.TODO(),
 		request,
@@ -552,7 +523,7 @@ func TestAdsListBoostsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsListBoostsWithWireMock", "GET", "/api/workspaces/workspaceId/ads/boosts", nil, 1)
+	VerifyRequestCount(t, "TestAdsListBoostsWithWireMock", "GET", "/api/v1/ads/boosts", nil, 1)
 }
 
 func TestAdsCreateBoostWithWireMock(
@@ -567,7 +538,6 @@ func TestAdsCreateBoostWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.CreateBoostAdsRequest{
-		WorkspaceID:    "workspaceId",
 		IdempotencyKey: "idempotency-key",
 		Body: &peal.NewBoost{
 			AccountID: "accountId",
@@ -598,7 +568,7 @@ func TestAdsCreateBoostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsCreateBoostWithWireMock", "POST", "/api/workspaces/workspaceId/ads/boosts", nil, 1)
+	VerifyRequestCount(t, "TestAdsCreateBoostWithWireMock", "POST", "/api/v1/ads/boosts", nil, 1)
 }
 
 func TestAdsGetBoostWithWireMock(
@@ -613,8 +583,7 @@ func TestAdsGetBoostWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetBoostAdsRequest{
-		WorkspaceID: "workspaceId",
-		BoostID:     "boostId",
+		BoostID: "boostId",
 	}
 	_, invocationErr := client.Ads.GetBoost(
 		context.TODO(),
@@ -625,7 +594,7 @@ func TestAdsGetBoostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsGetBoostWithWireMock", "GET", "/api/workspaces/workspaceId/ads/boosts/boostId", nil, 1)
+	VerifyRequestCount(t, "TestAdsGetBoostWithWireMock", "GET", "/api/v1/ads/boosts/boostId", nil, 1)
 }
 
 func TestAdsPauseBoostWithWireMock(
@@ -640,8 +609,7 @@ func TestAdsPauseBoostWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.PauseBoostAdsRequest{
-		WorkspaceID: "workspaceId",
-		BoostID:     "boostId",
+		BoostID: "boostId",
 	}
 	_, invocationErr := client.Ads.PauseBoost(
 		context.TODO(),
@@ -652,7 +620,7 @@ func TestAdsPauseBoostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsPauseBoostWithWireMock", "POST", "/api/workspaces/workspaceId/ads/boosts/boostId/pause", nil, 1)
+	VerifyRequestCount(t, "TestAdsPauseBoostWithWireMock", "POST", "/api/v1/ads/boosts/boostId/pause", nil, 1)
 }
 
 func TestAdsResumeBoostWithWireMock(
@@ -667,8 +635,7 @@ func TestAdsResumeBoostWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ResumeBoostAdsRequest{
-		WorkspaceID: "workspaceId",
-		BoostID:     "boostId",
+		BoostID: "boostId",
 	}
 	_, invocationErr := client.Ads.ResumeBoost(
 		context.TODO(),
@@ -679,7 +646,7 @@ func TestAdsResumeBoostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsResumeBoostWithWireMock", "POST", "/api/workspaces/workspaceId/ads/boosts/boostId/resume", nil, 1)
+	VerifyRequestCount(t, "TestAdsResumeBoostWithWireMock", "POST", "/api/v1/ads/boosts/boostId/resume", nil, 1)
 }
 
 func TestAdsStopBoostWithWireMock(
@@ -694,8 +661,7 @@ func TestAdsStopBoostWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.StopBoostAdsRequest{
-		WorkspaceID: "workspaceId",
-		BoostID:     "boostId",
+		BoostID: "boostId",
 	}
 	_, invocationErr := client.Ads.StopBoost(
 		context.TODO(),
@@ -706,7 +672,7 @@ func TestAdsStopBoostWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsStopBoostWithWireMock", "POST", "/api/workspaces/workspaceId/ads/boosts/boostId/stop", nil, 1)
+	VerifyRequestCount(t, "TestAdsStopBoostWithWireMock", "POST", "/api/v1/ads/boosts/boostId/stop", nil, 1)
 }
 
 func TestAdsAuditTrailWithWireMock(
@@ -720,9 +686,7 @@ func TestAdsAuditTrailWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.AuditTrailAdsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.AuditTrailAdsRequest{}
 	_, invocationErr := client.Ads.AuditTrail(
 		context.TODO(),
 		request,
@@ -732,5 +696,5 @@ func TestAdsAuditTrailWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestAdsAuditTrailWithWireMock", "GET", "/api/workspaces/workspaceId/ads/audit", nil, 1)
+	VerifyRequestCount(t, "TestAdsAuditTrailWithWireMock", "GET", "/api/v1/ads/audit", nil, 1)
 }

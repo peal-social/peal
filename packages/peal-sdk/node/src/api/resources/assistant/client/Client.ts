@@ -28,9 +28,9 @@ export class AssistantClient {
     /**
      * Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (`source`: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (`images.source`: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, `month` and `images.month` tell the billing account's month of the server's models (included, used, price and ceiling), and `reason` `paymentMethod` why they are off without a payment method. Needs assistant:use.
      *
-     * @param {Peal.StatusAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.status({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.status()
      */
-    public status(request: Peal.StatusAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.AssistantStatus> {
-        return core.HttpResponsePromise.fromPromise(this.__status(request, requestOptions));
+    public status(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.AssistantStatus> {
+        return core.HttpResponsePromise.fromPromise(this.__status(requestOptions));
     }
 
-    private async __status(request: Peal.StatusAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AssistantStatus>> {
-        const { workspaceId } = request;
+    private async __status(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AssistantStatus>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,7 +78,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/assistant");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/assistant");
     }
 
     /**
@@ -89,6 +87,7 @@ export class AssistantClient {
      * @param {Peal.SuggestionRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -102,7 +101,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.suggest({
-     *         workspaceId: "workspaceId",
      *         action: {
      *             _tag: "rewrite",
      *             tone: "professional"
@@ -115,17 +113,16 @@ export class AssistantClient {
     }
 
     private async __suggest(request: Peal.SuggestionRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.Suggestion>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/suggestions`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/suggestions"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -138,6 +135,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -154,7 +152,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/assistant/suggestions");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/assistant/suggestions");
     }
 
     /**
@@ -163,6 +161,7 @@ export class AssistantClient {
      * @param {Peal.ImageRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -176,7 +175,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.generateImage({
-     *         workspaceId: "workspaceId",
      *         aspect: "square",
      *         prompt: "prompt"
      *     })
@@ -186,17 +184,16 @@ export class AssistantClient {
     }
 
     private async __generateImage(request: Peal.ImageRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.Media>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/images`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/images"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -209,6 +206,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -225,7 +223,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/assistant/images");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/assistant/images");
     }
 
     /**
@@ -233,9 +231,9 @@ export class AssistantClient {
      *
      * Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      *
-     * @param {Peal.ImageProviderAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -244,20 +242,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.imageProvider({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.imageProvider()
      */
-    public imageProvider(request: Peal.ImageProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.ImageProviderSetting> {
-        return core.HttpResponsePromise.fromPromise(this.__imageProvider(request, requestOptions));
+    public imageProvider(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.ImageProviderSetting> {
+        return core.HttpResponsePromise.fromPromise(this.__imageProvider(requestOptions));
     }
 
-    private async __imageProvider(request: Peal.ImageProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.ImageProviderSetting>> {
-        const { workspaceId } = request;
+    private async __imageProvider(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.ImageProviderSetting>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/image-provider`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/image-provider"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -273,6 +268,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -285,7 +281,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/assistant/image-provider");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/assistant/image-provider");
     }
 
     /**
@@ -296,6 +292,7 @@ export class AssistantClient {
      * @param {Peal.ImageProviderChange} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -307,7 +304,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.setImageProvider({
-     *         workspaceId: "workspaceId",
      *         model: "model"
      *     })
      */
@@ -316,17 +312,16 @@ export class AssistantClient {
     }
 
     private async __setImageProvider(request: Peal.ImageProviderChange, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.ImageProvider>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/image-provider`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/image-provider"),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -339,6 +334,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -353,7 +349,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/assistant/image-provider");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/assistant/image-provider");
     }
 
     /**
@@ -361,9 +357,9 @@ export class AssistantClient {
      *
      * Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
      *
-     * @param {Peal.RemoveImageProviderAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -372,20 +368,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.removeImageProvider({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.removeImageProvider()
      */
-    public removeImageProvider(request: Peal.RemoveImageProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<void> {
-        return core.HttpResponsePromise.fromPromise(this.__removeImageProvider(request, requestOptions));
+    public removeImageProvider(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<void> {
+        return core.HttpResponsePromise.fromPromise(this.__removeImageProvider(requestOptions));
     }
 
-    private async __removeImageProvider(request: Peal.RemoveImageProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId } = request;
+    private async __removeImageProvider(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/image-provider`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/image-provider"),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -401,6 +394,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -413,7 +407,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/assistant/image-provider");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/assistant/image-provider");
     }
 
     /**
@@ -421,9 +415,9 @@ export class AssistantClient {
      *
      * Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
      *
-     * @param {Peal.TextProviderAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -432,20 +426,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.textProvider({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.textProvider()
      */
-    public textProvider(request: Peal.TextProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.TextProviderSetting> {
-        return core.HttpResponsePromise.fromPromise(this.__textProvider(request, requestOptions));
+    public textProvider(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.TextProviderSetting> {
+        return core.HttpResponsePromise.fromPromise(this.__textProvider(requestOptions));
     }
 
-    private async __textProvider(request: Peal.TextProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.TextProviderSetting>> {
-        const { workspaceId } = request;
+    private async __textProvider(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.TextProviderSetting>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/text-provider`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/text-provider"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -461,6 +452,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -473,7 +465,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/assistant/text-provider");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/assistant/text-provider");
     }
 
     /**
@@ -484,6 +476,7 @@ export class AssistantClient {
      * @param {Peal.TextProviderChange} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -495,7 +488,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.setTextProvider({
-     *         workspaceId: "workspaceId",
      *         model: "model"
      *     })
      */
@@ -504,17 +496,16 @@ export class AssistantClient {
     }
 
     private async __setTextProvider(request: Peal.TextProviderChange, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.TextProvider>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/text-provider`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/text-provider"),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -527,6 +518,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -541,7 +533,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/assistant/text-provider");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/assistant/text-provider");
     }
 
     /**
@@ -549,9 +541,9 @@ export class AssistantClient {
      *
      * Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
      *
-     * @param {Peal.RemoveTextProviderAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -560,20 +552,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.removeTextProvider({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.removeTextProvider()
      */
-    public removeTextProvider(request: Peal.RemoveTextProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<void> {
-        return core.HttpResponsePromise.fromPromise(this.__removeTextProvider(request, requestOptions));
+    public removeTextProvider(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<void> {
+        return core.HttpResponsePromise.fromPromise(this.__removeTextProvider(requestOptions));
     }
 
-    private async __removeTextProvider(request: Peal.RemoveTextProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId } = request;
+    private async __removeTextProvider(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/text-provider`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/text-provider"),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -589,6 +578,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -601,7 +591,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/assistant/text-provider");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/assistant/text-provider");
     }
 
     /**
@@ -609,9 +599,9 @@ export class AssistantClient {
      *
      * Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
      *
-     * @param {Peal.TestTextProviderAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -621,20 +611,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.testTextProvider({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.testTextProvider()
      */
-    public testTextProvider(request: Peal.TestTextProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<void> {
-        return core.HttpResponsePromise.fromPromise(this.__testTextProvider(request, requestOptions));
+    public testTextProvider(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<void> {
+        return core.HttpResponsePromise.fromPromise(this.__testTextProvider(requestOptions));
     }
 
-    private async __testTextProvider(request: Peal.TestTextProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId } = request;
+    private async __testTextProvider(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/text-provider/test`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/text-provider/test"),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -650,6 +637,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -663,15 +651,15 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/assistant/text-provider/test");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/assistant/text-provider/test");
     }
 
     /**
      * Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      *
-     * @param {Peal.ProvidersAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -680,20 +668,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.providers({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.providers()
      */
-    public providers(request: Peal.ProvidersAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.AiProviderConnections> {
-        return core.HttpResponsePromise.fromPromise(this.__providers(request, requestOptions));
+    public providers(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.AiProviderConnections> {
+        return core.HttpResponsePromise.fromPromise(this.__providers(requestOptions));
     }
 
-    private async __providers(request: Peal.ProvidersAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AiProviderConnections>> {
-        const { workspaceId } = request;
+    private async __providers(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AiProviderConnections>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/providers`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/providers"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -709,6 +694,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -721,7 +707,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/assistant/providers");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/assistant/providers");
     }
 
     /**
@@ -730,6 +716,7 @@ export class AssistantClient {
      * @param {Peal.AiProviderConnectionChange} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -741,7 +728,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.connectProvider({
-     *         workspaceId: "workspaceId",
      *         provider: "anthropic"
      *     })
      */
@@ -750,11 +736,11 @@ export class AssistantClient {
     }
 
     private async __connectProvider(request: Peal.AiProviderConnectionChange, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AiProviderConnection>> {
-        const { workspaceId, provider, ..._body } = request;
+        const { provider, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/providers/${core.url.encodePathParam(provider, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/assistant/providers/${core.url.encodePathParam(provider, errors.PealError)}`),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
@@ -773,6 +759,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -787,7 +774,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/assistant/providers/{provider}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/assistant/providers/{provider}");
     }
 
     /**
@@ -796,6 +783,7 @@ export class AssistantClient {
      * @param {Peal.DisconnectProviderAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -805,7 +793,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.disconnectProvider({
-     *         workspaceId: "workspaceId",
      *         provider: "anthropic"
      *     })
      */
@@ -814,11 +801,11 @@ export class AssistantClient {
     }
 
     private async __disconnectProvider(request: Peal.DisconnectProviderAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, provider } = request;
+        const { provider } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/providers/${core.url.encodePathParam(provider, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/assistant/providers/${core.url.encodePathParam(provider, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -834,6 +821,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -846,7 +834,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/assistant/providers/{provider}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/assistant/providers/{provider}");
     }
 
     /**
@@ -855,6 +843,7 @@ export class AssistantClient {
      * @param {Peal.AiProviderTest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -866,7 +855,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.testProvider({
-     *         workspaceId: "workspaceId",
      *         provider: "anthropic"
      *     })
      */
@@ -875,11 +863,11 @@ export class AssistantClient {
     }
 
     private async __testProvider(request: Peal.AiProviderTest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, provider, ..._body } = request;
+        const { provider, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/providers/${core.url.encodePathParam(provider, errors.PealError)}/test`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/assistant/providers/${core.url.encodePathParam(provider, errors.PealError)}/test`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -898,6 +886,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -912,15 +901,15 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/assistant/providers/{provider}/test");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/assistant/providers/{provider}/test");
     }
 
     /**
      * Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
      *
-     * @param {Peal.ModelsAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -929,20 +918,17 @@ export class AssistantClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.assistant.models({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.assistant.models()
      */
-    public models(request: Peal.ModelsAssistantRequest, requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.AiCapabilityModels> {
-        return core.HttpResponsePromise.fromPromise(this.__models(request, requestOptions));
+    public models(requestOptions?: AssistantClient.RequestOptions): core.HttpResponsePromise<Peal.AiCapabilityModels> {
+        return core.HttpResponsePromise.fromPromise(this.__models(requestOptions));
     }
 
-    private async __models(request: Peal.ModelsAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AiCapabilityModels>> {
-        const { workspaceId } = request;
+    private async __models(requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AiCapabilityModels>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/models`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/assistant/models"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -958,6 +944,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -970,7 +957,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/assistant/models");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/assistant/models");
     }
 
     /**
@@ -979,6 +966,7 @@ export class AssistantClient {
      * @param {Peal.AiCapabilityModelChange} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -989,7 +977,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.setModel({
-     *         workspaceId: "workspaceId",
      *         capability: "text",
      *         provider: "anthropic"
      *     })
@@ -999,11 +986,11 @@ export class AssistantClient {
     }
 
     private async __setModel(request: Peal.AiCapabilityModelChange, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<Peal.AiCapabilityModel>> {
-        const { workspaceId, capability, ..._body } = request;
+        const { capability, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/models/${core.url.encodePathParam(capability, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/assistant/models/${core.url.encodePathParam(capability, errors.PealError)}`),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
@@ -1022,6 +1009,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1035,7 +1023,7 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/assistant/models/{capability}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/assistant/models/{capability}");
     }
 
     /**
@@ -1044,6 +1032,7 @@ export class AssistantClient {
      * @param {Peal.UnsetModelAssistantRequest} request
      * @param {AssistantClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -1053,7 +1042,6 @@ export class AssistantClient {
      *
      * @example
      *     await client.assistant.unsetModel({
-     *         workspaceId: "workspaceId",
      *         capability: "text"
      *     })
      */
@@ -1062,11 +1050,11 @@ export class AssistantClient {
     }
 
     private async __unsetModel(request: Peal.UnsetModelAssistantRequest, requestOptions?: AssistantClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, capability } = request;
+        const { capability } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/assistant/models/${core.url.encodePathParam(capability, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/assistant/models/${core.url.encodePathParam(capability, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -1082,6 +1070,7 @@ export class AssistantClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1094,6 +1083,6 @@ export class AssistantClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/assistant/models/{capability}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/assistant/models/{capability}");
     }
 }

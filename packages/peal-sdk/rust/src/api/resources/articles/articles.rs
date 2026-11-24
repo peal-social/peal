@@ -38,7 +38,6 @@ impl ArticlesClient {
     ///     client
     ///         .articles
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &ArticlesListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl ArticlesClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &ArticlesListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ArticlePage, ApiError> {
@@ -63,7 +61,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/articles", workspace_id),
+                "api/v1/articles",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -100,7 +98,6 @@ impl ArticlesClient {
     ///     client
     ///         .articles
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewArticle {
     ///                 body: ArticleBody {
     ///                     content: vec![],
@@ -122,7 +119,6 @@ impl ArticlesClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewArticle,
         options: Option<RequestOptions>,
     ) -> Result<Article, ApiError> {
@@ -137,7 +133,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/articles", workspace_id),
+                "api/v1/articles",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -167,15 +163,11 @@ impl ArticlesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .articles
-    ///         .get(&"workspaceId".to_string(), &"articleId".to_string(), None)
-    ///         .await;
+    ///     client.articles.get(&"articleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         article_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Article, ApiError> {
@@ -189,7 +181,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/articles/{}", workspace_id, article_id),
+                &format!("api/v1/articles/{}", article_id),
                 None,
                 None,
                 options,
@@ -219,15 +211,11 @@ impl ArticlesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .articles
-    ///         .delete(&"workspaceId".to_string(), &"articleId".to_string(), None)
-    ///         .await;
+    ///     client.articles.delete(&"articleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         article_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -241,7 +229,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/articles/{}", workspace_id, article_id),
+                &format!("api/v1/articles/{}", article_id),
                 None,
                 None,
                 options,
@@ -274,7 +262,6 @@ impl ArticlesClient {
     ///     client
     ///         .articles
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"articleId".to_string(),
     ///             &ArticleInput {
     ///                 body: ArticleBody {
@@ -295,7 +282,6 @@ impl ArticlesClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         article_id: &str,
         request: &ArticleInput,
         options: Option<RequestOptions>,
@@ -311,7 +297,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/articles/{}", workspace_id, article_id),
+                &format!("api/v1/articles/{}", article_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -344,7 +330,6 @@ impl ArticlesClient {
     ///     client
     ///         .articles
     ///         .schedule(
-    ///             &"workspaceId".to_string(),
     ///             &"articleId".to_string(),
     ///             &ArticleTime {
     ///                 time_zone: "timeZone".to_string(),
@@ -357,7 +342,6 @@ impl ArticlesClient {
     /// ```
     pub async fn schedule(
         &self,
-        workspace_id: &str,
         article_id: &str,
         request: &ArticleTime,
         options: Option<RequestOptions>,
@@ -373,10 +357,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/articles/{}/schedule",
-                    workspace_id, article_id
-                ),
+                &format!("api/v1/articles/{}/schedule", article_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -408,13 +389,12 @@ impl ArticlesClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .articles
-    ///         .unschedule(&"workspaceId".to_string(), &"articleId".to_string(), None)
+    ///         .unschedule(&"articleId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn unschedule(
         &self,
-        workspace_id: &str,
         article_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Article, ApiError> {
@@ -429,10 +409,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/articles/{}/unschedule",
-                    workspace_id, article_id
-                ),
+                &format!("api/v1/articles/{}/unschedule", article_id),
                 None,
                 None,
                 options,
@@ -462,15 +439,11 @@ impl ArticlesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .articles
-    ///         .retry(&"workspaceId".to_string(), &"articleId".to_string(), None)
-    ///         .await;
+    ///     client.articles.retry(&"articleId".to_string(), None).await;
     /// }
     /// ```
     pub async fn retry(
         &self,
-        workspace_id: &str,
         article_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Article, ApiError> {
@@ -485,10 +458,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/articles/{}/retry",
-                    workspace_id, article_id
-                ),
+                &format!("api/v1/articles/{}/retry", article_id),
                 None,
                 None,
                 options,
@@ -520,13 +490,12 @@ impl ArticlesClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .articles
-    ///         .unpublish(&"workspaceId".to_string(), &"articleId".to_string(), None)
+    ///         .unpublish(&"articleId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn unpublish(
         &self,
-        workspace_id: &str,
         article_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Article, ApiError> {
@@ -541,10 +510,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/articles/{}/unpublish",
-                    workspace_id, article_id
-                ),
+                &format!("api/v1/articles/{}/unpublish", article_id),
                 None,
                 None,
                 options,
@@ -577,7 +543,6 @@ impl ArticlesClient {
     ///     client
     ///         .articles
     ///         .update_on_site(
-    ///             &"workspaceId".to_string(),
     ///             &"articleId".to_string(),
     ///             &ArticleInput {
     ///                 body: ArticleBody {
@@ -598,7 +563,6 @@ impl ArticlesClient {
     /// ```
     pub async fn update_on_site(
         &self,
-        workspace_id: &str,
         article_id: &str,
         request: &ArticleInput,
         options: Option<RequestOptions>,
@@ -614,10 +578,7 @@ impl ArticlesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/articles/{}/site",
-                    workspace_id, article_id
-                ),
+                &format!("api/v1/articles/{}/site", article_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

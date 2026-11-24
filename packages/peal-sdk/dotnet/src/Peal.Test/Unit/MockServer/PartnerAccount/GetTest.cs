@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -50,7 +49,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner")
+                    .WithPath("/api/v1/partner-account")
                     .UsingGet()
             )
             .RespondWith(
@@ -60,9 +59,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.PartnerAccount.GetAsync(
-            new GetPartnerAccountRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.PartnerAccount.GetAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -101,7 +98,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/partner")
+                    .WithPath("/api/v1/partner-account")
                     .UsingGet()
             )
             .RespondWith(
@@ -111,9 +108,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.PartnerAccount.GetAsync(
-            new GetPartnerAccountRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.PartnerAccount.GetAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

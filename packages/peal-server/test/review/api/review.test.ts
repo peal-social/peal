@@ -12,6 +12,7 @@ import {
   ReviewAccessDenied,
   ReviewLinkClosed,
   ReviewLinkNotFound,
+  forWorkspace,
 } from "peal-contract";
 import type { Member, Permission, PostContent } from "peal-contract";
 
@@ -100,16 +101,16 @@ describe("the review endpoints", () => {
           );
 
           const channelId = yield* connect(workspaceId, "mastodon");
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           // Only those who may change the workspace choose its policy.
-          assert.deepStrictEqual(yield* editor.review.settings({ params }), {
+          assert.deepStrictEqual(yield* editor.review.settings({ headers }), {
             approvalPolicy: "never",
           });
           assert.deepStrictEqual(
             yield* refusalOf(
               editor.review.updateSettings({
-                params,
+                headers,
                 payload: { approvalPolicy: "always" },
               })
             ),
@@ -117,19 +118,20 @@ describe("the review endpoints", () => {
           );
 
           yield* owner.review.updateSettings({
-            params,
+            headers,
             payload: { approvalPolicy: "contributorsAndApplications" },
           });
 
           const draft = yield* contributor.posts.create({
-            params,
+            headers,
             payload: { channelIds: [channelId], content },
           });
 
-          const post = { postId: draft.id, workspaceId };
+          const post = { postId: draft.id };
 
           // Scheduling answers a post that waits, which the API shows.
           const asked = yield* contributor.posts.schedule({
+            headers,
             params: post,
             payload: {
               at: utc("2026-06-16T08:00:00Z"),
@@ -144,7 +146,7 @@ describe("the review endpoints", () => {
             timeZone: "Europe/Paris",
           });
 
-          const [waiting] = yield* editor.review.pending({ params });
+          const [waiting] = yield* editor.review.pending({ headers });
 
           assert.deepStrictEqual(
             {
@@ -166,6 +168,7 @@ describe("the review endpoints", () => {
           assert.deepStrictEqual(
             yield* refusalOf(
               contributor.review.createLink({
+                headers,
                 params: post,
                 payload: { access: "approve" },
               })
@@ -174,6 +177,7 @@ describe("the review endpoints", () => {
           );
 
           const made = yield* editor.review.createLink({
+            headers,
             params: post,
             payload: { access: "approve", expiresInHours: 48 },
           });
@@ -187,9 +191,9 @@ describe("the review endpoints", () => {
             utc("2026-06-17T07:00:00Z")
           );
 
-          const headers = { "x-review-token": made.token };
+          const link = { "x-review-token": made.token };
 
-          const page = yield* editor.reviewLink.open({ headers });
+          const page = yield* editor.reviewLink.open({ headers: link });
 
           assert.deepStrictEqual(
             {
@@ -215,7 +219,7 @@ describe("the review endpoints", () => {
           );
 
           const comment = yield* editor.reviewLink.comment({
-            headers,
+            headers: link,
             payload: {
               anchor: {
                 channelId,
@@ -255,20 +259,30 @@ describe("the review endpoints", () => {
           assert.deepStrictEqual(
             yield* refusalOf(
               editor.reviewLink.approve({
-                headers,
+                headers: link,
                 payload: { ...decision, subjectHash: "0".repeat(64) },
               })
             ),
             new ApprovalChanged()
           );
           assert.deepStrictEqual(
-            yield* editor.reviewLink.approve({ headers, payload: decision }),
+            yield* editor.reviewLink.approve({
+              headers: link,
+              payload: decision,
+            }),
             { late: false }
           );
 
           // The post is scheduled, and its review says who approved it.
-          const approved = yield* contributor.posts.get({ params: post });
-          const thread = yield* contributor.review.thread({ params: post });
+          const approved = yield* contributor.posts.get({
+            headers: forWorkspace(workspaceId),
+            params: post,
+          });
+
+          const thread = yield* contributor.review.thread({
+            headers: forWorkspace(workspaceId),
+            params: post,
+          });
 
           assert.strictEqual(approved.status, "scheduled");
           // The review shows the post the approval was for, as the page
@@ -301,7 +315,7 @@ describe("the review endpoints", () => {
           // Decided once.
           assert.deepStrictEqual(
             yield* Effect.flip(
-              editor.reviewLink.approve({ headers, payload: decision })
+              editor.reviewLink.approve({ headers: link, payload: decision })
             ),
             new ApprovalNotPending()
           );
@@ -321,13 +335,14 @@ describe("the review endpoints", () => {
           const channelId = yield* connect(workspaceId, "mastodon");
 
           const draft = yield* editor.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [channelId], content },
           });
 
-          const post = { postId: draft.id, workspaceId };
+          const post = { postId: draft.id };
 
           const view = yield* editor.review.createLink({
+            headers: forWorkspace(workspaceId),
             params: post,
             payload: { access: "view" },
           });
@@ -351,7 +366,8 @@ describe("the review endpoints", () => {
           );
 
           const revoked = yield* editor.review.revokeLink({
-            params: { linkId: view.link.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { linkId: view.link.id },
           });
 
           assert.strictEqual(revoked.status, "revoked");
@@ -360,9 +376,10 @@ describe("the review endpoints", () => {
             new ReviewLinkClosed({ reason: "revoked" })
           );
           assert.deepStrictEqual(
-            (yield* editor.review.links({ params: post })).map(
-              ({ status }) => status
-            ),
+            (yield* editor.review.links({
+              headers: forWorkspace(workspaceId),
+              params: post,
+            })).map(({ status }) => status),
             ["revoked"]
           );
         })
@@ -389,18 +406,20 @@ describe("the review endpoints", () => {
           const channelId = yield* connect(workspaceId, "mastodon");
 
           const draft = yield* editor.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [channelId], content },
           });
 
-          const post = { postId: draft.id, workspaceId };
+          const post = { postId: draft.id };
 
           const note = yield* editor.review.comment({
+            headers: forWorkspace(workspaceId),
             params: post,
             payload: { text: "A note for the team." },
           });
 
           const answer = yield* editor.review.comment({
+            headers: forWorkspace(workspaceId),
             params: post,
             payload: { parentId: note.id, text: "An answer." },
           });
@@ -411,6 +430,7 @@ describe("the review endpoints", () => {
           assert.deepStrictEqual(
             yield* Effect.flip(
               editor.review.resolve({
+                headers: forWorkspace(workspaceId),
                 params: { ...post, commentId: answer.id },
                 payload: { resolved: true },
               })
@@ -419,6 +439,7 @@ describe("the review endpoints", () => {
           );
 
           const resolved = yield* editor.review.resolve({
+            headers: forWorkspace(workspaceId),
             params: { ...post, commentId: note.id },
             payload: { resolved: true },
           });
@@ -426,12 +447,16 @@ describe("the review endpoints", () => {
           assert.strictEqual(resolved.resolved?.by.kind, "member");
 
           assert.lengthOf(
-            (yield* viewer.review.thread({ params: post })).comments,
+            (yield* viewer.review.thread({
+              headers: forWorkspace(workspaceId),
+              params: post,
+            })).comments,
             2
           );
           assert.deepStrictEqual(
             yield* refusalOf(
               viewer.review.comment({
+                headers: forWorkspace(workspaceId),
                 params: post,
                 payload: { text: "May I?" },
               })
@@ -443,7 +468,8 @@ describe("the review endpoints", () => {
           assert.deepStrictEqual(
             yield* Effect.flip(
               outsider.review.thread({
-                params: { ...post, workspaceId: yield* freshId },
+                headers: forWorkspace(yield* freshId),
+                params: { ...post },
               })
             ),
             new PostNotFound()
@@ -451,6 +477,7 @@ describe("the review endpoints", () => {
           assert.deepStrictEqual(
             yield* Effect.flip(
               editor.review.approve({
+                headers: forWorkspace(workspaceId),
                 params: post,
                 payload: { approvalId: "none", subjectHash: "none" },
               })

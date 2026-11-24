@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         articleId: "articleId",
  *         body: {
  *             timeZone: "timeZone"
@@ -13,7 +12,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface ScheduleArticlesRequest {
-    workspaceId: string;
     articleId: string;
     body: Peal.ArticleTime;
 }

@@ -31,77 +31,70 @@ public class VideoGenerationsClient {
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public VideoGenerations list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public VideoGenerations list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public VideoGenerations list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
+    public VideoGenerations list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public VideoGenerations list(String workspaceId, ListVideoGenerationsRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
+    public VideoGenerations list(ListVideoGenerationsRequest request) {
+        return this.rawClient.list(request).body();
     }
 
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public VideoGenerations list(
-            String workspaceId, ListVideoGenerationsRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public VideoGenerations list(ListVideoGenerationsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.list(request, requestOptions).body();
     }
 
     /**
      * Asks the provider the workspace chose for videos (<code>PUT .../assistant/models/video</code>) for one video from the prompt, in the aspect asked, optionally of a length and from a first frame, and answers 202 with the job, <code>queued</code>: making a video takes minutes. Follow it with <code>GET .../media/videos/generations/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>), ready to attach, marked <code>aiGenerated</code>, and the member who asked is told in the app. Only the workspace's own provider makes videos, with its key, under its terms and at its prices: Peal bills nothing for them. One video at a time a workspace (VideoBusy), 20 a UTC day (VideoAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is made fails it (<code>interrupted</code>), as the provider may have made and billed it. Neither the prompt nor the video is logged, and the prompt is kept only while the video is made. Needs assistant:use and media:upload.
      */
-    public VideoGeneration create(String workspaceId, VideoGenerationRequest request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public VideoGeneration create(VideoGenerationRequest request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Asks the provider the workspace chose for videos (<code>PUT .../assistant/models/video</code>) for one video from the prompt, in the aspect asked, optionally of a length and from a first frame, and answers 202 with the job, <code>queued</code>: making a video takes minutes. Follow it with <code>GET .../media/videos/generations/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>), ready to attach, marked <code>aiGenerated</code>, and the member who asked is told in the app. Only the workspace's own provider makes videos, with its key, under its terms and at its prices: Peal bills nothing for them. One video at a time a workspace (VideoBusy), 20 a UTC day (VideoAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is made fails it (<code>interrupted</code>), as the provider may have made and billed it. Neither the prompt nor the video is logged, and the prompt is kept only while the video is made. Needs assistant:use and media:upload.
      */
-    public VideoGeneration create(String workspaceId, VideoGenerationRequest request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public VideoGeneration create(VideoGenerationRequest request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public VideoGeneration get(String workspaceId, String generationId) {
-        return this.rawClient.get(workspaceId, generationId).body();
+    public VideoGeneration get(String generationId) {
+        return this.rawClient.get(generationId).body();
     }
 
     /**
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public VideoGeneration get(String workspaceId, String generationId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, generationId, requestOptions).body();
+    public VideoGeneration get(String generationId, RequestOptions requestOptions) {
+        return this.rawClient.get(generationId, requestOptions).body();
     }
 
     /**
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public VideoGeneration get(String workspaceId, String generationId, GetVideoGenerationsRequest request) {
-        return this.rawClient.get(workspaceId, generationId, request).body();
+    public VideoGeneration get(String generationId, GetVideoGenerationsRequest request) {
+        return this.rawClient.get(generationId, request).body();
     }
 
     /**
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public VideoGeneration get(
-            String workspaceId,
-            String generationId,
-            GetVideoGenerationsRequest request,
-            RequestOptions requestOptions) {
-        return this.rawClient
-                .get(workspaceId, generationId, request, requestOptions)
-                .body();
+    public VideoGeneration get(String generationId, GetVideoGenerationsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.get(generationId, request, requestOptions).body();
     }
 }

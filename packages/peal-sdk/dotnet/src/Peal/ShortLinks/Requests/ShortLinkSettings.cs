@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record ShortLinkSettings
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("byDefault")]
     public required bool ByDefault { get; set; }
 

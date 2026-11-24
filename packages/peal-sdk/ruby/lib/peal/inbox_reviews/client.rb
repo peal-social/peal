@@ -23,14 +23,13 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :channel_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
       # @option params [Peal::InboxReviews::Types::ListReviewThreadsInboxReviewsRequestUnanswered, nil] :unanswered
       #
       # @example
-      #   client.inbox_reviews.list_review_threads(workspace_id: "workspaceId")
+      #   client.inbox_reviews.list_review_threads
       #
       # @return [Peal::Types::InboxReviewThreadPage]
       def list_review_threads(request_options: {}, **params)
@@ -44,7 +43,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/reviews/threads",
+          path: "api/v1/inbox/reviews/threads",
           query: query_params,
           request_options: request_options
         )
@@ -77,14 +76,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :thread_id
       #
       # @example
-      #   client.inbox_reviews.get_review_thread(
-      #     workspace_id: "workspaceId",
-      #     thread_id: "threadId"
-      #   )
+      #   client.inbox_reviews.get_review_thread(thread_id: "threadId")
       #
       # @return [Peal::Types::InboxReviewThreadDetail]
       def get_review_thread(request_options: {}, **params)
@@ -92,7 +87,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/reviews/threads/#{URI.encode_uri_component(params[:thread_id].to_s)}",
+          path: "api/v1/inbox/reviews/threads/#{URI.encode_uri_component(params[:thread_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -134,13 +129,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :review_id
       # @option params [String, nil] :idempotency_key
       #
       # @example
       #   client.inbox_reviews.reply_to_review(
-      #     workspace_id: "workspaceId",
       #     review_id: "reviewId",
       #     text: "text"
       #   )
@@ -149,7 +142,7 @@ module Peal
       def reply_to_review(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::InboxReviews::Types::NewInboxReviewReply.new(params).to_h
-        non_body_param_names = %w[workspaceId reviewId idempotency-key]
+        non_body_param_names = %w[reviewId idempotency-key]
         body = request_data.except(*non_body_param_names)
 
         headers = {}
@@ -158,7 +151,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/reviews/#{URI.encode_uri_component(params[:review_id].to_s)}/reply",
+          path: "api/v1/inbox/reviews/#{URI.encode_uri_component(params[:review_id].to_s)}/reply",
           headers: headers,
           body: body,
           request_options: request_options
@@ -195,14 +188,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :review_id
       #
       # @example
-      #   client.inbox_reviews.withdraw_review_reply(
-      #     workspace_id: "workspaceId",
-      #     review_id: "reviewId"
-      #   )
+      #   client.inbox_reviews.withdraw_review_reply(review_id: "reviewId")
       #
       # @return [Peal::Types::InboxReview]
       def withdraw_review_reply(request_options: {}, **params)
@@ -210,7 +199,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/reviews/#{URI.encode_uri_component(params[:review_id].to_s)}/reply",
+          path: "api/v1/inbox/reviews/#{URI.encode_uri_component(params[:review_id].to_s)}/reply",
           request_options: request_options
         )
         begin
@@ -242,12 +231,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :review_id
       #
       # @example
       #   client.inbox_reviews.set_review_answered(
-      #     workspace_id: "workspaceId",
       #     review_id: "reviewId",
       #     answered: true
       #   )
@@ -256,13 +243,13 @@ module Peal
       def set_review_answered(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::InboxReviews::Types::SetReviewAnsweredInboxReviewsRequest.new(params).to_h
-        non_body_param_names = %w[workspaceId reviewId]
+        non_body_param_names = %w[reviewId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/inbox/reviews/#{URI.encode_uri_component(params[:review_id].to_s)}/answered",
+          path: "api/v1/inbox/reviews/#{URI.encode_uri_component(params[:review_id].to_s)}/answered",
           body: body,
           request_options: request_options,
           max_retries: 0

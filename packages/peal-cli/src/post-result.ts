@@ -47,9 +47,8 @@ export const printPost = (post: Post, json: boolean, line: () => string) => {
 /** The names of a post's channels, which only the lines people read need. */
 export const namesFor = (
   json: boolean,
-  client: Parameters<typeof channelNames>[0],
-  workspaceId: string
+  client: Parameters<typeof channelNames>[0]
 ) =>
   json
     ? Effect.succeed<ReadonlyMap<string, string>>(new Map())
-    : channelNames(client, workspaceId);
+    : channelNames(client);

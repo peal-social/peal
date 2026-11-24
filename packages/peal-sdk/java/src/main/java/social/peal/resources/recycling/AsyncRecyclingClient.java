@@ -36,8 +36,8 @@ public class AsyncRecyclingClient {
     /**
      * Lists the workspace's recycling rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with its next 3 posts to come. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<RecyclingRulePage> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRulePage>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<RecyclingRulePage> list() {
+        CompletableFuture<PealClientHttpResponse<RecyclingRulePage>> rawFuture = this.rawClient.list();
         CompletableFuture<RecyclingRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -50,9 +50,8 @@ public class AsyncRecyclingClient {
     /**
      * Lists the workspace's recycling rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with its next 3 posts to come. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<RecyclingRulePage> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRulePage>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
+    public CompletableFuture<RecyclingRulePage> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRulePage>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<RecyclingRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -65,9 +64,8 @@ public class AsyncRecyclingClient {
     /**
      * Lists the workspace's recycling rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with its next 3 posts to come. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<RecyclingRulePage> list(String workspaceId, ListRecyclingRequest request) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRulePage>> rawFuture =
-                this.rawClient.list(workspaceId, request);
+    public CompletableFuture<RecyclingRulePage> list(ListRecyclingRequest request) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRulePage>> rawFuture = this.rawClient.list(request);
         CompletableFuture<RecyclingRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -80,10 +78,9 @@ public class AsyncRecyclingClient {
     /**
      * Lists the workspace's recycling rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those with <code>status</code> alone when given, each with its next 3 posts to come. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<RecyclingRulePage> list(
-            String workspaceId, ListRecyclingRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<RecyclingRulePage> list(ListRecyclingRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<RecyclingRulePage>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+                this.rawClient.list(request, requestOptions);
         CompletableFuture<RecyclingRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -96,9 +93,8 @@ public class AsyncRecyclingClient {
     /**
      * Starts a rule that repeats a post that is scheduled, publishing or went out (deleted from a platform since or not): <code>every</code> 1 to 365 days, 1 to 52 weeks or 1 to 12 months, until <code>count</code> posts in all (2 to 100, the source counted) or until the day <code>until</code>, and never more than 100; with up to 10 text <code>variants</code>, each checked as the source saying it would be, and optionally on a queue. Each post a rule makes is a new post, copied from the source with what the workspace still has (its channels still connected, its media, the options on them, its tags; never a signature or a default added since), and sent as any post is: the same checks, the approval policy, the month's room in the plan, its own job, outcome and notices. It says the source's text, then each variant in turn, then the source's again. The next post is made once the latest one's time has passed, one interval after the one before at the same wall-clock time in the source's zone (a month shorter than the day takes its last day), or on the queue's first free slot from then; a time missed while nothing ran is skipped, never made up for. Each acts as whoever started the rule, with what they may do when it is made: a member removed, a key revoked or an application whose grant no longer publishes ends it. A post has one rule going on at a time, and a workspace 100 active or paused. It publishes again, in public, without anyone being asked each time, unless the approval policy holds the starter's posts: then each waits for an approval. Needs post:schedule, or post:create where posts wait for an approval; never staff acting as a member.
      */
-    public CompletableFuture<RecyclingRule> create(String workspaceId, NewRecyclingRule request) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.create(workspaceId, request);
+    public CompletableFuture<RecyclingRule> create(NewRecyclingRule request) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.create(request);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -111,10 +107,9 @@ public class AsyncRecyclingClient {
     /**
      * Starts a rule that repeats a post that is scheduled, publishing or went out (deleted from a platform since or not): <code>every</code> 1 to 365 days, 1 to 52 weeks or 1 to 12 months, until <code>count</code> posts in all (2 to 100, the source counted) or until the day <code>until</code>, and never more than 100; with up to 10 text <code>variants</code>, each checked as the source saying it would be, and optionally on a queue. Each post a rule makes is a new post, copied from the source with what the workspace still has (its channels still connected, its media, the options on them, its tags; never a signature or a default added since), and sent as any post is: the same checks, the approval policy, the month's room in the plan, its own job, outcome and notices. It says the source's text, then each variant in turn, then the source's again. The next post is made once the latest one's time has passed, one interval after the one before at the same wall-clock time in the source's zone (a month shorter than the day takes its last day), or on the queue's first free slot from then; a time missed while nothing ran is skipped, never made up for. Each acts as whoever started the rule, with what they may do when it is made: a member removed, a key revoked or an application whose grant no longer publishes ends it. A post has one rule going on at a time, and a workspace 100 active or paused. It publishes again, in public, without anyone being asked each time, unless the approval policy holds the starter's posts: then each waits for an approval. Needs post:schedule, or post:create where posts wait for an approval; never staff acting as a member.
      */
-    public CompletableFuture<RecyclingRule> create(
-            String workspaceId, NewRecyclingRule request, RequestOptions requestOptions) {
+    public CompletableFuture<RecyclingRule> create(NewRecyclingRule request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+                this.rawClient.create(request, requestOptions);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -127,8 +122,8 @@ public class AsyncRecyclingClient {
     /**
      * Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
      */
-    public CompletableFuture<RecyclingRule> get(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.get(workspaceId, ruleId);
+    public CompletableFuture<RecyclingRule> get(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.get(ruleId);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -141,9 +136,8 @@ public class AsyncRecyclingClient {
     /**
      * Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
      */
-    public CompletableFuture<RecyclingRule> get(String workspaceId, String ruleId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.get(workspaceId, ruleId, requestOptions);
+    public CompletableFuture<RecyclingRule> get(String ruleId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.get(ruleId, requestOptions);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -156,9 +150,8 @@ public class AsyncRecyclingClient {
     /**
      * Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
      */
-    public CompletableFuture<RecyclingRule> get(String workspaceId, String ruleId, GetRecyclingRequest request) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.get(workspaceId, ruleId, request);
+    public CompletableFuture<RecyclingRule> get(String ruleId, GetRecyclingRequest request) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.get(ruleId, request);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -172,9 +165,9 @@ public class AsyncRecyclingClient {
      * Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
      */
     public CompletableFuture<RecyclingRule> get(
-            String workspaceId, String ruleId, GetRecyclingRequest request, RequestOptions requestOptions) {
+            String ruleId, GetRecyclingRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.get(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.get(ruleId, request, requestOptions);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -187,8 +180,8 @@ public class AsyncRecyclingClient {
     /**
      * Stops a rule: it makes no more posts and ends <code>stopped</code>; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, ruleId);
+    public CompletableFuture<Void> delete(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(ruleId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -201,9 +194,8 @@ public class AsyncRecyclingClient {
     /**
      * Stops a rule: it makes no more posts and ends <code>stopped</code>; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String ruleId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, ruleId, requestOptions);
+    public CompletableFuture<Void> delete(String ruleId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(ruleId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -216,8 +208,8 @@ public class AsyncRecyclingClient {
     /**
      * Stops a rule: it makes no more posts and ends <code>stopped</code>; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String ruleId, DeleteRecyclingRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, ruleId, request);
+    public CompletableFuture<Void> delete(String ruleId, DeleteRecyclingRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(ruleId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -231,9 +223,9 @@ public class AsyncRecyclingClient {
      * Stops a rule: it makes no more posts and ends <code>stopped</code>; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
     public CompletableFuture<Void> delete(
-            String workspaceId, String ruleId, DeleteRecyclingRequest request, RequestOptions requestOptions) {
+            String ruleId, DeleteRecyclingRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.delete(ruleId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -246,8 +238,8 @@ public class AsyncRecyclingClient {
     /**
      * Changes a rule's variants, its <code>count</code> or <code>until</code> (null takes it away), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A post already made keeps what it says. An ended rule changes no more (RecyclingRuleEnded): resume it. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<RecyclingRule> update(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.update(workspaceId, ruleId);
+    public CompletableFuture<RecyclingRule> update(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.update(ruleId);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -260,9 +252,9 @@ public class AsyncRecyclingClient {
     /**
      * Changes a rule's variants, its <code>count</code> or <code>until</code> (null takes it away), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A post already made keeps what it says. An ended rule changes no more (RecyclingRuleEnded): resume it. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<RecyclingRule> update(String workspaceId, String ruleId, RequestOptions requestOptions) {
+    public CompletableFuture<RecyclingRule> update(String ruleId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.update(workspaceId, ruleId, requestOptions);
+                this.rawClient.update(ruleId, requestOptions);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -275,9 +267,8 @@ public class AsyncRecyclingClient {
     /**
      * Changes a rule's variants, its <code>count</code> or <code>until</code> (null takes it away), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A post already made keeps what it says. An ended rule changes no more (RecyclingRuleEnded): resume it. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<RecyclingRule> update(String workspaceId, String ruleId, RecyclingRuleChange request) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.update(workspaceId, ruleId, request);
+    public CompletableFuture<RecyclingRule> update(String ruleId, RecyclingRuleChange request) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.update(ruleId, request);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -291,9 +282,9 @@ public class AsyncRecyclingClient {
      * Changes a rule's variants, its <code>count</code> or <code>until</code> (null takes it away), or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A post already made keeps what it says. An ended rule changes no more (RecyclingRuleEnded): resume it. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
     public CompletableFuture<RecyclingRule> update(
-            String workspaceId, String ruleId, RecyclingRuleChange request, RequestOptions requestOptions) {
+            String ruleId, RecyclingRuleChange request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.update(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.update(ruleId, request, requestOptions);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -306,8 +297,8 @@ public class AsyncRecyclingClient {
     /**
      * Sets a paused rule going again, or one that ended for a reason that can be put right (<code>planLimit</code>, <code>contentRejected</code>, <code>noChannels</code>, <code>queueFull</code>, <code>sourceWithdrawn</code>), with other <code>variants</code> if given: its next post is due at the first due instant after now. Any other ended rule is RecyclingRuleEnded. Its source must be scheduled, publishing or out (PostNotRecyclable <code>draft</code>, <code>awaitingApproval</code> or <code>cancelled</code> otherwise); an ended rule whose source another rule repeats now is PostNotRecyclable <code>repeating</code>, and one the workspace has no room for is TooManyRecyclingRules. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<RecyclingRule> resume(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.resume(workspaceId, ruleId);
+    public CompletableFuture<RecyclingRule> resume(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.resume(ruleId);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -320,9 +311,9 @@ public class AsyncRecyclingClient {
     /**
      * Sets a paused rule going again, or one that ended for a reason that can be put right (<code>planLimit</code>, <code>contentRejected</code>, <code>noChannels</code>, <code>queueFull</code>, <code>sourceWithdrawn</code>), with other <code>variants</code> if given: its next post is due at the first due instant after now. Any other ended rule is RecyclingRuleEnded. Its source must be scheduled, publishing or out (PostNotRecyclable <code>draft</code>, <code>awaitingApproval</code> or <code>cancelled</code> otherwise); an ended rule whose source another rule repeats now is PostNotRecyclable <code>repeating</code>, and one the workspace has no room for is TooManyRecyclingRules. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<RecyclingRule> resume(String workspaceId, String ruleId, RequestOptions requestOptions) {
+    public CompletableFuture<RecyclingRule> resume(String ruleId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.resume(workspaceId, ruleId, requestOptions);
+                this.rawClient.resume(ruleId, requestOptions);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -335,9 +326,8 @@ public class AsyncRecyclingClient {
     /**
      * Sets a paused rule going again, or one that ended for a reason that can be put right (<code>planLimit</code>, <code>contentRejected</code>, <code>noChannels</code>, <code>queueFull</code>, <code>sourceWithdrawn</code>), with other <code>variants</code> if given: its next post is due at the first due instant after now. Any other ended rule is RecyclingRuleEnded. Its source must be scheduled, publishing or out (PostNotRecyclable <code>draft</code>, <code>awaitingApproval</code> or <code>cancelled</code> otherwise); an ended rule whose source another rule repeats now is PostNotRecyclable <code>repeating</code>, and one the workspace has no room for is TooManyRecyclingRules. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<RecyclingRule> resume(String workspaceId, String ruleId, RecyclingResume request) {
-        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.resume(workspaceId, ruleId, request);
+    public CompletableFuture<RecyclingRule> resume(String ruleId, RecyclingResume request) {
+        CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture = this.rawClient.resume(ruleId, request);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -351,9 +341,9 @@ public class AsyncRecyclingClient {
      * Sets a paused rule going again, or one that ended for a reason that can be put right (<code>planLimit</code>, <code>contentRejected</code>, <code>noChannels</code>, <code>queueFull</code>, <code>sourceWithdrawn</code>), with other <code>variants</code> if given: its next post is due at the first due instant after now. Any other ended rule is RecyclingRuleEnded. Its source must be scheduled, publishing or out (PostNotRecyclable <code>draft</code>, <code>awaitingApproval</code> or <code>cancelled</code> otherwise); an ended rule whose source another rule repeats now is PostNotRecyclable <code>repeating</code>, and one the workspace has no room for is TooManyRecyclingRules. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
     public CompletableFuture<RecyclingRule> resume(
-            String workspaceId, String ruleId, RecyclingResume request, RequestOptions requestOptions) {
+            String ruleId, RecyclingResume request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<RecyclingRule>> rawFuture =
-                this.rawClient.resume(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.resume(ruleId, request, requestOptions);
         CompletableFuture<RecyclingRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -83,8 +83,7 @@ public class RedeliverManyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/deliveries/redeliver")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/webhooks/deliveries/redeliver")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -96,13 +95,9 @@ public class RedeliverManyTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.RedeliverManyAsync(
-            new RedeliverManyWebhooksRequest
+            new WebhookRedeliveryByIds
             {
-                WorkspaceId = "workspaceId",
-                Body = new WebhookRedeliveryByIds
-                {
-                    DeliveryIds = new List<string>() { "deliveryIds", "deliveryIds" },
-                },
+                DeliveryIds = new List<string>() { "deliveryIds", "deliveryIds" },
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -157,8 +152,7 @@ public class RedeliverManyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/deliveries/redeliver")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/webhooks/deliveries/redeliver")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -170,14 +164,7 @@ public class RedeliverManyTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.RedeliverManyAsync(
-            new RedeliverManyWebhooksRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new WebhookRedeliveryByIds
-                {
-                    DeliveryIds = new List<string>() { "deliveryIds" },
-                },
-            }
+            new WebhookRedeliveryByIds { DeliveryIds = new List<string>() { "deliveryIds" } }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

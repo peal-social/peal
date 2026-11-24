@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AiCapabilityModel, AiProviderConnection } from "peal-contract";
 import type { AiProviderId } from "peal-contract/ai-providers";
 import {
@@ -100,7 +101,8 @@ const ConnectionForm = ({
   const [removing, startRemoving] = useTransition();
   const [testing, startTesting] = useTransition();
   const reactivityKeys = providersChanged(workspaceId);
-  const params = { provider: draft.provider, workspaceId };
+  const params = { provider: draft.provider };
+  const headers = forWorkspace(workspaceId);
 
   return (
     <ConnectionFormView
@@ -122,7 +124,7 @@ const ConnectionForm = ({
         setError(null);
         setTest(idle);
         startRemoving(async () => {
-          const exit = await remove({ params, reactivityKeys });
+          const exit = await remove({ params, headers, reactivityKeys });
 
           if (Exit.isSuccess(exit)) {
             toast.success(t("removed", { name: nameOf(draft.provider) }));
@@ -141,6 +143,7 @@ const ConnectionForm = ({
         startSaving(async () => {
           const exit = await save({
             params,
+            headers,
             payload: changeOf(draft),
             reactivityKeys,
           });
@@ -163,7 +166,7 @@ const ConnectionForm = ({
         setError(null);
         setTest(idle);
         startTesting(async () => {
-          const exit = await check({ params, payload: {} });
+          const exit = await check({ params, headers, payload: {} });
 
           setTest(
             Exit.isSuccess(exit)
@@ -200,7 +203,8 @@ const ModelRow = ({
   const [busy, startBusy] = useTransition();
   const { capability } = chosen;
   const use = t(`uses.${capability}`);
-  const params = { capability, workspaceId };
+  const params = { capability };
+  const headers = forWorkspace(workspaceId);
   const reactivityKeys = providersChanged(workspaceId);
   const shown: ModelChoice = pending ?? chosen;
 
@@ -221,6 +225,7 @@ const ModelRow = ({
   ): Promise<boolean> => {
     const exit = await choose({
       params,
+      headers,
       // A use that takes no model sends none.
       payload: model === null ? { provider } : { model, provider },
       reactivityKeys,
@@ -259,7 +264,7 @@ const ModelRow = ({
           if (provider === null) {
             setPending(null);
 
-            const exit = await leave({ params, reactivityKeys });
+            const exit = await leave({ params, headers, reactivityKeys });
 
             if (Exit.isSuccess(exit)) {
               toast.success(

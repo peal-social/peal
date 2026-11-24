@@ -28,16 +28,12 @@ class ApiKeysClient:
         """
         return self._raw_client
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ApiKey]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ApiKey]:
         """
         Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -51,18 +47,16 @@ class ApiKeysClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.api_keys.list(
-            workspace_id="workspaceId",
-        )
+        client.api_keys.list()
         """
-        _response = self._raw_client.list(workspace_id, request_options=request_options)
+        _response = self._raw_client.list(request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -74,8 +68,6 @@ class ApiKeysClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -95,33 +87,25 @@ class ApiKeysClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.api_keys.create(
-            workspace_id="workspaceId",
             name="name",
             permissions=["activity:read"],
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
-            name=name,
-            permissions=permissions,
-            expires_in_days=expires_in_days,
-            request_options=request_options,
+            name=name, permissions=permissions, expires_in_days=expires_in_days, request_options=request_options
         )
         return _response.data
 
-    def revoke(
-        self, workspace_id: str, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def revoke(self, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -136,14 +120,14 @@ class ApiKeysClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.api_keys.revoke(
-            workspace_id="workspaceId",
             api_key_id="apiKeyId",
         )
         """
-        _response = self._raw_client.revoke(workspace_id, api_key_id, request_options=request_options)
+        _response = self._raw_client.revoke(api_key_id, request_options=request_options)
         return _response.data
 
 
@@ -162,16 +146,12 @@ class AsyncApiKeysClient:
         """
         return self._raw_client
 
-    async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> typing.List[ApiKey]:
+    async def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[ApiKey]:
         """
         Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -187,24 +167,22 @@ class AsyncApiKeysClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.api_keys.list(
-                workspace_id="workspaceId",
-            )
+            await client.api_keys.list()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, request_options=request_options)
+        _response = await self._raw_client.list(request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -216,8 +194,6 @@ class AsyncApiKeysClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -239,13 +215,13 @@ class AsyncApiKeysClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.api_keys.create(
-                workspace_id="workspaceId",
                 name="name",
                 permissions=["activity:read"],
             )
@@ -254,24 +230,16 @@ class AsyncApiKeysClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
-            name=name,
-            permissions=permissions,
-            expires_in_days=expires_in_days,
-            request_options=request_options,
+            name=name, permissions=permissions, expires_in_days=expires_in_days, request_options=request_options
         )
         return _response.data
 
-    async def revoke(
-        self, workspace_id: str, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def revoke(self, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -288,18 +256,18 @@ class AsyncApiKeysClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.api_keys.revoke(
-                workspace_id="workspaceId",
                 api_key_id="apiKeyId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.revoke(workspace_id, api_key_id, request_options=request_options)
+        _response = await self._raw_client.revoke(api_key_id, request_options=request_options)
         return _response.data

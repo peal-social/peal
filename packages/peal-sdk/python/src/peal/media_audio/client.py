@@ -28,20 +28,13 @@ class MediaAudioClient:
         return self._raw_client
 
     def create_voiceover(
-        self,
-        workspace_id: str,
-        *,
-        text: str,
-        voice: typing.Optional[str] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, text: str, voice: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
     ) -> Media:
         """
         Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models/speech`) to speak the text, in `voice` when given, and answers with the audio as a new file of the media library, marked `aiGenerated`, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         text : str
 
         voice : typing.Optional[str]
@@ -59,21 +52,18 @@ class MediaAudioClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media_audio.create_voiceover(
-            workspace_id="workspaceId",
             text="text",
         )
         """
-        _response = self._raw_client.create_voiceover(
-            workspace_id, text=text, voice=voice, request_options=request_options
-        )
+        _response = self._raw_client.create_voiceover(text=text, voice=voice, request_options=request_options)
         return _response.data
 
     def transcribe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         save_as_description: typing.Optional[bool] = OMIT,
@@ -84,8 +74,6 @@ class MediaAudioClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         save_as_description : typing.Optional[bool]
@@ -103,15 +91,15 @@ class MediaAudioClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.media_audio.transcribe(
-            workspace_id="workspaceId",
             media_id="mediaId",
         )
         """
         _response = self._raw_client.transcribe(
-            workspace_id, media_id, save_as_description=save_as_description, request_options=request_options
+            media_id, save_as_description=save_as_description, request_options=request_options
         )
         return _response.data
 
@@ -132,20 +120,13 @@ class AsyncMediaAudioClient:
         return self._raw_client
 
     async def create_voiceover(
-        self,
-        workspace_id: str,
-        *,
-        text: str,
-        voice: typing.Optional[str] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, text: str, voice: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
     ) -> Media:
         """
         Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models/speech`) to speak the text, in `voice` when given, and answers with the audio as a new file of the media library, marked `aiGenerated`, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         text : str
 
         voice : typing.Optional[str]
@@ -165,27 +146,24 @@ class AsyncMediaAudioClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media_audio.create_voiceover(
-                workspace_id="workspaceId",
                 text="text",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.create_voiceover(
-            workspace_id, text=text, voice=voice, request_options=request_options
-        )
+        _response = await self._raw_client.create_voiceover(text=text, voice=voice, request_options=request_options)
         return _response.data
 
     async def transcribe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         save_as_description: typing.Optional[bool] = OMIT,
@@ -196,8 +174,6 @@ class AsyncMediaAudioClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         save_as_description : typing.Optional[bool]
@@ -217,13 +193,13 @@ class AsyncMediaAudioClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.media_audio.transcribe(
-                workspace_id="workspaceId",
                 media_id="mediaId",
             )
 
@@ -231,6 +207,6 @@ class AsyncMediaAudioClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.transcribe(
-            workspace_id, media_id, save_as_description=save_as_description, request_options=request_options
+            media_id, save_as_description=save_as_description, request_options=request_options
         )
         return _response.data

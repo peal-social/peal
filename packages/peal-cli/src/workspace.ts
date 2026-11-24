@@ -25,19 +25,31 @@ export const workspaceFlag = Flag.String("workspace").pipe(
 /**
  * The HTTP API's client for the server the command line points at, sending
  * the API key in PEAL_API_KEY when there is one, which wins, and otherwise
- * the user's saved sign-in.
+ * the user's saved sign-in; and `bound`, the same client naming a
+ * workspace on every request (`Peal-Workspace`), from the credential read
+ * once.
  */
 export const signedIn = Effect.gen(function* signedIn() {
   const api = yield* PealApi;
   const url = display(api.baseUrl);
   const key = yield* apiKey;
 
+  if (Option.isSome(key)) {
+    return {
+      bound: (workspaceId: string) => api.withApiKey(key.value, workspaceId),
+      client: yield* api.withApiKey(key.value),
+      url,
+      withKey: true,
+    };
+  }
+
+  const token = yield* accessToken;
+
   return {
-    client: Option.isSome(key)
-      ? yield* api.withApiKey(key.value)
-      : yield* api.signedIn(yield* accessToken),
+    bound: (workspaceId: string) => api.signedIn(token, workspaceId),
+    client: yield* api.signedIn(token),
     url,
-    withKey: Option.isSome(key),
+    withKey: false,
   };
 });
 
@@ -120,14 +132,17 @@ const pick = (
 /**
  * The signed-in client, and the workspace a command acts in: the one the
  * user named, by slug or id, or their only one. With an API key, the one
- * whose id was given.
+ * whose id was given. The client names that workspace on every request
+ * (`Peal-Workspace`), which the workspace's endpoints act in.
  */
 export const inWorkspace = (choice: Option.Option<string>) =>
   Effect.gen(function* signedInWorkspace() {
-    const { client, url, withKey } = yield* signedIn;
+    const { bound, client, url, withKey } = yield* signedIn;
 
     if (withKey) {
-      return { client, url, workspace: yield* keyWorkspace(choice) };
+      const workspace = yield* keyWorkspace(choice);
+
+      return { client: yield* bound(workspace.id), url, workspace };
     }
 
     const me = yield* client.session.me().pipe(
@@ -141,7 +156,7 @@ export const inWorkspace = (choice: Option.Option<string>) =>
 
     const workspace: Workspace = yield* pick(me.workspaces, choice);
 
-    return { client, url, workspace };
+    return { client: yield* bound(workspace.id), url, workspace };
   });
 
 type SignedInClient = Effect.Success<typeof signedIn>["client"];
@@ -150,8 +165,8 @@ type SignedInClient = Effect.Success<typeof signedIn>["client"];
  * The workspace's channels by id, as people recognize them, to print beside
  * their ids. A member who may not read them sees the ids alone.
  */
-export const channelNames = (client: SignedInClient, workspaceId: string) =>
-  client.channels.list({ params: { workspaceId } }).pipe(
+export const channelNames = (client: SignedInClient) =>
+  client.channels.list({ headers: {} }).pipe(
     Effect.map(
       (channels): ReadonlyMap<string, string> =>
         new Map(channels.map((channel) => [channel.id, channelName(channel)]))

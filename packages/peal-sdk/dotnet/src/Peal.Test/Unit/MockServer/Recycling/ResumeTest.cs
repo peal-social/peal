@@ -128,7 +128,7 @@ public class ResumeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId/resume")
+                    .WithPath("/api/v1/recycling/ruleId/resume")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -141,12 +141,7 @@ public class ResumeTest : BaseMockServerTest
             );
 
         var response = await Client.Recycling.ResumeAsync(
-            new RecyclingResume
-            {
-                WorkspaceId = "workspaceId",
-                RuleId = "ruleId",
-                Variants = null,
-            }
+            new RecyclingResume { RuleId = "ruleId", Variants = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -208,7 +203,7 @@ public class ResumeTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId/resume")
+                    .WithPath("/api/v1/recycling/ruleId/resume")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -221,7 +216,7 @@ public class ResumeTest : BaseMockServerTest
             );
 
         var response = await Client.Recycling.ResumeAsync(
-            new RecyclingResume { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new RecyclingResume { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

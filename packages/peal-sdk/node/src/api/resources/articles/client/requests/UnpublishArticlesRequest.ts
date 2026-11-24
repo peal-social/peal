@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         articleId: "articleId"
  *     }
  */
 export interface UnpublishArticlesRequest {
-    workspaceId: string;
     articleId: string;
 }

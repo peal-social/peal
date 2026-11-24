@@ -1,4 +1,5 @@
 using global::System.Text.Json;
+using OneOf;
 using Peal.Core;
 
 namespace Peal;
@@ -13,7 +14,6 @@ public partial class WebhooksClient : IWebhooksClient
     }
 
     private async Task<WithRawResponse<IEnumerable<WebhookEndpoint>>> ListAsyncCore(
-        ListWebhooksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +32,7 @@ public partial class WebhooksClient : IWebhooksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/webhooks",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/webhooks",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -88,6 +85,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -176,10 +185,7 @@ public partial class WebhooksClient : IWebhooksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/webhooks",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/webhooks",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -233,6 +239,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -364,10 +382,7 @@ public partial class WebhooksClient : IWebhooksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/webhooks/deliveries",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/webhooks/deliveries",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -499,7 +514,7 @@ public partial class WebhooksClient : IWebhooksClient
     }
 
     private async Task<WithRawResponse<WebhookBulkRedelivery>> RedeliverManyAsyncCore(
-        RedeliverManyWebhooksRequest request,
+        OneOf<WebhookRedeliveryByIds, WebhookRedeliveryOfFailed> request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -518,14 +533,10 @@ public partial class WebhooksClient : IWebhooksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/webhooks/deliveries/redeliver",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/webhooks/deliveries/redeliver",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -575,6 +586,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -664,8 +687,7 @@ public partial class WebhooksClient : IWebhooksClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/webhooks/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/webhooks/{0}",
                         ValueConvert.ToPathParameterString(request.EndpointId)
                     ),
                     QueryString = _queryString,
@@ -718,6 +740,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -807,8 +841,7 @@ public partial class WebhooksClient : IWebhooksClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/webhooks/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/webhooks/{0}",
                         ValueConvert.ToPathParameterString(request.EndpointId)
                     ),
                     QueryString = _queryString,
@@ -835,6 +868,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -924,8 +969,7 @@ public partial class WebhooksClient : IWebhooksClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/webhooks/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/webhooks/{0}",
                         ValueConvert.ToPathParameterString(request.EndpointId)
                     ),
                     Body = request,
@@ -981,6 +1025,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1094,8 +1150,7 @@ public partial class WebhooksClient : IWebhooksClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/webhooks/{1}/secret",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/webhooks/{0}/secret",
                         ValueConvert.ToPathParameterString(request.EndpointId)
                     ),
                     QueryString = _queryString,
@@ -1149,6 +1204,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1251,8 +1318,7 @@ public partial class WebhooksClient : IWebhooksClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/webhooks/{1}/test",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/webhooks/{0}/test",
                         ValueConvert.ToPathParameterString(request.EndpointId)
                     ),
                     QueryString = _queryString,
@@ -1306,6 +1372,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1411,8 +1489,7 @@ public partial class WebhooksClient : IWebhooksClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/webhooks/{1}/deliveries",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/webhooks/{0}/deliveries",
                         ValueConvert.ToPathParameterString(request.EndpointId)
                     ),
                     QueryString = _queryString,
@@ -1566,8 +1643,7 @@ public partial class WebhooksClient : IWebhooksClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/webhooks/{1}/deliveries/{2}/redeliver",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/webhooks/{0}/deliveries/{1}/redeliver",
                         ValueConvert.ToPathParameterString(request.EndpointId),
                         ValueConvert.ToPathParameterString(request.DeliveryId)
                     ),
@@ -1622,6 +1698,18 @@ public partial class WebhooksClient : IWebhooksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1706,16 +1794,15 @@ public partial class WebhooksClient : IWebhooksClient
     /// Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
     /// </summary>
     /// <example><code>
-    /// await client.Webhooks.ListAsync(new ListWebhooksRequest { WorkspaceId = "workspaceId" });
+    /// await client.Webhooks.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<WebhookEndpoint>> ListAsync(
-        ListWebhooksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<WebhookEndpoint>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -1726,7 +1813,6 @@ public partial class WebhooksClient : IWebhooksClient
     /// await client.Webhooks.CreateAsync(
     ///     new NewWebhookEndpoint
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         EventTypes = new List&lt;SubscribableWebhookEventType&gt;()
     ///         {
     ///             SubscribableWebhookEventType.PostScheduled,
@@ -1750,9 +1836,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// Lists the workspace's deliveries across its endpoints, newest first, 30 a page unless `limit` (at most 100) says otherwise, filtered by `status`, `endpointId`, `eventType`, and when they were made: `since` (included) and `until` (excluded). The deliveries of a `partner` endpoint include those of the partner's other workspaces, each naming its workspace (`workspaceId`, `workspaceExternalId`). A delivery that failed for good (`failed`) stays 30 days, with the receiver's last answer: send it again with `POST …/webhooks/deliveries/redeliver`. Pass the page's `nextCursor` as `cursor` for the next one. Needs webhook:read.
     /// </summary>
     /// <example><code>
-    /// await client.Webhooks.SearchDeliveriesAsync(
-    ///     new SearchDeliveriesWebhooksRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.Webhooks.SearchDeliveriesAsync(new SearchDeliveriesWebhooksRequest());
     /// </code></example>
     public WithRawResponseTask<WebhookDeliveryPage> SearchDeliveriesAsync(
         SearchDeliveriesWebhooksRequest request,
@@ -1770,15 +1854,11 @@ public partial class WebhooksClient : IWebhooksClient
     /// </summary>
     /// <example><code>
     /// await client.Webhooks.RedeliverManyAsync(
-    ///     new RedeliverManyWebhooksRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new WebhookRedeliveryByIds { DeliveryIds = new List&lt;string&gt;() { "deliveryIds" } },
-    ///     }
+    ///     new WebhookRedeliveryByIds { DeliveryIds = new List&lt;string&gt;() { "deliveryIds" } }
     /// );
     /// </code></example>
     public WithRawResponseTask<WebhookBulkRedelivery> RedeliverManyAsync(
-        RedeliverManyWebhooksRequest request,
+        OneOf<WebhookRedeliveryByIds, WebhookRedeliveryOfFailed> request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1792,9 +1872,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// Shows one of the workspace's webhook endpoints. Needs webhook:read.
     /// </summary>
     /// <example><code>
-    /// await client.Webhooks.GetAsync(
-    ///     new GetWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-    /// );
+    /// await client.Webhooks.GetAsync(new GetWebhooksRequest { EndpointId = "endpointId" });
     /// </code></example>
     public WithRawResponseTask<WebhookEndpoint> GetAsync(
         GetWebhooksRequest request,
@@ -1811,9 +1889,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// Deletes an endpoint, its secret and its delivery log: nothing more is sent to it. Needs webhook:manage.
     /// </summary>
     /// <example><code>
-    /// await client.Webhooks.DeleteAsync(
-    ///     new DeleteWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-    /// );
+    /// await client.Webhooks.DeleteAsync(new DeleteWebhooksRequest { EndpointId = "endpointId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteWebhooksRequest request,
@@ -1828,9 +1904,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// Changes an endpoint's address, description, events, filters or headers, or turns it off or back on: what is left out stays as it is, and an empty filter hears everything again; `workspaceIds` is for an endpoint of the `partner` scope only (422 `WebhookFilterRefused`). `headers` replaces every header it had, `[]` removing them all: a header given without `value` keeps the value it has under that name, as none is ever shown, and one it does not have needs a value. A value is sent only to the origin (scheme, host and port) it was given for: a new `url` on another origin, on an endpoint with headers, needs `headers` in the same request, each with its `value`, or `[]` (422 `WebhookHeaderValuesRequired`). Filters apply to the events that happen after the change. Turned off, it is sent nothing, its pending deliveries fail, and events that happen meanwhile are not kept for it. Turning it back on forgets the failures that turned it off. Needs webhook:manage.
     /// </summary>
     /// <example><code>
-    /// await client.Webhooks.UpdateAsync(
-    ///     new WebhookEndpointChange { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-    /// );
+    /// await client.Webhooks.UpdateAsync(new WebhookEndpointChange { EndpointId = "endpointId" });
     /// </code></example>
     public WithRawResponseTask<WebhookEndpoint> UpdateAsync(
         WebhookEndpointChange request,
@@ -1848,7 +1922,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// </summary>
     /// <example><code>
     /// await client.Webhooks.RotateSecretAsync(
-    ///     new RotateSecretWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+    ///     new RotateSecretWebhooksRequest { EndpointId = "endpointId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<WebhookEndpointSecret> RotateSecretAsync(
@@ -1866,9 +1940,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// Sends the endpoint a `webhook.test` event, or, with `eventType`, a sample of that type: its real shape, with ids that name nothing, the workspace's own id and `sample: true`, which the receiver must never act on. Either goes whatever the endpoint subscribes to or filters. It answers with the delivery, still pending: read the endpoint's deliveries to see how it ended. A workspace sends 30 test events and deliveries again an hour at most (429 `TooManyWebhookSends`). Needs webhook:manage.
     /// </summary>
     /// <example><code>
-    /// await client.Webhooks.SendTestAsync(
-    ///     new SendTestWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
-    /// );
+    /// await client.Webhooks.SendTestAsync(new SendTestWebhooksRequest { EndpointId = "endpointId" });
     /// </code></example>
     public WithRawResponseTask<WebhookDelivery> SendTestAsync(
         SendTestWebhooksRequest request,
@@ -1886,7 +1958,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// </summary>
     /// <example><code>
     /// await client.Webhooks.ListDeliveriesAsync(
-    ///     new ListDeliveriesWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+    ///     new ListDeliveriesWebhooksRequest { EndpointId = "endpointId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<WebhookDeliveryPage> ListDeliveriesAsync(
@@ -1905,12 +1977,7 @@ public partial class WebhooksClient : IWebhooksClient
     /// </summary>
     /// <example><code>
     /// await client.Webhooks.RedeliverAsync(
-    ///     new RedeliverWebhooksRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         EndpointId = "endpointId",
-    ///         DeliveryId = "deliveryId",
-    ///     }
+    ///     new RedeliverWebhooksRequest { EndpointId = "endpointId", DeliveryId = "deliveryId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<WebhookDelivery> RedeliverAsync(

@@ -4,6 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AdAccount, BoostQuoteSchema, NewBoost } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import {
@@ -110,7 +111,7 @@ const BoostSteps = ({
 
     startTransition(async () => {
       const exit = await quote({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: boost.value,
       });
 
@@ -133,8 +134,10 @@ const BoostSteps = ({
   const handleConfirm = (checked: Review) => () => {
     startTransition(async () => {
       const exit = await create({
-        headers: { "idempotency-key": checked.idempotencyKey },
-        params: { workspaceId },
+        headers: {
+          ...forWorkspace(workspaceId),
+          "idempotency-key": checked.idempotencyKey,
+        },
         payload: checked.boost,
         reactivityKeys: adsChanged(workspaceId),
       });

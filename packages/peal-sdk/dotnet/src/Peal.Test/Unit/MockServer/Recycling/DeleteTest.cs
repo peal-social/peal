@@ -15,15 +15,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId")
+                    .WithPath("/api/v1/recycling/ruleId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Recycling.DeleteAsync(
-                new DeleteRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-            )
+            await Client.Recycling.DeleteAsync(new DeleteRecyclingRequest { RuleId = "ruleId" })
         );
     }
 
@@ -34,15 +32,13 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId")
+                    .WithPath("/api/v1/recycling/ruleId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
-            await Client.Recycling.DeleteAsync(
-                new DeleteRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-            )
+            await Client.Recycling.DeleteAsync(new DeleteRecyclingRequest { RuleId = "ruleId" })
         );
     }
 }

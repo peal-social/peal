@@ -88,19 +88,15 @@ func TestPartnerAccountGetWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.GetPartnerAccountRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.PartnerAccount.Get(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestPartnerAccountGetWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountGetWithWireMock", "GET", "/api/workspaces/workspaceId/partner", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountGetWithWireMock", "GET", "/api/v1/partner-account", nil, 1)
 }
 
 func TestPartnerAccountOpenWithWireMock(
@@ -115,8 +111,7 @@ func TestPartnerAccountOpenWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.OpenPartner{
-		WorkspaceID: "workspaceId",
-		Name:        "name",
+		Name: "name",
 	}
 	_, invocationErr := client.PartnerAccount.Open(
 		context.TODO(),
@@ -127,7 +122,7 @@ func TestPartnerAccountOpenWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountOpenWithWireMock", "POST", "/api/workspaces/workspaceId/partner", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountOpenWithWireMock", "POST", "/api/v1/partner-account", nil, 1)
 }
 
 func TestPartnerAccountCloseWithWireMock(
@@ -141,19 +136,15 @@ func TestPartnerAccountCloseWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ClosePartnerAccountRequest{
-		WorkspaceID: "workspaceId",
-	}
 	invocationErr := client.PartnerAccount.Close(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestPartnerAccountCloseWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountCloseWithWireMock", "DELETE", "/api/workspaces/workspaceId/partner", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountCloseWithWireMock", "DELETE", "/api/v1/partner-account", nil, 1)
 }
 
 func TestPartnerAccountUpdateWithWireMock(
@@ -167,9 +158,7 @@ func TestPartnerAccountUpdateWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.PartnerChange{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.PartnerChange{}
 	_, invocationErr := client.PartnerAccount.Update(
 		context.TODO(),
 		request,
@@ -179,7 +168,7 @@ func TestPartnerAccountUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/partner", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountUpdateWithWireMock", "PATCH", "/api/v1/partner-account", nil, 1)
 }
 
 func TestPartnerAccountListKeysWithWireMock(
@@ -193,19 +182,15 @@ func TestPartnerAccountListKeysWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListKeysPartnerAccountRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.PartnerAccount.ListKeys(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestPartnerAccountListKeysWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountListKeysWithWireMock", "GET", "/api/workspaces/workspaceId/partner/keys", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountListKeysWithWireMock", "GET", "/api/v1/partner-account/keys", nil, 1)
 }
 
 func TestPartnerAccountCreateKeyWithWireMock(
@@ -220,8 +205,7 @@ func TestPartnerAccountCreateKeyWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewPartnerKey{
-		WorkspaceID: "workspaceId",
-		Name:        "name",
+		Name: "name",
 		Permissions: []peal.Permission{
 			peal.PermissionActivityRead,
 		},
@@ -238,7 +222,7 @@ func TestPartnerAccountCreateKeyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountCreateKeyWithWireMock", "POST", "/api/workspaces/workspaceId/partner/keys", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountCreateKeyWithWireMock", "POST", "/api/v1/partner-account/keys", nil, 1)
 }
 
 func TestPartnerAccountRevokeKeyWithWireMock(
@@ -253,7 +237,6 @@ func TestPartnerAccountRevokeKeyWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RevokeKeyPartnerAccountRequest{
-		WorkspaceID:  "workspaceId",
 		PartnerKeyID: "partnerKeyId",
 	}
 	invocationErr := client.PartnerAccount.RevokeKey(
@@ -265,7 +248,7 @@ func TestPartnerAccountRevokeKeyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountRevokeKeyWithWireMock", "DELETE", "/api/workspaces/workspaceId/partner/keys/partnerKeyId", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountRevokeKeyWithWireMock", "DELETE", "/api/v1/partner-account/keys/partnerKeyId", nil, 1)
 }
 
 func TestPartnerAccountOverviewWithWireMock(
@@ -279,9 +262,7 @@ func TestPartnerAccountOverviewWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.OverviewPartnerAccountRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.OverviewPartnerAccountRequest{}
 	_, invocationErr := client.PartnerAccount.Overview(
 		context.TODO(),
 		request,
@@ -291,7 +272,7 @@ func TestPartnerAccountOverviewWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountOverviewWithWireMock", "GET", "/api/workspaces/workspaceId/partner/overview", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountOverviewWithWireMock", "GET", "/api/v1/partner-account/overview", nil, 1)
 }
 
 func TestPartnerAccountListWorkspacesWithWireMock(
@@ -305,9 +286,7 @@ func TestPartnerAccountListWorkspacesWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListWorkspacesPartnerAccountRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListWorkspacesPartnerAccountRequest{}
 	_, invocationErr := client.PartnerAccount.ListWorkspaces(
 		context.TODO(),
 		request,
@@ -317,5 +296,5 @@ func TestPartnerAccountListWorkspacesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountListWorkspacesWithWireMock", "GET", "/api/workspaces/workspaceId/partner/workspaces", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountListWorkspacesWithWireMock", "GET", "/api/v1/partner-account/workspaces", nil, 1)
 }

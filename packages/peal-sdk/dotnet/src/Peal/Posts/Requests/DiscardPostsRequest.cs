@@ -7,9 +7,6 @@ namespace Peal;
 public record DiscardPostsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PostId { get; set; }
 
     /// <inheritdoc />

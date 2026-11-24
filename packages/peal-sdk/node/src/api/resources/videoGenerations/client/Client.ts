@@ -31,6 +31,7 @@ export class VideoGenerationsClient {
      * @param {Peal.ListVideoGenerationsRequest} request
      * @param {VideoGenerationsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,23 +40,21 @@ export class VideoGenerationsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.videoGenerations.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.videoGenerations.list()
      */
-    public list(request: Peal.ListVideoGenerationsRequest, requestOptions?: VideoGenerationsClient.RequestOptions): core.HttpResponsePromise<Peal.VideoGenerations> {
+    public list(request: Peal.ListVideoGenerationsRequest = {}, requestOptions?: VideoGenerationsClient.RequestOptions): core.HttpResponsePromise<Peal.VideoGenerations> {
         return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
     }
 
-    private async __list(request: Peal.ListVideoGenerationsRequest, requestOptions?: VideoGenerationsClient.RequestOptions): Promise<core.WithRawResponse<Peal.VideoGenerations>> {
-        const { workspaceId, status } = request;
+    private async __list(request: Peal.ListVideoGenerationsRequest = {}, requestOptions?: VideoGenerationsClient.RequestOptions): Promise<core.WithRawResponse<Peal.VideoGenerations>> {
+        const { status } = request;
         const _queryParams: Record<string, unknown> = {
             status: status != null ? status : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/media/videos/generations`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/media/videos/generations"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -71,6 +70,7 @@ export class VideoGenerationsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -83,7 +83,7 @@ export class VideoGenerationsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/media/videos/generations");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/media/videos/generations");
     }
 
     /**
@@ -92,6 +92,7 @@ export class VideoGenerationsClient {
      * @param {Peal.VideoGenerationRequest} request
      * @param {VideoGenerationsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -104,7 +105,6 @@ export class VideoGenerationsClient {
      *
      * @example
      *     await client.videoGenerations.create({
-     *         workspaceId: "workspaceId",
      *         aspect: "square",
      *         prompt: "prompt"
      *     })
@@ -114,17 +114,16 @@ export class VideoGenerationsClient {
     }
 
     private async __create(request: Peal.VideoGenerationRequest, requestOptions?: VideoGenerationsClient.RequestOptions): Promise<core.WithRawResponse<Peal.VideoGeneration>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/media/videos/generations`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/media/videos/generations"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -137,6 +136,7 @@ export class VideoGenerationsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -152,7 +152,7 @@ export class VideoGenerationsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/media/videos/generations");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/media/videos/generations");
     }
 
     /**
@@ -161,6 +161,7 @@ export class VideoGenerationsClient {
      * @param {Peal.GetVideoGenerationsRequest} request
      * @param {VideoGenerationsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -170,7 +171,6 @@ export class VideoGenerationsClient {
      *
      * @example
      *     await client.videoGenerations.get({
-     *         workspaceId: "workspaceId",
      *         generationId: "generationId"
      *     })
      */
@@ -179,11 +179,11 @@ export class VideoGenerationsClient {
     }
 
     private async __get(request: Peal.GetVideoGenerationsRequest, requestOptions?: VideoGenerationsClient.RequestOptions): Promise<core.WithRawResponse<Peal.VideoGeneration>> {
-        const { workspaceId, generationId } = request;
+        const { generationId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/media/videos/generations/${core.url.encodePathParam(generationId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/media/videos/generations/${core.url.encodePathParam(generationId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -199,6 +199,7 @@ export class VideoGenerationsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -211,6 +212,6 @@ export class VideoGenerationsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/media/videos/generations/{generationId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/media/videos/generations/{generationId}");
     }
 }

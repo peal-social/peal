@@ -4,8 +4,6 @@ module Peal
   module Channels
     module Types
       class SiteSignInCallback < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :platform, -> { Peal::Types::OAuthSitePlatform }, optional: false, nullable: false
 
         field :code, -> { String }, optional: true, nullable: false

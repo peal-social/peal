@@ -16,24 +16,22 @@ module Peal
       # billing:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.billing.get(workspace_id: "workspaceId")
+      #   client.billing.get
       #
       # @return [Peal::Types::Billing]
-      def get(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def get(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/billing",
+          path: "api/v1/billing",
           request_options: request_options
         )
         begin
@@ -63,24 +61,22 @@ module Peal
       # workspace.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.billing.standing(workspace_id: "workspaceId")
+      #   client.billing.standing
       #
       # @return [Peal::Types::Standing]
-      def standing(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def standing(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/billing/standing",
+          path: "api/v1/billing/standing",
           request_options: request_options
         )
         begin

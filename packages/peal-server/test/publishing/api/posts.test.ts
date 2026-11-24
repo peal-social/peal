@@ -13,6 +13,7 @@ import {
   ScheduleInPast,
   UnknownChannels,
   UnknownMedia,
+  forWorkspace,
 } from "peal-contract";
 import type { Member, PostContent, SchedulePost } from "peal-contract";
 
@@ -72,7 +73,7 @@ describe("the posts endpoints", () => {
           const client = yield* as("editor", workspaceId);
 
           const createdResponse = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [bluesky], content: text("First words") },
             responseMode: "response-only",
           });
@@ -80,7 +81,7 @@ describe("the posts endpoints", () => {
           assert.strictEqual(createdResponse.status, 201);
 
           const created = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: {
               channelIds: [bluesky],
               content: {
@@ -103,9 +104,10 @@ describe("the posts endpoints", () => {
             [[bluesky, "pending"]]
           );
 
-          const params = { postId: created.id, workspaceId };
+          const params = { postId: created.id };
 
           const updated = yield* client.posts.update({
+            headers: forWorkspace(workspaceId),
             params,
             payload: {
               channelIds: [bluesky, mastodon],
@@ -119,9 +121,16 @@ describe("the posts endpoints", () => {
           );
           assert.lengthOf(updated.targets, 2);
 
-          assert.deepStrictEqual(yield* client.posts.get({ params }), updated);
+          assert.deepStrictEqual(
+            yield* client.posts.get({
+              headers: forWorkspace(workspaceId),
+              params,
+            }),
+            updated
+          );
 
           const scheduled = yield* client.posts.schedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload: {
               at: utc("2026-06-16T07:30:00Z"),
@@ -141,6 +150,7 @@ describe("the posts endpoints", () => {
           );
 
           const moved = yield* client.posts.reschedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload: {
               at: utc("2026-06-17T16:00:00Z"),
@@ -154,7 +164,7 @@ describe("the posts endpoints", () => {
           });
 
           const listed = yield* client.posts.list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: {
               from: utc("2026-06-15T00:00:00Z"),
               to: utc("2026-06-22T00:00:00Z"),
@@ -166,7 +176,10 @@ describe("the posts endpoints", () => {
             [created.id]
           );
 
-          const cancelled = yield* client.posts.cancel({ params });
+          const cancelled = yield* client.posts.cancel({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
 
           assert.strictEqual(cancelled.status, "cancelled");
           assert.deepStrictEqual(
@@ -190,11 +203,11 @@ describe("the posts endpoints", () => {
           const client = yield* as("editor", workspaceId);
 
           const draft = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [], content: text("日".repeat(141)) },
           });
 
-          const params = { postId: draft.id, workspaceId };
+          const params = { postId: draft.id };
 
           const payload: SchedulePost = {
             at: utc("2026-06-16T07:30:00Z"),
@@ -203,7 +216,7 @@ describe("the posts endpoints", () => {
           };
 
           const error = yield* client.posts
-            .schedule({ params, payload })
+            .schedule({ headers: forWorkspace(workspaceId), params, payload })
             .pipe(Effect.flip);
 
           assert.deepStrictEqual(
@@ -228,6 +241,7 @@ describe("the posts endpoints", () => {
           );
 
           const response = yield* client.posts.schedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload,
             responseMode: "response-only",
@@ -250,11 +264,11 @@ describe("the posts endpoints", () => {
           const mastodon = yield* connect(workspaceId, "mastodon");
           const theirs = yield* connect(other, "mastodon");
           const client = yield* as("editor", workspaceId);
-          const workspace = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const foreign = yield* client.posts
             .create({
-              params: workspace,
+              headers,
               payload: {
                 channelIds: [theirs, "not-a-channel"],
                 content: text("Hi"),
@@ -269,7 +283,7 @@ describe("the posts endpoints", () => {
 
           const elsewhere = yield* client.posts
             .create({
-              params: workspace,
+              headers,
               payload: { channelIds: [theirs], content: text("Hi") },
             })
             .pipe(Effect.flip);
@@ -283,7 +297,7 @@ describe("the posts endpoints", () => {
           // on the server; here only one is.
           const image = yield* client.posts
             .create({
-              params: workspace,
+              headers,
               payload: {
                 channelIds: [mastodon],
                 content: {
@@ -303,14 +317,15 @@ describe("the posts endpoints", () => {
           assert.instanceOf(image, UnknownMedia);
 
           const draft = yield* client.posts.create({
-            params: workspace,
+            headers,
             payload: { channelIds: [mastodon], content: text("Hi") },
           });
 
-          const params = { postId: draft.id, workspaceId };
+          const params = { postId: draft.id };
 
           const zone = yield* client.posts
             .schedule({
+              headers,
               params,
               payload: {
                 at: utc("2026-06-16T07:30:00Z"),
@@ -327,6 +342,7 @@ describe("the posts endpoints", () => {
 
           const past = yield* client.posts
             .schedule({
+              headers,
               params,
               payload: {
                 at: utc("2026-06-15T06:00:00Z"),
@@ -353,16 +369,20 @@ describe("the posts endpoints", () => {
           const client = yield* as("editor", workspaceId);
 
           const draft = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: text("Hi") },
           });
 
-          const params = { postId: draft.id, workspaceId };
+          const params = { postId: draft.id };
 
-          yield* client.posts.cancel({ params });
+          yield* client.posts.cancel({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
 
           const error = yield* client.posts
             .update({
+              headers: forWorkspace(workspaceId),
               params,
               payload: { channelIds: [mastodon], content: text("Too late") },
             })
@@ -374,6 +394,7 @@ describe("the posts endpoints", () => {
           );
 
           const response = yield* client.posts.cancel({
+            headers: forWorkspace(workspaceId),
             params,
             responseMode: "response-only",
           });
@@ -395,7 +416,7 @@ describe("the posts endpoints", () => {
           const owner = yield* as("editor", theirs);
 
           const post = yield* owner.posts.create({
-            params: { workspaceId: theirs },
+            headers: forWorkspace(theirs),
             payload: { channelIds: [], content: text("Theirs") },
           });
 
@@ -403,14 +424,15 @@ describe("the posts endpoints", () => {
 
           for (const postId of [post.id, "not-a-post-id"]) {
             const error = yield* client.posts
-              .get({ params: { postId, workspaceId: mine } })
+              .get({ headers: forWorkspace(mine), params: { postId } })
               .pipe(Effect.flip);
 
             assert.instanceOf(error, PostNotFound);
           }
 
           const response = yield* client.posts.cancel({
-            params: { postId: post.id, workspaceId: mine },
+            headers: forWorkspace(mine),
+            params: { postId: post.id },
             responseMode: "response-only",
           });
 
@@ -430,11 +452,11 @@ describe("the posts endpoints", () => {
           const mastodon = yield* connect(workspaceId, "mastodon");
           const viewer = yield* as("viewer", workspaceId);
           const contributor = yield* as("contributor", workspaceId);
-          const workspace = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const refused = yield* viewer.posts
             .create({
-              params: workspace,
+              headers,
               payload: { channelIds: [], content: text("Hi") },
             })
             .pipe(Effect.flip);
@@ -442,12 +464,13 @@ describe("the posts endpoints", () => {
           assert.instanceOf(refused, Forbidden);
 
           const draft = yield* contributor.posts.create({
-            params: workspace,
+            headers,
             payload: { channelIds: [mastodon], content: text("Hi") },
           });
 
           const response = yield* contributor.posts.schedule({
-            params: { postId: draft.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
             payload: {
               at: utc("2026-06-16T07:30:00Z"),
               channelIds: [mastodon],
@@ -460,7 +483,8 @@ describe("the posts endpoints", () => {
 
           // A viewer reads.
           const read = yield* viewer.posts.get({
-            params: { postId: draft.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
           });
 
           assert.strictEqual(read.id, draft.id);
@@ -480,7 +504,7 @@ describe("the posts endpoints", () => {
 
           const error = yield* client.posts
             .list({
-              params: { workspaceId },
+              headers: forWorkspace(workspaceId),
               query: {
                 from: utc("2026-06-01T00:00:00Z"),
                 to: utc("2026-09-01T00:00:00Z"),
@@ -491,7 +515,7 @@ describe("the posts endpoints", () => {
           assert.instanceOf(error, InvalidTimeRange);
 
           const response = yield* client.posts.list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query: {
               from: utc("2026-06-02T00:00:00Z"),
               to: utc("2026-06-01T00:00:00Z"),

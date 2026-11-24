@@ -25,7 +25,7 @@ public class ReshuffleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId/reshuffle")
+                    .WithPath("/api/v1/queues/queueId/reshuffle")
                     .UsingPost()
             )
             .RespondWith(
@@ -36,7 +36,7 @@ public class ReshuffleTest : BaseMockServerTest
             );
 
         var response = await Client.Queues.ReshuffleAsync(
-            new ReshuffleQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
+            new ReshuffleQueuesRequest { QueueId = "queueId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -57,7 +57,7 @@ public class ReshuffleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId/reshuffle")
+                    .WithPath("/api/v1/queues/queueId/reshuffle")
                     .UsingPost()
             )
             .RespondWith(
@@ -68,7 +68,7 @@ public class ReshuffleTest : BaseMockServerTest
             );
 
         var response = await Client.Queues.ReshuffleAsync(
-            new ReshuffleQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
+            new ReshuffleQueuesRequest { QueueId = "queueId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

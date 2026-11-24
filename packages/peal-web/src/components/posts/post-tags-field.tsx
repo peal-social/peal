@@ -4,7 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { maxTagsPerPost } from "peal-contract";
+import { maxTagsPerPost, forWorkspace } from "peal-contract";
 import type { Permission, Tag } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { Checkbox } from "peal-ui/components/checkbox";
@@ -159,7 +159,8 @@ const LoadedTags = ({
 
     startSaving(async () => {
       const exit = await file({
-        params: { postId: savedOn, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { postId: savedOn },
         payload: { tagIds: next },
         reactivityKeys: ["posts"],
       });

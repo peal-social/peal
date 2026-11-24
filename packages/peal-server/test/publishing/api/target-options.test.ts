@@ -2,7 +2,12 @@ import { assert, describe, it } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, PostContentInvalid, UnknownChannels } from "peal-contract";
+import {
+  Api,
+  PostContentInvalid,
+  UnknownChannels,
+  forWorkspace,
+} from "peal-contract";
 import type { Member, PostContent } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
@@ -57,7 +62,7 @@ describe("a post's options through the API", () => {
           );
 
           const created = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: {
               channelIds: [youtube, mastodon],
               content,
@@ -81,9 +86,15 @@ describe("a post's options through the API", () => {
             ]
           );
 
-          const params = { postId: created.id, workspaceId };
+          const params = { postId: created.id };
 
-          assert.deepStrictEqual(yield* client.posts.get({ params }), created);
+          assert.deepStrictEqual(
+            yield* client.posts.get({
+              headers: forWorkspace(workspaceId),
+              params,
+            }),
+            created
+          );
 
           const schedule = {
             at: utc("2026-06-16T07:30:00Z"),
@@ -92,7 +103,11 @@ describe("a post's options through the API", () => {
           };
 
           const unfinished = yield* client.posts
-            .schedule({ params, payload: schedule })
+            .schedule({
+              headers: forWorkspace(workspaceId),
+              params,
+              payload: schedule,
+            })
             .pipe(Effect.flip);
 
           assert(Schema.is(PostContentInvalid)(unfinished));
@@ -113,6 +128,7 @@ describe("a post's options through the API", () => {
           };
 
           const updated = yield* client.posts.update({
+            headers: forWorkspace(workspaceId),
             params,
             payload: {
               channelIds: [youtube, mastodon],
@@ -124,6 +140,7 @@ describe("a post's options through the API", () => {
           assert.deepStrictEqual(updated.targets[0]?.options, finished);
 
           const scheduled = yield* client.posts.schedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload: schedule,
           });
@@ -133,7 +150,10 @@ describe("a post's options through the API", () => {
             [finished, null]
           );
 
-          yield* client.posts.cancel({ params });
+          yield* client.posts.cancel({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
         })
       ),
     timeout
@@ -154,7 +174,7 @@ describe("a post's options through the API", () => {
 
           const malformed = yield* client.posts
             .create({
-              params: { workspaceId },
+              headers: forWorkspace(workspaceId),
               payload: {
                 channelIds: [mastodon],
                 content,
@@ -172,7 +192,7 @@ describe("a post's options through the API", () => {
 
           const mismatched = yield* client.posts
             .create({
-              params: { workspaceId },
+              headers: forWorkspace(workspaceId),
               payload: {
                 channelIds: [mastodon],
                 content,

@@ -553,7 +553,7 @@ public class ImportTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/import")
+                    .WithPath("/api/v1/posts/import")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -566,12 +566,7 @@ public class ImportTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.ImportAsync(
-            new PostImport
-            {
-                WorkspaceId = "workspaceId",
-                Csv = "csv",
-                DryRun = null,
-            }
+            new PostImport { Csv = "csv", DryRun = null }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -643,7 +638,7 @@ public class ImportTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/import")
+                    .WithPath("/api/v1/posts/import")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -655,9 +650,7 @@ public class ImportTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.ImportAsync(
-            new PostImport { WorkspaceId = "workspaceId", Csv = "csv" }
-        );
+        var response = await Client.Posts.ImportAsync(new PostImport { Csv = "csv" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

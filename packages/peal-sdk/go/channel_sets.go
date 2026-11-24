@@ -10,53 +10,10 @@ import (
 )
 
 var (
-	createChannelSetsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type CreateChannelSetsRequest struct {
-	WorkspaceID string             `json:"-" url:"-"`
-	Body        *ChannelSetDetails `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (c *CreateChannelSetsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CreateChannelSetsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(createChannelSetsRequestFieldWorkspaceID)
-}
-
-func (c *CreateChannelSetsRequest) UnmarshalJSON(data []byte) error {
-	body := new(ChannelSetDetails)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	c.Body = body
-	return nil
-}
-
-func (c *CreateChannelSetsRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.Body)
-}
-
-var (
-	deleteChannelSetsRequestFieldWorkspaceID  = big.NewInt(1 << 0)
-	deleteChannelSetsRequestFieldChannelSetID = big.NewInt(1 << 1)
+	deleteChannelSetsRequestFieldChannelSetID = big.NewInt(1 << 0)
 )
 
 type DeleteChannelSetsRequest struct {
-	WorkspaceID  string `json:"-" url:"-"`
 	ChannelSetID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -72,45 +29,11 @@ func (d *DeleteChannelSetsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteChannelSetsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteChannelSetsRequestFieldWorkspaceID)
-}
-
 // SetChannelSetID sets the ChannelSetID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteChannelSetsRequest) SetChannelSetID(channelSetID string) {
 	d.ChannelSetID = channelSetID
 	d.require(deleteChannelSetsRequestFieldChannelSetID)
-}
-
-var (
-	listChannelSetsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListChannelSetsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListChannelSetsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListChannelSetsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listChannelSetsRequestFieldWorkspaceID)
 }
 
 var (
@@ -398,12 +321,10 @@ func (c *ChannelSetDetails) String() string {
 }
 
 var (
-	updateChannelSetsRequestFieldWorkspaceID  = big.NewInt(1 << 0)
-	updateChannelSetsRequestFieldChannelSetID = big.NewInt(1 << 1)
+	updateChannelSetsRequestFieldChannelSetID = big.NewInt(1 << 0)
 )
 
 type UpdateChannelSetsRequest struct {
-	WorkspaceID  string             `json:"-" url:"-"`
 	ChannelSetID string             `json:"-" url:"-"`
 	Body         *ChannelSetDetails `json:"-" url:"-"`
 
@@ -418,13 +339,6 @@ func (u *UpdateChannelSetsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdateChannelSetsRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updateChannelSetsRequestFieldWorkspaceID)
 }
 
 // SetChannelSetID sets the ChannelSetID field and marks it as non-optional;

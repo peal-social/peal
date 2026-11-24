@@ -34,7 +34,7 @@ public class SetTextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider")
+                    .WithPath("/api/v1/assistant/text-provider")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -49,7 +49,6 @@ public class SetTextProviderTest : BaseMockServerTest
         var response = await Client.Assistant.SetTextProviderAsync(
             new TextProviderChange
             {
-                WorkspaceId = "workspaceId",
                 ApiKey = null,
                 BaseUrl = null,
                 Kind = null,
@@ -85,7 +84,7 @@ public class SetTextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider")
+                    .WithPath("/api/v1/assistant/text-provider")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -98,7 +97,7 @@ public class SetTextProviderTest : BaseMockServerTest
             );
 
         var response = await Client.Assistant.SetTextProviderAsync(
-            new TextProviderChange { WorkspaceId = "workspaceId", Model = "model" }
+            new TextProviderChange { Model = "model" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

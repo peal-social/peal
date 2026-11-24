@@ -20,12 +20,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
       #
       # @example
-      #   client.posts.drafts(workspace_id: "workspaceId")
+      #   client.posts.drafts
       #
       # @return [Peal::Types::DraftPage]
       def drafts(request_options: {}, **params)
@@ -37,7 +36,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/drafts",
+          path: "api/v1/posts/drafts",
           query: query_params,
           request_options: request_options
         )
@@ -70,13 +69,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :from
       # @option params [String] :to
       #
       # @example
       #   client.posts.list(
-      #     workspace_id: "workspaceId",
       #     from: "from",
       #     to: "to"
       #   )
@@ -91,7 +88,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts",
+          path: "api/v1/posts",
           query: query_params,
           request_options: request_options
         )
@@ -132,11 +129,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.posts.create(
-      #     workspace_id: "workspaceId",
       #     channel_ids: ["channelIds"],
       #     content: {
       #       media: [{
@@ -154,14 +149,11 @@ module Peal
       # @return [Peal::Types::Post]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts",
-          body: Peal::Types::PostDraft.new(body_params).to_h,
+          path: "api/v1/posts",
+          body: Peal::Types::PostDraft.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -205,7 +197,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :author_id
       # @option params [String, nil] :channel_id
       # @option params [Peal::Types::PostOriginVia, nil] :created_via
@@ -223,7 +214,7 @@ module Peal
       # @option params [String, nil] :to
       #
       # @example
-      #   client.posts.search(workspace_id: "workspaceId")
+      #   client.posts.search
       #
       # @return [Peal::Types::PostPage]
       def search(request_options: {}, **params)
@@ -248,7 +239,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/search",
+          path: "api/v1/posts/search",
           query: query_params,
           request_options: request_options
         )
@@ -310,13 +301,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :wait
       # @option params [String, nil] :idempotency_key
       #
       # @example
       #   client.posts.send_(
-      #     workspace_id: "workspaceId",
       #     channel_ids: ["channelIds"],
       #     content: {
       #       media: [{
@@ -335,7 +324,7 @@ module Peal
       def send_(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::NewPost.new(params).to_h
-        non_body_param_names = %w[workspaceId wait idempotency-key]
+        non_body_param_names = %w[wait idempotency-key]
         body = request_data.except(*non_body_param_names)
 
         query_params = {}
@@ -347,7 +336,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/send",
+          path: "api/v1/posts/send",
           headers: headers,
           query: query_params,
           body: body,
@@ -395,33 +384,29 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :idempotency_key
       #
       # @example
-      #   client.posts.bulk(
-      #     workspace_id: "workspaceId",
-      #     posts: [{
-      #       channelIds: ["channelIds"],
-      #       content: {
-      #         media: [{
-      #           altText: "altText",
-      #           mediaId: "mediaId"
-      #         }],
-      #         overrides: [{
-      #           channelId: "channelId",
-      #           text: "text"
-      #         }],
+      #   client.posts.bulk(posts: [{
+      #     channelIds: ["channelIds"],
+      #     content: {
+      #       media: [{
+      #         altText: "altText",
+      #         mediaId: "mediaId"
+      #       }],
+      #       overrides: [{
+      #         channelId: "channelId",
       #         text: "text"
-      #       }
-      #     }]
-      #   )
+      #       }],
+      #       text: "text"
+      #     }
+      #   }])
       #
       # @return [Peal::Types::BulkResult]
       def bulk(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::BulkPosts.new(params).to_h
-        non_body_param_names = %w[workspaceId idempotency-key]
+        non_body_param_names = %w[idempotency-key]
         body = request_data.except(*non_body_param_names)
 
         headers = {}
@@ -430,7 +415,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/bulk",
+          path: "api/v1/posts/bulk",
           headers: headers,
           body: body,
           request_options: request_options,
@@ -480,20 +465,16 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :idempotency_key
       #
       # @example
-      #   client.posts.import(
-      #     workspace_id: "workspaceId",
-      #     csv: "csv"
-      #   )
+      #   client.posts.import(csv: "csv")
       #
       # @return [Peal::Types::ImportResult]
       def import(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::PostImport.new(params).to_h
-        non_body_param_names = %w[workspaceId idempotency-key]
+        non_body_param_names = %w[idempotency-key]
         body = request_data.except(*non_body_param_names)
 
         headers = {}
@@ -502,7 +483,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/import",
+          path: "api/v1/posts/import",
           headers: headers,
           body: body,
           request_options: request_options,
@@ -545,11 +526,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.posts.validate(
-      #     workspace_id: "workspaceId",
       #     channel_ids: ["channelIds"],
       #     content: {
       #       media: [{
@@ -567,15 +546,11 @@ module Peal
       # @return [Peal::Types::PostValidation]
       def validate(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Posts::Types::PostToValidate.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/validate",
-          body: body,
+          path: "api/v1/posts/validate",
+          body: Peal::Posts::Types::PostToValidate.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -606,14 +581,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.get(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.get(post_id: "postId")
       #
       # @return [Peal::Types::Post]
       def get(request_options: {}, **params)
@@ -621,7 +592,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -653,12 +624,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.posts.update(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     channel_ids: ["channelIds"],
       #     content: {
@@ -677,13 +646,13 @@ module Peal
       # @return [Peal::Types::Post]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id post_id]
+        path_param_names = %i[post_id]
         body_params = params.except(*path_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
           body: Peal::Types::PostDraft.new(body_params).to_h,
           request_options: request_options
         )
@@ -715,14 +684,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.discard(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.discard(post_id: "postId")
       #
       # @return [untyped]
       def discard(request_options: {}, **params)
@@ -730,7 +695,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -762,15 +727,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String, nil] :wait
       #
       # @example
-      #   client.posts.outcome(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.outcome(post_id: "postId")
       #
       # @return [Peal::Types::Post]
       def outcome(request_options: {}, **params)
@@ -781,7 +742,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/outcome",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/outcome",
           query: query_params,
           request_options: request_options
         )
@@ -813,14 +774,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.attempts(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.attempts(post_id: "postId")
       #
       # @return [Array[Peal::Types::PublicationAttempt]]
       def attempts(request_options: {}, **params)
@@ -828,7 +785,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/attempts",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/attempts",
           request_options: request_options
         )
         begin
@@ -860,12 +817,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.posts.tag(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     tag_ids: ["tagIds"]
       #   )
@@ -874,13 +829,13 @@ module Peal
       def tag(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::PostTags.new(params).to_h
-        non_body_param_names = %w[workspaceId postId]
+        non_body_param_names = %w[postId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PUT",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/tags",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/tags",
           body: body,
           request_options: request_options
         )
@@ -915,14 +870,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.duplicate(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.duplicate(post_id: "postId")
       #
       # @return [Peal::Types::Post]
       def duplicate(request_options: {}, **params)
@@ -930,7 +881,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/duplicate",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/duplicate",
           request_options: request_options,
           max_retries: 0
         )
@@ -969,12 +920,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.posts.schedule(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     at: "at",
       #     channel_ids: ["channelIds"],
@@ -985,13 +934,13 @@ module Peal
       def schedule(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::SchedulePost.new(params).to_h
-        non_body_param_names = %w[workspaceId postId]
+        non_body_param_names = %w[postId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/schedule",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/schedule",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -1026,12 +975,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
       #   client.posts.reschedule(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     at: "at",
       #     time_zone: "timeZone"
@@ -1040,13 +987,13 @@ module Peal
       # @return [Peal::Types::Post]
       def reschedule(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id post_id]
+        path_param_names = %i[post_id]
         body_params = params.except(*path_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/reschedule",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/reschedule",
           body: Peal::Types::PostSchedule.new(body_params).to_h,
           request_options: request_options,
           max_retries: 0
@@ -1087,26 +1034,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.enqueue(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.enqueue(post_id: "postId")
       #
       # @return [Peal::Types::Post]
       def enqueue(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::QueuePost.new(params).to_h
-        non_body_param_names = %w[workspaceId postId]
+        non_body_param_names = %w[postId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/queue",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/queue",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -1139,14 +1082,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.unschedule(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.unschedule(post_id: "postId")
       #
       # @return [Peal::Types::Post]
       def unschedule(request_options: {}, **params)
@@ -1154,7 +1093,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/unschedule",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/unschedule",
           request_options: request_options,
           max_retries: 0
         )
@@ -1189,13 +1128,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String] :target_id
       #
       # @example
       #   client.posts.repost(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     target_id: "targetId"
       #   )
@@ -1206,7 +1143,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/repost",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/repost",
           request_options: request_options,
           max_retries: 0
         )
@@ -1246,13 +1183,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String] :target_id
       #
       # @example
       #   client.posts.remove_target(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     target_id: "targetId"
       #   )
@@ -1263,7 +1198,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -1295,13 +1230,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String] :target_id
       #
       # @example
       #   client.posts.confirm(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     target_id: "targetId"
       #   )
@@ -1309,13 +1242,13 @@ module Peal
       # @return [Peal::Types::Post]
       def confirm(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id post_id target_id]
+        path_param_names = %i[post_id target_id]
         body_params = params.except(*path_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/confirm",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/confirm",
           body: Peal::Types::TargetConfirmation.new(body_params).to_h,
           request_options: request_options,
           max_retries: 0
@@ -1350,13 +1283,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String] :target_id
       #
       # @example
       #   client.posts.leave_out_rest(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     target_id: "targetId"
       #   )
@@ -1367,7 +1298,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/leave-out-rest",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/leave-out-rest",
           request_options: request_options,
           max_retries: 0
         )
@@ -1411,14 +1342,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String] :target_id
       # @option params [String, nil] :wait
       #
       # @example
       #   client.posts.unpublish_target(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     target_id: "targetId"
       #   )
@@ -1432,7 +1361,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/unpublish",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/unpublish",
           query: query_params,
           request_options: request_options,
           max_retries: 0
@@ -1478,14 +1407,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       # @option params [String] :target_id
       # @option params [String, nil] :wait
       #
       # @example
       #   client.posts.edit_target(
-      #     workspace_id: "workspaceId",
       #     post_id: "postId",
       #     target_id: "targetId",
       #     text: "text"
@@ -1495,7 +1422,7 @@ module Peal
       def edit_target(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Posts::Types::LivePostEdit.new(params).to_h
-        non_body_param_names = %w[workspaceId postId targetId wait]
+        non_body_param_names = %w[postId targetId wait]
         body = request_data.except(*non_body_param_names)
 
         query_params = {}
@@ -1504,7 +1431,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/edit",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/targets/#{URI.encode_uri_component(params[:target_id].to_s)}/edit",
           query: query_params,
           body: body,
           request_options: request_options,
@@ -1540,14 +1467,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.unpublish(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.unpublish(post_id: "postId")
       #
       # @return [Peal::Types::PostUnpublish]
       def unpublish(request_options: {}, **params)
@@ -1555,7 +1478,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/unpublish",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/unpublish",
           request_options: request_options,
           max_retries: 0
         )
@@ -1588,14 +1511,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.changes(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.changes(post_id: "postId")
       #
       # @return [Peal::Types::LivePostChanges]
       def changes(request_options: {}, **params)
@@ -1603,7 +1522,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/changes",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/changes",
           request_options: request_options
         )
         begin
@@ -1634,14 +1553,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.posts.cancel(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.posts.cancel(post_id: "postId")
       #
       # @return [Peal::Types::Post]
       def cancel(request_options: {}, **params)
@@ -1649,7 +1564,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/cancel",
+          path: "api/v1/posts/#{URI.encode_uri_component(params[:post_id].to_s)}/cancel",
           request_options: request_options,
           max_retries: 0
         )

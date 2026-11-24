@@ -11,9 +11,9 @@ import {
   QueueNameTaken,
   QueueNotFound,
   TooManyQueues,
+  CurrentMember,
 } from "peal-contract";
 import type {
-  CurrentMember,
   UnknownChannels,
   Queue,
   QueueDetails,
@@ -262,11 +262,11 @@ export const studioQueuesOf = (world: StudioWorld) => {
   const groupLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "queues", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("post:update");
 
-            if (params.workspaceId !== world.workspaceId) {
+            if ((yield* CurrentMember).workspaceId !== world.workspaceId) {
               return yield* new Forbidden();
             }
 
@@ -315,7 +315,7 @@ export const studioQueuesOf = (world: StudioWorld) => {
 
             const queue = yield* findQueue(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.queueId
             );
 
@@ -330,21 +330,29 @@ export const studioQueuesOf = (world: StudioWorld) => {
             yield* world.record(studio, `queue:delete:${queue.id}`);
           }),
         get: ({ params }) =>
-          world
-            .allowed("post:read")
-            .pipe(
-              Effect.andThen(
-                findQueue(studio, params.workspaceId, params.queueId)
-              ),
-              Effect.map(view)
-            ),
-        list: ({ params }) =>
-          world.allowed("post:read").pipe(
-            Effect.andThen(Ref.get(studio.state)),
-            Effect.map(({ queues }) =>
-              params.workspaceId === world.workspaceId
-                ? listed(queues).map(view)
-                : []
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              world
+                .allowed("post:read")
+                .pipe(
+                  Effect.andThen(
+                    findQueue(studio, workspaceId, params.queueId)
+                  ),
+                  Effect.map(view)
+                )
+            )
+          ),
+        list: () =>
+          CurrentMember.pipe(
+            Effect.flatMap(({ workspaceId }) =>
+              world.allowed("post:read").pipe(
+                Effect.andThen(Ref.get(studio.state)),
+                Effect.map(({ queues }) =>
+                  workspaceId === world.workspaceId
+                    ? listed(queues).map(view)
+                    : []
+                )
+              )
             )
           ),
         // The queue's waiting posts onto its slots, in the order of
@@ -355,7 +363,7 @@ export const studioQueuesOf = (world: StudioWorld) => {
 
             const queue = yield* findQueue(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.queueId
             );
 
@@ -445,7 +453,7 @@ export const studioQueuesOf = (world: StudioWorld) => {
 
             const queue = yield* findQueue(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.queueId
             );
 
@@ -478,7 +486,7 @@ export const studioQueuesOf = (world: StudioWorld) => {
 
             const current = yield* findQueue(
               studio,
-              params.workspaceId,
+              (yield* CurrentMember).workspaceId,
               params.queueId
             );
 

@@ -35,12 +35,11 @@ impl MembersClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.members.list(&"workspaceId".to_string(), None).await;
+    ///     client.members.list(None).await;
     /// }
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<WorkspaceMember>, ApiError> {
         let options = {
@@ -51,13 +50,7 @@ impl MembersClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/members", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/members", None, None, options)
             .await
     }
 }

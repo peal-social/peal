@@ -27,9 +27,9 @@ export class BillingClient {
     /**
      * Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
      *
-     * @param {Peal.GetBillingRequest} request
      * @param {BillingClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -38,20 +38,17 @@ export class BillingClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.billing.get({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.billing.get()
      */
-    public get(request: Peal.GetBillingRequest, requestOptions?: BillingClient.RequestOptions): core.HttpResponsePromise<Peal.Billing> {
-        return core.HttpResponsePromise.fromPromise(this.__get(request, requestOptions));
+    public get(requestOptions?: BillingClient.RequestOptions): core.HttpResponsePromise<Peal.Billing> {
+        return core.HttpResponsePromise.fromPromise(this.__get(requestOptions));
     }
 
-    private async __get(request: Peal.GetBillingRequest, requestOptions?: BillingClient.RequestOptions): Promise<core.WithRawResponse<Peal.Billing>> {
-        const { workspaceId } = request;
+    private async __get(requestOptions?: BillingClient.RequestOptions): Promise<core.WithRawResponse<Peal.Billing>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/billing`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/billing"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -67,6 +64,7 @@ export class BillingClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -79,15 +77,15 @@ export class BillingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/billing");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/billing");
     }
 
     /**
      * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with `planLimit`), until when a grace keeps it publishing (`graceUntil`), the plan that holds everything (`payAsYouGo`, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
      *
-     * @param {Peal.StandingBillingRequest} request
      * @param {BillingClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -96,20 +94,17 @@ export class BillingClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.billing.standing({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.billing.standing()
      */
-    public standing(request: Peal.StandingBillingRequest, requestOptions?: BillingClient.RequestOptions): core.HttpResponsePromise<Peal.Standing> {
-        return core.HttpResponsePromise.fromPromise(this.__standing(request, requestOptions));
+    public standing(requestOptions?: BillingClient.RequestOptions): core.HttpResponsePromise<Peal.Standing> {
+        return core.HttpResponsePromise.fromPromise(this.__standing(requestOptions));
     }
 
-    private async __standing(request: Peal.StandingBillingRequest, requestOptions?: BillingClient.RequestOptions): Promise<core.WithRawResponse<Peal.Standing>> {
-        const { workspaceId } = request;
+    private async __standing(requestOptions?: BillingClient.RequestOptions): Promise<core.WithRawResponse<Peal.Standing>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/billing/standing`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/billing/standing"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -125,6 +120,7 @@ export class BillingClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -137,6 +133,6 @@ export class BillingClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/billing/standing");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/billing/standing");
     }
 }

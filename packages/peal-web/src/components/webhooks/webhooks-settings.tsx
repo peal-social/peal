@@ -9,6 +9,7 @@ import {
   webhookBulkRedeliveriesPerHour,
   webhookDeliveryRetentionDays,
   webhookSecretOverlapHours,
+  forWorkspace,
 } from "peal-contract";
 import type {
   SocialChannel,
@@ -123,7 +124,8 @@ const SendAgain = ({
   const handleSend = () => {
     startSending(async () => {
       const exit = await redeliver({
-        params: { deliveryId: delivery.id, endpointId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { deliveryId: delivery.id, endpointId },
         reactivityKeys: deliveriesChanged(endpointId),
       });
 
@@ -266,7 +268,7 @@ const SendAllFailed = ({
   const handleSend = () => {
     startSending(async () => {
       const exit = await redeliver({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { endpointId: endpoint.id },
         reactivityKeys: deliveriesChanged(endpoint.id),
       });
@@ -424,7 +426,8 @@ const EditForm = ({
 
     startTransition(async () => {
       const exit = await update({
-        params: { endpointId: endpoint.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { endpointId: endpoint.id },
         payload: change.value,
         reactivityKeys: endpointsChanged(workspaceId),
       });
@@ -498,7 +501,8 @@ const EndpointActions = ({
   >(Option.none());
 
   const testTypeId = useId();
-  const params = { endpointId: endpoint.id, workspaceId };
+  const params = { endpointId: endpoint.id };
+  const headers = forWorkspace(workspaceId);
   const host = hostOf(endpoint.url);
 
   const failed = (error: WebhookError) => {
@@ -509,6 +513,7 @@ const EndpointActions = ({
     startSwitching(async () => {
       const exit = await update({
         params,
+        headers,
         payload: { enabled: !endpoint.enabled },
         reactivityKeys: endpointsChanged(workspaceId),
       });
@@ -526,6 +531,7 @@ const EndpointActions = ({
     startTesting(async () => {
       const exit = await sendTest({
         params,
+        headers,
         query: Option.match(testType, {
           onNone: () => ({}),
           onSome: (eventType) => ({ eventType }),
@@ -548,6 +554,7 @@ const EndpointActions = ({
     startRotating(async () => {
       const exit = await rotate({
         params,
+        headers,
         reactivityKeys: endpointsChanged(workspaceId),
       });
 
@@ -568,6 +575,7 @@ const EndpointActions = ({
     startDeleting(async () => {
       const exit = await remove({
         params,
+        headers,
         reactivityKeys: endpointsChanged(workspaceId),
       });
 
@@ -952,7 +960,7 @@ const CreateForm = ({
 
     startTransition(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: payload.value,
         reactivityKeys: endpointsChanged(workspaceId),
       });

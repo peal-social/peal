@@ -3,6 +3,7 @@
 import { useAtomRefresh, useAtomSet } from "@effect/atom-react";
 import { DateTime, Exit, Option, Schema } from "effect";
 import { useFormatter, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 
@@ -60,7 +61,7 @@ export const useStudioExport = (workspaceId: string): StudioExport => {
 
     startSending(async () => {
       const exit = await send({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { edit: edit.value },
         reactivityKeys: [slideshowsKey(workspaceId)],
       });

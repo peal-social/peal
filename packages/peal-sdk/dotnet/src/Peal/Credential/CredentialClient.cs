@@ -31,7 +31,7 @@ public partial class CredentialClient : ICredentialClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = "api/credential",
+                    Path = "api/v1/credential",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,

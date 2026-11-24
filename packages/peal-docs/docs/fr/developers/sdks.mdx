@@ -38,9 +38,87 @@ Les SDK envoient leurs requêtes à `https://app.peal.social`. Sur votre propre 
 | Java               | `.url(…)` sur le constructeur  |
 | .NET               | `BaseUrl` dans `ClientOptions` |
 
+### Nommer l’espace de travail [#workspace]
+
+Une clé d’API agit dans son propre espace de travail : un client créé avec elle n’en nomme aucun. Une clé partenaire, ou un jeton OAuth lié à aucun espace de travail, n’appartient à aucun. Donnez à son client l’espace de travail où il agit : le client envoie alors l’identifiant de cet espace de travail dans l’en-tête `Peal-Workspace` de chaque requête ([L’espace de travail d’une requête](/developers/conventions#workspace)). Aucune méthode ne prend d’espace de travail : créez donc un client par espace de travail.
+
+| Langage                       | Option                                 |
+| ----------------------------- | -------------------------------------- |
+| TypeScript, Python, Ruby, PHP | `workspace`                            |
+| Go                            | `option.WithWorkspace`                 |
+| Java                          | `.workspace(…)` sur le constructeur    |
+| .NET                          | `workspace`, après le jeton            |
+| Rust                          | `Peal-Workspace` dans `custom_headers` |
+
+Le SDK Rust n’a pas d’option pour cela : l’en-tête va dans les `custom_headers` du client.
+
+<CodeGroup>
+
+```ts Node.js
+const peal = new PealClient({
+  token: process.env.PEAL_PARTNER_KEY,
+  workspace: "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90",
+});
+```
+
+```python Python
+peal = Peal(
+    token=os.environ["PEAL_PARTNER_KEY"],
+    workspace="7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90",
+)
+```
+
+```go Go
+client := client.NewClient(
+	option.WithToken(os.Getenv("PEAL_PARTNER_KEY")),
+	option.WithWorkspace(peal.String("7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90")),
+)
+```
+
+```ruby Ruby
+peal = Peal::Client.new(
+  token: ENV.fetch("PEAL_PARTNER_KEY"),
+  workspace: "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
+)
+```
+
+```java Java
+PealClient peal = PealClient.builder()
+    .token(System.getenv("PEAL_PARTNER_KEY"))
+    .workspace("7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90")
+    .build();
+```
+
+```php PHP
+$peal = new PealClient(
+    token: getenv('PEAL_PARTNER_KEY'),
+    workspace: '7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90',
+);
+```
+
+```csharp .NET
+var peal = new PealClient(
+    Environment.GetEnvironmentVariable("PEAL_PARTNER_KEY")!,
+    workspace: "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90"
+);
+```
+
+```rust Rust
+let peal = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_PARTNER_KEY").ok(),
+    custom_headers: HashMap::from([(
+        "Peal-Workspace".to_string(),
+        "7b1f6c1e-2d4a-4f0b-9c3e-5a8d2e6f1b90".to_string(),
+    )]),
+    ..Default::default()
+})?;
+```
+
+</CodeGroup>
+
 ## Vérifier d’abord l’identifiant [#credential]
 
-Commencez par `GET /api/credential`. Il vous dit qui est la clé ou le jeton, et ce qu’il peut faire, sans lire aucune donnée. Une clé révoquée ou expirée reçoit 401 : votre programme sait donc si sa clé fonctionne avant de faire quoi que ce soit.
+Commencez par `GET /api/v1/credential`. Il vous dit qui est la clé ou le jeton, et ce qu’il peut faire, sans lire aucune donnée. Une clé révoquée ou expirée reçoit 401 : votre programme sait donc si sa clé fonctionne avant de faire quoi que ce soit.
 
 La réponse dépend de l’identifiant :
 
@@ -173,17 +251,17 @@ if let Credential::ApiKey { workspace, permissions, .. } = &credential {
 ```
 
 ```bash curl
-curl https://app.peal.social/api/credential \
+curl https://app.peal.social/api/v1/credential \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
 </CodeGroup>
 
-La réponse ne contient jamais la clé elle-même, et ne liste pas les espaces de travail qu’une clé partenaire atteint. `GET /api/partner/workspaces` les liste.
+La réponse ne contient jamais la clé elle-même, et ne liste pas les espaces de travail qu’une clé partenaire atteint. `GET /api/v1/partner/workspaces` les liste.
 
 ## Publier, de bout en bout [#journey]
 
-Ce programme suit les étapes de l’[API de publication](/developers/posting). Il trouve les canaux, importe une image depuis son adresse, vérifie la publication, l’envoie avec une `Idempotency-Key`, puis lit comment elle s’est passée. L’identifiant de l’espace de travail est celui qu’a renvoyé la vérification de l’identifiant.
+Ce programme suit les étapes de l’[API de publication](/developers/posting). Il trouve les canaux, importe une image depuis son adresse, vérifie la publication, l’envoie avec une `Idempotency-Key`, puis lit comment elle s’est passée. La clé agit dans son propre espace de travail : aucun appel n’en nomme.
 
 <CodeGroup>
 
@@ -193,23 +271,20 @@ import { randomUUID } from "node:crypto";
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
-const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
 
 // 1. Où elle peut partir : les canaux qui peuvent publier.
-const channels = await peal.channels.list({ workspaceId });
+const channels = await peal.channels.list();
 const channelIds = channels
   .filter(({ status }) => status._tag === "active")
   .map(({ id }) => id);
 
 // 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
 const image = await peal.media.importFromUrl({
-  workspaceId,
   url: "https://media.example.com/synthetic/launch.png",
   altText: "A synthetic launch picture",
 });
 
 const post = {
-  workspaceId,
   channelIds,
   content: {
     text: "A synthetic post, sent with the SDK.",
@@ -236,7 +311,7 @@ const sent = await peal.posts.send({
 
 // 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
 // résultat.
-const outcome = await peal.posts.outcome({ workspaceId, postId: sent.id });
+const outcome = await peal.posts.outcome({ postId: sent.id });
 
 for (const target of outcome.targets) {
   console.log(target.channelId, target.status, target.permalink);
@@ -250,21 +325,18 @@ import uuid
 from peal import MediaAttachment, Peal, PostContent, PostTiming_Now
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
-workspace_id = os.environ["PEAL_WORKSPACE_ID"]
 
 # 1. Où elle peut partir : les canaux qui peuvent publier.
-channels = peal.channels.list(workspace_id=workspace_id)
+channels = peal.channels.list()
 channel_ids = [channel.id for channel in channels if channel.status.type == "active"]
 
 # 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
 image = peal.media.import_from_url(
-    workspace_id=workspace_id,
     url="https://media.example.com/synthetic/launch.png",
     alt_text="A synthetic launch picture",
 )
 
 post = dict(
-    workspace_id=workspace_id,
     channel_ids=channel_ids,
     content=PostContent(
         text="A synthetic post, sent with the SDK.",
@@ -286,7 +358,7 @@ sent = peal.posts.send(**post, idempotency_key=str(uuid.uuid4()), wait="30")
 
 # 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
 # résultat.
-outcome = peal.posts.outcome(workspace_id=workspace_id, post_id=sent.id)
+outcome = peal.posts.outcome(post_id=sent.id)
 
 for target in outcome.targets:
     print(target.channel_id, target.status, target.permalink)
@@ -309,10 +381,9 @@ import (
 func main() {
 	ctx := context.Background()
 	client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
-	workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
 
 	// 1. Où elle peut partir : les canaux qui peuvent publier.
-	channels, err := client.Channels.List(ctx, &peal.ListChannelsRequest{WorkspaceID: workspaceID})
+	channels, err := client.Channels.List(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -326,9 +397,8 @@ func main() {
 
 	// 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
 	image, err := client.Media.ImportFromURL(ctx, &peal.MediaImport{
-		WorkspaceID: workspaceID,
-		URL:         "https://media.example.com/synthetic/launch.png",
-		AltText:     peal.String("A synthetic launch picture"),
+		URL:     "https://media.example.com/synthetic/launch.png",
+		AltText: peal.String("A synthetic launch picture"),
 	})
 	if err != nil {
 		panic(err)
@@ -345,10 +415,9 @@ func main() {
 
 	// 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
 	check, err := client.Posts.Validate(ctx, &peal.PostToValidate{
-		WorkspaceID: workspaceID,
-		ChannelIDs:  channelIDs,
-		Content:     content,
-		When:        now,
+		ChannelIDs: channelIDs,
+		Content:    content,
+		When:       now,
 	})
 	if err != nil {
 		panic(err)
@@ -360,7 +429,6 @@ func main() {
 	// 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans
 	// les 24 heures renvoie cette publication, sans en créer une deuxième.
 	sent, err := client.Posts.Send(ctx, &peal.NewPost{
-		WorkspaceID:    workspaceID,
 		ChannelIDs:     channelIDs,
 		Content:        content,
 		When:           now,
@@ -374,8 +442,7 @@ func main() {
 	// 5. Comment elle s’est passée sur chaque canal, une fois que chacun a
 	// son résultat.
 	outcome, err := client.Posts.Outcome(ctx, &peal.OutcomePostsRequest{
-		WorkspaceID: workspaceID,
-		PostID:      sent.ID,
+		PostID: sent.ID,
 	})
 	if err != nil {
 		panic(err)
@@ -396,22 +463,19 @@ require "peal"
 require "securerandom"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
-workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
 
 # 1. Où elle peut partir : les canaux qui peuvent publier. Le SDK renvoie le
 # statut d’un canal sous forme de hash.
-channels = peal.channels.list(workspace_id: workspace_id)
+channels = peal.channels.list
 channel_ids = channels.select { |channel| channel.status[:_tag] == "active" }.map(&:id)
 
 # 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
 image = peal.media.import_from_url(
-  workspace_id: workspace_id,
   url: "https://media.example.com/synthetic/launch.png",
   alt_text: "A synthetic launch picture"
 )
 
 post = {
-  workspace_id: workspace_id,
   channel_ids: channel_ids,
   content: {
     text: "A synthetic post, sent with the SDK.",
@@ -432,7 +496,7 @@ sent = peal.posts.send_(**post, idempotency_key: SecureRandom.uuid, wait: "30")
 
 # 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
 # résultat.
-outcome = peal.posts.outcome(workspace_id: workspace_id, post_id: sent.id)
+outcome = peal.posts.outcome(post_id: sent.id)
 
 outcome.targets.each do |target|
   puts [target.channel_id, target.status, target.permalink].join(" ")
@@ -459,16 +523,15 @@ import social.peal.types.PostValidation;
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
-String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
 
 // 1. Où elle peut partir : les canaux qui peuvent publier.
-List<String> channelIds = peal.channels().list(workspaceId).stream()
+List<String> channelIds = peal.channels().list().stream()
     .filter(channel -> channel.getStatus().isActive())
     .map(Channel::getId)
     .toList();
 
 // 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
-Media image = peal.media().importFromUrl(workspaceId, MediaImport.builder()
+Media image = peal.media().importFromUrl(MediaImport.builder()
     .url("https://media.example.com/synthetic/launch.png")
     .altText("A synthetic launch picture")
     .build());
@@ -483,7 +546,7 @@ PostContent content = PostContent.builder()
 PostTiming now = PostTiming.now(PostTimingNow.builder().build());
 
 // 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
-PostValidation check = peal.posts().validate(workspaceId, PostToValidate.builder()
+PostValidation check = peal.posts().validate(PostToValidate.builder()
     .content(content)
     .channelIds(channelIds)
     .when(now)
@@ -495,7 +558,7 @@ if (!check.getValid()) {
 
 // 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 // 24 heures renvoie cette publication, sans en créer une deuxième.
-Post sent = peal.posts().send(workspaceId, NewPost.builder()
+Post sent = peal.posts().send(NewPost.builder()
     .content(content)
     .when(now)
     .channelIds(channelIds)
@@ -505,7 +568,7 @@ Post sent = peal.posts().send(workspaceId, NewPost.builder()
 
 // 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
 // résultat.
-Post outcome = peal.posts().outcome(workspaceId, sent.getId());
+Post outcome = peal.posts().outcome(sent.getId());
 
 for (PostTarget target : outcome.getTargets()) {
     System.out.println(target.getChannelId() + " " + target.getStatus() + " "
@@ -525,18 +588,17 @@ use Peal\Types\PostTiming;
 use Peal\Types\PostTimingNow;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
-$workspaceId = getenv('PEAL_WORKSPACE_ID');
 
 // 1. Où elle peut partir : les canaux qui peuvent publier.
 $channelIds = [];
-foreach ($peal->channels->list($workspaceId) as $channel) {
+foreach ($peal->channels->list() as $channel) {
     if ($channel->status->isActive()) {
         $channelIds[] = $channel->id;
     }
 }
 
 // 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
-$image = $peal->media->importFromUrl($workspaceId, new MediaImport([
+$image = $peal->media->importFromUrl(new MediaImport([
     'url' => 'https://media.example.com/synthetic/launch.png',
     'altText' => 'A synthetic launch picture',
 ]));
@@ -551,7 +613,7 @@ $content = new PostContent([
 $now = PostTiming::now(new PostTimingNow([]));
 
 // 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
-$check = $peal->posts->validate($workspaceId, new PostToValidate([
+$check = $peal->posts->validate(new PostToValidate([
     'channelIds' => $channelIds,
     'content' => $content,
     'when' => $now,
@@ -563,7 +625,7 @@ if (!$check->valid) {
 
 // 4. Envoyée sous une clé : une nouvelle tentative avec la même clé dans les
 // 24 heures renvoie cette publication, sans en créer une deuxième.
-$sent = $peal->posts->send($workspaceId, new NewPost([
+$sent = $peal->posts->send(new NewPost([
     'channelIds' => $channelIds,
     'content' => $content,
     'when' => $now,
@@ -573,7 +635,7 @@ $sent = $peal->posts->send($workspaceId, new NewPost([
 
 // 5. Comment elle s’est passée sur chaque canal, une fois que chacun a son
 // résultat.
-$outcome = $peal->posts->outcome($workspaceId, $sent->id);
+$outcome = $peal->posts->outcome($sent->id);
 
 foreach ($outcome->targets as $target) {
     echo $target->channelId, ' ', $target->status, ' ', $target->permalink ?? '', PHP_EOL;
@@ -584,16 +646,14 @@ foreach ($outcome->targets as $target) {
 using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
-var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID") ?? "";
 
 // 1. Où elle peut partir : les canaux qui peuvent publier.
-var channels = await peal.Channels.ListAsync(new ListChannelsRequest { WorkspaceId = workspaceId });
+var channels = await peal.Channels.ListAsync();
 var channelIds = channels.Where(channel => channel.Status.IsActive).Select(channel => channel.Id).ToList();
 
 // 2. Une image déjà en ligne. Le serveur va la chercher lui-même.
 var image = await peal.Media.ImportFromUrlAsync(new MediaImport
 {
-    WorkspaceId = workspaceId,
     Url = "https://media.example.com/synthetic/launch.png",
     AltText = "A synthetic launch picture",
 });
@@ -612,7 +672,6 @@ var now = new PostTiming(new PostTiming.Now(new PostTimingNow()));
 // 3. Vérifiée sans être créée, avec toutes les violations d’un coup.
 var check = await peal.Posts.ValidateAsync(new PostToValidate
 {
-    WorkspaceId = workspaceId,
     ChannelIds = channelIds,
     Content = content,
     When = now,
@@ -627,7 +686,6 @@ if (!check.Valid)
 // 24 heures renvoie cette publication, sans en créer une deuxième.
 var sent = await peal.Posts.SendAsync(new NewPost
 {
-    WorkspaceId = workspaceId,
     ChannelIds = channelIds,
     Content = content,
     When = now,
@@ -639,7 +697,6 @@ var sent = await peal.Posts.SendAsync(new NewPost
 // résultat.
 var outcome = await peal.Posts.OutcomeAsync(new OutcomePostsRequest
 {
-    WorkspaceId = workspaceId,
     PostId = sent.Id,
 });
 
@@ -660,12 +717,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         token: std::env::var("PEAL_API_KEY").ok(),
         ..Default::default()
     })?;
-    let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
 
     // 1. Où elle peut partir : les canaux qui peuvent publier.
     let channel_ids: Vec<String> = peal
         .channels
-        .list(&workspace_id, None)
+        .list(None)
         .await?
         .into_iter()
         .filter(|channel| matches!(channel.status, ChannelStatus::Active { .. }))
@@ -676,7 +732,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let image = peal
         .media
         .import_from_url(
-            &workspace_id,
             &MediaImport {
                 url: "https://media.example.com/synthetic/launch.png".to_string(),
                 alt_text: Some("A synthetic launch picture".to_string()),
@@ -698,7 +753,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let check = peal
         .posts
         .validate(
-            &workspace_id,
             &PostToValidate::builder()
                 .channel_ids(channel_ids.clone())
                 .content(content.clone())
@@ -719,7 +773,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let sent = peal
         .posts
         .send(
-            &workspace_id,
             &NewPost::builder()
                 .channel_ids(channel_ids)
                 .content(content)
@@ -737,7 +790,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // son résultat.
     let outcome = peal
         .posts
-        .outcome(&workspace_id, &sent.id, &OutcomeQueryRequest::default(), None)
+        .outcome(&sent.id, &OutcomeQueryRequest::default(), None)
         .await?;
 
     for target in outcome.targets {
@@ -780,7 +833,7 @@ Une clé peut envoyer {{api-with-fr}} requêtes par minute, ou {{api-without-fr}
 
 ## Pages [#paging]
 
-Les listes qui grandissent sans fin se lisent page par page. Passez `limit` et `cursor`, puis passez le `nextCursor` de la réponse comme `cursor` suivant, jusqu’à ce qu’il vaille `null` ([Pagination](/developers/conventions/paging#paging)). Les listes de l’API partenaire (`/api/partner/workspaces`, `/api/partner/usage`, `/api/partner/overview`) prennent `before` à la place, et répondent `next`.
+Les listes qui grandissent sans fin se lisent page par page. Passez `limit` et `cursor`, puis passez le `nextCursor` de la réponse comme `cursor` suivant, jusqu’à ce qu’il vaille `null` ([Pagination](/developers/conventions/paging#paging)). Les listes de l’API partenaire (`/api/v1/partner/workspaces`, `/api/v1/partner/usage`, `/api/v1/partner/overview`) prennent `before` à la place, et répondent `next`.
 
 Les SDK passent les deux tels quels. Aucun n’a d’aide qui lise toutes les pages pour vous, c’est donc à vous d’écrire la boucle :
 
@@ -790,7 +843,7 @@ Les SDK passent les deux tels quels. Aucun n’a d’aide qui lise toutes les pa
 let cursor: string | undefined;
 
 do {
-  const page = await peal.media.list({ workspaceId, limit: "100", cursor });
+  const page = await peal.media.list({ limit: "100", cursor });
 
   for (const media of page.items) {
     console.log(media.id);
@@ -804,7 +857,7 @@ do {
 cursor = None
 
 while True:
-    page = peal.media.list(workspace_id=workspace_id, limit="100", cursor=cursor)
+    page = peal.media.list(limit="100", cursor=cursor)
 
     for media in page.items:
         print(media.id)
@@ -819,9 +872,8 @@ var cursor *string
 
 for {
 	page, err := client.Media.List(ctx, &peal.ListMediaRequest{
-		WorkspaceID: workspaceID,
-		Limit:       peal.String("100"),
-		Cursor:      cursor,
+		Limit:  peal.String("100"),
+		Cursor: cursor,
 	})
 	if err != nil {
 		return err
@@ -843,7 +895,7 @@ cursor = nil
 
 loop do
   # N’envoyer `cursor` que s’il y en a un.
-  query = { workspace_id: workspace_id, limit: "100" }
+  query = { limit: "100" }
   query[:cursor] = cursor if cursor
 
   page = peal.media.list(**query)
@@ -864,7 +916,7 @@ import social.peal.types.MediaPage;
 Optional<String> cursor = Optional.empty();
 
 do {
-    MediaPage page = peal.media().list(workspaceId, ListMediaRequest.builder()
+    MediaPage page = peal.media().list(ListMediaRequest.builder()
         .limit("100")
         .cursor(cursor)
         .build());
@@ -884,7 +936,7 @@ use Peal\Media\Requests\ListMediaRequest;
 $cursor = null;
 
 do {
-    $page = $peal->media->list($workspaceId, new ListMediaRequest([
+    $page = $peal->media->list(new ListMediaRequest([
         'limit' => '100',
         'cursor' => $cursor,
     ]));
@@ -904,7 +956,6 @@ do
 {
     var page = await peal.Media.ListAsync(new ListMediaRequest
     {
-        WorkspaceId = workspaceId,
         Limit = "100",
         Cursor = cursor,
     });
@@ -925,7 +976,6 @@ loop {
     let page = peal
         .media
         .list(
-            &workspace_id,
             &MediaListQueryRequest {
                 limit: Some("100".to_string()),
                 cursor: cursor.clone(),

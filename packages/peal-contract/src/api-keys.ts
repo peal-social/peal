@@ -11,6 +11,7 @@ import { Authentication } from "./authentication.ts";
 import { Forbidden } from "./forbidden.ts";
 import { PermissionSchema } from "./permission.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The member who made an API key, by the name they go by. */
 export const ApiKeyMakerSchema = Schema.Struct({
@@ -55,14 +56,13 @@ export const CreatedApiKeySchema = Schema.Struct({
   key: Schema.String,
 }).annotate({ identifier: "CreatedApiKey" });
 
-const workspace = { workspaceId: Schema.String };
-
 /** A workspace's API keys, for scripts and integrations. */
 export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
   .add(
     HttpApiEndpoint.post("create", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewApiKeySchema,
       success: CreatedApiKeySchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -74,7 +74,8 @@ export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
     ),
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(ApiKeySchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -85,7 +86,8 @@ export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
     ),
     HttpApiEndpoint.delete("revoke", "/:apiKeyId", {
       error: [Forbidden, ApiKeyNotFound],
-      params: { ...workspace, apiKeyId: Schema.String },
+      headers: workspaceHeaders,
+      params: { apiKeyId: Schema.String },
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -97,4 +99,4 @@ export class ApiKeysApi extends HttpApiGroup.make("apiKeys")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/api-keys") {}
+  .prefix("/api/v1/api-keys") {}

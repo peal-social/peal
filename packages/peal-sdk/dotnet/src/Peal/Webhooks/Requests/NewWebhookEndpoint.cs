@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewWebhookEndpoint
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("channelIds")]
     public IEnumerable<string>? ChannelIds { get; set; }
 

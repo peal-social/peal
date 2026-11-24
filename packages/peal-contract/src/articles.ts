@@ -20,6 +20,7 @@ import { PlatformUnreachable } from "./platform-unreachable.ts";
 import { FailureReasonSchema, UnconfirmedReasonSchema } from "./posts.ts";
 import { UnknownMedia } from "./unknown-media.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The longest title an article takes. */
 export const maxArticleTitleLength = 500;
@@ -198,9 +199,7 @@ export const ArticlePageSchema = Schema.Struct({
 
 export type ArticlePage = typeof ArticlePageSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const article = { ...workspace, articleId: Schema.String };
+const article = { articleId: Schema.String };
 
 const writeErrors = [
   Forbidden,
@@ -229,7 +228,8 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         limit: Schema.optionalKey(
@@ -248,6 +248,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.get("get", "/:articleId", {
       error: [Forbidden, ArticleNotFound],
+      headers: workspaceHeaders,
       params: article,
       success: ArticleSchema,
     }).annotateMerge(
@@ -258,7 +259,8 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.post("create", "/", {
       error: writeErrors,
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewArticleSchema,
       success: ArticleSchema,
     }).annotateMerge(
@@ -270,6 +272,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.patch("update", "/:articleId", {
       error: writeErrors,
+      headers: workspaceHeaders,
       params: article,
       payload: ArticleInputSchema,
       success: ArticleSchema,
@@ -282,6 +285,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.delete("delete", "/:articleId", {
       error: [Forbidden, ArticleNotFound, ArticleStateConflict],
+      headers: workspaceHeaders,
       params: article,
     }).annotateMerge(
       OpenApi.annotations({
@@ -292,6 +296,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.post("schedule", "/:articleId/schedule", {
       error: writeErrors,
+      headers: workspaceHeaders,
       params: article,
       payload: ArticleTimeSchema,
       success: ArticleSchema,
@@ -304,6 +309,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.post("unschedule", "/:articleId/unschedule", {
       error: [Forbidden, ArticleNotFound, ArticleStateConflict],
+      headers: workspaceHeaders,
       params: article,
       success: ArticleSchema,
     }).annotateMerge(
@@ -315,6 +321,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.post("retry", "/:articleId/retry", {
       error: writeErrors,
+      headers: workspaceHeaders,
       params: article,
       success: ArticleSchema,
     }).annotateMerge(
@@ -326,6 +333,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.post("unpublish", "/:articleId/unpublish", {
       error: siteErrors,
+      headers: workspaceHeaders,
       params: article,
       success: ArticleSchema,
     }).annotateMerge(
@@ -337,6 +345,7 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
     ),
     HttpApiEndpoint.post("updateOnSite", "/:articleId/site", {
       error: siteErrors,
+      headers: workspaceHeaders,
       params: article,
       payload: ArticleInputSchema,
       success: ArticleSchema,
@@ -350,4 +359,4 @@ export class ArticlesApi extends HttpApiGroup.make("articles")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/articles") {}
+  .prefix("/api/v1/articles") {}

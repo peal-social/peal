@@ -41,7 +41,6 @@ client = Peal(
 )
 
 client.api_keys.create(
-    workspace_id="workspaceId",
     name="name",
     permissions=[
         "activity:read"
@@ -78,7 +77,6 @@ client = AsyncPeal(
 
 async def main() -> None:
     await client.api_keys.create(
-        workspace_id="workspaceId",
         name="name",
         permissions=[
             "activity:read"

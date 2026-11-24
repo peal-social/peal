@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         signatureId: "signatureId"
  *     }
  */
 export interface DeleteSignaturesRequest {
-    workspaceId: string;
     signatureId: string;
 }

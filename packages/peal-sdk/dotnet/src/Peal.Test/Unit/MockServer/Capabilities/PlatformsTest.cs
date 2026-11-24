@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -839,7 +838,7 @@ public class PlatformsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/platforms/capabilities")
+                    .WithPath("/api/v1/platforms/capabilities")
                     .UsingGet()
             )
             .RespondWith(
@@ -849,9 +848,7 @@ public class PlatformsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Capabilities.PlatformsAsync(
-            new PlatformsCapabilitiesRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Capabilities.PlatformsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -1013,7 +1010,7 @@ public class PlatformsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/platforms/capabilities")
+                    .WithPath("/api/v1/platforms/capabilities")
                     .UsingGet()
             )
             .RespondWith(
@@ -1023,9 +1020,7 @@ public class PlatformsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Capabilities.PlatformsAsync(
-            new PlatformsCapabilitiesRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Capabilities.PlatformsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

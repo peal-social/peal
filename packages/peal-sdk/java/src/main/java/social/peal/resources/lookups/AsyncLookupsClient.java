@@ -33,9 +33,38 @@ public class AsyncLookupsClient {
     /**
      * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
      */
-    public CompletableFuture<List<LookupDescription>> list(String workspaceId, String channelId) {
+    public CompletableFuture<List<LookupDescription>> list(String channelId) {
+        CompletableFuture<PealClientHttpResponse<List<LookupDescription>>> rawFuture = this.rawClient.list(channelId);
+        CompletableFuture<List<LookupDescription>> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
+     */
+    public CompletableFuture<List<LookupDescription>> list(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<LookupDescription>>> rawFuture =
-                this.rawClient.list(workspaceId, channelId);
+                this.rawClient.list(channelId, requestOptions);
+        CompletableFuture<List<LookupDescription>> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
+     */
+    public CompletableFuture<List<LookupDescription>> list(String channelId, ListLookupsRequest request) {
+        CompletableFuture<PealClientHttpResponse<List<LookupDescription>>> rawFuture =
+                this.rawClient.list(channelId, request);
         CompletableFuture<List<LookupDescription>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -49,41 +78,9 @@ public class AsyncLookupsClient {
      * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
      */
     public CompletableFuture<List<LookupDescription>> list(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
+            String channelId, ListLookupsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<List<LookupDescription>>> rawFuture =
-                this.rawClient.list(workspaceId, channelId, requestOptions);
-        CompletableFuture<List<LookupDescription>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
-     */
-    public CompletableFuture<List<LookupDescription>> list(
-            String workspaceId, String channelId, ListLookupsRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<LookupDescription>>> rawFuture =
-                this.rawClient.list(workspaceId, channelId, request);
-        CompletableFuture<List<LookupDescription>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
-     */
-    public CompletableFuture<List<LookupDescription>> list(
-            String workspaceId, String channelId, ListLookupsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<LookupDescription>>> rawFuture =
-                this.rawClient.list(workspaceId, channelId, request, requestOptions);
+                this.rawClient.list(channelId, request, requestOptions);
         CompletableFuture<List<LookupDescription>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -96,9 +93,38 @@ public class AsyncLookupsClient {
     /**
      * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
      */
-    public CompletableFuture<LookupResult> run(String workspaceId, String channelId, String name) {
+    public CompletableFuture<LookupResult> run(String channelId, String name) {
+        CompletableFuture<PealClientHttpResponse<LookupResult>> rawFuture = this.rawClient.run(channelId, name);
+        CompletableFuture<LookupResult> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
+     */
+    public CompletableFuture<LookupResult> run(String channelId, String name, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<LookupResult>> rawFuture =
-                this.rawClient.run(workspaceId, channelId, name);
+                this.rawClient.run(channelId, name, requestOptions);
+        CompletableFuture<LookupResult> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
+     */
+    public CompletableFuture<LookupResult> run(String channelId, String name, LookupInput request) {
+        CompletableFuture<PealClientHttpResponse<LookupResult>> rawFuture =
+                this.rawClient.run(channelId, name, request);
         CompletableFuture<LookupResult> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -112,40 +138,9 @@ public class AsyncLookupsClient {
      * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
      */
     public CompletableFuture<LookupResult> run(
-            String workspaceId, String channelId, String name, RequestOptions requestOptions) {
+            String channelId, String name, LookupInput request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<LookupResult>> rawFuture =
-                this.rawClient.run(workspaceId, channelId, name, requestOptions);
-        CompletableFuture<LookupResult> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
-     */
-    public CompletableFuture<LookupResult> run(String workspaceId, String channelId, String name, LookupInput request) {
-        CompletableFuture<PealClientHttpResponse<LookupResult>> rawFuture =
-                this.rawClient.run(workspaceId, channelId, name, request);
-        CompletableFuture<LookupResult> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
-     */
-    public CompletableFuture<LookupResult> run(
-            String workspaceId, String channelId, String name, LookupInput request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<LookupResult>> rawFuture =
-                this.rawClient.run(workspaceId, channelId, name, request, requestOptions);
+                this.rawClient.run(channelId, name, request, requestOptions);
         CompletableFuture<LookupResult> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

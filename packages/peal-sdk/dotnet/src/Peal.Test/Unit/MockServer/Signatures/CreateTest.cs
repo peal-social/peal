@@ -36,8 +36,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/signatures")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/signatures")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -49,16 +48,12 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Signatures.CreateAsync(
-            new CreateSignaturesRequest
+            new SignatureDetails
             {
-                WorkspaceId = "workspaceId",
-                Body = new SignatureDetails
-                {
-                    IsDefault = null,
-                    Name = "x",
-                    Scope = null,
-                    Text = "x",
-                },
+                IsDefault = null,
+                Name = "x",
+                Scope = null,
+                Text = "x",
             }
         );
         JsonAssert.AreEqual(response, mockResponse);
@@ -91,8 +86,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/signatures")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/signatures")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -104,11 +98,7 @@ public class CreateTest : BaseMockServerTest
             );
 
         var response = await Client.Signatures.CreateAsync(
-            new CreateSignaturesRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new SignatureDetails { Name = "name", Text = "text" },
-            }
+            new SignatureDetails { Name = "name", Text = "text" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

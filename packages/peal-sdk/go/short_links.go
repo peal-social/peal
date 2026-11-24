@@ -10,17 +10,15 @@ import (
 )
 
 var (
-	getShortLinksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getShortLinksRequestFieldLinkID      = big.NewInt(1 << 1)
-	getShortLinksRequestFieldFrom        = big.NewInt(1 << 2)
-	getShortLinksRequestFieldTo          = big.NewInt(1 << 3)
+	getShortLinksRequestFieldLinkID = big.NewInt(1 << 0)
+	getShortLinksRequestFieldFrom   = big.NewInt(1 << 1)
+	getShortLinksRequestFieldTo     = big.NewInt(1 << 2)
 )
 
 type GetShortLinksRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	LinkID      string       `json:"-" url:"-"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
+	LinkID string       `json:"-" url:"-"`
+	From   *CalendarDay `json:"-" url:"from,omitempty"`
+	To     *CalendarDay `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -33,13 +31,6 @@ func (g *GetShortLinksRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	g.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetShortLinksRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getShortLinksRequestFieldWorkspaceID)
 }
 
 // SetLinkID sets the LinkID field and marks it as non-optional;
@@ -64,23 +55,21 @@ func (g *GetShortLinksRequest) SetTo(to *CalendarDay) {
 }
 
 var (
-	listShortLinksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listShortLinksRequestFieldChannelID   = big.NewInt(1 << 1)
-	listShortLinksRequestFieldCursor      = big.NewInt(1 << 2)
-	listShortLinksRequestFieldFrom        = big.NewInt(1 << 3)
-	listShortLinksRequestFieldLimit       = big.NewInt(1 << 4)
-	listShortLinksRequestFieldPostID      = big.NewInt(1 << 5)
-	listShortLinksRequestFieldTo          = big.NewInt(1 << 6)
+	listShortLinksRequestFieldChannelID = big.NewInt(1 << 0)
+	listShortLinksRequestFieldCursor    = big.NewInt(1 << 1)
+	listShortLinksRequestFieldFrom      = big.NewInt(1 << 2)
+	listShortLinksRequestFieldLimit     = big.NewInt(1 << 3)
+	listShortLinksRequestFieldPostID    = big.NewInt(1 << 4)
+	listShortLinksRequestFieldTo        = big.NewInt(1 << 5)
 )
 
 type ListShortLinksRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	ChannelID   *string      `json:"-" url:"channelId,omitempty"`
-	Cursor      *string      `json:"-" url:"cursor,omitempty"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	Limit       *string      `json:"-" url:"limit,omitempty"`
-	PostID      *string      `json:"-" url:"postId,omitempty"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
+	ChannelID *string      `json:"-" url:"channelId,omitempty"`
+	Cursor    *string      `json:"-" url:"cursor,omitempty"`
+	From      *CalendarDay `json:"-" url:"from,omitempty"`
+	Limit     *string      `json:"-" url:"limit,omitempty"`
+	PostID    *string      `json:"-" url:"postId,omitempty"`
+	To        *CalendarDay `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -93,13 +82,6 @@ func (l *ListShortLinksRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListShortLinksRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listShortLinksRequestFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -145,13 +127,11 @@ func (l *ListShortLinksRequest) SetTo(to *CalendarDay) {
 }
 
 var (
-	shortLinkSettingsFieldWorkspaceID = big.NewInt(1 << 0)
-	shortLinkSettingsFieldByDefault   = big.NewInt(1 << 1)
+	shortLinkSettingsFieldByDefault = big.NewInt(1 << 0)
 )
 
 type ShortLinkSettings struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ByDefault   bool   `json:"byDefault" url:"-"`
+	ByDefault bool `json:"byDefault" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -164,13 +144,6 @@ func (s *ShortLinkSettings) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *ShortLinkSettings) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(shortLinkSettingsFieldWorkspaceID)
 }
 
 // SetByDefault sets the ByDefault field and marks it as non-optional;
@@ -199,33 +172,6 @@ func (s *ShortLinkSettings) MarshalJSON() ([]byte, error) {
 	}
 	explicitMarshaler := internal.HandleExplicitFields(marshaler, s.explicitFields)
 	return json.Marshal(explicitMarshaler)
-}
-
-var (
-	statusShortLinksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type StatusShortLinksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (s *StatusShortLinksRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if s.explicitFields != nil {
-		next.Set(s.explicitFields)
-	}
-	next.Or(next, field)
-	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *StatusShortLinksRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(statusShortLinksRequestFieldWorkspaceID)
 }
 
 var (

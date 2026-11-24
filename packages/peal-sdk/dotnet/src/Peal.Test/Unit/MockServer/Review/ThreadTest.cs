@@ -315,7 +315,7 @@ public class ThreadTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/review")
+                    .WithPath("/api/v1/posts/postId/review")
                     .UsingGet()
             )
             .RespondWith(
@@ -326,7 +326,7 @@ public class ThreadTest : BaseMockServerTest
             );
 
         var response = await Client.Review.ThreadAsync(
-            new ThreadReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new ThreadReviewRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -430,7 +430,7 @@ public class ThreadTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/review")
+                    .WithPath("/api/v1/posts/postId/review")
                     .UsingGet()
             )
             .RespondWith(
@@ -441,7 +441,7 @@ public class ThreadTest : BaseMockServerTest
             );
 
         var response = await Client.Review.ThreadAsync(
-            new ThreadReviewRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new ThreadReviewRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

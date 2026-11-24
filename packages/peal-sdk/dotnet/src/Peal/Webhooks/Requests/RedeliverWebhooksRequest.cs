@@ -7,9 +7,6 @@ namespace Peal;
 public record RedeliverWebhooksRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string EndpointId { get; set; }
 
     [JsonIgnore]

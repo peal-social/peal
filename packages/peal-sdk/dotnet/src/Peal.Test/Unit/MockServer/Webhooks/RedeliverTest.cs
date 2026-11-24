@@ -39,9 +39,7 @@ public class RedeliverTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/webhooks/endpointId/deliveries/deliveryId/redeliver"
-                    )
+                    .WithPath("/api/v1/webhooks/endpointId/deliveries/deliveryId/redeliver")
                     .UsingPost()
             )
             .RespondWith(
@@ -52,12 +50,7 @@ public class RedeliverTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.RedeliverAsync(
-            new RedeliverWebhooksRequest
-            {
-                WorkspaceId = "workspaceId",
-                EndpointId = "endpointId",
-                DeliveryId = "deliveryId",
-            }
+            new RedeliverWebhooksRequest { EndpointId = "endpointId", DeliveryId = "deliveryId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -92,9 +85,7 @@ public class RedeliverTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/webhooks/endpointId/deliveries/deliveryId/redeliver"
-                    )
+                    .WithPath("/api/v1/webhooks/endpointId/deliveries/deliveryId/redeliver")
                     .UsingPost()
             )
             .RespondWith(
@@ -105,12 +96,7 @@ public class RedeliverTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.RedeliverAsync(
-            new RedeliverWebhooksRequest
-            {
-                WorkspaceId = "workspaceId",
-                EndpointId = "endpointId",
-                DeliveryId = "deliveryId",
-            }
+            new RedeliverWebhooksRequest { EndpointId = "endpointId", DeliveryId = "deliveryId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

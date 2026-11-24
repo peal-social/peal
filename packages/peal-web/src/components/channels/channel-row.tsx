@@ -4,7 +4,7 @@ import { useAtomSet } from "@effect/atom-react";
 import { DateTime, Option } from "effect";
 import { RefreshCwIcon, UnplugIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { isSocialChannel } from "peal-contract";
+import { isSocialChannel, forWorkspace } from "peal-contract";
 import type { Channel, ChannelStatus } from "peal-contract";
 import {
   AlertDialog,
@@ -66,11 +66,12 @@ const ReconnectControl = ({
   const errorText = useChannelErrorText();
   const reconnect = useAtomSet(reconnectChannel, { mode: "promiseExit" });
   const [isReconnecting, startReconnect] = useTransition();
-  const params = { channelId: channel.id, workspaceId };
+  const params = { channelId: channel.id };
+  const headers = forWorkspace(workspaceId);
 
   const handleReconnect = () => {
     startReconnect(async () => {
-      const exit = await reconnect({ params, query: {} });
+      const exit = await reconnect({ params, headers, query: {} });
 
       Option.match(failureOf(exit), {
         onNone: () => {
@@ -153,7 +154,8 @@ export const ChannelRow = ({
   const errorText = useChannelErrorText();
   const disconnect = useAtomSet(disconnectChannel, { mode: "promiseExit" });
   const [isDisconnecting, startDisconnect] = useTransition();
-  const params = { channelId: channel.id, workspaceId };
+  const params = { channelId: channel.id };
+  const headers = forWorkspace(workspaceId);
   const name = channelTitle(channel);
   const handle = channelName(channel);
 
@@ -178,6 +180,7 @@ export const ChannelRow = ({
     startDisconnect(async () => {
       const exit = await disconnect({
         params,
+        headers,
         reactivityKeys: channelsChanged(workspaceId),
       });
 

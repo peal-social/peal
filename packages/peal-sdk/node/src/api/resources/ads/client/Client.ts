@@ -28,9 +28,9 @@ export class AdsClient {
     /**
      * Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
      *
-     * @param {Peal.StatusAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class AdsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.ads.status({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.ads.status()
      */
-    public status(request: Peal.StatusAdsRequest, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdsStatus> {
-        return core.HttpResponsePromise.fromPromise(this.__status(request, requestOptions));
+    public status(requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdsStatus> {
+        return core.HttpResponsePromise.fromPromise(this.__status(requestOptions));
     }
 
-    private async __status(request: Peal.StatusAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdsStatus>> {
-        const { workspaceId } = request;
+    private async __status(requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdsStatus>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/ads"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,15 +78,15 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads");
     }
 
     /**
      * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
      *
-     * @param {Peal.ListConnectionsAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -97,20 +95,17 @@ export class AdsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.ads.listConnections({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.ads.listConnections()
      */
-    public listConnections(request: Peal.ListConnectionsAdsRequest, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdConnection[]> {
-        return core.HttpResponsePromise.fromPromise(this.__listConnections(request, requestOptions));
+    public listConnections(requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdConnection[]> {
+        return core.HttpResponsePromise.fromPromise(this.__listConnections(requestOptions));
     }
 
-    private async __listConnections(request: Peal.ListConnectionsAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdConnection[]>> {
-        const { workspaceId } = request;
+    private async __listConnections(requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdConnection[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/connections`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/ads/connections"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -126,6 +121,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -138,7 +134,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/connections");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/connections");
     }
 
     /**
@@ -147,6 +143,7 @@ export class AdsClient {
      * @param {Peal.ConnectAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -156,7 +153,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.connect({
-     *         workspaceId: "workspaceId",
      *         network: "meta"
      *     })
      */
@@ -165,11 +161,11 @@ export class AdsClient {
     }
 
     private async __connect(request: Peal.ConnectAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdSignIn>> {
-        const { workspaceId, network } = request;
+        const { network } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/connections/${core.url.encodePathParam(network, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/connections/${core.url.encodePathParam(network, errors.PealError)}`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -185,6 +181,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -197,7 +194,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/connections/{network}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/connections/{network}");
     }
 
     /**
@@ -206,6 +203,7 @@ export class AdsClient {
      * @param {Peal.AdSignInCallback} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -217,7 +215,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.completeConnect({
-     *         workspaceId: "workspaceId",
      *         network: "meta",
      *         state: "state"
      *     })
@@ -227,11 +224,11 @@ export class AdsClient {
     }
 
     private async __completeConnect(request: Peal.AdSignInCallback, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdSignInResult>> {
-        const { workspaceId, network, ..._body } = request;
+        const { network, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/connections/${core.url.encodePathParam(network, errors.PealError)}/callback`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/connections/${core.url.encodePathParam(network, errors.PealError)}/callback`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -250,6 +247,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -264,7 +262,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/connections/{network}/callback");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/connections/{network}/callback");
     }
 
     /**
@@ -273,6 +271,7 @@ export class AdsClient {
      * @param {Peal.ReachableAccountsAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -283,7 +282,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.reachableAccounts({
-     *         workspaceId: "workspaceId",
      *         connectionId: "connectionId"
      *     })
      */
@@ -292,11 +290,11 @@ export class AdsClient {
     }
 
     private async __reachableAccounts(request: Peal.ReachableAccountsAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.ReachableAdAccount[]>> {
-        const { workspaceId, connectionId } = request;
+        const { connectionId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/connections/${core.url.encodePathParam(connectionId, errors.PealError)}/accounts`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/connections/${core.url.encodePathParam(connectionId, errors.PealError)}/accounts`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -312,6 +310,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -325,7 +324,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/connections/{connectionId}/accounts");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/connections/{connectionId}/accounts");
     }
 
     /**
@@ -334,6 +333,7 @@ export class AdsClient {
      * @param {Peal.AdAccountsToConnect} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -344,7 +344,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.connectAccounts({
-     *         workspaceId: "workspaceId",
      *         connectionId: "connectionId",
      *         externalIds: ["externalIds"]
      *     })
@@ -354,11 +353,11 @@ export class AdsClient {
     }
 
     private async __connectAccounts(request: Peal.AdAccountsToConnect, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdAccount[]>> {
-        const { workspaceId, connectionId, ..._body } = request;
+        const { connectionId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/connections/${core.url.encodePathParam(connectionId, errors.PealError)}/accounts`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/connections/${core.url.encodePathParam(connectionId, errors.PealError)}/accounts`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -377,6 +376,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -390,7 +390,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/connections/{connectionId}/accounts");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/connections/{connectionId}/accounts");
     }
 
     /**
@@ -399,6 +399,7 @@ export class AdsClient {
      * @param {Peal.DisconnectAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -409,7 +410,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.disconnect({
-     *         workspaceId: "workspaceId",
      *         connectionId: "connectionId"
      *     })
      */
@@ -418,11 +418,11 @@ export class AdsClient {
     }
 
     private async __disconnect(request: Peal.DisconnectAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, connectionId } = request;
+        const { connectionId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/connections/${core.url.encodePathParam(connectionId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/connections/${core.url.encodePathParam(connectionId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -438,6 +438,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -451,15 +452,15 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/ads/connections/{connectionId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/ads/connections/{connectionId}");
     }
 
     /**
      * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
      *
-     * @param {Peal.ListAccountsAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -468,20 +469,17 @@ export class AdsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.ads.listAccounts({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.ads.listAccounts()
      */
-    public listAccounts(request: Peal.ListAccountsAdsRequest, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdAccount[]> {
-        return core.HttpResponsePromise.fromPromise(this.__listAccounts(request, requestOptions));
+    public listAccounts(requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdAccount[]> {
+        return core.HttpResponsePromise.fromPromise(this.__listAccounts(requestOptions));
     }
 
-    private async __listAccounts(request: Peal.ListAccountsAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdAccount[]>> {
-        const { workspaceId } = request;
+    private async __listAccounts(requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdAccount[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/accounts`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/ads/accounts"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -497,6 +495,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -509,7 +508,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/accounts");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/accounts");
     }
 
     /**
@@ -518,6 +517,7 @@ export class AdsClient {
      * @param {Peal.GetAccountAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -527,7 +527,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.getAccount({
-     *         workspaceId: "workspaceId",
      *         accountId: "accountId"
      *     })
      */
@@ -536,11 +535,11 @@ export class AdsClient {
     }
 
     private async __getAccount(request: Peal.GetAccountAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdSpending>> {
-        const { workspaceId, accountId } = request;
+        const { accountId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -556,6 +555,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -568,7 +568,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/accounts/{accountId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/accounts/{accountId}");
     }
 
     /**
@@ -577,6 +577,7 @@ export class AdsClient {
      * @param {Peal.RemoveAccountAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -587,7 +588,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.removeAccount({
-     *         workspaceId: "workspaceId",
      *         accountId: "accountId"
      *     })
      */
@@ -596,11 +596,11 @@ export class AdsClient {
     }
 
     private async __removeAccount(request: Peal.RemoveAccountAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, accountId } = request;
+        const { accountId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -616,6 +616,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -629,7 +630,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/ads/accounts/{accountId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/ads/accounts/{accountId}");
     }
 
     /**
@@ -638,6 +639,7 @@ export class AdsClient {
      * @param {Peal.AdSpendingDecision} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -649,7 +651,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.setSpending({
-     *         workspaceId: "workspaceId",
      *         accountId: "accountId",
      *         enabled: true
      *     })
@@ -659,11 +660,11 @@ export class AdsClient {
     }
 
     private async __setSpending(request: Peal.AdSpendingDecision, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdSpending>> {
-        const { workspaceId, accountId, ..._body } = request;
+        const { accountId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/spending`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/spending`),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
@@ -682,6 +683,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -696,7 +698,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/ads/accounts/{accountId}/spending");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/ads/accounts/{accountId}/spending");
     }
 
     /**
@@ -715,7 +717,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.listCampaigns({
-     *         workspaceId: "workspaceId",
      *         accountId: "accountId"
      *     })
      */
@@ -724,15 +725,15 @@ export class AdsClient {
     }
 
     private async __listCampaigns(request: Peal.ListCampaignsAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdCampaignReport>> {
-        const { workspaceId, accountId, "from": from_, to } = request;
+        const { accountId, "from": from_, to } = request;
         const _queryParams: Record<string, unknown> = {
             from: from_,
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/campaigns`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/campaigns`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -761,7 +762,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/accounts/{accountId}/campaigns");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/accounts/{accountId}/campaigns");
     }
 
     /**
@@ -780,7 +781,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.listAds({
-     *         workspaceId: "workspaceId",
      *         accountId: "accountId"
      *     })
      */
@@ -789,16 +789,16 @@ export class AdsClient {
     }
 
     private async __listAds(request: Peal.ListAdsAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdReport>> {
-        const { workspaceId, accountId, "from": from_, to, campaignId } = request;
+        const { accountId, "from": from_, to, campaignId } = request;
         const _queryParams: Record<string, unknown> = {
             from: from_,
             to,
             campaignId
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/ads`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/ads`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -827,7 +827,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/accounts/{accountId}/ads");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/accounts/{accountId}/ads");
     }
 
     /**
@@ -846,7 +846,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.listInsights({
-     *         workspaceId: "workspaceId",
      *         accountId: "accountId"
      *     })
      */
@@ -855,15 +854,15 @@ export class AdsClient {
     }
 
     private async __listInsights(request: Peal.ListInsightsAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdInsightReport>> {
-        const { workspaceId, accountId, "from": from_, to } = request;
+        const { accountId, "from": from_, to } = request;
         const _queryParams: Record<string, unknown> = {
             from: from_,
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/insights`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/accounts/${core.url.encodePathParam(accountId, errors.PealError)}/insights`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -892,7 +891,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/accounts/{accountId}/insights");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/accounts/{accountId}/insights");
     }
 
     /**
@@ -901,6 +900,7 @@ export class AdsClient {
      * @param {Peal.PostPerformanceAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -910,7 +910,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.postPerformance({
-     *         workspaceId: "workspaceId",
      *         postId: "postId"
      *     })
      */
@@ -919,11 +918,11 @@ export class AdsClient {
     }
 
     private async __postPerformance(request: Peal.PostPerformanceAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.PostAdPerformance>> {
-        const { workspaceId, postId } = request;
+        const { postId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/posts/${core.url.encodePathParam(postId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/posts/${core.url.encodePathParam(postId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -939,6 +938,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -951,15 +951,16 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/posts/{postId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/posts/{postId}");
     }
 
     /**
      * Checks a boost as `createBoost` would, and says what it would commit and the room it has, without reserving or sending anything: show it before the last step. A total budget commits its amount; a daily budget commits, for each calendar week of the account's zone (Sunday to Saturday) the run touches, its amount and 75% more for each day of the run in that week, which the network may spend on any day, and never more than 7 times its amount, the most the network spends in a week. Needs ads:spend.
      *
-     * @param {Peal.QuoteBoostAdsRequest} request
+     * @param {Peal.NewBoost} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -971,42 +972,38 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.quoteBoost({
-     *         workspaceId: "workspaceId",
-     *         body: {
-     *             accountId: "accountId",
-     *             audience: {
-     *                 ageMax: 1,
-     *                 ageMin: 1,
-     *                 countries: ["countries"]
-     *             },
-     *             budget: {
-     *                 amount: 1000000,
-     *                 kind: "total"
-     *             },
-     *             channelId: "channelId",
-     *             currency: "currency",
-     *             endsAt: "endsAt",
-     *             postId: "postId",
-     *             specialAdCategory: "none"
-     *         }
+     *         accountId: "accountId",
+     *         audience: {
+     *             ageMax: 1,
+     *             ageMin: 1,
+     *             countries: ["countries"]
+     *         },
+     *         budget: {
+     *             amount: 1000000,
+     *             kind: "total"
+     *         },
+     *         channelId: "channelId",
+     *         currency: "currency",
+     *         endsAt: "endsAt",
+     *         postId: "postId",
+     *         specialAdCategory: "none"
      *     })
      */
-    public quoteBoost(request: Peal.QuoteBoostAdsRequest, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.BoostQuote> {
+    public quoteBoost(request: Peal.NewBoost, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.BoostQuote> {
         return core.HttpResponsePromise.fromPromise(this.__quoteBoost(request, requestOptions));
     }
 
-    private async __quoteBoost(request: Peal.QuoteBoostAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.BoostQuote>> {
-        const { workspaceId, body: _body } = request;
+    private async __quoteBoost(request: Peal.NewBoost, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.BoostQuote>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/boosts/quote`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/ads/boosts/quote"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -1019,6 +1016,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1033,7 +1031,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/boosts/quote");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/boosts/quote");
     }
 
     /**
@@ -1042,6 +1040,7 @@ export class AdsClient {
      * @param {Peal.ListBoostsAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -1050,24 +1049,22 @@ export class AdsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.ads.listBoosts({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.ads.listBoosts()
      */
-    public listBoosts(request: Peal.ListBoostsAdsRequest, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.BoostPage> {
+    public listBoosts(request: Peal.ListBoostsAdsRequest = {}, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.BoostPage> {
         return core.HttpResponsePromise.fromPromise(this.__listBoosts(request, requestOptions));
     }
 
-    private async __listBoosts(request: Peal.ListBoostsAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.BoostPage>> {
-        const { workspaceId, cursor, postId } = request;
+    private async __listBoosts(request: Peal.ListBoostsAdsRequest = {}, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.BoostPage>> {
+        const { cursor, postId } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             postId
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/boosts`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/ads/boosts"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -1083,6 +1080,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1095,7 +1093,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/boosts");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/boosts");
     }
 
     /**
@@ -1104,6 +1102,7 @@ export class AdsClient {
      * @param {Peal.CreateBoostAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.PaymentRequiredError}
      * @throws {@link Peal.ForbiddenError}
@@ -1117,7 +1116,6 @@ export class AdsClient {
      * @example
      *     await client.ads.createBoost({
      *         "idempotency-key": "idempotency-key",
-     *         workspaceId: "workspaceId",
      *         body: {
      *             accountId: "accountId",
      *             audience: {
@@ -1142,11 +1140,11 @@ export class AdsClient {
     }
 
     private async __createBoost(request: Peal.CreateBoostAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Boost>> {
-        const { workspaceId, "idempotency-key": idempotencyKey, body: _body } = request;
+        const { "idempotency-key": idempotencyKey, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "idempotency-key": idempotencyKey, "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/boosts`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/ads/boosts"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -1165,6 +1163,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 402: throw new Peal.PaymentRequiredError(_response.error.body as unknown, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
@@ -1180,7 +1179,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/boosts");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/boosts");
     }
 
     /**
@@ -1189,6 +1188,7 @@ export class AdsClient {
      * @param {Peal.GetBoostAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -1198,7 +1198,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.getBoost({
-     *         workspaceId: "workspaceId",
      *         boostId: "boostId"
      *     })
      */
@@ -1207,11 +1206,11 @@ export class AdsClient {
     }
 
     private async __getBoost(request: Peal.GetBoostAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.BoostDetail>> {
-        const { workspaceId, boostId } = request;
+        const { boostId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -1227,6 +1226,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1239,7 +1239,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/boosts/{boostId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/boosts/{boostId}");
     }
 
     /**
@@ -1248,6 +1248,7 @@ export class AdsClient {
      * @param {Peal.PauseBoostAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -1259,7 +1260,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.pauseBoost({
-     *         workspaceId: "workspaceId",
      *         boostId: "boostId"
      *     })
      */
@@ -1268,11 +1268,11 @@ export class AdsClient {
     }
 
     private async __pauseBoost(request: Peal.PauseBoostAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Boost>> {
-        const { workspaceId, boostId } = request;
+        const { boostId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}/pause`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}/pause`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -1288,6 +1288,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1302,7 +1303,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/boosts/{boostId}/pause");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/boosts/{boostId}/pause");
     }
 
     /**
@@ -1311,6 +1312,7 @@ export class AdsClient {
      * @param {Peal.ResumeBoostAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -1322,7 +1324,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.resumeBoost({
-     *         workspaceId: "workspaceId",
      *         boostId: "boostId"
      *     })
      */
@@ -1331,11 +1332,11 @@ export class AdsClient {
     }
 
     private async __resumeBoost(request: Peal.ResumeBoostAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Boost>> {
-        const { workspaceId, boostId } = request;
+        const { boostId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}/resume`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}/resume`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -1351,6 +1352,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1365,7 +1367,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/boosts/{boostId}/resume");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/boosts/{boostId}/resume");
     }
 
     /**
@@ -1374,6 +1376,7 @@ export class AdsClient {
      * @param {Peal.StopBoostAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -1385,7 +1388,6 @@ export class AdsClient {
      *
      * @example
      *     await client.ads.stopBoost({
-     *         workspaceId: "workspaceId",
      *         boostId: "boostId"
      *     })
      */
@@ -1394,11 +1396,11 @@ export class AdsClient {
     }
 
     private async __stopBoost(request: Peal.StopBoostAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.Boost>> {
-        const { workspaceId, boostId } = request;
+        const { boostId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}/stop`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/ads/boosts/${core.url.encodePathParam(boostId, errors.PealError)}/stop`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -1414,6 +1416,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1428,7 +1431,7 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/ads/boosts/{boostId}/stop");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/ads/boosts/{boostId}/stop");
     }
 
     /**
@@ -1437,6 +1440,7 @@ export class AdsClient {
      * @param {Peal.AuditTrailAdsRequest} request
      * @param {AdsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -1445,23 +1449,21 @@ export class AdsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.ads.auditTrail({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.ads.auditTrail()
      */
-    public auditTrail(request: Peal.AuditTrailAdsRequest, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdAuditPage> {
+    public auditTrail(request: Peal.AuditTrailAdsRequest = {}, requestOptions?: AdsClient.RequestOptions): core.HttpResponsePromise<Peal.AdAuditPage> {
         return core.HttpResponsePromise.fromPromise(this.__auditTrail(request, requestOptions));
     }
 
-    private async __auditTrail(request: Peal.AuditTrailAdsRequest, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdAuditPage>> {
-        const { workspaceId, cursor } = request;
+    private async __auditTrail(request: Peal.AuditTrailAdsRequest = {}, requestOptions?: AdsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AdAuditPage>> {
+        const { cursor } = request;
         const _queryParams: Record<string, unknown> = {
             cursor
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/ads/audit`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/ads/audit"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -1477,6 +1479,7 @@ export class AdsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -1489,6 +1492,6 @@ export class AdsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/ads/audit");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/ads/audit");
     }
 }

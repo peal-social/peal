@@ -47,7 +47,7 @@ public class ChangesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/changes")
+                    .WithPath("/api/v1/posts/postId/changes")
                     .UsingGet()
             )
             .RespondWith(
@@ -58,7 +58,7 @@ public class ChangesTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.ChangesAsync(
-            new ChangesPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new ChangesPostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -89,7 +89,7 @@ public class ChangesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/changes")
+                    .WithPath("/api/v1/posts/postId/changes")
                     .UsingGet()
             )
             .RespondWith(
@@ -100,7 +100,7 @@ public class ChangesTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.ChangesAsync(
-            new ChangesPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new ChangesPostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

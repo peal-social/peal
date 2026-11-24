@@ -17,7 +17,7 @@ const list = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const pending = yield* client.invitations
-      .list({ params: { workspaceId: workspace.id } })
+      .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -82,7 +82,7 @@ const send = Command.make(
 
     const sent = yield* client.invitations
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: { email, role },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -124,7 +124,7 @@ const revoke = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     yield* client.invitations
-      .revoke({ params: { invitationId, workspaceId: workspace.id } })
+      .revoke({ headers: {}, params: { invitationId } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json

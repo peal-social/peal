@@ -31,6 +31,7 @@ export class LookupsClient {
      * @param {Peal.ListLookupsRequest} request
      * @param {LookupsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -40,7 +41,6 @@ export class LookupsClient {
      *
      * @example
      *     await client.lookups.list({
-     *         workspaceId: "workspaceId",
      *         channelId: "channelId"
      *     })
      */
@@ -49,11 +49,11 @@ export class LookupsClient {
     }
 
     private async __list(request: Peal.ListLookupsRequest, requestOptions?: LookupsClient.RequestOptions): Promise<core.WithRawResponse<Peal.LookupDescription[]>> {
-        const { workspaceId, channelId } = request;
+        const { channelId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/channels/${core.url.encodePathParam(channelId, errors.PealError)}/lookups`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/channels/${core.url.encodePathParam(channelId, errors.PealError)}/lookups`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -69,6 +69,7 @@ export class LookupsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -81,7 +82,7 @@ export class LookupsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/channels/{channelId}/lookups");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/channels/{channelId}/lookups");
     }
 
     /**
@@ -90,6 +91,7 @@ export class LookupsClient {
      * @param {Peal.LookupInput} request
      * @param {LookupsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -102,7 +104,6 @@ export class LookupsClient {
      *
      * @example
      *     await client.lookups.run({
-     *         workspaceId: "workspaceId",
      *         channelId: "channelId",
      *         name: "name"
      *     })
@@ -112,11 +113,11 @@ export class LookupsClient {
     }
 
     private async __run(request: Peal.LookupInput, requestOptions?: LookupsClient.RequestOptions): Promise<core.WithRawResponse<Peal.LookupResult>> {
-        const { workspaceId, channelId, name, ..._body } = request;
+        const { channelId, name, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/channels/${core.url.encodePathParam(channelId, errors.PealError)}/lookups/${core.url.encodePathParam(name, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/channels/${core.url.encodePathParam(channelId, errors.PealError)}/lookups/${core.url.encodePathParam(name, errors.PealError)}`),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
@@ -135,6 +136,7 @@ export class LookupsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -150,6 +152,6 @@ export class LookupsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/channels/{channelId}/lookups/{name}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/channels/{channelId}/lookups/{name}");
     }
 }

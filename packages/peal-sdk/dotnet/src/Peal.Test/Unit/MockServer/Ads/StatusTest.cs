@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -23,12 +22,7 @@ public class StatusTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/ads").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -36,9 +30,7 @@ public class StatusTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Ads.StatusAsync(
-            new StatusAdsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Ads.StatusAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -55,12 +47,7 @@ public class StatusTest : BaseMockServerTest
             """;
 
         Server
-            .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads")
-                    .UsingGet()
-            )
+            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/ads").UsingGet())
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -68,9 +55,7 @@ public class StatusTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Ads.StatusAsync(
-            new StatusAdsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Ads.StatusAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

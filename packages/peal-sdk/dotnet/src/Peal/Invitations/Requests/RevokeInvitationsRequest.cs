@@ -7,9 +7,6 @@ namespace Peal;
 public record RevokeInvitationsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string InvitationId { get; set; }
 
     /// <inheritdoc />

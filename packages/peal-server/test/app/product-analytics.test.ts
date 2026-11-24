@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import { assert, layer } from "@effect/vitest";
 import { ConfigProvider, Effect, Layer, Option, Schema } from "effect";
 import { McpClient } from "effect/ai";
+import { forWorkspace } from "peal-contract";
 
 import { ErasureReplayServicesLive } from "#app/server.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -162,10 +163,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           "post:create",
         ]);
 
-        const created = yield* app.request(
-          `/api/workspaces/${workspaceId}/posts`,
-          { body: draft, headers: { authorization: `Bearer ${token}` } }
-        );
+        const created = yield* app.request(`/api/v1/posts`, {
+          body: draft,
+          headers: {
+            authorization: `Bearer ${token}`,
+            ...forWorkspace(workspaceId),
+          },
+        });
 
         assert.strictEqual(created.status, 201);
 
@@ -214,10 +218,13 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           assert.strictEqual(marks.length, 1);
 
-          const drafted = yield* app.request(
-            `/api/workspaces/${workspaceId}/posts`,
-            { body: draft, headers: { cookie: cookiesOf(started) } }
-          );
+          const drafted = yield* app.request(`/api/v1/posts`, {
+            body: draft,
+            headers: {
+              cookie: cookiesOf(started),
+              ...forWorkspace(workspaceId),
+            },
+          });
 
           assert.strictEqual(drafted.status, 201);
 
@@ -426,9 +433,9 @@ layer(
       const owner = yield* signedUpUnconfirmed("analytics-erased");
       const workspaceId = yield* workspaceOf(owner, "Erased");
 
-      const deleted = yield* app.request(`/api/workspaces/${workspaceId}`, {
+      const deleted = yield* app.request(`/api/v1/workspace`, {
         body: { name: "Erased" },
-        headers: { cookie: owner.cookies },
+        headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
         method: "DELETE",
       });
 
@@ -473,7 +480,7 @@ layer(
         const customer = yield* customerOf(key, "Analysed customer");
 
         const offboarding = yield* app.request(
-          `/api/partner/workspaces/${customer.id}`,
+          `/api/v1/partner/workspaces/${customer.id}`,
           { headers: bearer(key), method: "DELETE" }
         );
 

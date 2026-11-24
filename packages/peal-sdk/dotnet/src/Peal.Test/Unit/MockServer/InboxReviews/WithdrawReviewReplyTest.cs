@@ -37,7 +37,7 @@ public class WithdrawReviewReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/reviewId/reply")
+                    .WithPath("/api/v1/inbox/reviews/reviewId/reply")
                     .UsingDelete()
             )
             .RespondWith(
@@ -48,11 +48,7 @@ public class WithdrawReviewReplyTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.WithdrawReviewReplyAsync(
-            new WithdrawReviewReplyInboxReviewsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ReviewId = "reviewId",
-            }
+            new WithdrawReviewReplyInboxReviewsRequest { ReviewId = "reviewId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -85,7 +81,7 @@ public class WithdrawReviewReplyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/reviewId/reply")
+                    .WithPath("/api/v1/inbox/reviews/reviewId/reply")
                     .UsingDelete()
             )
             .RespondWith(
@@ -96,11 +92,7 @@ public class WithdrawReviewReplyTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.WithdrawReviewReplyAsync(
-            new WithdrawReviewReplyInboxReviewsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ReviewId = "reviewId",
-            }
+            new WithdrawReviewReplyInboxReviewsRequest { ReviewId = "reviewId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

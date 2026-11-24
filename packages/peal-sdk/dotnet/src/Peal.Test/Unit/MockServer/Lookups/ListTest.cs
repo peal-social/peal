@@ -139,7 +139,7 @@ public class ListTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/lookups")
+                    .WithPath("/api/v1/channels/channelId/lookups")
                     .UsingGet()
             )
             .RespondWith(
@@ -150,7 +150,7 @@ public class ListTest : BaseMockServerTest
             );
 
         var response = await Client.Lookups.ListAsync(
-            new ListLookupsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new ListLookupsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -191,7 +191,7 @@ public class ListTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/lookups")
+                    .WithPath("/api/v1/channels/channelId/lookups")
                     .UsingGet()
             )
             .RespondWith(
@@ -202,7 +202,7 @@ public class ListTest : BaseMockServerTest
             );
 
         var response = await Client.Lookups.ListAsync(
-            new ListLookupsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new ListLookupsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -25,7 +25,6 @@ class ActivityClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         actor: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -38,8 +37,6 @@ class ActivityClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         actor : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -61,14 +58,13 @@ class ActivityClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.activity.list(
-            workspace_id="workspaceId",
-        )
+        client.activity.list()
         """
         _response = self._raw_client.list(
-            workspace_id, actor=actor, cursor=cursor, limit=limit, operation=operation, request_options=request_options
+            actor=actor, cursor=cursor, limit=limit, operation=operation, request_options=request_options
         )
         return _response.data
 
@@ -90,7 +86,6 @@ class AsyncActivityClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         actor: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -103,8 +98,6 @@ class AsyncActivityClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         actor : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -128,19 +121,18 @@ class AsyncActivityClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.activity.list(
-                workspace_id="workspaceId",
-            )
+            await client.activity.list()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list(
-            workspace_id, actor=actor, cursor=cursor, limit=limit, operation=operation, request_options=request_options
+            actor=actor, cursor=cursor, limit=limit, operation=operation, request_options=request_options
         )
         return _response.data

@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         ruleId: "ruleId"
  *     }
  */
 export interface FollowUpRuleChange {
-    workspaceId: string;
     ruleId: string;
     comment?: string | null;
     likes?: number;

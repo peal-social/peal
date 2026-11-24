@@ -33,6 +33,7 @@ import { Mac, SecureRandom } from "effect/crypto";
 import { Hex } from "effect/encoding";
 import { FetchHttpClient } from "effect/http";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 import sharp from "sharp";
 
 import { OwnWritingModel } from "#assistant/application/ports/own-writing-model.ts";
@@ -242,10 +243,10 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const { key } = yield* keyOf(owner, home);
           const customer = yield* customerOf(key, "Secrets", "cus_secret_1");
 
-          const created = yield* app.request(
-            `/api/workspaces/${customer.id}/connect-links`,
-            { body: { platform: "mastodon" }, headers: bearer(key) }
-          );
+          const created = yield* app.request(`/api/v1/connect-links`, {
+            body: { platform: "mastodon" },
+            headers: { ...bearer(key), ...forWorkspace(customer.id) },
+          });
 
           const { url } = yield* bodyOf(CreatedLinkSchema, created);
           const token = url.slice(url.lastIndexOf("#") + 1);
@@ -291,18 +292,15 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // the site is on a loopback address.
           const sitePassword = "synthetic-site-password-that-opens-nothing";
 
-          const site = yield* app.request(
-            `/api/workspaces/${customer.id}/channels/websites`,
-            {
-              body: {
-                address: "127.0.0.1",
-                applicationPassword: sitePassword,
-                platform: "wordpress",
-                userName: "synthetic-editor",
-              },
-              headers: bearer(key),
-            }
-          );
+          const site = yield* app.request(`/api/v1/channels/websites`, {
+            body: {
+              address: "127.0.0.1",
+              applicationPassword: sitePassword,
+              platform: "wordpress",
+              userName: "synthetic-editor",
+            },
+            headers: { ...bearer(key), ...forWorkspace(customer.id) },
+          });
 
           assert.strictEqual(site.status, 422);
 
@@ -320,9 +318,9 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
               },
               { botToken, chat: "@synthetic_news", platform: "telegram" },
             ].map((body) =>
-              app.request(`/api/workspaces/${customer.id}/channels/chats`, {
+              app.request(`/api/v1/channels/chats`, {
                 body,
-                headers: bearer(key),
+                headers: { ...bearer(key), ...forWorkspace(customer.id) },
               })
             )
           );
@@ -1348,26 +1346,26 @@ layer(ImagesTest, { excludeTestServices: true, timeout: "180 seconds" })(
         const owner = yield* signedUp("secrets-images");
         const workspaceId = yield* workspaceOf(owner, "Images");
         const headers = { cookie: owner.cookies };
-        const path = `/api/workspaces/${workspaceId}/assistant/images`;
+        const path = `/api/v1/assistant/images`;
 
         const made = yield* app.request(path, {
           body: { aspect: "square", prompt: `A lighthouse. ${inPrompt}` },
-          headers,
+          headers: { ...headers, ...forWorkspace(workspaceId) },
         });
 
         assert.strictEqual(made.status, 201);
 
         const refused = yield* app.request(path, {
           body: { aspect: "square", prompt: `It is refused. ${inPrompt}` },
-          headers,
+          headers: { ...headers, ...forWorkspace(workspaceId) },
         });
 
         assert.strictEqual(refused.status, 503);
 
         const { id } = yield* bodyOf(MadeSchema, made);
 
-        yield* app.request(`/api/workspaces/${workspaceId}/media/${id}`, {
-          headers,
+        yield* app.request(`/api/v1/media/${id}`, {
+          headers: { ...headers, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
@@ -1410,7 +1408,7 @@ layer(OwnProviderAppTest, {
         const owner = yield* signedUp("secrets-own-images");
         const workspaceId = yield* workspaceOf(owner, "Own images");
         const headers = { cookie: owner.cookies };
-        const path = `/api/workspaces/${workspaceId}/assistant/image-provider`;
+        const path = `/api/v1/assistant/image-provider`;
 
         const saved = yield* app.request(path, {
           body: {
@@ -1418,7 +1416,7 @@ layer(OwnProviderAppTest, {
             baseUrl: "https://1.1.1.1/v1",
             model: "synthetic-image-model",
           },
-          headers,
+          headers: { ...headers, ...forWorkspace(workspaceId) },
           method: "PUT",
         });
 
@@ -1428,18 +1426,22 @@ layer(OwnProviderAppTest, {
             baseUrl: "https://10.0.0.8/v1",
             model: "synthetic-image-model",
           },
-          headers,
+          headers: { ...headers, ...forWorkspace(workspaceId) },
           method: "PUT",
         });
 
-        const read = yield* app.request(path, { headers });
+        const read = yield* app.request(path, {
+          headers: { ...headers, ...forWorkspace(workspaceId) },
+        });
 
-        const status = yield* app.request(
-          `/api/workspaces/${workspaceId}/assistant`,
-          { headers }
-        );
+        const status = yield* app.request(`/api/v1/assistant`, {
+          headers: { ...headers, ...forWorkspace(workspaceId) },
+        });
 
-        const removed = yield* app.request(path, { headers, method: "DELETE" });
+        const removed = yield* app.request(path, {
+          headers: { ...headers, ...forWorkspace(workspaceId) },
+          method: "DELETE",
+        });
 
         assert.deepStrictEqual(
           [
@@ -1491,7 +1493,7 @@ layer(OwnProviderAppTest, {
         const owner = yield* signedUp("secrets-own-text");
         const workspaceId = yield* workspaceOf(owner, "Own text");
         const headers = { cookie: owner.cookies };
-        const path = `/api/workspaces/${workspaceId}/assistant/text-provider`;
+        const path = `/api/v1/assistant/text-provider`;
 
         const saved = yield* app.request(path, {
           body: {
@@ -1500,7 +1502,7 @@ layer(OwnProviderAppTest, {
             kind: "openai-compatible",
             model: "synthetic-text-model",
           },
-          headers,
+          headers: { ...headers, ...forWorkspace(workspaceId) },
           method: "PUT",
         });
 
@@ -1511,18 +1513,22 @@ layer(OwnProviderAppTest, {
             kind: "anthropic",
             model: "synthetic-text-model",
           },
-          headers,
+          headers: { ...headers, ...forWorkspace(workspaceId) },
           method: "PUT",
         });
 
-        const read = yield* app.request(path, { headers });
+        const read = yield* app.request(path, {
+          headers: { ...headers, ...forWorkspace(workspaceId) },
+        });
 
-        const status = yield* app.request(
-          `/api/workspaces/${workspaceId}/assistant`,
-          { headers }
-        );
+        const status = yield* app.request(`/api/v1/assistant`, {
+          headers: { ...headers, ...forWorkspace(workspaceId) },
+        });
 
-        const removed = yield* app.request(path, { headers, method: "DELETE" });
+        const removed = yield* app.request(path, {
+          headers: { ...headers, ...forWorkspace(workspaceId) },
+          method: "DELETE",
+        });
 
         assert.deepStrictEqual(
           [
@@ -1864,9 +1870,9 @@ layer(PostHogTest, { excludeTestServices: true, timeout: "180 seconds" })(
           const owner = yield* signedUp("secrets-posthog");
           const workspaceId = yield* workspaceOf(owner, "Analysed");
 
-          const deleted = yield* app.request(`/api/workspaces/${workspaceId}`, {
+          const deleted = yield* app.request(`/api/v1/workspace`, {
             body: { name: "Analysed" },
-            headers: { cookie: owner.cookies },
+            headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
             method: "DELETE",
           });
 

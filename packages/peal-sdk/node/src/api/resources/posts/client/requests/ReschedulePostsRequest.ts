@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         body: {
  *             at: "at",
@@ -14,7 +13,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface ReschedulePostsRequest {
-    workspaceId: string;
     postId: string;
     body: Peal.PostSchedule;
 }

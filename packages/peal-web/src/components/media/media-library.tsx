@@ -6,6 +6,7 @@ import { AsyncResult } from "effect/reactivity";
 import { Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
+import { forWorkspace } from "peal-contract";
 import type { Media, MediaStatus } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import {
@@ -162,7 +163,8 @@ const DeleteMedia = ({
   const handleDelete = () => {
     startTransition(async () => {
       const exit = await remove({
-        params: { mediaId: media.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { mediaId: media.id },
         reactivityKeys: [mediaKey(workspaceId)],
       });
 

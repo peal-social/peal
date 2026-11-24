@@ -64,7 +64,6 @@ class AnalyticsClient
      * Example:
      * ```php
      * $client->analytics->summary(
-     *     'workspaceId',
      *     new SummaryAnalyticsRequest([
      *         'from' => 'from',
      *         'timeZone' => 'timeZone',
@@ -73,7 +72,6 @@ class AnalyticsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param SummaryAnalyticsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -87,7 +85,7 @@ class AnalyticsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function summary(string $workspaceId, SummaryAnalyticsRequest $request, ?array $options = null): ?AnalyticsSummary
+    public function summary(SummaryAnalyticsRequest $request, ?array $options = null): ?AnalyticsSummary
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -98,7 +96,7 @@ class AnalyticsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/analytics/summary",
+                    path: "api/v1/analytics/summary",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -130,14 +128,12 @@ class AnalyticsClient
      * Example:
      * ```php
      * $client->analytics->dashboard(
-     *     'workspaceId',
      *     new DashboardAnalyticsRequest([
      *         'timeZone' => 'timeZone',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param DashboardAnalyticsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -151,7 +147,7 @@ class AnalyticsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function dashboard(string $workspaceId, DashboardAnalyticsRequest $request, ?array $options = null): ?AnalyticsDashboard
+    public function dashboard(DashboardAnalyticsRequest $request, ?array $options = null): ?AnalyticsDashboard
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -172,7 +168,7 @@ class AnalyticsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/analytics/dashboard",
+                    path: "api/v1/analytics/dashboard",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -204,7 +200,6 @@ class AnalyticsClient
      * Example:
      * ```php
      * $client->analytics->channel(
-     *     'workspaceId',
      *     'channelId',
      *     new ChannelAnalyticsRequest([
      *         'timeZone' => 'timeZone',
@@ -212,7 +207,6 @@ class AnalyticsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ChannelAnalyticsRequest $request
      * @param ?array{
@@ -227,7 +221,7 @@ class AnalyticsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function channel(string $workspaceId, string $channelId, ChannelAnalyticsRequest $request, ?array $options = null): ?ChannelSeries
+    public function channel(string $channelId, ChannelAnalyticsRequest $request, ?array $options = null): ?ChannelSeries
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -245,7 +239,7 @@ class AnalyticsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/analytics/channels/{$channelId}",
+                    path: "api/v1/analytics/channels/{$channelId}",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -277,7 +271,6 @@ class AnalyticsClient
      * Example:
      * ```php
      * $client->analytics->export(
-     *     'workspaceId',
      *     new ExportAnalyticsRequest([
      *         'timeZone' => 'timeZone',
      *         'kind' => AnalyticsExportKind::Posts->value,
@@ -285,7 +278,6 @@ class AnalyticsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ExportAnalyticsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -299,7 +291,7 @@ class AnalyticsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function export(string $workspaceId, ExportAnalyticsRequest $request, ?array $options = null): string
+    public function export(ExportAnalyticsRequest $request, ?array $options = null): string
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -321,7 +313,7 @@ class AnalyticsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/analytics/export",
+                    path: "api/v1/analytics/export",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -347,7 +339,6 @@ class AnalyticsClient
      * Example:
      * ```php
      * $client->analytics->bestTimes(
-     *     'workspaceId',
      *     new BestTimesAnalyticsRequest([
      *         'channelId' => 'channelId',
      *         'timeZone' => 'timeZone',
@@ -355,7 +346,6 @@ class AnalyticsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param BestTimesAnalyticsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -369,7 +359,7 @@ class AnalyticsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function bestTimes(string $workspaceId, BestTimesAnalyticsRequest $request, ?array $options = null): ?BestTimes
+    public function bestTimes(BestTimesAnalyticsRequest $request, ?array $options = null): ?BestTimes
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -382,7 +372,7 @@ class AnalyticsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/analytics/best-times",
+                    path: "api/v1/analytics/best-times",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -414,12 +404,10 @@ class AnalyticsClient
      * Example:
      * ```php
      * $client->analytics->post(
-     *     'workspaceId',
      *     'postId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $postId
      * @param ?array{
      *   baseUrl?: string,
@@ -433,14 +421,14 @@ class AnalyticsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function post(string $workspaceId, string $postId, ?array $options = null): ?PostAnalytics
+    public function post(string $postId, ?array $options = null): ?PostAnalytics
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/analytics/posts/{$postId}",
+                    path: "api/v1/analytics/posts/{$postId}",
                     method: HttpMethod::GET,
                 ),
                 $options,

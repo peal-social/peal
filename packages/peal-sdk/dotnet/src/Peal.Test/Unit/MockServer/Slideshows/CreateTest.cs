@@ -50,7 +50,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/slideshows")
+                    .WithPath("/api/v1/media/slideshows")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -65,7 +65,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Slideshows.CreateAsync(
             new SlideshowRequest
             {
-                WorkspaceId = "workspaceId",
                 Aspect = ImageAspect.Square,
                 SecondsPerSlide = null,
                 Slides = new List<Slide>()
@@ -127,7 +126,7 @@ public class CreateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/slideshows")
+                    .WithPath("/api/v1/media/slideshows")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -142,7 +141,6 @@ public class CreateTest : BaseMockServerTest
         var response = await Client.Slideshows.CreateAsync(
             new SlideshowRequest
             {
-                WorkspaceId = "workspaceId",
                 Aspect = ImageAspect.Square,
                 Slides = new List<Slide>() { new Slide { MediaId = "mediaId" } },
             }

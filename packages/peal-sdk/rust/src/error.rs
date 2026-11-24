@@ -24,17 +24,17 @@ pub enum ApiError {
         retry_after_seconds: Option<u64>,
         limit_type: Option<String>,
     },
-    #[error("NotFoundError: Resource not found - {message}")]
-    NotFoundError {
-        message: String,
-        resource_id: Option<String>,
-        resource_type: Option<String>,
-    },
     #[error("BadRequestError: Bad request - {message}")]
     BadRequestError {
         message: String,
         field: Option<String>,
         details: Option<String>,
+    },
+    #[error("NotFoundError: Resource not found - {message}")]
+    NotFoundError {
+        message: String,
+        resource_id: Option<String>,
+        resource_type: Option<String>,
     },
     #[error("PaymentRequiredError: {message}")]
     PaymentRequiredError { message: String },
@@ -180,31 +180,6 @@ impl ApiError {
                     limit_type: None,
                 };
             }
-            404 => {
-                // Parse error body for NotFoundError;
-                if let Some(body_str) = body {
-                    if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(body_str) {
-                        return Self::NotFoundError {
-                            message: parsed
-                                .get("message")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or("Unknown error")
-                                .to_string(),
-                            resource_id: parsed
-                                .get("resourceId")
-                                .and_then(|v| v.as_str().map(|s| s.to_string())),
-                            resource_type: parsed
-                                .get("resourceType")
-                                .and_then(|v| v.as_str().map(|s| s.to_string())),
-                        };
-                    }
-                }
-                return Self::NotFoundError {
-                    message: body.unwrap_or("Unknown error").to_string(),
-                    resource_id: None,
-                    resource_type: None,
-                };
-            }
             400 => {
                 // Parse error body for BadRequestError;
                 if let Some(body_str) = body {
@@ -228,6 +203,31 @@ impl ApiError {
                     message: body.unwrap_or("Unknown error").to_string(),
                     field: None,
                     details: None,
+                };
+            }
+            404 => {
+                // Parse error body for NotFoundError;
+                if let Some(body_str) = body {
+                    if let Ok(parsed) = serde_json::from_str::<serde_json::Value>(body_str) {
+                        return Self::NotFoundError {
+                            message: parsed
+                                .get("message")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("Unknown error")
+                                .to_string(),
+                            resource_id: parsed
+                                .get("resourceId")
+                                .and_then(|v| v.as_str().map(|s| s.to_string())),
+                            resource_type: parsed
+                                .get("resourceType")
+                                .and_then(|v| v.as_str().map(|s| s.to_string())),
+                        };
+                    }
+                }
+                return Self::NotFoundError {
+                    message: body.unwrap_or("Unknown error").to_string(),
+                    resource_id: None,
+                    resource_type: None,
                 };
             }
             402 => {

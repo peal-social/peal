@@ -2,7 +2,7 @@ import { Effect, Option } from "effect";
 import { FetchHttpClient, HttpClient, HttpClientRequest } from "effect/http";
 import { HttpApiClient } from "effect/http-api";
 import { headers } from "next/headers";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Standing } from "peal-contract";
 
 import { serverUrl } from "#api/server-url.ts";
@@ -32,7 +32,7 @@ export const standingOfWorkspace = async (
       });
 
       return yield* client.billing
-        .standing({ params: { workspaceId } })
+        .standing({ headers: forWorkspace(workspaceId) })
         .pipe(Effect.map(Option.some), Effect.timeout("5 seconds"));
     }).pipe(
       Effect.provide(FetchHttpClient.layer),

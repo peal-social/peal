@@ -38,7 +38,6 @@ class RawInboxMessagesClient:
 
     def list_conversations(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -51,8 +50,6 @@ class RawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -70,7 +67,7 @@ class RawInboxMessagesClient:
             InboxConversationPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations",
+            "api/v1/inbox/messages/conversations",
             method="GET",
             params={
                 "channelId": channel_id,
@@ -156,7 +153,6 @@ class RawInboxMessagesClient:
 
     def get_conversation(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -168,8 +164,6 @@ class RawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         cursor : typing.Optional[str]
@@ -185,7 +179,7 @@ class RawInboxMessagesClient:
             InboxConversationDetail
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations/{encode_path_param(conversation_id)}",
+            f"api/v1/inbox/messages/conversations/{encode_path_param(conversation_id)}",
             method="GET",
             params={
                 "cursor": cursor,
@@ -269,7 +263,6 @@ class RawInboxMessagesClient:
 
     def send_message(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         text: str,
@@ -281,8 +274,6 @@ class RawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         text : str
@@ -301,7 +292,7 @@ class RawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations/{encode_path_param(conversation_id)}/messages",
+            f"api/v1/inbox/messages/conversations/{encode_path_param(conversation_id)}/messages",
             method="POST",
             json={
                 "text": text,
@@ -323,6 +314,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -411,7 +413,6 @@ class RawInboxMessagesClient:
 
     def send_private_reply(
         self,
-        workspace_id: str,
         *,
         comment_id: str,
         text: str,
@@ -423,8 +424,6 @@ class RawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         comment_id : str
 
         text : str
@@ -443,7 +442,7 @@ class RawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/private-replies",
+            "api/v1/inbox/messages/private-replies",
             method="POST",
             json={
                 "commentId": comment_id,
@@ -466,6 +465,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -553,15 +563,13 @@ class RawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_private_reply(
-        self, workspace_id: str, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[InboxPrivateReply]:
         """
         Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -573,7 +581,7 @@ class RawInboxMessagesClient:
             InboxPrivateReply
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/private-replies/{encode_path_param(private_reply_id)}",
+            f"api/v1/inbox/messages/private-replies/{encode_path_param(private_reply_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -587,6 +595,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -641,20 +660,13 @@ class RawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def confirm_private_reply(
-        self,
-        workspace_id: str,
-        private_reply_id: str,
-        *,
-        went: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, private_reply_id: str, *, went: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[InboxPrivateReply]:
         """
         Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         went : bool
@@ -671,7 +683,7 @@ class RawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/private-replies/{encode_path_param(private_reply_id)}/confirm",
+            f"api/v1/inbox/messages/private-replies/{encode_path_param(private_reply_id)}/confirm",
             method="POST",
             json={
                 "went": went,
@@ -692,6 +704,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -757,20 +780,13 @@ class RawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_conversation_read(
-        self,
-        workspace_id: str,
-        conversation_id: str,
-        *,
-        read: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, conversation_id: str, *, read: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[InboxConversation]:
         """
         Says a conversation was read (`read: true`), or is unread again (`false`). Nothing is sent to the platform. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         read : bool
@@ -787,7 +803,7 @@ class RawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations/{encode_path_param(conversation_id)}/read",
+            f"api/v1/inbox/messages/conversations/{encode_path_param(conversation_id)}/read",
             method="POST",
             json={
                 "read": read,
@@ -808,6 +824,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -862,15 +889,13 @@ class RawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_message_settings(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[InboxMessageSettings]:
         """
         Lists the channels whose direct messages the workspace turned on, and the applications its owner let read and answer them. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -880,7 +905,7 @@ class RawInboxMessagesClient:
             InboxMessageSettings
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/settings",
+            "api/v1/inbox/messages/settings",
             method="GET",
             request_options=request_options,
         )
@@ -894,6 +919,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -948,20 +984,13 @@ class RawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_channel_messages(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        enabled: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, enabled: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[InboxMessageSettings]:
         """
         Turns a channel's direct messages on (`enabled: true`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 `InboxActionUnavailable`, `unsupported`), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (`reconnect`): reconnect it with `messages=true`, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         enabled : bool
@@ -975,7 +1004,7 @@ class RawInboxMessagesClient:
             InboxMessageSettings
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/channels/{encode_path_param(channel_id)}",
+            f"api/v1/inbox/messages/channels/{encode_path_param(channel_id)}",
             method="PUT",
             json={
                 "enabled": enabled,
@@ -996,6 +1025,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1061,20 +1101,13 @@ class RawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set_message_application(
-        self,
-        workspace_id: str,
-        *,
-        allowed: bool,
-        client_id: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, allowed: bool, client_id: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[InboxMessageSettings]:
         """
         Lets an application connected through OAuth (by its client id) read and answer the workspace's direct messages, for the members who hold the permissions, or takes that back (`allowed: false`). An application not let in lists conversations, never their messages. Needs organization:secure, which owners alone hold. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         allowed : bool
 
         client_id : str
@@ -1088,7 +1121,7 @@ class RawInboxMessagesClient:
             InboxMessageSettings
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/applications",
+            "api/v1/inbox/messages/applications",
             method="PUT",
             json={
                 "allowed": allowed,
@@ -1110,6 +1143,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1164,15 +1208,13 @@ class RawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def confirm_message(
-        self, workspace_id: str, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
+        self, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[InboxOutgoingMessage]:
         """
         Records what someone found on the platform for an unconfirmed message: it is there (`sent: true`), or it never went out (`false`). Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         message_id : str
 
         sent : bool
@@ -1189,7 +1231,7 @@ class RawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/outgoing/{encode_path_param(message_id)}/confirmation",
+            f"api/v1/inbox/messages/outgoing/{encode_path_param(message_id)}/confirmation",
             method="POST",
             json={
                 "sent": sent,
@@ -1210,6 +1252,17 @@ class RawInboxMessagesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1281,7 +1334,6 @@ class AsyncRawInboxMessagesClient:
 
     async def list_conversations(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -1294,8 +1346,6 @@ class AsyncRawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -1313,7 +1363,7 @@ class AsyncRawInboxMessagesClient:
             InboxConversationPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations",
+            "api/v1/inbox/messages/conversations",
             method="GET",
             params={
                 "channelId": channel_id,
@@ -1399,7 +1449,6 @@ class AsyncRawInboxMessagesClient:
 
     async def get_conversation(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -1411,8 +1460,6 @@ class AsyncRawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         cursor : typing.Optional[str]
@@ -1428,7 +1475,7 @@ class AsyncRawInboxMessagesClient:
             InboxConversationDetail
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations/{encode_path_param(conversation_id)}",
+            f"api/v1/inbox/messages/conversations/{encode_path_param(conversation_id)}",
             method="GET",
             params={
                 "cursor": cursor,
@@ -1512,7 +1559,6 @@ class AsyncRawInboxMessagesClient:
 
     async def send_message(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         text: str,
@@ -1524,8 +1570,6 @@ class AsyncRawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         text : str
@@ -1544,7 +1588,7 @@ class AsyncRawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations/{encode_path_param(conversation_id)}/messages",
+            f"api/v1/inbox/messages/conversations/{encode_path_param(conversation_id)}/messages",
             method="POST",
             json={
                 "text": text,
@@ -1566,6 +1610,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1654,7 +1709,6 @@ class AsyncRawInboxMessagesClient:
 
     async def send_private_reply(
         self,
-        workspace_id: str,
         *,
         comment_id: str,
         text: str,
@@ -1666,8 +1720,6 @@ class AsyncRawInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         comment_id : str
 
         text : str
@@ -1686,7 +1738,7 @@ class AsyncRawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/private-replies",
+            "api/v1/inbox/messages/private-replies",
             method="POST",
             json={
                 "commentId": comment_id,
@@ -1709,6 +1761,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1796,15 +1859,13 @@ class AsyncRawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_private_reply(
-        self, workspace_id: str, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[InboxPrivateReply]:
         """
         Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1816,7 +1877,7 @@ class AsyncRawInboxMessagesClient:
             InboxPrivateReply
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/private-replies/{encode_path_param(private_reply_id)}",
+            f"api/v1/inbox/messages/private-replies/{encode_path_param(private_reply_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1830,6 +1891,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1884,20 +1956,13 @@ class AsyncRawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def confirm_private_reply(
-        self,
-        workspace_id: str,
-        private_reply_id: str,
-        *,
-        went: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, private_reply_id: str, *, went: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[InboxPrivateReply]:
         """
         Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         went : bool
@@ -1914,7 +1979,7 @@ class AsyncRawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/private-replies/{encode_path_param(private_reply_id)}/confirm",
+            f"api/v1/inbox/messages/private-replies/{encode_path_param(private_reply_id)}/confirm",
             method="POST",
             json={
                 "went": went,
@@ -1935,6 +2000,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2000,20 +2076,13 @@ class AsyncRawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_conversation_read(
-        self,
-        workspace_id: str,
-        conversation_id: str,
-        *,
-        read: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, conversation_id: str, *, read: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[InboxConversation]:
         """
         Says a conversation was read (`read: true`), or is unread again (`false`). Nothing is sent to the platform. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         read : bool
@@ -2030,7 +2099,7 @@ class AsyncRawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/conversations/{encode_path_param(conversation_id)}/read",
+            f"api/v1/inbox/messages/conversations/{encode_path_param(conversation_id)}/read",
             method="POST",
             json={
                 "read": read,
@@ -2051,6 +2120,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2105,15 +2185,13 @@ class AsyncRawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_message_settings(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[InboxMessageSettings]:
         """
         Lists the channels whose direct messages the workspace turned on, and the applications its owner let read and answer them. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2123,7 +2201,7 @@ class AsyncRawInboxMessagesClient:
             InboxMessageSettings
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/settings",
+            "api/v1/inbox/messages/settings",
             method="GET",
             request_options=request_options,
         )
@@ -2137,6 +2215,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2191,20 +2280,13 @@ class AsyncRawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_channel_messages(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        enabled: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, enabled: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[InboxMessageSettings]:
         """
         Turns a channel's direct messages on (`enabled: true`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 `InboxActionUnavailable`, `unsupported`), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (`reconnect`): reconnect it with `messages=true`, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         enabled : bool
@@ -2218,7 +2300,7 @@ class AsyncRawInboxMessagesClient:
             InboxMessageSettings
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/channels/{encode_path_param(channel_id)}",
+            f"api/v1/inbox/messages/channels/{encode_path_param(channel_id)}",
             method="PUT",
             json={
                 "enabled": enabled,
@@ -2239,6 +2321,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2304,20 +2397,13 @@ class AsyncRawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set_message_application(
-        self,
-        workspace_id: str,
-        *,
-        allowed: bool,
-        client_id: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, allowed: bool, client_id: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[InboxMessageSettings]:
         """
         Lets an application connected through OAuth (by its client id) read and answer the workspace's direct messages, for the members who hold the permissions, or takes that back (`allowed: false`). An application not let in lists conversations, never their messages. Needs organization:secure, which owners alone hold. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         allowed : bool
 
         client_id : str
@@ -2331,7 +2417,7 @@ class AsyncRawInboxMessagesClient:
             InboxMessageSettings
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/applications",
+            "api/v1/inbox/messages/applications",
             method="PUT",
             json={
                 "allowed": allowed,
@@ -2353,6 +2439,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2407,15 +2504,13 @@ class AsyncRawInboxMessagesClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def confirm_message(
-        self, workspace_id: str, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
+        self, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[InboxOutgoingMessage]:
         """
         Records what someone found on the platform for an unconfirmed message: it is there (`sent: true`), or it never went out (`false`). Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         message_id : str
 
         sent : bool
@@ -2432,7 +2527,7 @@ class AsyncRawInboxMessagesClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/inbox/messages/outgoing/{encode_path_param(message_id)}/confirmation",
+            f"api/v1/inbox/messages/outgoing/{encode_path_param(message_id)}/confirmation",
             method="POST",
             json={
                 "sent": sent,
@@ -2453,6 +2548,17 @@ class AsyncRawInboxMessagesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

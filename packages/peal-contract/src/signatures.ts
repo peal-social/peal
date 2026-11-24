@@ -14,6 +14,7 @@ import { SignatureNotFound } from "./signature-not-found.ts";
 import { TooManySignatures } from "./too-many-signatures.ts";
 import { UnknownChannels } from "./unknown-channels.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The longest name a signature has. */
 export const maxSignatureNameLength = 60;
@@ -106,16 +107,15 @@ export const signedText = (text: string, signature: string): string => {
   return body === "" ? signature : `${body}\n\n${signature}`;
 };
 
-const workspace = { workspaceId: Schema.String };
-
-const signature = { ...workspace, signatureId: Schema.String };
+const signature = { signatureId: Schema.String };
 
 /** A workspace's signatures: the text it ends its posts with. */
 export class SignaturesApi extends HttpApiGroup.make("signatures")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(SignatureSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -131,7 +131,8 @@ export class SignaturesApi extends HttpApiGroup.make("signatures")
         TooManySignatures,
         UnknownChannels,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: SignatureDetailsSchema,
       success: SignatureSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -147,6 +148,7 @@ export class SignaturesApi extends HttpApiGroup.make("signatures")
         SignatureNameTaken,
         UnknownChannels,
       ],
+      headers: workspaceHeaders,
       params: signature,
       payload: SignatureDetailsSchema,
       success: SignatureSchema,
@@ -159,6 +161,7 @@ export class SignaturesApi extends HttpApiGroup.make("signatures")
     ),
     HttpApiEndpoint.delete("delete", "/:signatureId", {
       error: [Forbidden, SignatureNotFound],
+      headers: workspaceHeaders,
       params: signature,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -171,4 +174,4 @@ export class SignaturesApi extends HttpApiGroup.make("signatures")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/signatures") {}
+  .prefix("/api/v1/signatures") {}

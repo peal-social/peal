@@ -26,6 +26,7 @@ import { OwnTextLimitReached } from "./own-text-limit-reached.ts";
 import { TextProviderBusy } from "./text-provider-busy.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // The agent is the web app's alone: a person in their own session talks
 // to it, in the browser. It is not part of `Api`, so the OpenAPI document,
@@ -493,11 +494,9 @@ export const AgentRatingRequestSchema = Schema.Struct({
   rating: Schema.NullOr(AgentRatingSchema),
 }).annotate({ identifier: "AgentRatingRequest" });
 
-const workspace = { workspaceId: Schema.String };
+const chat = { chatId: Schema.String };
 
-const chat = { ...workspace, chatId: Schema.String };
-
-const skill = { ...workspace, skillId: Schema.String };
+const skill = { skillId: Schema.String };
 
 // A run's events, with a comment every 15 seconds while the model thinks,
 // so no proxy closes a quiet response.
@@ -533,33 +532,39 @@ export class AgentGroup extends HttpApiGroup.make("agent")
   .add(
     HttpApiEndpoint.get("status", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: AgentStatusSchema,
     }),
     HttpApiEndpoint.get("chats", "/chats", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: { cursor: Schema.optionalKey(Schema.String) },
       success: AgentChatPageSchema,
     }),
     HttpApiEndpoint.post("createChat", "/chats", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: AgentChatSchema.pipe(HttpApiSchema.status(201)),
     }),
     HttpApiEndpoint.get("chat", "/chats/:chatId", {
       error: [Forbidden, AgentChatNotFound],
+      headers: workspaceHeaders,
       params: chat,
       success: AgentChatDetailSchema,
     }),
     HttpApiEndpoint.patch("updateChat", "/chats/:chatId", {
       error: [Forbidden, AgentChatNotFound],
+      headers: workspaceHeaders,
       params: chat,
       payload: AgentChatUpdateSchema,
       success: AgentChatSchema,
     }),
     HttpApiEndpoint.delete("deleteChat", "/chats/:chatId", {
       error: [Forbidden, AgentChatNotFound],
+      headers: workspaceHeaders,
       params: chat,
       success: HttpApiSchema.NoContent,
     }),
@@ -570,45 +575,52 @@ export class AgentGroup extends HttpApiGroup.make("agent")
         AgentMediaRejected,
         AgentSkillNotFound,
       ],
+      headers: workspaceHeaders,
       params: chat,
       payload: AgentMessageRequestSchema,
       success: runEvents,
     }),
     HttpApiEndpoint.post("answer", "/chats/:chatId/approvals/:callId", {
       error: [...runErrors, AgentApprovalNotPending],
+      headers: workspaceHeaders,
       params: { ...chat, callId: Schema.String },
       payload: AgentApprovalAnswerSchema,
       success: runEvents,
     }),
     HttpApiEndpoint.put("rate", "/chats/:chatId/messages/:messageId/rating", {
       error: [Forbidden, AgentChatNotFound],
+      headers: workspaceHeaders,
       params: { ...chat, messageId: Schema.String },
       payload: AgentRatingRequestSchema,
       success: HttpApiSchema.NoContent,
     }),
     HttpApiEndpoint.get("skills", "/skills", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: AgentSkillListSchema,
     }),
     HttpApiEndpoint.post("createSkill", "/skills", {
       error: [Forbidden, AgentSkillRefused],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: AgentSkillRequestSchema,
       success: AgentSkillSchema.pipe(HttpApiSchema.status(201)),
     }),
     HttpApiEndpoint.patch("updateSkill", "/skills/:skillId", {
       error: [Forbidden, AgentSkillNotFound, AgentSkillRefused],
+      headers: workspaceHeaders,
       params: skill,
       payload: AgentSkillUpdateSchema,
       success: AgentSkillSchema,
     }),
     HttpApiEndpoint.delete("deleteSkill", "/skills/:skillId", {
       error: [Forbidden, AgentSkillNotFound, AgentSkillRefused],
+      headers: workspaceHeaders,
       params: skill,
       success: HttpApiSchema.NoContent,
     })
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/agent") {}
+  .prefix("/api/v1/agent") {}

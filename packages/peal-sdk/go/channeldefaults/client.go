@@ -39,7 +39,6 @@ func NewClient(options *core.RequestOptions) *Client {
 // Example:
 //
 //	request := &peal.GetChannelDefaultsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.ChannelDefaults.Get(
@@ -67,7 +66,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.NewChannelDefaults{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	    Options: &peal.TargetOptions{
 //	        Youtube: &peal.YouTubeOptions{},
@@ -98,7 +96,6 @@ func (c *Client) Set(
 // Example:
 //
 //	request := &peal.ClearChannelDefaultsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	err := client.ChannelDefaults.Clear(

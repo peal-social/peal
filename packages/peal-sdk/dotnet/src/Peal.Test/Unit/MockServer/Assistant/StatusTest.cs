@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -97,10 +96,7 @@ public class StatusTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/assistant").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -109,9 +105,7 @@ public class StatusTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.StatusAsync(
-            new StatusAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.StatusAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -202,10 +196,7 @@ public class StatusTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/assistant").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -214,9 +205,7 @@ public class StatusTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.StatusAsync(
-            new StatusAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.StatusAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

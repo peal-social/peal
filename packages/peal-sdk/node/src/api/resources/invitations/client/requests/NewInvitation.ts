@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         email: "email",
  *         role: "owner"
  *     }
  */
 export interface NewInvitation {
-    workspaceId: string;
     email: string;
     role: Peal.Role;
 }

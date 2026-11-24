@@ -35,15 +35,11 @@ impl ShortLinksClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .short_links
-    ///         .status(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.short_links.status(None).await;
     /// }
     /// ```
     pub async fn status(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ShortLinkStatus, ApiError> {
         let options = {
@@ -56,7 +52,7 @@ impl ShortLinksClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/short-links/status", workspace_id),
+                "api/v1/short-links/status",
                 None,
                 None,
                 options,
@@ -88,17 +84,12 @@ impl ShortLinksClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .short_links
-    ///         .set_default(
-    ///             &"workspaceId".to_string(),
-    ///             &ShortLinkSettings { by_default: true },
-    ///             None,
-    ///         )
+    ///         .set_default(&ShortLinkSettings { by_default: true }, None)
     ///         .await;
     /// }
     /// ```
     pub async fn set_default(
         &self,
-        workspace_id: &str,
         request: &ShortLinkSettings,
         options: Option<RequestOptions>,
     ) -> Result<ShortLinkStatus, ApiError> {
@@ -112,7 +103,7 @@ impl ShortLinksClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!("api/workspaces/{}/short-links/settings", workspace_id),
+                "api/v1/short-links/settings",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -145,7 +136,6 @@ impl ShortLinksClient {
     ///     client
     ///         .short_links
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &ShortLinksListQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -156,7 +146,6 @@ impl ShortLinksClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &ShortLinksListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ShortLinkPage, ApiError> {
@@ -170,7 +159,7 @@ impl ShortLinksClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/short-links", workspace_id),
+                "api/v1/short-links",
                 None,
                 QueryBuilder::new()
                     .string("channelId", request.channel_id.clone())
@@ -210,7 +199,6 @@ impl ShortLinksClient {
     ///     client
     ///         .short_links
     ///         .get(
-    ///             &"workspaceId".to_string(),
     ///             &"linkId".to_string(),
     ///             &ShortLinksGetQueryRequest {
     ///                 ..Default::default()
@@ -222,7 +210,6 @@ impl ShortLinksClient {
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         link_id: &str,
         request: &ShortLinksGetQueryRequest,
         options: Option<RequestOptions>,
@@ -237,7 +224,7 @@ impl ShortLinksClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/short-links/{}", workspace_id, link_id),
+                &format!("api/v1/short-links/{}", link_id),
                 None,
                 QueryBuilder::new()
                     .serialize("from", request.from.clone())

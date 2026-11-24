@@ -7,9 +7,6 @@ namespace Peal;
 public record ItemsFeedsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string FeedId { get; set; }
 
     /// <inheritdoc />

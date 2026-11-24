@@ -177,6 +177,7 @@ import {
   WebhooksNotConfigured,
   WebhookUrlRefused,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import { errorCatalogue, errorCodeOf } from "peal-contract/errors";
 
@@ -368,6 +369,7 @@ export const ApiErrorSchema = Schema.Union([
   WebhooksNotConfigured,
   WebhookUrlRefused,
   WorkspaceNotFound,
+  WorkspaceRequired,
 ]);
 
 export type ApiError = typeof ApiErrorSchema.Type;

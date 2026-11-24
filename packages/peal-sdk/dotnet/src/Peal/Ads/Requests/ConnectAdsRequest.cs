@@ -7,9 +7,6 @@ namespace Peal;
 public record ConnectAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required AdNetwork Network { get; set; }
 
     /// <inheritdoc />

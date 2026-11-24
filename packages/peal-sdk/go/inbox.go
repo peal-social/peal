@@ -10,15 +10,13 @@ import (
 )
 
 var (
-	confirmReplyInboxRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	confirmReplyInboxRequestFieldReplyID     = big.NewInt(1 << 1)
-	confirmReplyInboxRequestFieldSent        = big.NewInt(1 << 2)
+	confirmReplyInboxRequestFieldReplyID = big.NewInt(1 << 0)
+	confirmReplyInboxRequestFieldSent    = big.NewInt(1 << 1)
 )
 
 type ConfirmReplyInboxRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ReplyID     string `json:"-" url:"-"`
-	Sent        bool   `json:"sent" url:"-"`
+	ReplyID string `json:"-" url:"-"`
+	Sent    bool   `json:"sent" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (c *ConfirmReplyInboxRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConfirmReplyInboxRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(confirmReplyInboxRequestFieldWorkspaceID)
 }
 
 // SetReplyID sets the ReplyID field and marks it as non-optional;
@@ -76,13 +67,11 @@ func (c *ConfirmReplyInboxRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	getAbilitiesInboxRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getAbilitiesInboxRequestFieldChannelID   = big.NewInt(1 << 1)
+	getAbilitiesInboxRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type GetAbilitiesInboxRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -97,13 +86,6 @@ func (g *GetAbilitiesInboxRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetAbilitiesInboxRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getAbilitiesInboxRequestFieldWorkspaceID)
-}
-
 // SetChannelID sets the ChannelID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetAbilitiesInboxRequest) SetChannelID(channelID string) {
@@ -112,13 +94,11 @@ func (g *GetAbilitiesInboxRequest) SetChannelID(channelID string) {
 }
 
 var (
-	getThreadInboxRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getThreadInboxRequestFieldThreadID    = big.NewInt(1 << 1)
+	getThreadInboxRequestFieldThreadID = big.NewInt(1 << 0)
 )
 
 type GetThreadInboxRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ThreadID    string `json:"-" url:"-"`
+	ThreadID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -133,13 +113,6 @@ func (g *GetThreadInboxRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetThreadInboxRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getThreadInboxRequestFieldWorkspaceID)
-}
-
 // SetThreadID sets the ThreadID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetThreadInboxRequest) SetThreadID(threadID string) {
@@ -148,21 +121,19 @@ func (g *GetThreadInboxRequest) SetThreadID(threadID string) {
 }
 
 var (
-	listThreadsInboxRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listThreadsInboxRequestFieldChannelID   = big.NewInt(1 << 1)
-	listThreadsInboxRequestFieldCursor      = big.NewInt(1 << 2)
-	listThreadsInboxRequestFieldLimit       = big.NewInt(1 << 3)
-	listThreadsInboxRequestFieldPostID      = big.NewInt(1 << 4)
-	listThreadsInboxRequestFieldUnanswered  = big.NewInt(1 << 5)
+	listThreadsInboxRequestFieldChannelID  = big.NewInt(1 << 0)
+	listThreadsInboxRequestFieldCursor     = big.NewInt(1 << 1)
+	listThreadsInboxRequestFieldLimit      = big.NewInt(1 << 2)
+	listThreadsInboxRequestFieldPostID     = big.NewInt(1 << 3)
+	listThreadsInboxRequestFieldUnanswered = big.NewInt(1 << 4)
 )
 
 type ListThreadsInboxRequest struct {
-	WorkspaceID string                             `json:"-" url:"-"`
-	ChannelID   *string                            `json:"-" url:"channelId,omitempty"`
-	Cursor      *string                            `json:"-" url:"cursor,omitempty"`
-	Limit       *string                            `json:"-" url:"limit,omitempty"`
-	PostID      *string                            `json:"-" url:"postId,omitempty"`
-	Unanswered  *ListThreadsInboxRequestUnanswered `json:"-" url:"unanswered,omitempty"`
+	ChannelID  *string                            `json:"-" url:"channelId,omitempty"`
+	Cursor     *string                            `json:"-" url:"cursor,omitempty"`
+	Limit      *string                            `json:"-" url:"limit,omitempty"`
+	PostID     *string                            `json:"-" url:"postId,omitempty"`
+	Unanswered *ListThreadsInboxRequestUnanswered `json:"-" url:"unanswered,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -175,13 +146,6 @@ func (l *ListThreadsInboxRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListThreadsInboxRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listThreadsInboxRequestFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -220,15 +184,13 @@ func (l *ListThreadsInboxRequest) SetUnanswered(unanswered *ListThreadsInboxRequ
 }
 
 var (
-	moderateInboxRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	moderateInboxRequestFieldCommentID   = big.NewInt(1 << 1)
-	moderateInboxRequestFieldAction      = big.NewInt(1 << 2)
+	moderateInboxRequestFieldCommentID = big.NewInt(1 << 0)
+	moderateInboxRequestFieldAction    = big.NewInt(1 << 1)
 )
 
 type ModerateInboxRequest struct {
-	WorkspaceID string                `json:"-" url:"-"`
-	CommentID   string                `json:"-" url:"-"`
-	Action      InboxModerationAction `json:"action" url:"-"`
+	CommentID string                `json:"-" url:"-"`
+	Action    InboxModerationAction `json:"action" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -241,13 +203,6 @@ func (m *ModerateInboxRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	m.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *ModerateInboxRequest) SetWorkspaceID(workspaceID string) {
-	m.WorkspaceID = workspaceID
-	m.require(moderateInboxRequestFieldWorkspaceID)
 }
 
 // SetCommentID sets the CommentID field and marks it as non-optional;
@@ -287,14 +242,12 @@ func (m *ModerateInboxRequest) MarshalJSON() ([]byte, error) {
 
 var (
 	newInboxReplyFieldIdempotencyKey = big.NewInt(1 << 0)
-	newInboxReplyFieldWorkspaceID    = big.NewInt(1 << 1)
-	newInboxReplyFieldCommentID      = big.NewInt(1 << 2)
-	newInboxReplyFieldText           = big.NewInt(1 << 3)
+	newInboxReplyFieldCommentID      = big.NewInt(1 << 1)
+	newInboxReplyFieldText           = big.NewInt(1 << 2)
 )
 
 type NewInboxReply struct {
 	IdempotencyKey *string `json:"-" url:"-"`
-	WorkspaceID    string  `json:"-" url:"-"`
 	CommentID      string  `json:"-" url:"-"`
 	Text           string  `json:"text" url:"-"`
 
@@ -316,13 +269,6 @@ func (n *NewInboxReply) require(field *big.Int) {
 func (n *NewInboxReply) SetIdempotencyKey(idempotencyKey *string) {
 	n.IdempotencyKey = idempotencyKey
 	n.require(newInboxReplyFieldIdempotencyKey)
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewInboxReply) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newInboxReplyFieldWorkspaceID)
 }
 
 // SetCommentID sets the CommentID field and marks it as non-optional;
@@ -361,15 +307,13 @@ func (n *NewInboxReply) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	setAnsweredInboxRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	setAnsweredInboxRequestFieldCommentID   = big.NewInt(1 << 1)
-	setAnsweredInboxRequestFieldAnswered    = big.NewInt(1 << 2)
+	setAnsweredInboxRequestFieldCommentID = big.NewInt(1 << 0)
+	setAnsweredInboxRequestFieldAnswered  = big.NewInt(1 << 1)
 )
 
 type SetAnsweredInboxRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	CommentID   string `json:"-" url:"-"`
-	Answered    bool   `json:"answered" url:"-"`
+	CommentID string `json:"-" url:"-"`
+	Answered  bool   `json:"answered" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -382,13 +326,6 @@ func (s *SetAnsweredInboxRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SetAnsweredInboxRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(setAnsweredInboxRequestFieldWorkspaceID)
 }
 
 // SetCommentID sets the CommentID field and marks it as non-optional;
@@ -1995,13 +1932,11 @@ func (l ListThreadsInboxRequestUnanswered) Ptr() *ListThreadsInboxRequestUnanswe
 }
 
 var (
-	withdrawReplyInboxRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	withdrawReplyInboxRequestFieldReplyID     = big.NewInt(1 << 1)
+	withdrawReplyInboxRequestFieldReplyID = big.NewInt(1 << 0)
 )
 
 type WithdrawReplyInboxRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ReplyID     string `json:"-" url:"-"`
+	ReplyID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2014,13 +1949,6 @@ func (w *WithdrawReplyInboxRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	w.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WithdrawReplyInboxRequest) SetWorkspaceID(workspaceID string) {
-	w.WorkspaceID = workspaceID
-	w.require(withdrawReplyInboxRequestFieldWorkspaceID)
 }
 
 // SetReplyID sets the ReplyID field and marks it as non-optional;

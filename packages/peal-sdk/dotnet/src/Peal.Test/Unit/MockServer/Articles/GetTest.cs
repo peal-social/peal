@@ -52,7 +52,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId")
+                    .WithPath("/api/v1/articles/articleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -63,7 +63,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Articles.GetAsync(
-            new GetArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
+            new GetArticlesRequest { ArticleId = "articleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -106,7 +106,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId")
+                    .WithPath("/api/v1/articles/articleId")
                     .UsingGet()
             )
             .RespondWith(
@@ -117,7 +117,7 @@ public class GetTest : BaseMockServerTest
             );
 
         var response = await Client.Articles.GetAsync(
-            new GetArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
+            new GetArticlesRequest { ArticleId = "articleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

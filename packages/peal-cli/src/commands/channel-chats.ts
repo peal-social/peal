@@ -64,7 +64,7 @@ export const connectChat = Command.make(
 
     const channel = yield* client.channels
       .connectChat({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload:
           input.platform === "discord"
             ? {

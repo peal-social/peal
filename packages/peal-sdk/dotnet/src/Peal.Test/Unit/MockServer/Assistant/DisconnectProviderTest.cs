@@ -15,18 +15,14 @@ public class DisconnectProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/providers/anthropic")
+                    .WithPath("/api/v1/assistant/providers/anthropic")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Assistant.DisconnectProviderAsync(
-                new DisconnectProviderAssistantRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    Provider = AiProvider.Anthropic,
-                }
+                new DisconnectProviderAssistantRequest { Provider = AiProvider.Anthropic }
             )
         );
     }
@@ -38,18 +34,14 @@ public class DisconnectProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/providers/anthropic")
+                    .WithPath("/api/v1/assistant/providers/anthropic")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Assistant.DisconnectProviderAsync(
-                new DisconnectProviderAssistantRequest
-                {
-                    WorkspaceId = "workspaceId",
-                    Provider = AiProvider.Anthropic,
-                }
+                new DisconnectProviderAssistantRequest { Provider = AiProvider.Anthropic }
             )
         );
     }

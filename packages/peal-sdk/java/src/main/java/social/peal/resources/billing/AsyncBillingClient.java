@@ -7,8 +7,6 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.billing.requests.GetBillingRequest;
-import social.peal.resources.billing.requests.StandingBillingRequest;
 import social.peal.types.Billing;
 import social.peal.types.Standing;
 
@@ -32,8 +30,8 @@ public class AsyncBillingClient {
     /**
      * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
      */
-    public CompletableFuture<Billing> get(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Billing>> rawFuture = this.rawClient.get(workspaceId);
+    public CompletableFuture<Billing> get() {
+        CompletableFuture<PealClientHttpResponse<Billing>> rawFuture = this.rawClient.get();
         CompletableFuture<Billing> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -46,38 +44,8 @@ public class AsyncBillingClient {
     /**
      * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
      */
-    public CompletableFuture<Billing> get(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Billing>> rawFuture = this.rawClient.get(workspaceId, requestOptions);
-        CompletableFuture<Billing> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
-     */
-    public CompletableFuture<Billing> get(String workspaceId, GetBillingRequest request) {
-        CompletableFuture<PealClientHttpResponse<Billing>> rawFuture = this.rawClient.get(workspaceId, request);
-        CompletableFuture<Billing> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
-     */
-    public CompletableFuture<Billing> get(
-            String workspaceId, GetBillingRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Billing>> rawFuture =
-                this.rawClient.get(workspaceId, request, requestOptions);
+    public CompletableFuture<Billing> get(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Billing>> rawFuture = this.rawClient.get(requestOptions);
         CompletableFuture<Billing> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -90,8 +58,8 @@ public class AsyncBillingClient {
     /**
      * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
      */
-    public CompletableFuture<Standing> standing(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<Standing>> rawFuture = this.rawClient.standing(workspaceId);
+    public CompletableFuture<Standing> standing() {
+        CompletableFuture<PealClientHttpResponse<Standing>> rawFuture = this.rawClient.standing();
         CompletableFuture<Standing> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -104,39 +72,8 @@ public class AsyncBillingClient {
     /**
      * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
      */
-    public CompletableFuture<Standing> standing(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Standing>> rawFuture =
-                this.rawClient.standing(workspaceId, requestOptions);
-        CompletableFuture<Standing> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
-     */
-    public CompletableFuture<Standing> standing(String workspaceId, StandingBillingRequest request) {
-        CompletableFuture<PealClientHttpResponse<Standing>> rawFuture = this.rawClient.standing(workspaceId, request);
-        CompletableFuture<Standing> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
-     */
-    public CompletableFuture<Standing> standing(
-            String workspaceId, StandingBillingRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Standing>> rawFuture =
-                this.rawClient.standing(workspaceId, request, requestOptions);
+    public CompletableFuture<Standing> standing(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Standing>> rawFuture = this.rawClient.standing(requestOptions);
         CompletableFuture<Standing> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId"
  *     }
  */
 export interface PostPerformanceAdsRequest {
-    workspaceId: string;
     postId: string;
 }

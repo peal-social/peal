@@ -5,11 +5,9 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         capability: "text"
  *     }
  */
 export interface UnsetModelAssistantRequest {
-    workspaceId: string;
     capability: Peal.AiCapability;
 }

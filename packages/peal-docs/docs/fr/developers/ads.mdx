@@ -9,7 +9,7 @@ Vous pouvez faire depuis votre propre code ce que fait le guide [Publicités](/g
 
 ## Par l’API [#api]
 
-Le groupe `ads` est sous `/api/workspaces/{workspaceId}/ads`, et les chemins ci-dessous partent de là. Chaque opération demande la permission de sa dernière colonne :
+Le groupe `ads` est sous `/api/v1/ads`, et les chemins ci-dessous partent de là. Chaque opération demande la permission de sa dernière colonne :
 
 | Opération               | Requête                                     | Ce qu’elle fait                                                                                        | Demande                                       |
 | ----------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------- |
@@ -74,7 +74,7 @@ const boost = {
   payer: "Example Bakery SAS",
 };
 
-const quote = await peal.ads.quoteBoost({ workspaceId, body: boost });
+const quote = await peal.ads.quoteBoost(boost);
 ```
 
 ```python Python
@@ -97,7 +97,7 @@ boost = dict(
     payer="Example Bakery SAS",
 )
 
-quote = peal.ads.quote_boost(workspace_id=workspace_id, **boost)
+quote = peal.ads.quote_boost(**boost)
 ```
 
 ```go Go
@@ -128,10 +128,7 @@ boost := &peal.NewBoost{
 	Payer:             peal.String("Example Bakery SAS"),
 }
 
-quote, err := client.Ads.QuoteBoost(ctx, &peal.QuoteBoostAdsRequest{
-	WorkspaceID: workspaceID,
-	Body:        boost,
-})
+quote, err := client.Ads.QuoteBoost(ctx, boost)
 ```
 
 ```ruby Ruby
@@ -152,13 +149,12 @@ boost = {
   payer: "Example Bakery SAS"
 }
 
-quote = peal.ads.quote_boost(workspace_id: workspace_id, **boost)
+quote = peal.ads.quote_boost(**boost)
 ```
 
 ```java Java
 import java.util.List;
 import social.peal.PealClient;
-import social.peal.resources.ads.requests.QuoteBoostAdsRequest;
 import social.peal.types.BoostAudience;
 import social.peal.types.BoostBudget;
 import social.peal.types.BoostBudgetKind;
@@ -190,14 +186,11 @@ NewBoost boost = NewBoost.builder()
     .payer("Example Bakery SAS")
     .build();
 
-BoostQuote quote = peal.ads().quoteBoost(workspaceId, QuoteBoostAdsRequest.builder()
-    .body(boost)
-    .build());
+BoostQuote quote = peal.ads().quoteBoost(boost);
 ```
 
 ```php PHP
 <?php
-use Peal\Ads\Requests\QuoteBoostAdsRequest;
 use Peal\PealClient;
 use Peal\Types\BoostAudience;
 use Peal\Types\BoostBudget;
@@ -220,7 +213,7 @@ $boost = new NewBoost([
     'payer' => 'Example Bakery SAS',
 ]);
 
-$quote = $peal->ads->quoteBoost($workspaceId, new QuoteBoostAdsRequest(['body' => $boost]));
+$quote = $peal->ads->quoteBoost($boost);
 ```
 
 ```csharp .NET
@@ -247,11 +240,7 @@ var boost = new NewBoost
     Payer = "Example Bakery SAS",
 };
 
-var quote = await peal.Ads.QuoteBoostAsync(new QuoteBoostAdsRequest
-{
-    WorkspaceId = workspaceId,
-    Body = boost,
-});
+var quote = await peal.Ads.QuoteBoostAsync(boost);
 ```
 
 ```rust Rust
@@ -282,11 +271,11 @@ let boost = NewBoost::builder()
     .payer("Example Bakery SAS")
     .build()?;
 
-let quote = peal.ads.quote_boost(workspace_id, &boost, None).await?;
+let quote = peal.ads.quote_boost(&boost, None).await?;
 ```
 
 ```bash curl
-curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts/quote \
+curl https://api.example.com/api/v1/ads/boosts/quote \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -339,7 +328,6 @@ Créez la mise en avant avec le corps du devis et une nouvelle clé :
 
 ```ts Node.js
 const created = await peal.ads.createBoost({
-  workspaceId,
   "idempotency-key": "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
   body: boost,
 });
@@ -347,7 +335,6 @@ const created = await peal.ads.createBoost({
 
 ```python Python
 created = peal.ads.create_boost(
-    workspace_id=workspace_id,
     idempotency_key="3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
     **boost,
 )
@@ -355,7 +342,6 @@ created = peal.ads.create_boost(
 
 ```go Go
 created, err := client.Ads.CreateBoost(ctx, &peal.CreateBoostAdsRequest{
-	WorkspaceID:    workspaceID,
 	IdempotencyKey: "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
 	Body:           boost,
 })
@@ -363,7 +349,6 @@ created, err := client.Ads.CreateBoost(ctx, &peal.CreateBoostAdsRequest{
 
 ```ruby Ruby
 created = peal.ads.create_boost(
-  workspace_id: workspace_id,
   idempotency_key: "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
   **boost
 )
@@ -373,7 +358,7 @@ created = peal.ads.create_boost(
 import social.peal.resources.ads.requests.CreateBoostAdsRequest;
 import social.peal.types.Boost;
 
-Boost created = peal.ads().createBoost(workspaceId, CreateBoostAdsRequest.builder()
+Boost created = peal.ads().createBoost(CreateBoostAdsRequest.builder()
     .idempotencyKey("3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61")
     .body(boost)
     .build());
@@ -382,7 +367,7 @@ Boost created = peal.ads().createBoost(workspaceId, CreateBoostAdsRequest.builde
 ```php PHP
 use Peal\Ads\Requests\CreateBoostAdsRequest;
 
-$created = $peal->ads->createBoost($workspaceId, new CreateBoostAdsRequest([
+$created = $peal->ads->createBoost(new CreateBoostAdsRequest([
     'idempotencyKey' => '3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61',
     'body' => $boost,
 ]));
@@ -391,7 +376,6 @@ $created = $peal->ads->createBoost($workspaceId, new CreateBoostAdsRequest([
 ```csharp .NET
 var created = await peal.Ads.CreateBoostAsync(new CreateBoostAdsRequest
 {
-    WorkspaceId = workspaceId,
     IdempotencyKey = "3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61",
     Body = boost,
 });
@@ -403,7 +387,6 @@ var created = await peal.Ads.CreateBoostAsync(new CreateBoostAdsRequest
 let created = peal
     .ads
     .create_boost(
-        workspace_id,
         &boost,
         Some(RequestOptions::new().additional_header(
             "Idempotency-Key",
@@ -414,7 +397,7 @@ let created = peal
 ```
 
 ```bash curl
-curl https://api.example.com/api/workspaces/$WORKSPACE_ID/ads/boosts \
+curl https://api.example.com/api/v1/ads/boosts \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 3c8e1f2a-6b4d-4e7a-9f10-2d5c7b9e4a61" \

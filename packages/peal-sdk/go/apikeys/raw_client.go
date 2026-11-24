@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListAPIKeysRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.APIKey], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/api-keys",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/api-keys"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/api-keys",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/api-keys"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -136,8 +129,7 @@ func (r *RawClient) Revoke(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/api-keys/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/api-keys/%v",
 		request.APIKeyID,
 	)
 	headers := internal.MergeHeaders(

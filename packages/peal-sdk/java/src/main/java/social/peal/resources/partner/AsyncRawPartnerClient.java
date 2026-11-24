@@ -71,7 +71,7 @@ public class AsyncRawPartnerClient {
     public CompletableFuture<PealClientHttpResponse<PartnerOverview>> account(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner");
+                .addPathSegments("api/v1/partner");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -184,7 +184,7 @@ public class AsyncRawPartnerClient {
             OverviewPartnerRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/overview");
+                .addPathSegments("api/v1/partner/overview");
         if (request.getBefore().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "before", request.getBefore().get(), false);
@@ -312,7 +312,7 @@ public class AsyncRawPartnerClient {
             ListWorkspacesPartnerRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/workspaces");
+                .addPathSegments("api/v1/partner/workspaces");
         if (request.getBefore().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "before", request.getBefore().get(), false);
@@ -432,7 +432,7 @@ public class AsyncRawPartnerClient {
             NewCustomerWorkspace request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/workspaces");
+                .addPathSegments("api/v1/partner/workspaces");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -571,7 +571,7 @@ public class AsyncRawPartnerClient {
             String workspaceId, GetWorkspacePartnerRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/workspaces")
+                .addPathSegments("api/v1/partner/workspaces")
                 .addPathSegment(PathSegments.validate(workspaceId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -694,7 +694,7 @@ public class AsyncRawPartnerClient {
             String workspaceId, DeleteWorkspacePartnerRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/workspaces")
+                .addPathSegments("api/v1/partner/workspaces")
                 .addPathSegment(PathSegments.validate(workspaceId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -832,7 +832,7 @@ public class AsyncRawPartnerClient {
             String workspaceId, CustomerWorkspaceChange request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/workspaces")
+                .addPathSegments("api/v1/partner/workspaces")
                 .addPathSegment(PathSegments.validate(workspaceId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -953,7 +953,7 @@ public class AsyncRawPartnerClient {
             String workspaceId, String channelId, ChannelMove request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/workspaces")
+                .addPathSegments("api/v1/partner/workspaces")
                 .addPathSegment(PathSegments.validate(workspaceId))
                 .addPathSegments("channels")
                 .addPathSegment(PathSegments.validate(channelId))

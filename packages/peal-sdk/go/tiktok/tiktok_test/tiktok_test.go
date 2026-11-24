@@ -89,8 +89,7 @@ func TestTiktokCreatorWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.CreatorTiktokRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.Tiktok.Creator(
 		context.TODO(),
@@ -101,5 +100,5 @@ func TestTiktokCreatorWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestTiktokCreatorWithWireMock", "GET", "/api/workspaces/workspaceId/channels/channelId/tiktok-creator", nil, 1)
+	VerifyRequestCount(t, "TestTiktokCreatorWithWireMock", "GET", "/api/v1/channels/channelId/tiktok-creator", nil, 1)
 }

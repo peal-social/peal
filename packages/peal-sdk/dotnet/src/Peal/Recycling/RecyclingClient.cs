@@ -35,10 +35,7 @@ public partial class RecyclingClient : IRecyclingClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/recycling",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/recycling",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -189,10 +186,7 @@ public partial class RecyclingClient : IRecyclingClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/recycling",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/recycling",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -246,6 +240,18 @@ public partial class RecyclingClient : IRecyclingClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -359,8 +365,7 @@ public partial class RecyclingClient : IRecyclingClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/recycling/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/recycling/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     QueryString = _queryString,
@@ -413,6 +418,18 @@ public partial class RecyclingClient : IRecyclingClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -502,8 +519,7 @@ public partial class RecyclingClient : IRecyclingClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/recycling/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/recycling/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     QueryString = _queryString,
@@ -530,6 +546,18 @@ public partial class RecyclingClient : IRecyclingClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -619,8 +647,7 @@ public partial class RecyclingClient : IRecyclingClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/recycling/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/recycling/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     Body = request,
@@ -676,6 +703,18 @@ public partial class RecyclingClient : IRecyclingClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -789,8 +828,7 @@ public partial class RecyclingClient : IRecyclingClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/recycling/{1}/resume",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/recycling/{0}/resume",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     Body = request,
@@ -846,6 +884,18 @@ public partial class RecyclingClient : IRecyclingClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -942,7 +992,7 @@ public partial class RecyclingClient : IRecyclingClient
     /// Lists the workspace's recycling rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with its next 3 posts to come. Pass the page's `nextCursor` as `cursor` for the next one. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Recycling.ListAsync(new ListRecyclingRequest { WorkspaceId = "workspaceId" });
+    /// await client.Recycling.ListAsync(new ListRecyclingRequest());
     /// </code></example>
     public WithRawResponseTask<RecyclingRulePage> ListAsync(
         ListRecyclingRequest request,
@@ -962,7 +1012,6 @@ public partial class RecyclingClient : IRecyclingClient
     /// await client.Recycling.CreateAsync(
     ///     new NewRecyclingRule
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Every = new RecyclingInterval { Count = 1, Unit = RecyclingUnit.Days },
     ///         PostId = "postId",
     ///     }
@@ -983,9 +1032,7 @@ public partial class RecyclingClient : IRecyclingClient
     /// Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
     /// </summary>
     /// <example><code>
-    /// await client.Recycling.GetAsync(
-    ///     new GetRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.Recycling.GetAsync(new GetRecyclingRequest { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask<RecyclingRule> GetAsync(
         GetRecyclingRequest request,
@@ -1002,9 +1049,7 @@ public partial class RecyclingClient : IRecyclingClient
     /// Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
     /// </summary>
     /// <example><code>
-    /// await client.Recycling.DeleteAsync(
-    ///     new DeleteRecyclingRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.Recycling.DeleteAsync(new DeleteRecyclingRequest { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask DeleteAsync(
         DeleteRecyclingRequest request,
@@ -1019,9 +1064,7 @@ public partial class RecyclingClient : IRecyclingClient
     /// Changes a rule's variants, its `count` or `until` (null takes it away), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A post already made keeps what it says. An ended rule changes no more (RecyclingRuleEnded): resume it. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
     /// </summary>
     /// <example><code>
-    /// await client.Recycling.UpdateAsync(
-    ///     new RecyclingRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.Recycling.UpdateAsync(new RecyclingRuleChange { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask<RecyclingRule> UpdateAsync(
         RecyclingRuleChange request,
@@ -1038,9 +1081,7 @@ public partial class RecyclingClient : IRecyclingClient
     /// Sets a paused rule going again, or one that ended for a reason that can be put right (`planLimit`, `contentRejected`, `noChannels`, `queueFull`, `sourceWithdrawn`), with other `variants` if given: its next post is due at the first due instant after now. Any other ended rule is RecyclingRuleEnded. Its source must be scheduled, publishing or out (PostNotRecyclable `draft`, `awaitingApproval` or `cancelled` otherwise); an ended rule whose source another rule repeats now is PostNotRecyclable `repeating`, and one the workspace has no room for is TooManyRecyclingRules. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
     /// </summary>
     /// <example><code>
-    /// await client.Recycling.ResumeAsync(
-    ///     new RecyclingResume { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.Recycling.ResumeAsync(new RecyclingResume { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask<RecyclingRule> ResumeAsync(
         RecyclingResume request,

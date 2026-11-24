@@ -15,14 +15,14 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId")
+                    .WithPath("/api/v1/webhooks/endpointId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Webhooks.DeleteAsync(
-                new DeleteWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+                new DeleteWebhooksRequest { EndpointId = "endpointId" }
             )
         );
     }
@@ -34,14 +34,14 @@ public class DeleteTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId")
+                    .WithPath("/api/v1/webhooks/endpointId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
         Assert.DoesNotThrowAsync(async () =>
             await Client.Webhooks.DeleteAsync(
-                new DeleteWebhooksRequest { WorkspaceId = "workspaceId", EndpointId = "endpointId" }
+                new DeleteWebhooksRequest { EndpointId = "endpointId" }
             )
         );
     }

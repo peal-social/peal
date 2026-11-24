@@ -99,7 +99,7 @@ const send = Command.make(
       yes: flags.yes,
     });
 
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     if (!flags.json) {
       yield* Console.log(
@@ -116,7 +116,7 @@ const send = Command.make(
           onNone: () => ({}),
           onSome: (key) => ({ "idempotency-key": key }),
         }),
-        params: { workspaceId: workspace.id },
+
         payload: { commentId: flags.commentId, text: flags.text },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -145,13 +145,13 @@ const show = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("inbox.privateReply.show")(function* showing(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const found = yield* client.inboxMessages
       .getPrivateReply({
+        headers: {},
         params: {
           privateReplyId: flags.privateReplyId,
-          workspaceId: workspace.id,
         },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -198,13 +198,13 @@ const confirm = Command.make(
         )
       : Effect.void;
 
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const settled = yield* client.inboxMessages
       .confirmPrivateReply({
+        headers: {},
         params: {
           privateReplyId: flags.privateReplyId,
-          workspaceId: workspace.id,
         },
         payload: { went: flags.sent },
       })

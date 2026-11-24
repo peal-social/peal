@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record PartnerChange
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("accentColor")]
     public string? AccentColor { get; set; }
 

@@ -554,7 +554,7 @@ public class SearchTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/search")
+                    .WithPath("/api/v1/posts/search")
                     .UsingGet()
             )
             .RespondWith(
@@ -564,9 +564,7 @@ public class SearchTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.SearchAsync(
-            new SearchPostsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Posts.SearchAsync(new SearchPostsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -657,7 +655,7 @@ public class SearchTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/search")
+                    .WithPath("/api/v1/posts/search")
                     .UsingGet()
             )
             .RespondWith(
@@ -667,9 +665,7 @@ public class SearchTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Posts.SearchAsync(
-            new SearchPostsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Posts.SearchAsync(new SearchPostsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

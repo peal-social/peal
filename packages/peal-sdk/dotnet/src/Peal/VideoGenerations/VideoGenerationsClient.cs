@@ -33,10 +33,7 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media/videos/generations",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media/videos/generations",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -87,6 +84,18 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -175,10 +184,7 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/media/videos/generations",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/media/videos/generations",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -232,6 +238,18 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -357,8 +375,7 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/media/videos/generations/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/media/videos/generations/{0}",
                         ValueConvert.ToPathParameterString(request.GenerationId)
                     ),
                     QueryString = _queryString,
@@ -411,6 +428,18 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -483,9 +512,7 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
     /// Lists the videos the workspace asked for, newest first, 50 at most, only those with `status` when given. Needs assistant:use.
     /// </summary>
     /// <example><code>
-    /// await client.VideoGenerations.ListAsync(
-    ///     new ListVideoGenerationsRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.VideoGenerations.ListAsync(new ListVideoGenerationsRequest());
     /// </code></example>
     public WithRawResponseTask<VideoGenerations> ListAsync(
         ListVideoGenerationsRequest request,
@@ -503,12 +530,7 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
     /// </summary>
     /// <example><code>
     /// await client.VideoGenerations.CreateAsync(
-    ///     new VideoGenerationRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Aspect = ImageAspect.Square,
-    ///         Prompt = "prompt",
-    ///     }
+    ///     new VideoGenerationRequest { Aspect = ImageAspect.Square, Prompt = "prompt" }
     /// );
     /// </code></example>
     public WithRawResponseTask<VideoGeneration> CreateAsync(
@@ -527,7 +549,7 @@ public partial class VideoGenerationsClient : IVideoGenerationsClient
     /// </summary>
     /// <example><code>
     /// await client.VideoGenerations.GetAsync(
-    ///     new GetVideoGenerationsRequest { WorkspaceId = "workspaceId", GenerationId = "generationId" }
+    ///     new GetVideoGenerationsRequest { GenerationId = "generationId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<VideoGeneration> GetAsync(

@@ -2,7 +2,11 @@
 // no limit, exactly as before billing existed.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Schema } from "effect";
-import { BillingSchema, WorkspaceUsageReportSchema } from "peal-contract";
+import {
+  BillingSchema,
+  WorkspaceUsageReportSchema,
+  forWorkspace,
+} from "peal-contract";
 
 import {
   bodyOf,
@@ -22,10 +26,9 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const owner = yield* signedUp("unbilled");
         const workspaceId = yield* workspaceOf(owner, "Unbilled");
 
-        const reply = yield* app.request(
-          `/api/workspaces/${workspaceId}/billing`,
-          { headers: { cookie: owner.cookies } }
-        );
+        const reply = yield* app.request(`/api/v1/billing`, {
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+        });
 
         assert.strictEqual(reply.status, 200);
 
@@ -44,14 +47,11 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         });
 
         // No ceiling to set where nothing bills.
-        const ceiling = yield* app.request(
-          `/api/workspaces/${workspaceId}/billing/ceilings/x`,
-          {
-            body: { cents: 500 },
-            headers: { cookie: owner.cookies },
-            method: "PUT",
-          }
-        );
+        const ceiling = yield* app.request(`/api/v1/billing/ceilings/x`, {
+          body: { cents: 500 },
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+          method: "PUT",
+        });
 
         assert.deepInclude(ceiling.body, { _tag: "BillingNotEnabled" });
 
@@ -59,21 +59,18 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         // no workspace turns them on.
         assert.isNull(billing.x ?? null);
 
-        const xReads = yield* app.request(
-          `/api/workspaces/${workspaceId}/billing/x`,
-          {
-            body: { reads: true },
-            headers: { cookie: owner.cookies },
-            method: "PUT",
-          }
-        );
+        const xReads = yield* app.request(`/api/v1/billing/x`, {
+          body: { reads: true },
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+          method: "PUT",
+        });
 
         assert.deepInclude(xReads.body, { _tag: "BillingNotEnabled" });
 
         // Its usage, counted all the same, without a plan.
         const usage = yield* app.request(
-          `/api/workspaces/${workspaceId}/usage?from=2026-11-01&to=2026-11-07`,
-          { headers: { cookie: owner.cookies } }
+          `/api/v1/usage?from=2026-11-01&to=2026-11-07`,
+          { headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) } }
         );
 
         assert.strictEqual(usage.status, 200);
@@ -107,10 +104,9 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         }
 
         // The assistant keeps the server's own daily quota.
-        const assistant = yield* app.request(
-          `/api/workspaces/${workspaceId}/assistant`,
-          { headers: { cookie: owner.cookies } }
-        );
+        const assistant = yield* app.request(`/api/v1/assistant`, {
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+        });
 
         assert.strictEqual(
           (yield* bodyOf(Schema.Struct({ dailyLimit: Schema.Int }), assistant))
@@ -152,23 +148,22 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "180 seconds" })(
         const owner = yield* signedUp("billing-key");
         const workspaceId = yield* workspaceOf(owner, "BillingKey");
 
-        const key = yield* app.request(
-          `/api/workspaces/${workspaceId}/api-keys`,
-          {
-            body: { name: "posts only", permissions: ["post:read"] },
-            headers: { cookie: owner.cookies },
-          }
-        );
+        const key = yield* app.request(`/api/v1/api-keys`, {
+          body: { name: "posts only", permissions: ["post:read"] },
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+        });
 
         const { key: secret } = yield* bodyOf(
           Schema.Struct({ key: Schema.String }),
           key
         );
 
-        const refused = yield* app.request(
-          `/api/workspaces/${workspaceId}/billing`,
-          { headers: { authorization: `Bearer ${secret}` } }
-        );
+        const refused = yield* app.request(`/api/v1/billing`, {
+          headers: {
+            authorization: `Bearer ${secret}`,
+            ...forWorkspace(workspaceId),
+          },
+        });
 
         assert.strictEqual(refused.status, 403);
       })

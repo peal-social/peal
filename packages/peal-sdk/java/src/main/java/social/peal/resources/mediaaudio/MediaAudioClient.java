@@ -30,47 +30,42 @@ public class MediaAudioClient {
     /**
      * Asks the provider the workspace chose for voice-overs (<code>PUT .../assistant/models/speech</code>) to speak the text, in <code>voice</code> when given, and answers with the audio as a new file of the media library, marked <code>aiGenerated</code>, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
      */
-    public Media createVoiceover(String workspaceId, VoiceoverRequest request) {
-        return this.rawClient.createVoiceover(workspaceId, request).body();
+    public Media createVoiceover(VoiceoverRequest request) {
+        return this.rawClient.createVoiceover(request).body();
     }
 
     /**
      * Asks the provider the workspace chose for voice-overs (<code>PUT .../assistant/models/speech</code>) to speak the text, in <code>voice</code> when given, and answers with the audio as a new file of the media library, marked <code>aiGenerated</code>, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
      */
-    public Media createVoiceover(String workspaceId, VoiceoverRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .createVoiceover(workspaceId, request, requestOptions)
-                .body();
+    public Media createVoiceover(VoiceoverRequest request, RequestOptions requestOptions) {
+        return this.rawClient.createVoiceover(request, requestOptions).body();
     }
 
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public Transcript transcribe(String workspaceId, String mediaId) {
-        return this.rawClient.transcribe(workspaceId, mediaId).body();
+    public Transcript transcribe(String mediaId) {
+        return this.rawClient.transcribe(mediaId).body();
     }
 
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public Transcript transcribe(String workspaceId, String mediaId, RequestOptions requestOptions) {
-        return this.rawClient.transcribe(workspaceId, mediaId, requestOptions).body();
+    public Transcript transcribe(String mediaId, RequestOptions requestOptions) {
+        return this.rawClient.transcribe(mediaId, requestOptions).body();
     }
 
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public Transcript transcribe(String workspaceId, String mediaId, TranscriptionRequest request) {
-        return this.rawClient.transcribe(workspaceId, mediaId, request).body();
+    public Transcript transcribe(String mediaId, TranscriptionRequest request) {
+        return this.rawClient.transcribe(mediaId, request).body();
     }
 
     /**
      * Sends a ready audio or video file of the media library, of at most 25000000 bytes, to the provider the workspace chose for transcripts (<code>PUT .../assistant/models/transcription</code>), and answers with what is said in it. With <code>saveAsDescription</code>, the transcript becomes the file's description when it fits one (<code>descriptionSaved</code>). Only the workspace's own provider transcribes, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. Neither the file nor the transcript is logged, and the transcript is kept only as the description asked for. Needs assistant:use and media:read, and media:upload to save the description.
      */
-    public Transcript transcribe(
-            String workspaceId, String mediaId, TranscriptionRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .transcribe(workspaceId, mediaId, request, requestOptions)
-                .body();
+    public Transcript transcribe(String mediaId, TranscriptionRequest request, RequestOptions requestOptions) {
+        return this.rawClient.transcribe(mediaId, request, requestOptions).body();
     }
 }

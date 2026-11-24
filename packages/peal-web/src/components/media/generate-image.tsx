@@ -5,7 +5,7 @@ import { Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { SparklesIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { ImageAspectSchema } from "peal-contract";
+import { ImageAspectSchema, forWorkspace } from "peal-contract";
 import type { AssistantStatus, ImageAspect, Media } from "peal-contract";
 import { Alert, AlertTitle } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
@@ -118,7 +118,7 @@ const GenerateDialog = ({
 
     startTransition(async () => {
       const exit = await generate({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { aspect, prompt },
         reactivityKeys: [mediaKey(workspaceId)],
       });

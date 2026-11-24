@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { Atom } from "effect/reactivity";
-import { maxFeedPageSize } from "peal-contract";
+import { maxFeedPageSize, forWorkspace } from "peal-contract";
 import type { Feed, FeedPage } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -37,7 +37,7 @@ export const workspaceFeeds = Atom.family((workspaceId: string) =>
       PealApi.use((client) =>
         everyFeed((cursor) =>
           client.feeds.list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query:
               cursor === undefined
                 ? { limit: maxFeedPageSize }
@@ -52,7 +52,8 @@ export const workspaceFeeds = Atom.family((workspaceId: string) =>
 /** A feed's newest items, never what they said. */
 export const feedItems = (workspaceId: string, feedId: string) =>
   PealApi.query("feeds", "items", {
-    params: { feedId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { feedId },
     reactivityKeys: feedsChanged(workspaceId),
   });
 

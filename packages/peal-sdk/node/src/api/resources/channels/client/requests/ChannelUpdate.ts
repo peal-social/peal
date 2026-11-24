@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId",
  *         label: null
  *     }
  */
 export interface ChannelUpdate {
-    workspaceId: string;
     channelId: string;
     label: string | null;
 }

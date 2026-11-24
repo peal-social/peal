@@ -7,9 +7,6 @@ namespace Peal;
 public record SetConversationReadInboxMessagesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ConversationId { get; set; }
 
     [JsonPropertyName("read")]

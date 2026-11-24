@@ -537,13 +537,13 @@ const standing = (boost: Boost, state: Boost["state"]): Boost => ({
 // A member's change to a boost: done once, however often it is asked.
 const control = (
   studio: Studio,
-  params: { readonly boostId: string; readonly workspaceId: string },
+  params: { readonly boostId: string },
   action: "pause" | "stop"
 ) =>
   Effect.gen(function* controlled() {
     yield* controlling;
 
-    const world = yield* worldOf(studio, params.workspaceId);
+    const world = yield* worldOf(studio, (yield* CurrentMember).workspaceId);
     const boost = yield* findBoost(world, params.boostId);
     const wanted = action === "pause" ? "paused" : "stopped";
 
@@ -581,25 +581,29 @@ const report = <Row>(
 export const adsGroupLive = (studio: Studio) =>
   HttpApiBuilder.group(Api, "ads", (handlers) =>
     handlers.handleAll({
-      auditTrail: ({ params }) =>
-        allowed("ads:authorize").pipe(
-          Effect.andThen(worldOf(studio, params.workspaceId)),
-          Effect.map((world) => ({
-            entries: world.boosts.map((boost, index) => ({
-              accountId: boost.accountId,
-              action: "boostRequested" as const,
-              amounts: {
-                budget: boost.budget.amount,
-                committed: boost.committed,
-              },
-              at: boost.createdAt,
-              boostId: boost.id,
-              by: { id: ownerId, kind: "user" as const, viaClient: null },
-              currency: boost.currency,
-              id: `0190f3a0-0000-7000-8000-0000000ae${String(index + 1).padStart(3, "0")}`,
-            })),
-            nextCursor: null,
-          }))
+      auditTrail: () =>
+        CurrentMember.pipe(
+          Effect.flatMap(({ workspaceId }) =>
+            allowed("ads:authorize").pipe(
+              Effect.andThen(worldOf(studio, workspaceId)),
+              Effect.map((world) => ({
+                entries: world.boosts.map((boost, index) => ({
+                  accountId: boost.accountId,
+                  action: "boostRequested" as const,
+                  amounts: {
+                    budget: boost.budget.amount,
+                    committed: boost.committed,
+                  },
+                  at: boost.createdAt,
+                  boostId: boost.id,
+                  by: { id: ownerId, kind: "user" as const, viaClient: null },
+                  currency: boost.currency,
+                  id: `0190f3a0-0000-7000-8000-0000000ae${String(index + 1).padStart(3, "0")}`,
+                })),
+                nextCursor: null,
+              }))
+            )
+          )
         ),
       completeConnect: () =>
         inPerson("ads:manage").pipe(
@@ -613,11 +617,16 @@ export const adsGroupLive = (studio: Studio) =>
         inPerson("ads:manage").pipe(
           Effect.andThen(Effect.fail(new AdConnectionNotFound()))
         ),
-      createBoost: ({ headers, params, payload }) =>
+      createBoost: ({ headers, payload }) =>
         Effect.gen(function* create() {
           const key = headers["idempotency-key"];
           const body = JSON.stringify(payload);
-          const before = yield* worldOf(studio, params.workspaceId);
+
+          const before = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const first = before.keys[key];
 
           // The same key and the same request answer the boost it made;
@@ -632,7 +641,7 @@ export const adsGroupLive = (studio: Studio) =>
 
           const { account, quote } = yield* checkBoost(
             studio,
-            params.workspaceId,
+            (yield* CurrentMember).workspaceId,
             payload
           );
 
@@ -678,7 +687,11 @@ export const adsGroupLive = (studio: Studio) =>
         Effect.gen(function* getAccount() {
           yield* allowed("ads:read");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const account = yield* findAccount(world, params.accountId);
 
           return {
@@ -690,7 +703,11 @@ export const adsGroupLive = (studio: Studio) =>
         Effect.gen(function* getBoost() {
           yield* allowed("ads:read");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const boost = yield* findBoost(world, params.boostId);
 
           return {
@@ -716,16 +733,24 @@ export const adsGroupLive = (studio: Studio) =>
                 : [],
           };
         }),
-      listAccounts: ({ params }) =>
-        allowed("ads:read").pipe(
-          Effect.andThen(worldOf(studio, params.workspaceId)),
-          Effect.map(({ accounts }) => accounts)
+      listAccounts: () =>
+        CurrentMember.pipe(
+          Effect.flatMap(({ workspaceId }) =>
+            allowed("ads:read").pipe(
+              Effect.andThen(worldOf(studio, workspaceId)),
+              Effect.map(({ accounts }) => accounts)
+            )
+          )
         ),
       listAds: ({ params, query }) =>
         Effect.gen(function* listAds() {
           yield* allowed("ads:read");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const account = yield* findAccount(world, params.accountId);
 
           const rows =
@@ -747,22 +772,30 @@ export const adsGroupLive = (studio: Studio) =>
 
           return report(account, query, rows);
         }),
-      listBoosts: ({ params, query }) =>
-        allowed("ads:read").pipe(
-          Effect.andThen(worldOf(studio, params.workspaceId)),
-          Effect.map(({ boosts }) => ({
-            boosts: boosts.filter(
-              ({ postId }) =>
-                query.postId === undefined || postId === query.postId
-            ),
-            nextCursor: null,
-          }))
+      listBoosts: ({ query }) =>
+        CurrentMember.pipe(
+          Effect.flatMap(({ workspaceId }) =>
+            allowed("ads:read").pipe(
+              Effect.andThen(worldOf(studio, workspaceId)),
+              Effect.map(({ boosts }) => ({
+                boosts: boosts.filter(
+                  ({ postId }) =>
+                    query.postId === undefined || postId === query.postId
+                ),
+                nextCursor: null,
+              }))
+            )
+          )
         ),
       listCampaigns: ({ params, query }) =>
         Effect.gen(function* listCampaigns() {
           yield* allowed("ads:read");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const account = yield* findAccount(world, params.accountId);
 
           const google = {
@@ -806,17 +839,23 @@ export const adsGroupLive = (studio: Studio) =>
 
           return report(account, query, rows);
         }),
-      listConnections: ({ params }) =>
-        allowed("ads:read").pipe(
-          Effect.as(
-            params.workspaceId === studioWorkspaceId ? [connection] : []
+      listConnections: () =>
+        CurrentMember.pipe(
+          Effect.flatMap(({ workspaceId }) =>
+            allowed("ads:read").pipe(
+              Effect.as(workspaceId === studioWorkspaceId ? [connection] : [])
+            )
           )
         ),
       listInsights: ({ params, query }) =>
         Effect.gen(function* listInsights() {
           yield* allowed("ads:read");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const account = yield* findAccount(world, params.accountId);
 
           const rows =
@@ -833,7 +872,12 @@ export const adsGroupLive = (studio: Studio) =>
       postPerformance: ({ params }) =>
         Effect.gen(function* postPerformance() {
           const member = yield* allowed("ads:read");
-          const world = yield* worldOf(studio, params.workspaceId);
+
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const [account] = world.accounts;
           const promoted = params.postId === boostablePostId;
 
@@ -860,9 +904,13 @@ export const adsGroupLive = (studio: Studio) =>
                 : [],
           };
         }),
-      quoteBoost: ({ params, payload }) =>
-        checkBoost(studio, params.workspaceId, payload).pipe(
-          Effect.map(({ quote }) => quote)
+      quoteBoost: ({ payload }) =>
+        CurrentMember.pipe(
+          Effect.flatMap(({ workspaceId }) =>
+            checkBoost(studio, workspaceId, payload).pipe(
+              Effect.map(({ quote }) => quote)
+            )
+          )
         ),
       reachableAccounts: () =>
         inPerson("ads:manage").pipe(
@@ -872,7 +920,11 @@ export const adsGroupLive = (studio: Studio) =>
         Effect.gen(function* removeAccount() {
           yield* allowed("ads:manage");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const account = yield* findAccount(world, params.accountId);
 
           yield* changeAds(studio, (ads) => ({
@@ -885,7 +937,11 @@ export const adsGroupLive = (studio: Studio) =>
         Effect.gen(function* resume() {
           yield* allowed("ads:spend");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const boost = yield* findBoost(world, params.boostId);
 
           if (boost.state !== "paused") {
@@ -923,7 +979,11 @@ export const adsGroupLive = (studio: Studio) =>
         Effect.gen(function* setSpending() {
           yield* inPerson("ads:authorize");
 
-          const world = yield* worldOf(studio, params.workspaceId);
+          const world = yield* worldOf(
+            studio,
+            (yield* CurrentMember).workspaceId
+          );
+
           const account = yield* findAccount(world, params.accountId);
           const ceiling = payload.monthlyCeiling;
 

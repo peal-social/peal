@@ -88,7 +88,7 @@ const list = Command.make(
 
     const page = yield* client.articles
       .list({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(input.limit, {
             onNone: () => ({}),
@@ -128,11 +128,12 @@ const show = Command.make(
   "show",
   { articleId: articleArgument, json: jsonFlag, workspace: workspaceFlag },
   Effect.fn("articles.show")(function* showArticle(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const article = yield* client.articles
       .get({
-        params: { articleId: input.articleId, workspaceId: workspace.id },
+        headers: {},
+        params: { articleId: input.articleId },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -246,7 +247,7 @@ const create = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("articles.create")(function* createArticle(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
     const at = yield* instantOf(input.at);
 
     const fields = {
@@ -267,7 +268,7 @@ const create = Command.make(
 
     const article = yield* client.articles
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: input.schedule ? { ...fields, schedule: time } : fields,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -298,12 +299,13 @@ const schedule = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("articles.schedule")(function* scheduleArticle(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
     const at = yield* instantOf(input.at);
 
     const article = yield* client.articles
       .schedule({
-        params: { articleId: input.articleId, workspaceId: workspace.id },
+        headers: {},
+        params: { articleId: input.articleId },
         payload: {
           ...Option.match(at, {
             onNone: () => ({}),
@@ -336,13 +338,13 @@ const changing = (name: "retry" | "unschedule", description: string) =>
     name,
     { articleId: articleArgument, json: jsonFlag, workspace: workspaceFlag },
     Effect.fn(`articles.${name}`)(function* change(input) {
-      const { client, url, workspace } = yield* inWorkspace(input.workspace);
-      const params = { articleId: input.articleId, workspaceId: workspace.id };
+      const { client, url } = yield* inWorkspace(input.workspace);
+      const params = { articleId: input.articleId };
 
       const article = yield* (
         name === "retry"
-          ? client.articles.retry({ params })
-          : client.articles.unschedule({ params })
+          ? client.articles.retry({ headers: {}, params })
+          : client.articles.unschedule({ headers: {}, params })
       ).pipe(Effect.mapError(explain(url)));
 
       if (input.json) {
@@ -378,7 +380,7 @@ const unpublish = Command.make(
       yes: input.yes,
     });
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     if (!input.json) {
       yield* Console.log(
@@ -390,7 +392,8 @@ const unpublish = Command.make(
 
     const article = yield* client.articles
       .unpublish({
-        params: { articleId: input.articleId, workspaceId: workspace.id },
+        headers: {},
+        params: { articleId: input.articleId },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -423,7 +426,7 @@ const remove = Command.make(
       yes: input.yes,
     });
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     yield* confirmed({
       question: `Delete article ${input.articleId} from Peal? A post on its site stays there.`,
@@ -432,7 +435,8 @@ const remove = Command.make(
 
     yield* client.articles
       .delete({
-        params: { articleId: input.articleId, workspaceId: workspace.id },
+        headers: {},
+        params: { articleId: input.articleId },
       })
       .pipe(Effect.mapError(explain(url)));
 

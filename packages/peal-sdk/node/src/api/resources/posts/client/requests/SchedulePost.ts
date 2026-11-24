@@ -3,7 +3,6 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         at: "at",
  *         channelIds: ["channelIds"],
@@ -11,7 +10,6 @@
  *     }
  */
 export interface SchedulePost {
-    workspaceId: string;
     postId: string;
     at: string;
     channelIds: string[];

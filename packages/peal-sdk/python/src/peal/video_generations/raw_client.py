@@ -10,6 +10,7 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -34,7 +35,6 @@ class RawVideoGenerationsClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         status: typing.Optional[VideoGenerationStatus] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -44,8 +44,6 @@ class RawVideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         status : typing.Optional[VideoGenerationStatus]
 
         request_options : typing.Optional[RequestOptions]
@@ -57,7 +55,7 @@ class RawVideoGenerationsClient:
             VideoGenerations
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/videos/generations",
+            "api/v1/media/videos/generations",
             method="GET",
             params={
                 "status": status,
@@ -74,6 +72,17 @@ class RawVideoGenerationsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -129,7 +138,6 @@ class RawVideoGenerationsClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         aspect: ImageAspect,
         prompt: str,
@@ -142,8 +150,6 @@ class RawVideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         prompt : str
@@ -164,7 +170,7 @@ class RawVideoGenerationsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/videos/generations",
+            "api/v1/media/videos/generations",
             method="POST",
             json={
                 "aspect": aspect,
@@ -188,6 +194,17 @@ class RawVideoGenerationsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -275,15 +292,13 @@ class RawVideoGenerationsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get(
-        self, workspace_id: str, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[VideoGeneration]:
         """
         Reads where a video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         generation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -295,7 +310,7 @@ class RawVideoGenerationsClient:
             VideoGeneration
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/videos/generations/{encode_path_param(generation_id)}",
+            f"api/v1/media/videos/generations/{encode_path_param(generation_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -309,6 +324,17 @@ class RawVideoGenerationsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -369,7 +395,6 @@ class AsyncRawVideoGenerationsClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         status: typing.Optional[VideoGenerationStatus] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -379,8 +404,6 @@ class AsyncRawVideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         status : typing.Optional[VideoGenerationStatus]
 
         request_options : typing.Optional[RequestOptions]
@@ -392,7 +415,7 @@ class AsyncRawVideoGenerationsClient:
             VideoGenerations
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/videos/generations",
+            "api/v1/media/videos/generations",
             method="GET",
             params={
                 "status": status,
@@ -409,6 +432,17 @@ class AsyncRawVideoGenerationsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -464,7 +498,6 @@ class AsyncRawVideoGenerationsClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         aspect: ImageAspect,
         prompt: str,
@@ -477,8 +510,6 @@ class AsyncRawVideoGenerationsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         prompt : str
@@ -499,7 +530,7 @@ class AsyncRawVideoGenerationsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/videos/generations",
+            "api/v1/media/videos/generations",
             method="POST",
             json={
                 "aspect": aspect,
@@ -523,6 +554,17 @@ class AsyncRawVideoGenerationsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -610,15 +652,13 @@ class AsyncRawVideoGenerationsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, generation_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[VideoGeneration]:
         """
         Reads where a video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         generation_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -630,7 +670,7 @@ class AsyncRawVideoGenerationsClient:
             VideoGeneration
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/videos/generations/{encode_path_param(generation_id)}",
+            f"api/v1/media/videos/generations/{encode_path_param(generation_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -644,6 +684,17 @@ class AsyncRawVideoGenerationsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

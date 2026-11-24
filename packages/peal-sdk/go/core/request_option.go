@@ -30,6 +30,7 @@ type RequestOptions struct {
 	DisableRetries             bool
 	Token                      string
 	TokenFunc                  func() (string, error)
+	Workspace                  *string
 }
 
 // NewRequestOptions returns a new *RequestOptions value.
@@ -60,6 +61,9 @@ func (r *RequestOptions) ToHeader() http.Header {
 		}
 	}
 	header.Set("Peal-Version", fmt.Sprintf("%v", "2026-11-09"))
+	if r.Workspace != nil {
+		header.Set("Peal-Workspace", fmt.Sprintf("%v", *r.Workspace))
+	}
 	return header
 }
 
@@ -174,4 +178,13 @@ type TokenFuncOption struct {
 
 func (t *TokenFuncOption) applyRequestOptions(opts *RequestOptions) {
 	opts.TokenFunc = t.TokenFunc
+}
+
+// WorkspaceOption implements the RequestOption interface.
+type WorkspaceOption struct {
+	Workspace *string
+}
+
+func (w *WorkspaceOption) applyRequestOptions(opts *RequestOptions) {
+	opts.Workspace = w.Workspace
 }

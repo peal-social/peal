@@ -56,12 +56,10 @@ class ChannelDefaultsClient
      * Example:
      * ```php
      * $client->channelDefaults->get(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -75,14 +73,14 @@ class ChannelDefaultsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $channelId, ?array $options = null): ?ChannelDefaults
+    public function get(string $channelId, ?array $options = null): ?ChannelDefaults
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/default-options",
+                    path: "api/v1/channels/{$channelId}/default-options",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -113,7 +111,6 @@ class ChannelDefaultsClient
      * Example:
      * ```php
      * $client->channelDefaults->set(
-     *     'workspaceId',
      *     'channelId',
      *     new NewChannelDefaults([
      *         'options' => TargetOptions::youtube(new YouTubeOptions([])),
@@ -121,7 +118,6 @@ class ChannelDefaultsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param NewChannelDefaults $request
      * @param ?array{
@@ -136,14 +132,14 @@ class ChannelDefaultsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function set(string $workspaceId, string $channelId, NewChannelDefaults $request, ?array $options = null): ?ChannelDefaults
+    public function set(string $channelId, NewChannelDefaults $request, ?array $options = null): ?ChannelDefaults
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/default-options",
+                    path: "api/v1/channels/{$channelId}/default-options",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -175,12 +171,10 @@ class ChannelDefaultsClient
      * Example:
      * ```php
      * $client->channelDefaults->clear(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -193,14 +187,14 @@ class ChannelDefaultsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function clear(string $workspaceId, string $channelId, ?array $options = null): void
+    public function clear(string $channelId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/default-options",
+                    path: "api/v1/channels/{$channelId}/default-options",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

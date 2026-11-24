@@ -53,16 +53,12 @@ class RawAdsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def status(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[AdsStatus]:
+    def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[AdsStatus]:
         """
         Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -72,7 +68,7 @@ class RawAdsClient:
             AdsStatus
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads",
+            "api/v1/ads",
             method="GET",
             request_options=request_options,
         )
@@ -86,6 +82,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -140,15 +147,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_connections(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[AdConnection]]:
         """
         Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -158,7 +163,7 @@ class RawAdsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections",
+            "api/v1/ads/connections",
             method="GET",
             request_options=request_options,
         )
@@ -172,6 +177,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -226,15 +242,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def connect(
-        self, workspace_id: str, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None
+        self, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[AdSignIn]:
         """
         Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         request_options : typing.Optional[RequestOptions]
@@ -249,7 +263,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(network)}",
+            f"api/v1/ads/connections/{encode_path_param(network)}",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -263,6 +277,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -318,7 +343,6 @@ class RawAdsClient:
 
     def complete_connect(
         self,
-        workspace_id: str,
         network: AdNetwork,
         *,
         state: str,
@@ -331,8 +355,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         state : str
@@ -353,7 +375,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(network)}/callback",
+            f"api/v1/ads/connections/{encode_path_param(network)}/callback",
             method="POST",
             json={
                 "code": code,
@@ -376,6 +398,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -452,15 +485,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def reachable_accounts(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[ReachableAdAccount]]:
         """
         Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -472,7 +503,7 @@ class RawAdsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(connection_id)}/accounts",
+            f"api/v1/ads/connections/{encode_path_param(connection_id)}/accounts",
             method="GET",
             request_options=request_options,
         )
@@ -486,6 +517,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -552,7 +594,6 @@ class RawAdsClient:
 
     def connect_accounts(
         self,
-        workspace_id: str,
         connection_id: str,
         *,
         external_ids: typing.Sequence[str],
@@ -563,8 +604,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         external_ids : typing.Sequence[str]
@@ -581,7 +620,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(connection_id)}/accounts",
+            f"api/v1/ads/connections/{encode_path_param(connection_id)}/accounts",
             method="POST",
             json={
                 "externalIds": external_ids,
@@ -602,6 +641,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -667,15 +717,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def disconnect(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (`AdAccountBusy`): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -686,13 +734,24 @@ class RawAdsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(connection_id)}",
+            f"api/v1/ads/connections/{encode_path_param(connection_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -758,15 +817,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_accounts(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[AdAccount]]:
         """
         Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -776,7 +833,7 @@ class RawAdsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts",
+            "api/v1/ads/accounts",
             method="GET",
             request_options=request_options,
         )
@@ -790,6 +847,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -844,15 +912,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[AdSpending]:
         """
         Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -864,7 +930,7 @@ class RawAdsClient:
             AdSpending
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -878,6 +944,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -932,15 +1009,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def remove_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (`AdAccountBusy`), as a paused campaign may run again. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -951,13 +1026,24 @@ class RawAdsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1024,7 +1110,6 @@ class RawAdsClient:
 
     def set_spending(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         enabled: bool,
@@ -1036,8 +1121,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         enabled : bool
@@ -1053,7 +1136,7 @@ class RawAdsClient:
             AdSpending
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/spending",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/spending",
             method="PUT",
             json={
                 "enabled": enabled,
@@ -1077,6 +1160,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1154,7 +1248,6 @@ class RawAdsClient:
 
     def list_campaigns(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -1166,8 +1259,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -1183,7 +1274,7 @@ class RawAdsClient:
             AdCampaignReport
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/campaigns",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/campaigns",
             method="GET",
             params={
                 "from": from_,
@@ -1267,7 +1358,6 @@ class RawAdsClient:
 
     def list_ads(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -1280,8 +1370,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -1299,7 +1387,7 @@ class RawAdsClient:
             AdReport
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/ads",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/ads",
             method="GET",
             params={
                 "from": from_,
@@ -1384,7 +1472,6 @@ class RawAdsClient:
 
     def list_insights(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -1396,8 +1483,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -1413,7 +1498,7 @@ class RawAdsClient:
             AdInsightReport
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/insights",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/insights",
             method="GET",
             params={
                 "from": from_,
@@ -1496,15 +1581,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post_performance(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[PostAdPerformance]:
         """
         Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1516,7 +1599,7 @@ class RawAdsClient:
             PostAdPerformance
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/posts/{encode_path_param(post_id)}",
+            f"api/v1/ads/posts/{encode_path_param(post_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1530,6 +1613,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1585,7 +1679,6 @@ class RawAdsClient:
 
     def quote_boost(
         self,
-        workspace_id: str,
         *,
         account_id: str,
         audience: BoostAudience,
@@ -1605,8 +1698,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         audience : BoostAudience
@@ -1642,7 +1733,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/quote",
+            "api/v1/ads/boosts/quote",
             method="POST",
             json={
                 "accountId": account_id,
@@ -1661,9 +1752,6 @@ class RawAdsClient:
                 "specialAdCategory": special_ad_category,
                 "startsAt": starts_at,
             },
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -1677,6 +1765,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1754,7 +1853,6 @@ class RawAdsClient:
 
     def list_boosts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         post_id: typing.Optional[str] = None,
@@ -1765,8 +1863,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         post_id : typing.Optional[str]
@@ -1780,7 +1876,7 @@ class RawAdsClient:
             BoostPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts",
+            "api/v1/ads/boosts",
             method="GET",
             params={
                 "cursor": cursor,
@@ -1798,6 +1894,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1853,7 +1960,6 @@ class RawAdsClient:
 
     def create_boost(
         self,
-        workspace_id: str,
         *,
         idempotency_key: str,
         account_id: str,
@@ -1874,8 +1980,6 @@ class RawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         idempotency_key : str
 
         account_id : str
@@ -1913,7 +2017,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts",
+            "api/v1/ads/boosts",
             method="POST",
             json={
                 "accountId": account_id,
@@ -1949,6 +2053,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2036,15 +2151,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[BoostDetail]:
         """
         Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2056,7 +2169,7 @@ class RawAdsClient:
             BoostDetail
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -2070,6 +2183,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2124,15 +2248,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def pause_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Boost]:
         """
         Pauses a boost that runs or may run: its campaign is told to pause, and the boost is `paused` once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2147,7 +2269,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}/pause",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}/pause",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2161,6 +2283,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2237,15 +2370,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def resume_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Boost]:
         """
         **Spends money.** Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2260,7 +2391,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}/resume",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}/resume",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2274,6 +2405,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2350,15 +2492,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def stop_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Boost]:
         """
         Stops a boost for good: its campaign is told to pause, and the boost is `stopped` once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2373,7 +2513,7 @@ class RawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}/stop",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}/stop",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2387,6 +2527,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2463,19 +2614,13 @@ class RawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def audit_trail(
-        self,
-        workspace_id: str,
-        *,
-        cursor: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, cursor: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[AdAuditPage]:
         """
         Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
@@ -2487,7 +2632,7 @@ class RawAdsClient:
             AdAuditPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/audit",
+            "api/v1/ads/audit",
             method="GET",
             params={
                 "cursor": cursor,
@@ -2504,6 +2649,17 @@ class RawAdsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2562,16 +2718,12 @@ class AsyncRawAdsClient:
     def __init__(self, *, client_wrapper: AsyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    async def status(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[AdsStatus]:
+    async def status(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[AdsStatus]:
         """
         Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2581,7 +2733,7 @@ class AsyncRawAdsClient:
             AdsStatus
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads",
+            "api/v1/ads",
             method="GET",
             request_options=request_options,
         )
@@ -2595,6 +2747,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2649,15 +2812,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_connections(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[AdConnection]]:
         """
         Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -2667,7 +2828,7 @@ class AsyncRawAdsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections",
+            "api/v1/ads/connections",
             method="GET",
             request_options=request_options,
         )
@@ -2681,6 +2842,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2735,15 +2907,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def connect(
-        self, workspace_id: str, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None
+        self, network: AdNetwork, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[AdSignIn]:
         """
         Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         request_options : typing.Optional[RequestOptions]
@@ -2758,7 +2928,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(network)}",
+            f"api/v1/ads/connections/{encode_path_param(network)}",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -2772,6 +2942,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2827,7 +3008,6 @@ class AsyncRawAdsClient:
 
     async def complete_connect(
         self,
-        workspace_id: str,
         network: AdNetwork,
         *,
         state: str,
@@ -2840,8 +3020,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         network : AdNetwork
 
         state : str
@@ -2862,7 +3040,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(network)}/callback",
+            f"api/v1/ads/connections/{encode_path_param(network)}/callback",
             method="POST",
             json={
                 "code": code,
@@ -2885,6 +3063,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -2961,15 +3150,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def reachable_accounts(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[ReachableAdAccount]]:
         """
         Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2981,7 +3168,7 @@ class AsyncRawAdsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(connection_id)}/accounts",
+            f"api/v1/ads/connections/{encode_path_param(connection_id)}/accounts",
             method="GET",
             request_options=request_options,
         )
@@ -2995,6 +3182,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3061,7 +3259,6 @@ class AsyncRawAdsClient:
 
     async def connect_accounts(
         self,
-        workspace_id: str,
         connection_id: str,
         *,
         external_ids: typing.Sequence[str],
@@ -3072,8 +3269,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         external_ids : typing.Sequence[str]
@@ -3090,7 +3285,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(connection_id)}/accounts",
+            f"api/v1/ads/connections/{encode_path_param(connection_id)}/accounts",
             method="POST",
             json={
                 "externalIds": external_ids,
@@ -3111,6 +3306,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3176,15 +3382,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def disconnect(
-        self, workspace_id: str, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, connection_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (`AdAccountBusy`): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         connection_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3195,13 +3399,24 @@ class AsyncRawAdsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/connections/{encode_path_param(connection_id)}",
+            f"api/v1/ads/connections/{encode_path_param(connection_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3267,15 +3482,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_accounts(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[AdAccount]]:
         """
         Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -3285,7 +3498,7 @@ class AsyncRawAdsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts",
+            "api/v1/ads/accounts",
             method="GET",
             request_options=request_options,
         )
@@ -3299,6 +3512,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3353,15 +3577,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[AdSpending]:
         """
         Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3373,7 +3595,7 @@ class AsyncRawAdsClient:
             AdSpending
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -3387,6 +3609,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3441,15 +3674,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def remove_account(
-        self, workspace_id: str, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, account_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (`AdAccountBusy`), as a paused campaign may run again. Needs ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3460,13 +3691,24 @@ class AsyncRawAdsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3533,7 +3775,6 @@ class AsyncRawAdsClient:
 
     async def set_spending(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         enabled: bool,
@@ -3545,8 +3786,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         enabled : bool
@@ -3562,7 +3801,7 @@ class AsyncRawAdsClient:
             AdSpending
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/spending",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/spending",
             method="PUT",
             json={
                 "enabled": enabled,
@@ -3586,6 +3825,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -3663,7 +3913,6 @@ class AsyncRawAdsClient:
 
     async def list_campaigns(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -3675,8 +3924,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -3692,7 +3939,7 @@ class AsyncRawAdsClient:
             AdCampaignReport
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/campaigns",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/campaigns",
             method="GET",
             params={
                 "from": from_,
@@ -3776,7 +4023,6 @@ class AsyncRawAdsClient:
 
     async def list_ads(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -3789,8 +4035,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -3808,7 +4052,7 @@ class AsyncRawAdsClient:
             AdReport
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/ads",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/ads",
             method="GET",
             params={
                 "from": from_,
@@ -3893,7 +4137,6 @@ class AsyncRawAdsClient:
 
     async def list_insights(
         self,
-        workspace_id: str,
         account_id: str,
         *,
         from_: typing.Optional[CalendarDay] = None,
@@ -3905,8 +4148,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         from_ : typing.Optional[CalendarDay]
@@ -3922,7 +4163,7 @@ class AsyncRawAdsClient:
             AdInsightReport
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/accounts/{encode_path_param(account_id)}/insights",
+            f"api/v1/ads/accounts/{encode_path_param(account_id)}/insights",
             method="GET",
             params={
                 "from": from_,
@@ -4005,15 +4246,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post_performance(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[PostAdPerformance]:
         """
         Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4025,7 +4264,7 @@ class AsyncRawAdsClient:
             PostAdPerformance
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/posts/{encode_path_param(post_id)}",
+            f"api/v1/ads/posts/{encode_path_param(post_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -4039,6 +4278,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4094,7 +4344,6 @@ class AsyncRawAdsClient:
 
     async def quote_boost(
         self,
-        workspace_id: str,
         *,
         account_id: str,
         audience: BoostAudience,
@@ -4114,8 +4363,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         account_id : str
 
         audience : BoostAudience
@@ -4151,7 +4398,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/quote",
+            "api/v1/ads/boosts/quote",
             method="POST",
             json={
                 "accountId": account_id,
@@ -4170,9 +4417,6 @@ class AsyncRawAdsClient:
                 "specialAdCategory": special_ad_category,
                 "startsAt": starts_at,
             },
-            headers={
-                "content-type": "application/json",
-            },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
         )
@@ -4186,6 +4430,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4263,7 +4518,6 @@ class AsyncRawAdsClient:
 
     async def list_boosts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         post_id: typing.Optional[str] = None,
@@ -4274,8 +4528,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         post_id : typing.Optional[str]
@@ -4289,7 +4541,7 @@ class AsyncRawAdsClient:
             BoostPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts",
+            "api/v1/ads/boosts",
             method="GET",
             params={
                 "cursor": cursor,
@@ -4307,6 +4559,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4362,7 +4625,6 @@ class AsyncRawAdsClient:
 
     async def create_boost(
         self,
-        workspace_id: str,
         *,
         idempotency_key: str,
         account_id: str,
@@ -4383,8 +4645,6 @@ class AsyncRawAdsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         idempotency_key : str
 
         account_id : str
@@ -4422,7 +4682,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts",
+            "api/v1/ads/boosts",
             method="POST",
             json={
                 "accountId": account_id,
@@ -4458,6 +4718,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4545,15 +4816,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[BoostDetail]:
         """
         Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4565,7 +4834,7 @@ class AsyncRawAdsClient:
             BoostDetail
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -4579,6 +4848,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4633,15 +4913,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def pause_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Boost]:
         """
         Pauses a boost that runs or may run: its campaign is told to pause, and the boost is `paused` once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4656,7 +4934,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}/pause",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}/pause",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -4670,6 +4948,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4746,15 +5035,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def resume_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Boost]:
         """
         **Spends money.** Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4769,7 +5056,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}/resume",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}/resume",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -4783,6 +5070,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4859,15 +5157,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def stop_boost(
-        self, workspace_id: str, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, boost_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Boost]:
         """
         Stops a boost for good: its campaign is told to pause, and the boost is `stopped` once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         boost_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -4882,7 +5178,7 @@ class AsyncRawAdsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/boosts/{encode_path_param(boost_id)}/stop",
+            f"api/v1/ads/boosts/{encode_path_param(boost_id)}/stop",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -4896,6 +5192,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -4972,19 +5279,13 @@ class AsyncRawAdsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def audit_trail(
-        self,
-        workspace_id: str,
-        *,
-        cursor: typing.Optional[str] = None,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, cursor: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[AdAuditPage]:
         """
         Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
@@ -4996,7 +5297,7 @@ class AsyncRawAdsClient:
             AdAuditPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/ads/audit",
+            "api/v1/ads/audit",
             method="GET",
             params={
                 "cursor": cursor,
@@ -5013,6 +5314,17 @@ class AsyncRawAdsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

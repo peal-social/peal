@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         byteSize: 1000000,
  *         contentType: "contentType"
  *     }
  */
 export interface NewUpload {
-    workspaceId: string;
     altText?: string | null;
     byteSize: number;
     contentType: string;

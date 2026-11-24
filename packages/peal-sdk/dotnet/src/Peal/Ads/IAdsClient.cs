@@ -6,7 +6,6 @@ public partial interface IAdsClient
     /// Says what this server offers of ads (`off`, `read` or `spend`) and on which networks. Needs ads:read.
     /// </summary>
     WithRawResponseTask<AdsStatus> StatusAsync(
-        StatusAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -15,7 +14,6 @@ public partial interface IAdsClient
     /// Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<AdConnection>> ListConnectionsAsync(
-        ListConnectionsAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -69,7 +67,6 @@ public partial interface IAdsClient
     /// Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<AdAccount>> ListAccountsAsync(
-        ListAccountsAdsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -141,7 +138,7 @@ public partial interface IAdsClient
     /// Checks a boost as `createBoost` would, and says what it would commit and the room it has, without reserving or sending anything: show it before the last step. A total budget commits its amount; a daily budget commits, for each calendar week of the account's zone (Sunday to Saturday) the run touches, its amount and 75% more for each day of the run in that week, which the network may spend on any day, and never more than 7 times its amount, the most the network spends in a week. Needs ads:spend.
     /// </summary>
     WithRawResponseTask<BoostQuote> QuoteBoostAsync(
-        QuoteBoostAdsRequest request,
+        NewBoost request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

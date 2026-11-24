@@ -58,7 +58,7 @@ public class ResolveTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/comments/commentId")
+                    .WithPath("/api/v1/posts/postId/comments/commentId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -73,7 +73,6 @@ public class ResolveTest : BaseMockServerTest
         var response = await Client.Review.ResolveAsync(
             new ResolveReviewRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 CommentId = "commentId",
                 Resolved = true,
@@ -131,7 +130,7 @@ public class ResolveTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/comments/commentId")
+                    .WithPath("/api/v1/posts/postId/comments/commentId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -146,7 +145,6 @@ public class ResolveTest : BaseMockServerTest
         var response = await Client.Review.ResolveAsync(
             new ResolveReviewRequest
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 CommentId = "commentId",
                 Resolved = true,

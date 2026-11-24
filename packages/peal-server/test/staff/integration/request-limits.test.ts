@@ -5,6 +5,7 @@
 import { assert, layer } from "@effect/vitest";
 import { Config, Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -112,10 +113,12 @@ layer(Layer.mergeAll(BillingApp, MigratedSqlLive), {
       );
 
       // Its key's first request reads the new limit.
-      const keyed = yield* app.request(
-        `/api/workspaces/${workspaceId}/channels`,
-        { headers: { authorization: `Bearer ${key}` } }
-      );
+      const keyed = yield* app.request(`/api/v1/channels`, {
+        headers: {
+          authorization: `Bearer ${key}`,
+          ...forWorkspace(workspaceId),
+        },
+      });
 
       assert.strictEqual(
         keyed.headers.get("ratelimit-policy"),

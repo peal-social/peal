@@ -95,5 +95,5 @@ func TestCredentialGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestCredentialGetWithWireMock", "GET", "/api/credential", nil, 1)
+	VerifyRequestCount(t, "TestCredentialGetWithWireMock", "GET", "/api/v1/credential", nil, 1)
 }

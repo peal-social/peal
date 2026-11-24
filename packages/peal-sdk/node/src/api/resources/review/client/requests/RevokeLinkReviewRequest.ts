@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         linkId: "linkId"
  *     }
  */
 export interface RevokeLinkReviewRequest {
-    workspaceId: string;
     linkId: string;
 }

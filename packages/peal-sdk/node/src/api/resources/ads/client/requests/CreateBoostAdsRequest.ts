@@ -6,7 +6,6 @@ import * as Peal from "../../../../index.js";
  * @example
  *     {
  *         "idempotency-key": "idempotency-key",
- *         workspaceId: "workspaceId",
  *         body: {
  *             accountId: "accountId",
  *             audience: {
@@ -27,7 +26,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface CreateBoostAdsRequest {
-    workspaceId: string;
     "idempotency-key": string;
     body: Peal.NewBoost;
 }

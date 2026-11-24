@@ -66,7 +66,7 @@ public class AsyncRawPartnerUsageClient {
             GetPartnerUsageRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/partner/usage");
+                .addPathSegments("api/v1/partner/usage");
         if (request.getBefore().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "before", request.getBefore().get(), false);

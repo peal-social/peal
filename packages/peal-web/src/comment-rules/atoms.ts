@@ -1,3 +1,5 @@
+import { forWorkspace } from "peal-contract";
+
 import { PealApi } from "#api/client.ts";
 
 // The queries and mutations of a workspace's comment rules. A change
@@ -11,7 +13,7 @@ export const commentRulesChanged = (workspaceId: string) => [
 /** The workspace's comment rules: a workspace keeps 100 going at most. */
 export const workspaceCommentRules = (workspaceId: string) =>
   PealApi.query("inboxRules", "listCommentRules", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: { limit: 100 },
     reactivityKeys: commentRulesChanged(workspaceId),
   });

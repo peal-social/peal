@@ -59,12 +59,9 @@ class ShortLinksClient
      *
      * Example:
      * ```php
-     * $client->shortLinks->status(
-     *     'workspaceId',
-     * );
+     * $client->shortLinks->status();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -77,14 +74,14 @@ class ShortLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function status(string $workspaceId, ?array $options = null): ?ShortLinkStatus
+    public function status(?array $options = null): ?ShortLinkStatus
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/short-links/status",
+                    path: "api/v1/short-links/status",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -115,14 +112,12 @@ class ShortLinksClient
      * Example:
      * ```php
      * $client->shortLinks->setDefault(
-     *     'workspaceId',
      *     new ShortLinkSettings([
      *         'byDefault' => true,
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ShortLinkSettings $request
      * @param ?array{
      *   baseUrl?: string,
@@ -136,14 +131,14 @@ class ShortLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function setDefault(string $workspaceId, ShortLinkSettings $request, ?array $options = null): ?ShortLinkStatus
+    public function setDefault(ShortLinkSettings $request, ?array $options = null): ?ShortLinkStatus
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/short-links/settings",
+                    path: "api/v1/short-links/settings",
                     method: HttpMethod::PUT,
                     body: $request,
                 ),
@@ -175,12 +170,10 @@ class ShortLinksClient
      * Example:
      * ```php
      * $client->shortLinks->list(
-     *     'workspaceId',
      *     new ListShortLinksRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListShortLinksRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -194,7 +187,7 @@ class ShortLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListShortLinksRequest $request = new ListShortLinksRequest(), ?array $options = null): ?ShortLinkPage
+    public function list(ListShortLinksRequest $request = new ListShortLinksRequest(), ?array $options = null): ?ShortLinkPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -220,7 +213,7 @@ class ShortLinksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/short-links",
+                    path: "api/v1/short-links",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -252,13 +245,11 @@ class ShortLinksClient
      * Example:
      * ```php
      * $client->shortLinks->get(
-     *     'workspaceId',
      *     'linkId',
      *     new GetShortLinksRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $linkId
      * @param GetShortLinksRequest $request
      * @param ?array{
@@ -273,7 +264,7 @@ class ShortLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $linkId, GetShortLinksRequest $request = new GetShortLinksRequest(), ?array $options = null): ?ShortLinkReport
+    public function get(string $linkId, GetShortLinksRequest $request = new GetShortLinksRequest(), ?array $options = null): ?ShortLinkReport
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -287,7 +278,7 @@ class ShortLinksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/short-links/{$linkId}",
+                    path: "api/v1/short-links/{$linkId}",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

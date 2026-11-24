@@ -30,9 +30,37 @@ public class AsyncTiktokClient {
     /**
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
-    public CompletableFuture<TikTokAccount> creator(String workspaceId, String channelId) {
+    public CompletableFuture<TikTokAccount> creator(String channelId) {
+        CompletableFuture<PealClientHttpResponse<TikTokAccount>> rawFuture = this.rawClient.creator(channelId);
+        CompletableFuture<TikTokAccount> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
+     */
+    public CompletableFuture<TikTokAccount> creator(String channelId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<TikTokAccount>> rawFuture =
-                this.rawClient.creator(workspaceId, channelId);
+                this.rawClient.creator(channelId, requestOptions);
+        CompletableFuture<TikTokAccount> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
+     */
+    public CompletableFuture<TikTokAccount> creator(String channelId, CreatorTiktokRequest request) {
+        CompletableFuture<PealClientHttpResponse<TikTokAccount>> rawFuture = this.rawClient.creator(channelId, request);
         CompletableFuture<TikTokAccount> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -46,41 +74,9 @@ public class AsyncTiktokClient {
      * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
      */
     public CompletableFuture<TikTokAccount> creator(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
+            String channelId, CreatorTiktokRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<TikTokAccount>> rawFuture =
-                this.rawClient.creator(workspaceId, channelId, requestOptions);
-        CompletableFuture<TikTokAccount> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
-     */
-    public CompletableFuture<TikTokAccount> creator(
-            String workspaceId, String channelId, CreatorTiktokRequest request) {
-        CompletableFuture<PealClientHttpResponse<TikTokAccount>> rawFuture =
-                this.rawClient.creator(workspaceId, channelId, request);
-        CompletableFuture<TikTokAccount> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
-     */
-    public CompletableFuture<TikTokAccount> creator(
-            String workspaceId, String channelId, CreatorTiktokRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<TikTokAccount>> rawFuture =
-                this.rawClient.creator(workspaceId, channelId, request, requestOptions);
+                this.rawClient.creator(channelId, request, requestOptions);
         CompletableFuture<TikTokAccount> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

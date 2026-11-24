@@ -12,6 +12,7 @@ import {
   PlanLimitReached,
   PostContentInvalid,
   UnknownChannels,
+  forWorkspace,
 } from "peal-contract";
 import type { BulkPost, Member, PostContent, PostRefusal } from "peal-contract";
 
@@ -146,8 +147,8 @@ describe("the bulk endpoint", () => {
           const editor = yield* as("editor", workspaceId);
 
           const answered = yield* editor.posts.bulk({
-            headers: {},
-            params: { workspaceId },
+            headers: { ...forWorkspace(workspaceId) },
+
             payload: {
               posts: [
                 thread(mastodon, "The anemones."),
@@ -210,8 +211,12 @@ describe("the bulk endpoint", () => {
           const workspaceId = yield* freshWorkspace;
           const channel = yield* connect(workspaceId, "mastodon");
           const editor = yield* as("editor", workspaceId);
-          const params = { workspaceId };
-          const headers = { "idempotency-key": "synthetic-bulk-key" };
+          const headers = forWorkspace(workspaceId);
+
+          const withKey = {
+            ...headers,
+            "idempotency-key": "synthetic-bulk-key",
+          };
 
           const posts = [
             at(channel, "A synthetic series.", "2026-06-16T08:00:00Z"),
@@ -227,8 +232,7 @@ describe("the bulk endpoint", () => {
           ] satisfies BulkPost[];
 
           const response = yield* editor.posts.bulk({
-            headers,
-            params,
+            headers: withKey,
             payload: { posts },
             responseMode: "response-only",
           });
@@ -237,8 +241,7 @@ describe("the bulk endpoint", () => {
           assert.strictEqual(response.status, 200);
 
           const first = yield* editor.posts.bulk({
-            headers,
-            params,
+            headers: withKey,
             payload: { posts },
           });
 
@@ -288,7 +291,7 @@ describe("the bulk endpoint", () => {
 
           // Two posts, however often the request is sent.
           const listed = yield* editor.posts.list({
-            params,
+            headers,
             query: {
               from: utc("2026-06-16T00:00:00Z"),
               to: utc("2026-06-18T00:00:00Z"),
@@ -310,8 +313,12 @@ describe("the bulk endpoint", () => {
           const workspaceId = yield* freshWorkspace;
           const channel = yield* connect(workspaceId, "mastodon");
           const editor = yield* as("editor", workspaceId);
-          const params = { workspaceId };
-          const headers = { "idempotency-key": "synthetic-bulk-key" };
+          const headers = forWorkspace(workspaceId);
+
+          const withKey = {
+            ...headers,
+            "idempotency-key": "synthetic-bulk-key",
+          };
 
           const posts = [
             at(channel, "A synthetic series.", "2026-06-16T08:00:00Z"),
@@ -319,14 +326,13 @@ describe("the bulk endpoint", () => {
             at(channel, "a".repeat(501), "2026-06-16T08:00:00Z"),
           ] satisfies BulkPost[];
 
-          yield* editor.posts.bulk({ headers, params, payload: { posts } });
+          yield* editor.posts.bulk({ headers: withKey, payload: { posts } });
 
           // An item changed under the request's key is a mistake, there
           // only; one that made nothing the first time, fixed since, is
           // made.
           const changed = yield* editor.posts.bulk({
-            headers,
-            params,
+            headers: withKey,
             payload: {
               posts: [
                 ...posts.slice(0, 1),
@@ -353,14 +359,12 @@ describe("the bulk endpoint", () => {
           };
 
           const own = yield* editor.posts.bulk({
-            headers: {},
-            params,
+            headers,
             payload: { posts: [keyed] },
           });
 
           const again = yield* editor.posts.bulk({
-            headers: { "idempotency-key": "another-request" },
-            params,
+            headers: { ...headers, "idempotency-key": "another-request" },
             payload: {
               posts: [
                 at(channel, "A synthetic filler.", "2026-06-20T08:00:00Z"),
@@ -390,7 +394,7 @@ describe("the bulk endpoint", () => {
           const workspaceId = yield* freshWorkspace;
           const channel = yield* connect(workspaceId, "mastodon");
           const editor = yield* as("editor", workspaceId);
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const keyed = at(
             channel,
@@ -404,15 +408,14 @@ describe("the bulk endpoint", () => {
           const contributor = yield* as("contributor", workspaceId);
 
           const denied = yield* contributor.posts
-            .bulk({ headers: {}, params, payload: { posts } })
+            .bulk({ headers, payload: { posts } })
             .pipe(Effect.flip);
 
           assert.instanceOf(denied, Forbidden);
 
           const tooMany = yield* editor.posts
             .bulk({
-              headers: {},
-              params,
+              headers,
               payload: {
                 posts: Array.from({ length: maxBulkPosts + 1 }, () => keyed),
               },
@@ -422,7 +425,7 @@ describe("the bulk endpoint", () => {
           assert.strictEqual(tooMany._tag, "SchemaError");
 
           const none = yield* editor.posts
-            .bulk({ headers: {}, params, payload: { posts: [] } })
+            .bulk({ headers, payload: { posts: [] } })
             .pipe(Effect.flip);
 
           assert.strictEqual(none._tag, "SchemaError");
@@ -440,8 +443,8 @@ describe("the bulk endpoint", () => {
         const editor = yield* as("editor", workspaceId);
 
         const answered = yield* editor.posts.bulk({
-          headers: {},
-          params: { workspaceId },
+          headers: { ...forWorkspace(workspaceId) },
+
           payload: {
             posts: [
               at(channel, "June, one.", "2026-06-16T08:00:00Z"),
@@ -482,7 +485,7 @@ describe("the import endpoint", () => {
           const channel = yield* connect(workspaceId, "mastodon");
           const other = yield* connect(workspaceId, "mastodon");
           const editor = yield* as("editor", workspaceId);
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const good = [
             "text,channels,at,time_zone",
@@ -491,7 +494,7 @@ describe("the import endpoint", () => {
           ].join("\n");
 
           const scheduledIn = editor.posts.list({
-            params,
+            headers,
             query: {
               from: utc("2026-12-01T00:00:00Z"),
               to: utc("2026-12-03T00:00:00Z"),
@@ -500,8 +503,7 @@ describe("the import endpoint", () => {
 
           // A dry run checks, and makes nothing.
           const dry = yield* editor.posts.import({
-            headers: {},
-            params,
+            headers,
             payload: { csv: good, dryRun: true },
           });
 
@@ -517,8 +519,7 @@ describe("the import endpoint", () => {
 
           // One row at fault keeps the whole file from being made.
           const bad = yield* editor.posts.import({
-            headers: {},
-            params,
+            headers,
             payload: {
               csv: [
                 good,
@@ -556,11 +557,13 @@ describe("the import endpoint", () => {
           assert.lengthOf(yield* scheduledIn, 0);
 
           // Every row valid: each is made, its local time read in its zone.
-          const headers = { "idempotency-key": "synthetic-import-key" };
+          const withKey = {
+            ...headers,
+            "idempotency-key": "synthetic-import-key",
+          };
 
           const made = yield* editor.posts.import({
-            headers,
-            params,
+            headers: withKey,
             payload: { csv: good },
           });
 
@@ -593,8 +596,12 @@ describe("the import endpoint", () => {
           const workspaceId = yield* freshWorkspace;
           const channel = yield* connect(workspaceId, "mastodon");
           const editor = yield* as("editor", workspaceId);
-          const params = { workspaceId };
-          const headers = { "idempotency-key": "synthetic-import-key" };
+          const headers = forWorkspace(workspaceId);
+
+          const withKey = {
+            ...headers,
+            "idempotency-key": "synthetic-import-key",
+          };
 
           const good = [
             "text,channels,at,time_zone",
@@ -603,7 +610,7 @@ describe("the import endpoint", () => {
           ].join("\n");
 
           const scheduledIn = editor.posts.list({
-            params,
+            headers,
             query: {
               from: utc("2026-12-01T00:00:00Z"),
               to: utc("2026-12-03T00:00:00Z"),
@@ -611,15 +618,13 @@ describe("the import endpoint", () => {
           });
 
           const made = yield* editor.posts.import({
-            headers,
-            params,
+            headers: withKey,
             payload: { csv: good },
           });
 
           // The file sent again under its key answers the same posts.
           const sentAgain = yield* editor.posts.import({
-            headers,
-            params,
+            headers: withKey,
             payload: { csv: good },
           });
 
@@ -636,8 +641,7 @@ describe("the import endpoint", () => {
           // A row changed under the file's key is a mistake: found by the
           // check, so nothing is made, the rows after it included.
           const changed = yield* editor.posts.import({
-            headers,
-            params,
+            headers: withKey,
             payload: {
               csv: [
                 "text,channels,at,time_zone",
@@ -658,8 +662,7 @@ describe("the import endpoint", () => {
 
           // Without its key, it is the same content sent twice.
           const twice = yield* editor.posts.import({
-            headers: {},
-            params,
+            headers,
             payload: { csv: good },
           });
 
@@ -674,8 +677,7 @@ describe("the import endpoint", () => {
           // A file that is no list of posts.
           const unreadable = yield* editor.posts
             .import({
-              headers: {},
-              params,
+              headers,
               payload: { csv: "text,channels,at,colour\na,b,now,red" },
             })
             .pipe(Effect.flip);
@@ -689,8 +691,7 @@ describe("the import endpoint", () => {
 
           const denied = yield* contributor.posts
             .import({
-              headers: {},
-              params,
+              headers,
               payload: { csv: good, dryRun: true },
             })
             .pipe(Effect.flip);
@@ -708,18 +709,17 @@ describe("the import endpoint", () => {
         const workspaceId = yield* freshWorkspace;
         const channel = yield* connect(workspaceId, "mastodon");
         const editor = yield* as("editor", workspaceId);
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
 
         const importing = (rows: readonly string[]) =>
           editor.posts.import({
-            headers: {},
-            params,
+            headers,
             payload: {
               csv: ["text,channels,at,idempotency_key", ...rows].join("\n"),
             },
           });
 
-        const made = editor.posts.search({ params, query: {} });
+        const made = editor.posts.search({ headers, query: {} });
 
         // The second row says what the first says, an hour later.
         const repeated = yield* importing([

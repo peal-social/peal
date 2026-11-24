@@ -35,14 +35,10 @@ impl QueuesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.queues.list(&"workspaceId".to_string(), None).await;
+    ///     client.queues.list(None).await;
     /// }
     /// ```
-    pub async fn list(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Vec<Queue>, ApiError> {
+    pub async fn list(&self, options: Option<RequestOptions>) -> Result<Vec<Queue>, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -51,13 +47,7 @@ impl QueuesClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/queues", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/queues", None, None, options)
             .await
     }
 
@@ -86,7 +76,6 @@ impl QueuesClient {
     ///     client
     ///         .queues
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &QueueDetails {
     ///                 name: "name".to_string(),
     ///                 slots: vec![QueueSlot {
@@ -103,7 +92,6 @@ impl QueuesClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &QueueDetails,
         options: Option<RequestOptions>,
     ) -> Result<Queue, ApiError> {
@@ -118,7 +106,7 @@ impl QueuesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/queues", workspace_id),
+                "api/v1/queues",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -148,15 +136,11 @@ impl QueuesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .queues
-    ///         .get(&"workspaceId".to_string(), &"queueId".to_string(), None)
-    ///         .await;
+    ///     client.queues.get(&"queueId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         queue_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Queue, ApiError> {
@@ -170,7 +154,7 @@ impl QueuesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/queues/{}", workspace_id, queue_id),
+                &format!("api/v1/queues/{}", queue_id),
                 None,
                 None,
                 options,
@@ -203,7 +187,6 @@ impl QueuesClient {
     ///     client
     ///         .queues
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"queueId".to_string(),
     ///             &QueueDetails {
     ///                 name: "name".to_string(),
@@ -221,7 +204,6 @@ impl QueuesClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         queue_id: &str,
         request: &QueueDetails,
         options: Option<RequestOptions>,
@@ -236,7 +218,7 @@ impl QueuesClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!("api/workspaces/{}/queues/{}", workspace_id, queue_id),
+                &format!("api/v1/queues/{}", queue_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -266,15 +248,11 @@ impl QueuesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .queues
-    ///         .delete(&"workspaceId".to_string(), &"queueId".to_string(), None)
-    ///         .await;
+    ///     client.queues.delete(&"queueId".to_string(), None).await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         queue_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -288,7 +266,7 @@ impl QueuesClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/queues/{}", workspace_id, queue_id),
+                &format!("api/v1/queues/{}", queue_id),
                 None,
                 None,
                 options,
@@ -321,7 +299,6 @@ impl QueuesClient {
     ///     client
     ///         .queues
     ///         .slots(
-    ///             &"workspaceId".to_string(),
     ///             &"queueId".to_string(),
     ///             &SlotsQueryRequest {
     ///                 ..Default::default()
@@ -333,7 +310,6 @@ impl QueuesClient {
     /// ```
     pub async fn slots(
         &self,
-        workspace_id: &str,
         queue_id: &str,
         request: &SlotsQueryRequest,
         options: Option<RequestOptions>,
@@ -348,7 +324,7 @@ impl QueuesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/queues/{}/slots", workspace_id, queue_id),
+                &format!("api/v1/queues/{}/slots", queue_id),
                 None,
                 QueryBuilder::new()
                     .string("count", request.count.clone())
@@ -380,15 +356,11 @@ impl QueuesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .queues
-    ///         .reshuffle(&"workspaceId".to_string(), &"queueId".to_string(), None)
-    ///         .await;
+    ///     client.queues.reshuffle(&"queueId".to_string(), None).await;
     /// }
     /// ```
     pub async fn reshuffle(
         &self,
-        workspace_id: &str,
         queue_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<QueueReshuffle, ApiError> {
@@ -403,10 +375,7 @@ impl QueuesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/queues/{}/reshuffle",
-                    workspace_id, queue_id
-                ),
+                &format!("api/v1/queues/{}/reshuffle", queue_id),
                 None,
                 None,
                 options,

@@ -7,9 +7,6 @@ namespace Peal;
 public record ConfirmMessageInboxMessagesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string MessageId { get; set; }
 
     [JsonPropertyName("sent")]

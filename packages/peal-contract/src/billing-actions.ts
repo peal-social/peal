@@ -1,4 +1,3 @@
-import { Schema } from "effect";
 import {
   HttpApiEndpoint,
   HttpApiGroup,
@@ -43,8 +42,7 @@ import { TransferRefused } from "./transfer-refused.ts";
 import { TrialUnavailable } from "./trial-unavailable.ts";
 import { WithdrawalUnavailable } from "./withdrawal-unavailable.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
-
-const workspaceParams = { workspaceId: Schema.String };
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * Ordering, cancelling and withdrawing, for members with billing:manage in
@@ -67,7 +65,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
         PlanTooSmall,
         TrialUnavailable,
       ],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       payload: OrderPayloadSchema,
       success: OrderSchema,
     }).annotateMerge(
@@ -87,7 +85,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
         Forbidden,
         NothingToCancel,
       ],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       payload: CancelPayloadSchema,
       success: CancellationSchema,
     }).annotateMerge(
@@ -106,7 +104,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
         Forbidden,
         WithdrawalUnavailable,
       ],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       success: WithdrawalPreviewSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -124,7 +122,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
         Forbidden,
         WithdrawalUnavailable,
       ],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       success: WithdrawalSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -137,7 +135,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
   .add(
     HttpApiEndpoint.post("reduce", "/reduction", {
       error: [BillingNotEnabled, Forbidden, ReductionRefused],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       payload: ReductionPayloadSchema,
       success: ReductionSchema,
     }).annotateMerge(
@@ -151,7 +149,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
   .add(
     HttpApiEndpoint.post("offerTransfer", "/transfer", {
       error: [BillingNotEnabled, Forbidden, TransferRefused],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       payload: TransferPayloadSchema,
       success: BillingTransferSchema,
     }).annotateMerge(
@@ -171,7 +169,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
         TransferNotFound,
         TransferRefused,
       ],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       success: BillingAccountSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -184,7 +182,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
   .add(
     HttpApiEndpoint.delete("withdrawTransfer", "/transfer", {
       error: [BillingNotEnabled, Forbidden, TransferNotFound],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
       OpenApi.annotations({
@@ -202,7 +200,8 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
         Forbidden,
         SpendCeilingNotOffered,
       ],
-      params: { ...workspaceParams, group: SpendGroupSchema },
+      headers: workspaceHeaders,
+      params: { group: SpendGroupSchema },
       payload: SpendCeilingPayloadSchema,
       success: SpendCeilingSchema,
     }).annotateMerge(
@@ -216,7 +215,7 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
   .add(
     HttpApiEndpoint.put("setXReads", "/x", {
       error: [BillingNotEnabled, Forbidden],
-      params: workspaceParams,
+      headers: workspaceHeaders,
       payload: XReadsPayloadSchema,
       success: XUsageSchema,
     }).annotateMerge(
@@ -229,4 +228,4 @@ export class BillingActionsApi extends HttpApiGroup.make("billingActions")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/billing") {}
+  .prefix("/api/v1/billing") {}

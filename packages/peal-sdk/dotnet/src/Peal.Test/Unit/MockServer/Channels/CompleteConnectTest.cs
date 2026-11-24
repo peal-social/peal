@@ -41,7 +41,7 @@ public class CompleteConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/connect/x/callback")
+                    .WithPath("/api/v1/channels/connect/x/callback")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -56,7 +56,6 @@ public class CompleteConnectTest : BaseMockServerTest
         var response = await Client.Channels.CompleteConnectAsync(
             new ConnectCallback
             {
-                WorkspaceId = "workspaceId",
                 Platform = Platform.X,
                 Code = null,
                 Error = null,
@@ -99,7 +98,7 @@ public class CompleteConnectTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/connect/x/callback")
+                    .WithPath("/api/v1/channels/connect/x/callback")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -112,12 +111,7 @@ public class CompleteConnectTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.CompleteConnectAsync(
-            new ConnectCallback
-            {
-                WorkspaceId = "workspaceId",
-                Platform = Platform.X,
-                State = "state",
-            }
+            new ConnectCallback { Platform = Platform.X, State = "state" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

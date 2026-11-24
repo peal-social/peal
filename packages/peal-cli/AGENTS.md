@@ -21,6 +21,10 @@
   `invitations`, `webhooks`, `ads` and `assistant`, which act in the
   workspace `--workspace`, then `PEAL_WORKSPACE`, names by slug or id
   (`inWorkspace`, `src/workspace.ts`; a user's only workspace otherwise),
+  whose client names that workspace in `Peal-Workspace` on every request
+  (`PealApi.signedIn` and `withApiKey` given its id, `src/api.ts`): the
+  API's paths never name it, so call sites pass `headers: {}` where an
+  endpoint takes headers, and never the header themselves,
   and `account`, which exports the user's data to a file only they may read
   and lists their connected applications (an exclusive create, never
   through a link or over a file made meanwhile). `runWith` and `run` print
@@ -41,7 +45,10 @@
   authorization server in `test/authorization-server.ts`, never against a
   running server. The workspace groups answer from the synthetic studio in
   `test/studio.ts`, which checks the member's permissions and records each
-  change; `signedIn` (`test/signed-in.ts`) signs the command line in to it.
+  change; its WorkspaceAccess (`studioAccessLive`) takes the workspace as
+  the server does (`Peal-Workspace`, else a key's own, else
+  `WorkspaceRequired`), and its handlers read it from `CurrentMember`,
+  never the path; `signedIn` (`test/signed-in.ts`) signs the command line in to it.
 - An agent or a script runs headless with `PEAL_API_KEY` (`src/api-key.ts`;
   the environment only, never a flag, which shell history keeps): the key
   is the bearer token, wins over a saved sign-in, stays `Redacted`, and

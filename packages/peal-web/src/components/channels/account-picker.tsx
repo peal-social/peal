@@ -3,6 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { Option } from "effect";
 import { useLocale, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type {
   ChannelConnection,
   ChoosableAccount,
@@ -84,7 +85,8 @@ export const AccountPicker = ({
   const handleSubmit = () => {
     startTransition(async () => {
       const exit = await choose({
-        params: { platform, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { platform },
         payload: { accountIds: [...selected], selection },
         reactivityKeys: channelsChanged(workspaceId),
       });

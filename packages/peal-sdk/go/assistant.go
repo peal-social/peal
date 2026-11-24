@@ -10,17 +10,15 @@ import (
 )
 
 var (
-	aiProviderConnectionChangeFieldWorkspaceID = big.NewInt(1 << 0)
-	aiProviderConnectionChangeFieldProvider    = big.NewInt(1 << 1)
-	aiProviderConnectionChangeFieldAPIKey      = big.NewInt(1 << 2)
-	aiProviderConnectionChangeFieldBaseURL     = big.NewInt(1 << 3)
+	aiProviderConnectionChangeFieldProvider = big.NewInt(1 << 0)
+	aiProviderConnectionChangeFieldAPIKey   = big.NewInt(1 << 1)
+	aiProviderConnectionChangeFieldBaseURL  = big.NewInt(1 << 2)
 )
 
 type AiProviderConnectionChange struct {
-	WorkspaceID string     `json:"-" url:"-"`
-	Provider    AiProvider `json:"-" url:"-"`
-	APIKey      *string    `json:"apiKey,omitempty" url:"-"`
-	BaseURL     *string    `json:"baseUrl,omitempty" url:"-"`
+	Provider AiProvider `json:"-" url:"-"`
+	APIKey   *string    `json:"apiKey,omitempty" url:"-"`
+	BaseURL  *string    `json:"baseUrl,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -33,13 +31,6 @@ func (a *AiProviderConnectionChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AiProviderConnectionChange) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(aiProviderConnectionChangeFieldWorkspaceID)
 }
 
 // SetProvider sets the Provider field and marks it as non-optional;
@@ -85,13 +76,11 @@ func (a *AiProviderConnectionChange) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	disconnectProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	disconnectProviderAssistantRequestFieldProvider    = big.NewInt(1 << 1)
+	disconnectProviderAssistantRequestFieldProvider = big.NewInt(1 << 0)
 )
 
 type DisconnectProviderAssistantRequest struct {
-	WorkspaceID string     `json:"-" url:"-"`
-	Provider    AiProvider `json:"-" url:"-"`
+	Provider AiProvider `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -106,13 +95,6 @@ func (d *DisconnectProviderAssistantRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DisconnectProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(disconnectProviderAssistantRequestFieldWorkspaceID)
-}
-
 // SetProvider sets the Provider field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DisconnectProviderAssistantRequest) SetProvider(provider AiProvider) {
@@ -121,15 +103,13 @@ func (d *DisconnectProviderAssistantRequest) SetProvider(provider AiProvider) {
 }
 
 var (
-	imageRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	imageRequestFieldAspect      = big.NewInt(1 << 1)
-	imageRequestFieldPrompt      = big.NewInt(1 << 2)
+	imageRequestFieldAspect = big.NewInt(1 << 0)
+	imageRequestFieldPrompt = big.NewInt(1 << 1)
 )
 
 type ImageRequest struct {
-	WorkspaceID string      `json:"-" url:"-"`
-	Aspect      ImageAspect `json:"aspect" url:"-"`
-	Prompt      string      `json:"prompt" url:"-"`
+	Aspect ImageAspect `json:"aspect" url:"-"`
+	Prompt string      `json:"prompt" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -142,13 +122,6 @@ func (i *ImageRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	i.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *ImageRequest) SetWorkspaceID(workspaceID string) {
-	i.WorkspaceID = workspaceID
-	i.require(imageRequestFieldWorkspaceID)
 }
 
 // SetAspect sets the Aspect field and marks it as non-optional;
@@ -187,154 +160,17 @@ func (i *ImageRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	imageProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ImageProviderAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (i *ImageProviderAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if i.explicitFields != nil {
-		next.Set(i.explicitFields)
-	}
-	next.Or(next, field)
-	i.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *ImageProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
-	i.WorkspaceID = workspaceID
-	i.require(imageProviderAssistantRequestFieldWorkspaceID)
-}
-
-var (
-	modelsAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ModelsAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (m *ModelsAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if m.explicitFields != nil {
-		next.Set(m.explicitFields)
-	}
-	next.Or(next, field)
-	m.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *ModelsAssistantRequest) SetWorkspaceID(workspaceID string) {
-	m.WorkspaceID = workspaceID
-	m.require(modelsAssistantRequestFieldWorkspaceID)
-}
-
-var (
-	providersAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ProvidersAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (p *ProvidersAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if p.explicitFields != nil {
-		next.Set(p.explicitFields)
-	}
-	next.Or(next, field)
-	p.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *ProvidersAssistantRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(providersAssistantRequestFieldWorkspaceID)
-}
-
-var (
-	removeImageProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type RemoveImageProviderAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (r *RemoveImageProviderAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if r.explicitFields != nil {
-		next.Set(r.explicitFields)
-	}
-	next.Or(next, field)
-	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RemoveImageProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(removeImageProviderAssistantRequestFieldWorkspaceID)
-}
-
-var (
-	removeTextProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type RemoveTextProviderAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (r *RemoveTextProviderAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if r.explicitFields != nil {
-		next.Set(r.explicitFields)
-	}
-	next.Or(next, field)
-	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RemoveTextProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(removeTextProviderAssistantRequestFieldWorkspaceID)
-}
-
-var (
-	imageProviderChangeFieldWorkspaceID = big.NewInt(1 << 0)
-	imageProviderChangeFieldAPIKey      = big.NewInt(1 << 1)
-	imageProviderChangeFieldBaseURL     = big.NewInt(1 << 2)
-	imageProviderChangeFieldModel       = big.NewInt(1 << 3)
-	imageProviderChangeFieldProvider    = big.NewInt(1 << 4)
+	imageProviderChangeFieldAPIKey   = big.NewInt(1 << 0)
+	imageProviderChangeFieldBaseURL  = big.NewInt(1 << 1)
+	imageProviderChangeFieldModel    = big.NewInt(1 << 2)
+	imageProviderChangeFieldProvider = big.NewInt(1 << 3)
 )
 
 type ImageProviderChange struct {
-	WorkspaceID string           `json:"-" url:"-"`
-	APIKey      *string          `json:"apiKey,omitempty" url:"-"`
-	BaseURL     *string          `json:"baseUrl,omitempty" url:"-"`
-	Model       string           `json:"model" url:"-"`
-	Provider    *AiImageProvider `json:"provider,omitempty" url:"-"`
+	APIKey   *string          `json:"apiKey,omitempty" url:"-"`
+	BaseURL  *string          `json:"baseUrl,omitempty" url:"-"`
+	Model    string           `json:"model" url:"-"`
+	Provider *AiImageProvider `json:"provider,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -347,13 +183,6 @@ func (i *ImageProviderChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	i.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (i *ImageProviderChange) SetWorkspaceID(workspaceID string) {
-	i.WorkspaceID = workspaceID
-	i.require(imageProviderChangeFieldWorkspaceID)
 }
 
 // SetAPIKey sets the APIKey field and marks it as non-optional;
@@ -406,17 +235,15 @@ func (i *ImageProviderChange) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	aiCapabilityModelChangeFieldWorkspaceID = big.NewInt(1 << 0)
-	aiCapabilityModelChangeFieldCapability  = big.NewInt(1 << 1)
-	aiCapabilityModelChangeFieldModel       = big.NewInt(1 << 2)
-	aiCapabilityModelChangeFieldProvider    = big.NewInt(1 << 3)
+	aiCapabilityModelChangeFieldCapability = big.NewInt(1 << 0)
+	aiCapabilityModelChangeFieldModel      = big.NewInt(1 << 1)
+	aiCapabilityModelChangeFieldProvider   = big.NewInt(1 << 2)
 )
 
 type AiCapabilityModelChange struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	Capability  AiCapability `json:"-" url:"-"`
-	Model       *string      `json:"model,omitempty" url:"-"`
-	Provider    AiProvider   `json:"provider" url:"-"`
+	Capability AiCapability `json:"-" url:"-"`
+	Model      *string      `json:"model,omitempty" url:"-"`
+	Provider   AiProvider   `json:"provider" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -429,13 +256,6 @@ func (a *AiCapabilityModelChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AiCapabilityModelChange) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(aiCapabilityModelChangeFieldWorkspaceID)
 }
 
 // SetCapability sets the Capability field and marks it as non-optional;
@@ -481,21 +301,19 @@ func (a *AiCapabilityModelChange) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	textProviderChangeFieldWorkspaceID = big.NewInt(1 << 0)
-	textProviderChangeFieldAPIKey      = big.NewInt(1 << 1)
-	textProviderChangeFieldBaseURL     = big.NewInt(1 << 2)
-	textProviderChangeFieldKind        = big.NewInt(1 << 3)
-	textProviderChangeFieldModel       = big.NewInt(1 << 4)
-	textProviderChangeFieldProvider    = big.NewInt(1 << 5)
+	textProviderChangeFieldAPIKey   = big.NewInt(1 << 0)
+	textProviderChangeFieldBaseURL  = big.NewInt(1 << 1)
+	textProviderChangeFieldKind     = big.NewInt(1 << 2)
+	textProviderChangeFieldModel    = big.NewInt(1 << 3)
+	textProviderChangeFieldProvider = big.NewInt(1 << 4)
 )
 
 type TextProviderChange struct {
-	WorkspaceID string            `json:"-" url:"-"`
-	APIKey      *string           `json:"apiKey,omitempty" url:"-"`
-	BaseURL     *string           `json:"baseUrl,omitempty" url:"-"`
-	Kind        *TextProviderKind `json:"kind,omitempty" url:"-"`
-	Model       string            `json:"model" url:"-"`
-	Provider    *AiProvider       `json:"provider,omitempty" url:"-"`
+	APIKey   *string           `json:"apiKey,omitempty" url:"-"`
+	BaseURL  *string           `json:"baseUrl,omitempty" url:"-"`
+	Kind     *TextProviderKind `json:"kind,omitempty" url:"-"`
+	Model    string            `json:"model" url:"-"`
+	Provider *AiProvider       `json:"provider,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -508,13 +326,6 @@ func (t *TextProviderChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	t.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TextProviderChange) SetWorkspaceID(workspaceID string) {
-	t.WorkspaceID = workspaceID
-	t.require(textProviderChangeFieldWorkspaceID)
 }
 
 // SetAPIKey sets the APIKey field and marks it as non-optional;
@@ -574,42 +385,13 @@ func (t *TextProviderChange) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	statusAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type StatusAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (s *StatusAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if s.explicitFields != nil {
-		next.Set(s.explicitFields)
-	}
-	next.Or(next, field)
-	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *StatusAssistantRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(statusAssistantRequestFieldWorkspaceID)
-}
-
-var (
-	suggestionRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	suggestionRequestFieldAction      = big.NewInt(1 << 1)
-	suggestionRequestFieldText        = big.NewInt(1 << 2)
+	suggestionRequestFieldAction = big.NewInt(1 << 0)
+	suggestionRequestFieldText   = big.NewInt(1 << 1)
 )
 
 type SuggestionRequest struct {
-	WorkspaceID string           `json:"-" url:"-"`
-	Action      *AssistantAction `json:"action" url:"-"`
-	Text        string           `json:"text" url:"-"`
+	Action *AssistantAction `json:"action" url:"-"`
+	Text   string           `json:"text" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -622,13 +404,6 @@ func (s *SuggestionRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SuggestionRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(suggestionRequestFieldWorkspaceID)
 }
 
 // SetAction sets the Action field and marks it as non-optional;
@@ -667,15 +442,13 @@ func (s *SuggestionRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	aiProviderTestFieldWorkspaceID = big.NewInt(1 << 0)
-	aiProviderTestFieldProvider    = big.NewInt(1 << 1)
-	aiProviderTestFieldModel       = big.NewInt(1 << 2)
+	aiProviderTestFieldProvider = big.NewInt(1 << 0)
+	aiProviderTestFieldModel    = big.NewInt(1 << 1)
 )
 
 type AiProviderTest struct {
-	WorkspaceID string     `json:"-" url:"-"`
-	Provider    AiProvider `json:"-" url:"-"`
-	Model       *string    `json:"model,omitempty" url:"-"`
+	Provider AiProvider `json:"-" url:"-"`
+	Model    *string    `json:"model,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -688,13 +461,6 @@ func (a *AiProviderTest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AiProviderTest) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(aiProviderTestFieldWorkspaceID)
 }
 
 // SetProvider sets the Provider field and marks it as non-optional;
@@ -730,60 +496,6 @@ func (a *AiProviderTest) MarshalJSON() ([]byte, error) {
 	}
 	explicitMarshaler := internal.HandleExplicitFields(marshaler, a.explicitFields)
 	return json.Marshal(explicitMarshaler)
-}
-
-var (
-	testTextProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type TestTextProviderAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (t *TestTextProviderAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if t.explicitFields != nil {
-		next.Set(t.explicitFields)
-	}
-	next.Or(next, field)
-	t.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TestTextProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
-	t.WorkspaceID = workspaceID
-	t.require(testTextProviderAssistantRequestFieldWorkspaceID)
-}
-
-var (
-	textProviderAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type TextProviderAssistantRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (t *TextProviderAssistantRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if t.explicitFields != nil {
-		next.Set(t.explicitFields)
-	}
-	next.Or(next, field)
-	t.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (t *TextProviderAssistantRequest) SetWorkspaceID(workspaceID string) {
-	t.WorkspaceID = workspaceID
-	t.require(textProviderAssistantRequestFieldWorkspaceID)
 }
 
 type AiCapability string
@@ -4429,13 +4141,11 @@ func (t TranslationLanguage) Ptr() *TranslationLanguage {
 }
 
 var (
-	unsetModelAssistantRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	unsetModelAssistantRequestFieldCapability  = big.NewInt(1 << 1)
+	unsetModelAssistantRequestFieldCapability = big.NewInt(1 << 0)
 )
 
 type UnsetModelAssistantRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	Capability  AiCapability `json:"-" url:"-"`
+	Capability AiCapability `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -4448,13 +4158,6 @@ func (u *UnsetModelAssistantRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UnsetModelAssistantRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(unsetModelAssistantRequestFieldWorkspaceID)
 }
 
 // SetCapability sets the Capability field and marks it as non-optional;

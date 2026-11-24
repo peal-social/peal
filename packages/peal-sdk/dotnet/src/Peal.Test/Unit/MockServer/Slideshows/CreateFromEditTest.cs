@@ -46,7 +46,7 @@ public class CreateFromEditTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/slideshows/edits")
+                    .WithPath("/api/v1/media/slideshows/edits")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -61,7 +61,6 @@ public class CreateFromEditTest : BaseMockServerTest
         var response = await Client.Slideshows.CreateFromEditAsync(
             new EditRenderRequest
             {
-                WorkspaceId = "workspaceId",
                 Edit = new Dictionary<string, object?>()
                 {
                     {
@@ -108,7 +107,7 @@ public class CreateFromEditTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/slideshows/edits")
+                    .WithPath("/api/v1/media/slideshows/edits")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -123,7 +122,6 @@ public class CreateFromEditTest : BaseMockServerTest
         var response = await Client.Slideshows.CreateFromEditAsync(
             new EditRenderRequest
             {
-                WorkspaceId = "workspaceId",
                 Edit = new Dictionary<string, object?>() { { "key", "value" } },
             }
         );

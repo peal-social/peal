@@ -61,7 +61,7 @@ public class BestTimesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/best-times")
+                    .WithPath("/api/v1/analytics/best-times")
                     .WithParam("channelId", "channelId")
                     .WithParam("timeZone", "timeZone")
                     .UsingGet()
@@ -74,12 +74,7 @@ public class BestTimesTest : BaseMockServerTest
             );
 
         var response = await Client.Analytics.BestTimesAsync(
-            new BestTimesAnalyticsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                TimeZone = "timeZone",
-            }
+            new BestTimesAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -124,7 +119,7 @@ public class BestTimesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/analytics/best-times")
+                    .WithPath("/api/v1/analytics/best-times")
                     .WithParam("channelId", "channelId")
                     .WithParam("timeZone", "timeZone")
                     .UsingGet()
@@ -137,12 +132,7 @@ public class BestTimesTest : BaseMockServerTest
             );
 
         var response = await Client.Analytics.BestTimesAsync(
-            new BestTimesAnalyticsRequest
-            {
-                WorkspaceId = "workspaceId",
-                ChannelId = "channelId",
-                TimeZone = "timeZone",
-            }
+            new BestTimesAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record FeedPreviewRequest
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("template")]
     public string? Template { get; set; }
 

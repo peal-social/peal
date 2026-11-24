@@ -28,16 +28,16 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
-import social.peal.resources.tags.requests.CreateTagsRequest;
 import social.peal.resources.tags.requests.DeleteTagsRequest;
-import social.peal.resources.tags.requests.ListTagsRequest;
 import social.peal.resources.tags.requests.UpdateTagsRequest;
 import social.peal.types.Tag;
+import social.peal.types.TagDetails;
 import social.peal.types.UnauthenticatedEncoded;
 
 public class AsyncRawTagsClient {
@@ -50,46 +50,28 @@ public class AsyncRawTagsClient {
     /**
      * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<Tag>>> list(String workspaceId) {
-        return list(workspaceId, ListTagsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<Tag>>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<Tag>>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListTagsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<Tag>>> list(String workspaceId, ListTagsRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<Tag>>> list(
-            String workspaceId, ListTagsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<Tag>>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("tags");
+                .addPathSegments("api/v1/tags");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -119,6 +101,11 @@ public class AsyncRawTagsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -172,20 +159,17 @@ public class AsyncRawTagsClient {
     /**
      * Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
      */
-    public CompletableFuture<PealClientHttpResponse<Tag>> create(String workspaceId, CreateTagsRequest request) {
-        return create(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Tag>> create(TagDetails request) {
+        return create(request, null);
     }
 
     /**
      * Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
      */
-    public CompletableFuture<PealClientHttpResponse<Tag>> create(
-            String workspaceId, CreateTagsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Tag>> create(TagDetails request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("tags");
+                .addPathSegments("api/v1/tags");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -195,7 +179,7 @@ public class AsyncRawTagsClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -229,6 +213,11 @@ public class AsyncRawTagsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -287,36 +276,32 @@ public class AsyncRawTagsClient {
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(String workspaceId, String tagId) {
-        return delete(workspaceId, tagId, DeleteTagsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String tagId) {
+        return delete(tagId, DeleteTagsRequest.builder().build());
+    }
+
+    /**
+     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String tagId, RequestOptions requestOptions) {
+        return delete(tagId, DeleteTagsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> delete(String tagId, DeleteTagsRequest request) {
+        return delete(tagId, request, null);
     }
 
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String tagId, RequestOptions requestOptions) {
-        return delete(workspaceId, tagId, DeleteTagsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String tagId, DeleteTagsRequest request) {
-        return delete(workspaceId, tagId, request, null);
-    }
-
-    /**
-     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> delete(
-            String workspaceId, String tagId, DeleteTagsRequest request, RequestOptions requestOptions) {
+            String tagId, DeleteTagsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("tags")
+                .addPathSegments("api/v1/tags")
                 .addPathSegment(PathSegments.validate(tagId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -358,6 +343,11 @@ public class AsyncRawTagsClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -411,21 +401,18 @@ public class AsyncRawTagsClient {
     /**
      * Gives a tag another name or colour. Its posts keep it. Needs post:update.
      */
-    public CompletableFuture<PealClientHttpResponse<Tag>> update(
-            String workspaceId, String tagId, UpdateTagsRequest request) {
-        return update(workspaceId, tagId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Tag>> update(String tagId, UpdateTagsRequest request) {
+        return update(tagId, request, null);
     }
 
     /**
      * Gives a tag another name or colour. Its posts keep it. Needs post:update.
      */
     public CompletableFuture<PealClientHttpResponse<Tag>> update(
-            String workspaceId, String tagId, UpdateTagsRequest request, RequestOptions requestOptions) {
+            String tagId, UpdateTagsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("tags")
+                .addPathSegments("api/v1/tags")
                 .addPathSegment(PathSegments.validate(tagId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -470,6 +457,11 @@ public class AsyncRawTagsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

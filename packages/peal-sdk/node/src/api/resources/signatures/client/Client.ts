@@ -28,9 +28,9 @@ export class SignaturesClient {
     /**
      * Lists the workspace's signatures, oldest first. Needs post:read.
      *
-     * @param {Peal.ListSignaturesRequest} request
      * @param {SignaturesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class SignaturesClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.signatures.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.signatures.list()
      */
-    public list(request: Peal.ListSignaturesRequest, requestOptions?: SignaturesClient.RequestOptions): core.HttpResponsePromise<Peal.Signature[]> {
-        return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
+    public list(requestOptions?: SignaturesClient.RequestOptions): core.HttpResponsePromise<Peal.Signature[]> {
+        return core.HttpResponsePromise.fromPromise(this.__list(requestOptions));
     }
 
-    private async __list(request: Peal.ListSignaturesRequest, requestOptions?: SignaturesClient.RequestOptions): Promise<core.WithRawResponse<Peal.Signature[]>> {
-        const { workspaceId } = request;
+    private async __list(requestOptions?: SignaturesClient.RequestOptions): Promise<core.WithRawResponse<Peal.Signature[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/signatures`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/signatures"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class SignaturesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,15 +78,16 @@ export class SignaturesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/signatures");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/signatures");
     }
 
     /**
      * Adds a signature to the workspace: a name no other signature of the workspace has whatever its case, a text of 2000 characters at most, and the `scope` it is meant for (the whole `workspace`, a `platform`, or one `channel` of the workspace). With `isDefault`, new posts that ask for the default signatures take it in its scope, and the signature that was the default of that scope is one no longer. A signature is text of the post once added: it counts against each platform's limit when the post is scheduled. A workspace keeps 50 signatures at most. Needs post:update, and channel:read for a channel's.
      *
-     * @param {Peal.CreateSignaturesRequest} request
+     * @param {Peal.SignatureDetails} request
      * @param {SignaturesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -100,29 +99,25 @@ export class SignaturesClient {
      *
      * @example
      *     await client.signatures.create({
-     *         workspaceId: "workspaceId",
-     *         body: {
-     *             name: "name",
-     *             text: "text"
-     *         }
+     *         name: "name",
+     *         text: "text"
      *     })
      */
-    public create(request: Peal.CreateSignaturesRequest, requestOptions?: SignaturesClient.RequestOptions): core.HttpResponsePromise<Peal.Signature> {
+    public create(request: Peal.SignatureDetails, requestOptions?: SignaturesClient.RequestOptions): core.HttpResponsePromise<Peal.Signature> {
         return core.HttpResponsePromise.fromPromise(this.__create(request, requestOptions));
     }
 
-    private async __create(request: Peal.CreateSignaturesRequest, requestOptions?: SignaturesClient.RequestOptions): Promise<core.WithRawResponse<Peal.Signature>> {
-        const { workspaceId, body: _body } = request;
+    private async __create(request: Peal.SignatureDetails, requestOptions?: SignaturesClient.RequestOptions): Promise<core.WithRawResponse<Peal.Signature>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/signatures`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/signatures"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -135,6 +130,7 @@ export class SignaturesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -149,7 +145,7 @@ export class SignaturesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/signatures");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/signatures");
     }
 
     /**
@@ -158,6 +154,7 @@ export class SignaturesClient {
      * @param {Peal.UpdateSignaturesRequest} request
      * @param {SignaturesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -169,7 +166,6 @@ export class SignaturesClient {
      *
      * @example
      *     await client.signatures.update({
-     *         workspaceId: "workspaceId",
      *         signatureId: "signatureId",
      *         body: {
      *             name: "name",
@@ -182,11 +178,11 @@ export class SignaturesClient {
     }
 
     private async __update(request: Peal.UpdateSignaturesRequest, requestOptions?: SignaturesClient.RequestOptions): Promise<core.WithRawResponse<Peal.Signature>> {
-        const { workspaceId, signatureId, body: _body } = request;
+        const { signatureId, body: _body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/signatures/${core.url.encodePathParam(signatureId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/signatures/${core.url.encodePathParam(signatureId, errors.PealError)}`),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
@@ -205,6 +201,7 @@ export class SignaturesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -219,7 +216,7 @@ export class SignaturesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/signatures/{signatureId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/signatures/{signatureId}");
     }
 
     /**
@@ -228,6 +225,7 @@ export class SignaturesClient {
      * @param {Peal.DeleteSignaturesRequest} request
      * @param {SignaturesClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -237,7 +235,6 @@ export class SignaturesClient {
      *
      * @example
      *     await client.signatures.delete({
-     *         workspaceId: "workspaceId",
      *         signatureId: "signatureId"
      *     })
      */
@@ -246,11 +243,11 @@ export class SignaturesClient {
     }
 
     private async __delete(request: Peal.DeleteSignaturesRequest, requestOptions?: SignaturesClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, signatureId } = request;
+        const { signatureId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/signatures/${core.url.encodePathParam(signatureId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/signatures/${core.url.encodePathParam(signatureId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -266,6 +263,7 @@ export class SignaturesClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -278,6 +276,6 @@ export class SignaturesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/signatures/{signatureId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/signatures/{signatureId}");
     }
 }

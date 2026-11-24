@@ -17,6 +17,7 @@ import {
   maxSlideCaptionLength,
   maxSlides,
   maxSlideshowSeconds,
+  forWorkspace,
 } from "peal-contract";
 import type {
   AssistantStatus,
@@ -382,7 +383,7 @@ const SlideshowDialog = ({
 
     startTransition(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: slideshowRequestOf(choice),
         reactivityKeys: [slideshowsKey(workspaceId)],
       });

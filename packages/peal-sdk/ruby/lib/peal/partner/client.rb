@@ -30,7 +30,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/partner",
+          path: "api/v1/partner",
           request_options: request_options
         )
         begin
@@ -90,7 +90,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/partner/overview",
+          path: "api/v1/partner/overview",
           query: query_params,
           request_options: request_options
         )
@@ -146,7 +146,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/partner/workspaces",
+          path: "api/v1/partner/workspaces",
           query: query_params,
           request_options: request_options
         )
@@ -203,7 +203,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/partner/workspaces",
+          path: "api/v1/partner/workspaces",
           headers: headers,
           body: body,
           request_options: request_options,
@@ -249,7 +249,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}",
+          path: "api/v1/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -298,7 +298,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}",
+          path: "api/v1/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -345,7 +345,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}",
+          path: "api/v1/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -419,7 +419,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/move",
+          path: "api/v1/partner/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/move",
           headers: headers,
           body: body,
           request_options: request_options,

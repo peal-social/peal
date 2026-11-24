@@ -4,6 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import {
   SettingsRow,
   SettingsRowControl,
@@ -58,7 +59,7 @@ const LoadedDefault = ({
   const change = (byDefault: boolean) => {
     startTransition(async () => {
       const exit = await update({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { byDefault },
         reactivityKeys: shortLinksChanged(workspaceId),
       });

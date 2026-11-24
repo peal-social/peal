@@ -28,11 +28,11 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
-import social.peal.resources.apikeys.requests.ListApiKeysRequest;
 import social.peal.resources.apikeys.requests.NewApiKey;
 import social.peal.resources.apikeys.requests.RevokeApiKeysRequest;
 import social.peal.types.ApiKey;
@@ -49,47 +49,28 @@ public class AsyncRawApiKeysClient {
     /**
      * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<ApiKey>>> list(String workspaceId) {
-        return list(workspaceId, ListApiKeysRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<ApiKey>>> list() {
+        return list(null);
     }
 
     /**
      * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<ApiKey>>> list(
-            String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListApiKeysRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<ApiKey>>> list(
-            String workspaceId, ListApiKeysRequest request) {
-        return list(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<List<ApiKey>>> list(
-            String workspaceId, ListApiKeysRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<List<ApiKey>>> list(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("api-keys");
+                .addPathSegments("api/v1/api-keys");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -119,6 +100,11 @@ public class AsyncRawApiKeysClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -172,20 +158,18 @@ public class AsyncRawApiKeysClient {
     /**
      * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
-    public CompletableFuture<PealClientHttpResponse<CreatedApiKey>> create(String workspaceId, NewApiKey request) {
-        return create(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<CreatedApiKey>> create(NewApiKey request) {
+        return create(request, null);
     }
 
     /**
      * Creates an API key for the workspace with some of the caller's permissions, and answers with the key itself, which is not shown again. Needs apiKey:create, and a signed-in member: API keys cannot create keys. The key is the caller's: it stops working once they leave the workspace, are removed or close their account, and once their role no longer holds one of its permissions.
      */
     public CompletableFuture<PealClientHttpResponse<CreatedApiKey>> create(
-            String workspaceId, NewApiKey request, RequestOptions requestOptions) {
+            NewApiKey request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("api-keys");
+                .addPathSegments("api/v1/api-keys");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -230,6 +214,11 @@ public class AsyncRawApiKeysClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -283,36 +272,32 @@ public class AsyncRawApiKeysClient {
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> revoke(String workspaceId, String apiKeyId) {
-        return revoke(workspaceId, apiKeyId, RevokeApiKeysRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> revoke(String apiKeyId) {
+        return revoke(apiKeyId, RevokeApiKeysRequest.builder().build());
+    }
+
+    /**
+     * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> revoke(String apiKeyId, RequestOptions requestOptions) {
+        return revoke(apiKeyId, RevokeApiKeysRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> revoke(String apiKeyId, RevokeApiKeysRequest request) {
+        return revoke(apiKeyId, request, null);
     }
 
     /**
      * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> revoke(
-            String workspaceId, String apiKeyId, RequestOptions requestOptions) {
-        return revoke(workspaceId, apiKeyId, RevokeApiKeysRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> revoke(
-            String workspaceId, String apiKeyId, RevokeApiKeysRequest request) {
-        return revoke(workspaceId, apiKeyId, request, null);
-    }
-
-    /**
-     * Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> revoke(
-            String workspaceId, String apiKeyId, RevokeApiKeysRequest request, RequestOptions requestOptions) {
+            String apiKeyId, RevokeApiKeysRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("api-keys")
+                .addPathSegments("api/v1/api-keys")
                 .addPathSegment(PathSegments.validate(apiKeyId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -354,6 +339,11 @@ public class AsyncRawApiKeysClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

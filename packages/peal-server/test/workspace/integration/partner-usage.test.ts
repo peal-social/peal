@@ -1,6 +1,7 @@
 import { assert, layer } from "@effect/vitest";
 import { DateTime, Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -132,17 +133,16 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const byKey = yield* bodyOf(
             ReportSchema,
-            yield* app.request(`/api/partner/usage?${period}`, {
+            yield* app.request(`/api/v1/partner/usage?${period}`, {
               headers: bearer(key),
             })
           );
 
           const byMember = yield* bodyOf(
             ReportSchema,
-            yield* app.request(
-              `/api/workspaces/${home}/usage/partner?${period}`,
-              { headers: { cookie: owner.cookies } }
-            )
+            yield* app.request(`/api/v1/usage/partner?${period}`, {
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
+            })
           );
 
           assert.deepStrictEqual(byMember, byKey);
@@ -217,8 +217,8 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // usage, which the channel allowance counts.
           const homeUsage = yield* bodyOf(
             WorkspaceUsageSchema,
-            yield* app.request(`/api/workspaces/${home}/usage`, {
-              headers: { cookie: owner.cookies },
+            yield* app.request(`/api/v1/usage`, {
+              headers: { cookie: owner.cookies, ...forWorkspace(home) },
             })
           );
 
@@ -232,14 +232,14 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // home workspace one more on the first.
           const listed = yield* bodyOf(
             PageSchema,
-            yield* app.request("/api/partner/workspaces?limit=2", {
+            yield* app.request("/api/v1/partner/workspaces?limit=2", {
               headers: bearer(key),
             })
           );
 
           const paged = yield* bodyOf(
             ReportSchema,
-            yield* app.request(`/api/partner/usage?${period}&limit=2`, {
+            yield* app.request(`/api/v1/partner/usage?${period}&limit=2`, {
               headers: bearer(key),
             })
           );
@@ -253,7 +253,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const rest = yield* bodyOf(
             ReportSchema,
             yield* app.request(
-              `/api/partner/usage?${period}&limit=2&before=${paged.workspaces.next ?? ""}`,
+              `/api/v1/partner/usage?${period}&limit=2&before=${paged.workspaces.next ?? ""}`,
               { headers: bearer(key) }
             )
           );
@@ -271,7 +271,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Offboarded: gone from the list and the sums, while the day's
           // count still holds it.
           const deleted = yield* app.request(
-            `/api/partner/workspaces/${third.id}`,
+            `/api/v1/partner/workspaces/${third.id}`,
             { headers: bearer(key), method: "DELETE" }
           );
 
@@ -279,7 +279,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
 
           const after = yield* bodyOf(
             ReportSchema,
-            yield* app.request(`/api/partner/usage?${period}`, {
+            yield* app.request(`/api/v1/partner/usage?${period}`, {
               headers: bearer(key),
             })
           );
@@ -314,7 +314,7 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             scopes: ["workspaces:write"],
           });
 
-          const missing = yield* app.request("/api/partner/usage", {
+          const missing = yield* app.request("/api/v1/partner/usage", {
             headers: bearer(unscoped.key),
           });
 
@@ -330,24 +330,24 @@ layer(SelfServiceLive, { excludeTestServices: true, timeout: "180 seconds" })(
             .key;
 
           for (const headers of [{ cookie: owner.cookies }, bearer(reader)]) {
-            const reply = yield* app.request("/api/partner/usage", { headers });
+            const reply = yield* app.request("/api/v1/partner/usage", {
+              headers,
+            });
 
             assert.strictEqual(reply.status, 403);
           }
 
           // The home workspace's route: a key given partner:read reads it,
           // one without is told which permission it lacks.
-          const allowed = yield* app.request(
-            `/api/workspaces/${home}/usage/partner`,
-            { headers: bearer(reader) }
-          );
+          const allowed = yield* app.request(`/api/v1/usage/partner`, {
+            headers: { ...bearer(reader), ...forWorkspace(home) },
+          });
 
           assert.strictEqual(allowed.status, 200);
 
-          const refused = yield* app.request(
-            `/api/workspaces/${home}/usage/partner`,
-            { headers: bearer(billingOnly) }
-          );
+          const refused = yield* app.request(`/api/v1/usage/partner`, {
+            headers: { ...bearer(billingOnly), ...forWorkspace(home) },
+          });
 
           assert.strictEqual(refused.status, 403);
           assert.deepInclude(refused.body, { permission: "partner:read" });

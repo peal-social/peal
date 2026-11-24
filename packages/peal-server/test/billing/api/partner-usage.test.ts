@@ -3,7 +3,7 @@ import { DateTime, Effect, Layer, Option } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import { TestClock } from "effect/testing";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member, Principal } from "peal-contract";
 
 import { InvalidTenantCursor } from "#billing/application/invalid-tenant-cursor.ts";
@@ -310,7 +310,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
           const client = yield* asMember(permissionsFor("admin"));
 
           const report = yield* client.usage.partner({
-            params: { workspaceId: home },
+            headers: forWorkspace(home),
             query,
           });
 
@@ -466,7 +466,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
           const editor = yield* asMember(permissionsFor("editor"));
 
           const refused = yield* editor.usage
-            .partner({ params: { workspaceId: home }, query })
+            .partner({ headers: forWorkspace(home), query })
             .pipe(Effect.flip);
 
           assert.deepInclude(refused, {
@@ -478,7 +478,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
           const elsewhere = yield* asMember(permissionsFor("owner"), ordinary);
 
           const none = yield* elsewhere.usage
-            .partner({ params: { workspaceId: ordinary }, query })
+            .partner({ headers: forWorkspace(ordinary), query })
             .pipe(Effect.flip);
 
           assert.strictEqual(none._tag, "PartnerNotFound");
@@ -542,7 +542,7 @@ layer(reportsOn(everyWorkspaceOn("agency")))(
           const editor = yield* asMember(permissionsFor("editor"));
 
           const refused = yield* editor.usage
-            .partner({ params: { workspaceId: home }, query: tooLong })
+            .partner({ headers: forWorkspace(home), query: tooLong })
             .pipe(Effect.flip);
 
           assert.strictEqual(refused._tag, "Forbidden");

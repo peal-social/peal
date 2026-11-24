@@ -4,6 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { Queue } from "peal-contract";
 import {
   AlertDialog,
@@ -68,7 +69,8 @@ export const QueueReshuffle = ({
     setState({ _tag: "moving" });
     startMoving(async () => {
       const exit = await reshuffle({
-        params: { queueId: queue.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { queueId: queue.id },
         reactivityKeys: [...queuesChanged(workspaceId), "posts"],
       });
 

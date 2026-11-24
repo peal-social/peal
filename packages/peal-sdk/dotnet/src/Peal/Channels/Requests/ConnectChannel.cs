@@ -7,9 +7,6 @@ namespace Peal;
 public record ConnectChannel
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required Platform Platform { get; set; }
 
     [JsonPropertyName("connection")]

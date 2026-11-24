@@ -59,12 +59,10 @@ class FollowUpsClient
      * Example:
      * ```php
      * $client->followUps->list(
-     *     'workspaceId',
      *     new ListFollowUpsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListFollowUpsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -78,7 +76,7 @@ class FollowUpsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListFollowUpsRequest $request = new ListFollowUpsRequest(), ?array $options = null): ?FollowUpRulePage
+    public function list(ListFollowUpsRequest $request = new ListFollowUpsRequest(), ?array $options = null): ?FollowUpRulePage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -98,7 +96,7 @@ class FollowUpsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/follow-ups",
+                    path: "api/v1/follow-ups",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -130,14 +128,12 @@ class FollowUpsClient
      * Example:
      * ```php
      * $client->followUps->create(
-     *     'workspaceId',
      *     new NewFollowUpRule([
      *         'likes' => 1,
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewFollowUpRule $request
      * @param ?array{
      *   baseUrl?: string,
@@ -151,7 +147,7 @@ class FollowUpsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewFollowUpRule $request, ?array $options = null): ?FollowUpRule
+    public function create(NewFollowUpRule $request, ?array $options = null): ?FollowUpRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -159,7 +155,7 @@ class FollowUpsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/follow-ups",
+                    path: "api/v1/follow-ups",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -191,12 +187,10 @@ class FollowUpsClient
      * Example:
      * ```php
      * $client->followUps->get(
-     *     'workspaceId',
      *     'ruleId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param ?array{
      *   baseUrl?: string,
@@ -210,14 +204,14 @@ class FollowUpsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $ruleId, ?array $options = null): ?FollowUpRule
+    public function get(string $ruleId, ?array $options = null): ?FollowUpRule
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/follow-ups/{$ruleId}",
+                    path: "api/v1/follow-ups/{$ruleId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -248,12 +242,10 @@ class FollowUpsClient
      * Example:
      * ```php
      * $client->followUps->delete(
-     *     'workspaceId',
      *     'ruleId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param ?array{
      *   baseUrl?: string,
@@ -266,14 +258,14 @@ class FollowUpsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $ruleId, ?array $options = null): void
+    public function delete(string $ruleId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/follow-ups/{$ruleId}",
+                    path: "api/v1/follow-ups/{$ruleId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -298,13 +290,11 @@ class FollowUpsClient
      * Example:
      * ```php
      * $client->followUps->update(
-     *     'workspaceId',
      *     'ruleId',
      *     new FollowUpRuleChange([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param FollowUpRuleChange $request
      * @param ?array{
@@ -319,7 +309,7 @@ class FollowUpsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $ruleId, FollowUpRuleChange $request = new FollowUpRuleChange(), ?array $options = null): ?FollowUpRule
+    public function update(string $ruleId, FollowUpRuleChange $request = new FollowUpRuleChange(), ?array $options = null): ?FollowUpRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -327,7 +317,7 @@ class FollowUpsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/follow-ups/{$ruleId}",
+                    path: "api/v1/follow-ups/{$ruleId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -359,12 +349,10 @@ class FollowUpsClient
      * Example:
      * ```php
      * $client->followUps->approve(
-     *     'workspaceId',
      *     'ruleId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param ?array{
      *   baseUrl?: string,
@@ -378,7 +366,7 @@ class FollowUpsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function approve(string $workspaceId, string $ruleId, ?array $options = null): ?FollowUpRule
+    public function approve(string $ruleId, ?array $options = null): ?FollowUpRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -386,7 +374,7 @@ class FollowUpsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/follow-ups/{$ruleId}/approve",
+                    path: "api/v1/follow-ups/{$ruleId}/approve",
                     method: HttpMethod::POST,
                 ),
                 $options,

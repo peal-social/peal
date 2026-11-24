@@ -37,7 +37,6 @@ class RawRecyclingClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -49,8 +48,6 @@ class RawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -66,7 +63,7 @@ class RawRecyclingClient:
             RecyclingRulePage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling",
+            "api/v1/recycling",
             method="GET",
             params={
                 "cursor": cursor,
@@ -151,7 +148,6 @@ class RawRecyclingClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         every: RecyclingInterval,
         post_id: str,
@@ -166,8 +162,6 @@ class RawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         every : RecyclingInterval
 
         post_id : str
@@ -192,7 +186,7 @@ class RawRecyclingClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling",
+            "api/v1/recycling",
             method="POST",
             json={
                 "count": count,
@@ -222,6 +216,17 @@ class RawRecyclingClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -298,15 +303,13 @@ class RawRecyclingClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[RecyclingRule]:
         """
         Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -318,7 +321,7 @@ class RawRecyclingClient:
             RecyclingRule
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}",
+            f"api/v1/recycling/{encode_path_param(rule_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -332,6 +335,17 @@ class RawRecyclingClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -385,16 +399,12 @@ class RawRecyclingClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def delete(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -405,13 +415,24 @@ class RawRecyclingClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}",
+            f"api/v1/recycling/{encode_path_param(rule_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -467,7 +488,6 @@ class RawRecyclingClient:
 
     def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         count: typing.Optional[int] = OMIT,
@@ -481,8 +501,6 @@ class RawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         count : typing.Optional[int]
@@ -505,7 +523,7 @@ class RawRecyclingClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}",
+            f"api/v1/recycling/{encode_path_param(rule_id)}",
             method="PATCH",
             json={
                 "count": count,
@@ -531,6 +549,17 @@ class RawRecyclingClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -608,7 +637,6 @@ class RawRecyclingClient:
 
     def resume(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         variants: typing.Optional[typing.Sequence[RecyclingVariant]] = OMIT,
@@ -619,8 +647,6 @@ class RawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         variants : typing.Optional[typing.Sequence[RecyclingVariant]]
@@ -637,7 +663,7 @@ class RawRecyclingClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}/resume",
+            f"api/v1/recycling/{encode_path_param(rule_id)}/resume",
             method="POST",
             json={
                 "variants": convert_and_respect_annotation_metadata(
@@ -660,6 +686,17 @@ class RawRecyclingClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -742,7 +779,6 @@ class AsyncRawRecyclingClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -754,8 +790,6 @@ class AsyncRawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -771,7 +805,7 @@ class AsyncRawRecyclingClient:
             RecyclingRulePage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling",
+            "api/v1/recycling",
             method="GET",
             params={
                 "cursor": cursor,
@@ -856,7 +890,6 @@ class AsyncRawRecyclingClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         every: RecyclingInterval,
         post_id: str,
@@ -871,8 +904,6 @@ class AsyncRawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         every : RecyclingInterval
 
         post_id : str
@@ -897,7 +928,7 @@ class AsyncRawRecyclingClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling",
+            "api/v1/recycling",
             method="POST",
             json={
                 "count": count,
@@ -927,6 +958,17 @@ class AsyncRawRecyclingClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1003,15 +1045,13 @@ class AsyncRawRecyclingClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[RecyclingRule]:
         """
         Answers with a rule of the workspace and its next 3 posts to come, each with the variant it will say. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1023,7 +1063,7 @@ class AsyncRawRecyclingClient:
             RecyclingRule
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}",
+            f"api/v1/recycling/{encode_path_param(rule_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1037,6 +1077,17 @@ class AsyncRawRecyclingClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1091,15 +1142,13 @@ class AsyncRawRecyclingClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay as they are, scheduled ones included. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1110,13 +1159,24 @@ class AsyncRawRecyclingClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}",
+            f"api/v1/recycling/{encode_path_param(rule_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1172,7 +1232,6 @@ class AsyncRawRecyclingClient:
 
     async def update(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         count: typing.Optional[int] = OMIT,
@@ -1186,8 +1245,6 @@ class AsyncRawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         count : typing.Optional[int]
@@ -1210,7 +1267,7 @@ class AsyncRawRecyclingClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}",
+            f"api/v1/recycling/{encode_path_param(rule_id)}",
             method="PATCH",
             json={
                 "count": count,
@@ -1236,6 +1293,17 @@ class AsyncRawRecyclingClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1313,7 +1381,6 @@ class AsyncRawRecyclingClient:
 
     async def resume(
         self,
-        workspace_id: str,
         rule_id: str,
         *,
         variants: typing.Optional[typing.Sequence[RecyclingVariant]] = OMIT,
@@ -1324,8 +1391,6 @@ class AsyncRawRecyclingClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         rule_id : str
 
         variants : typing.Optional[typing.Sequence[RecyclingVariant]]
@@ -1342,7 +1407,7 @@ class AsyncRawRecyclingClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/recycling/{encode_path_param(rule_id)}/resume",
+            f"api/v1/recycling/{encode_path_param(rule_id)}/resume",
             method="POST",
             json={
                 "variants": convert_and_respect_annotation_metadata(
@@ -1365,6 +1430,17 @@ class AsyncRawRecyclingClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

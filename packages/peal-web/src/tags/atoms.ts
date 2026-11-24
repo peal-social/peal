@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 import { postsKeys } from "#posts/api.ts";
@@ -15,7 +16,7 @@ export const tagsChanged = (workspaceId: string) => [
 
 export const workspaceTags = Atom.family((workspaceId: string) =>
   PealApi.query("tags", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: [`tags:${workspaceId}`],
   })
 );

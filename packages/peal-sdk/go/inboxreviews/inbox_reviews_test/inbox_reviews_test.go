@@ -88,9 +88,7 @@ func TestInboxReviewsListReviewThreadsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListReviewThreadsInboxReviewsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListReviewThreadsInboxReviewsRequest{}
 	_, invocationErr := client.InboxReviews.ListReviewThreads(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestInboxReviewsListReviewThreadsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxReviewsListReviewThreadsWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/reviews/threads", nil, 1)
+	VerifyRequestCount(t, "TestInboxReviewsListReviewThreadsWithWireMock", "GET", "/api/v1/inbox/reviews/threads", nil, 1)
 }
 
 func TestInboxReviewsGetReviewThreadWithWireMock(
@@ -115,8 +113,7 @@ func TestInboxReviewsGetReviewThreadWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetReviewThreadInboxReviewsRequest{
-		WorkspaceID: "workspaceId",
-		ThreadID:    "threadId",
+		ThreadID: "threadId",
 	}
 	_, invocationErr := client.InboxReviews.GetReviewThread(
 		context.TODO(),
@@ -127,7 +124,7 @@ func TestInboxReviewsGetReviewThreadWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxReviewsGetReviewThreadWithWireMock", "GET", "/api/workspaces/workspaceId/inbox/reviews/threads/threadId", nil, 1)
+	VerifyRequestCount(t, "TestInboxReviewsGetReviewThreadWithWireMock", "GET", "/api/v1/inbox/reviews/threads/threadId", nil, 1)
 }
 
 func TestInboxReviewsReplyToReviewWithWireMock(
@@ -142,9 +139,8 @@ func TestInboxReviewsReplyToReviewWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewInboxReviewReply{
-		WorkspaceID: "workspaceId",
-		ReviewID:    "reviewId",
-		Text:        "text",
+		ReviewID: "reviewId",
+		Text:     "text",
 	}
 	_, invocationErr := client.InboxReviews.ReplyToReview(
 		context.TODO(),
@@ -155,7 +151,7 @@ func TestInboxReviewsReplyToReviewWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxReviewsReplyToReviewWithWireMock", "PUT", "/api/workspaces/workspaceId/inbox/reviews/reviewId/reply", nil, 1)
+	VerifyRequestCount(t, "TestInboxReviewsReplyToReviewWithWireMock", "PUT", "/api/v1/inbox/reviews/reviewId/reply", nil, 1)
 }
 
 func TestInboxReviewsWithdrawReviewReplyWithWireMock(
@@ -170,8 +166,7 @@ func TestInboxReviewsWithdrawReviewReplyWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.WithdrawReviewReplyInboxReviewsRequest{
-		WorkspaceID: "workspaceId",
-		ReviewID:    "reviewId",
+		ReviewID: "reviewId",
 	}
 	_, invocationErr := client.InboxReviews.WithdrawReviewReply(
 		context.TODO(),
@@ -182,7 +177,7 @@ func TestInboxReviewsWithdrawReviewReplyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxReviewsWithdrawReviewReplyWithWireMock", "DELETE", "/api/workspaces/workspaceId/inbox/reviews/reviewId/reply", nil, 1)
+	VerifyRequestCount(t, "TestInboxReviewsWithdrawReviewReplyWithWireMock", "DELETE", "/api/v1/inbox/reviews/reviewId/reply", nil, 1)
 }
 
 func TestInboxReviewsSetReviewAnsweredWithWireMock(
@@ -197,9 +192,8 @@ func TestInboxReviewsSetReviewAnsweredWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SetReviewAnsweredInboxReviewsRequest{
-		WorkspaceID: "workspaceId",
-		ReviewID:    "reviewId",
-		Answered:    true,
+		ReviewID: "reviewId",
+		Answered: true,
 	}
 	_, invocationErr := client.InboxReviews.SetReviewAnswered(
 		context.TODO(),
@@ -210,5 +204,5 @@ func TestInboxReviewsSetReviewAnsweredWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInboxReviewsSetReviewAnsweredWithWireMock", "POST", "/api/workspaces/workspaceId/inbox/reviews/reviewId/answered", nil, 1)
+	VerifyRequestCount(t, "TestInboxReviewsSetReviewAnsweredWithWireMock", "POST", "/api/v1/inbox/reviews/reviewId/answered", nil, 1)
 }

@@ -13,24 +13,22 @@ module Peal
       # Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.api_keys.list(workspace_id: "workspaceId")
+      #   client.api_keys.list
       #
       # @return [Array[Peal::Types::APIKey]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/api-keys",
+          path: "api/v1/api-keys",
           request_options: request_options
         )
         begin
@@ -63,11 +61,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.api_keys.create(
-      #     workspace_id: "workspaceId",
       #     name: "name",
       #     permissions: ["activity:read"]
       #   )
@@ -75,15 +71,11 @@ module Peal
       # @return [Peal::Types::CreatedAPIKey]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::APIKeys::Types::NewAPIKey.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/api-keys",
-          body: body,
+          path: "api/v1/api-keys",
+          body: Peal::APIKeys::Types::NewAPIKey.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -114,14 +106,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :api_key_id
       #
       # @example
-      #   client.api_keys.revoke(
-      #     workspace_id: "workspaceId",
-      #     api_key_id: "apiKeyId"
-      #   )
+      #   client.api_keys.revoke(api_key_id: "apiKeyId")
       #
       # @return [untyped]
       def revoke(request_options: {}, **params)
@@ -129,7 +117,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/api-keys/#{URI.encode_uri_component(params[:api_key_id].to_s)}",
+          path: "api/v1/api-keys/#{URI.encode_uri_component(params[:api_key_id].to_s)}",
           request_options: request_options
         )
         begin

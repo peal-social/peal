@@ -12,6 +12,7 @@ import { PlatformSchema } from "./platform.ts";
 import { TextUnitSchema } from "./post-text.ts";
 import { TikTokBlockSchema } from "./tiktok.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // What a post on a platform, or on one channel, may hold, described as data
 // so a client need not know each platform's rules. The server's rules
@@ -340,14 +341,13 @@ export const ChannelCapabilitiesSchema = Schema.Struct({
 
 export type ChannelCapabilities = typeof ChannelCapabilitiesSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
 /** What posts may hold, by platform and by channel. */
 export class CapabilitiesApi extends HttpApiGroup.make("capabilities")
   .add(
     HttpApiEndpoint.get("platforms", "/platforms/capabilities", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(PlatformCapabilitiesSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -358,7 +358,8 @@ export class CapabilitiesApi extends HttpApiGroup.make("capabilities")
     ),
     HttpApiEndpoint.get("channel", "/channels/:channelId/capabilities", {
       error: [Forbidden, ChannelNotFound],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       success: ChannelCapabilitiesSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -370,4 +371,4 @@ export class CapabilitiesApi extends HttpApiGroup.make("capabilities")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId") {}
+  .prefix("/api/v1") {}

@@ -10,19 +10,17 @@ import (
 )
 
 var (
-	newWebhookEndpointFieldWorkspaceID  = big.NewInt(1 << 0)
-	newWebhookEndpointFieldChannelIDs   = big.NewInt(1 << 1)
-	newWebhookEndpointFieldDescription  = big.NewInt(1 << 2)
-	newWebhookEndpointFieldEnabled      = big.NewInt(1 << 3)
-	newWebhookEndpointFieldEventTypes   = big.NewInt(1 << 4)
-	newWebhookEndpointFieldHeaders      = big.NewInt(1 << 5)
-	newWebhookEndpointFieldScope        = big.NewInt(1 << 6)
-	newWebhookEndpointFieldURL          = big.NewInt(1 << 7)
-	newWebhookEndpointFieldWorkspaceIDs = big.NewInt(1 << 8)
+	newWebhookEndpointFieldChannelIDs   = big.NewInt(1 << 0)
+	newWebhookEndpointFieldDescription  = big.NewInt(1 << 1)
+	newWebhookEndpointFieldEnabled      = big.NewInt(1 << 2)
+	newWebhookEndpointFieldEventTypes   = big.NewInt(1 << 3)
+	newWebhookEndpointFieldHeaders      = big.NewInt(1 << 4)
+	newWebhookEndpointFieldScope        = big.NewInt(1 << 5)
+	newWebhookEndpointFieldURL          = big.NewInt(1 << 6)
+	newWebhookEndpointFieldWorkspaceIDs = big.NewInt(1 << 7)
 )
 
 type NewWebhookEndpoint struct {
-	WorkspaceID  string                         `json:"-" url:"-"`
 	ChannelIDs   []string                       `json:"channelIds,omitempty" url:"-"`
 	Description  *string                        `json:"description,omitempty" url:"-"`
 	Enabled      *bool                          `json:"enabled,omitempty" url:"-"`
@@ -43,13 +41,6 @@ func (n *NewWebhookEndpoint) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewWebhookEndpoint) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newWebhookEndpointFieldWorkspaceID)
 }
 
 // SetChannelIDs sets the ChannelIDs field and marks it as non-optional;
@@ -130,13 +121,11 @@ func (n *NewWebhookEndpoint) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	deleteWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteWebhooksRequestFieldEndpointID  = big.NewInt(1 << 1)
+	deleteWebhooksRequestFieldEndpointID = big.NewInt(1 << 0)
 )
 
 type DeleteWebhooksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	EndpointID  string `json:"-" url:"-"`
+	EndpointID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -151,13 +140,6 @@ func (d *DeleteWebhooksRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteWebhooksRequestFieldWorkspaceID)
-}
-
 // SetEndpointID sets the EndpointID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteWebhooksRequest) SetEndpointID(endpointID string) {
@@ -166,13 +148,11 @@ func (d *DeleteWebhooksRequest) SetEndpointID(endpointID string) {
 }
 
 var (
-	getWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getWebhooksRequestFieldEndpointID  = big.NewInt(1 << 1)
+	getWebhooksRequestFieldEndpointID = big.NewInt(1 << 0)
 )
 
 type GetWebhooksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	EndpointID  string `json:"-" url:"-"`
+	EndpointID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -187,13 +167,6 @@ func (g *GetWebhooksRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getWebhooksRequestFieldWorkspaceID)
-}
-
 // SetEndpointID sets the EndpointID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetWebhooksRequest) SetEndpointID(endpointID string) {
@@ -202,48 +175,19 @@ func (g *GetWebhooksRequest) SetEndpointID(endpointID string) {
 }
 
 var (
-	listWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListWebhooksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListWebhooksRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listWebhooksRequestFieldWorkspaceID)
-}
-
-var (
-	listDeliveriesWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listDeliveriesWebhooksRequestFieldEndpointID  = big.NewInt(1 << 1)
-	listDeliveriesWebhooksRequestFieldCursor      = big.NewInt(1 << 2)
-	listDeliveriesWebhooksRequestFieldLimit       = big.NewInt(1 << 3)
-	listDeliveriesWebhooksRequestFieldEventType   = big.NewInt(1 << 4)
-	listDeliveriesWebhooksRequestFieldStatus      = big.NewInt(1 << 5)
+	listDeliveriesWebhooksRequestFieldEndpointID = big.NewInt(1 << 0)
+	listDeliveriesWebhooksRequestFieldCursor     = big.NewInt(1 << 1)
+	listDeliveriesWebhooksRequestFieldLimit      = big.NewInt(1 << 2)
+	listDeliveriesWebhooksRequestFieldEventType  = big.NewInt(1 << 3)
+	listDeliveriesWebhooksRequestFieldStatus     = big.NewInt(1 << 4)
 )
 
 type ListDeliveriesWebhooksRequest struct {
-	WorkspaceID string                 `json:"-" url:"-"`
-	EndpointID  string                 `json:"-" url:"-"`
-	Cursor      *string                `json:"-" url:"cursor,omitempty"`
-	Limit       *string                `json:"-" url:"limit,omitempty"`
-	EventType   *WebhookEventType      `json:"-" url:"eventType,omitempty"`
-	Status      *WebhookDeliveryStatus `json:"-" url:"status,omitempty"`
+	EndpointID string                 `json:"-" url:"-"`
+	Cursor     *string                `json:"-" url:"cursor,omitempty"`
+	Limit      *string                `json:"-" url:"limit,omitempty"`
+	EventType  *WebhookEventType      `json:"-" url:"eventType,omitempty"`
+	Status     *WebhookDeliveryStatus `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -256,13 +200,6 @@ func (l *ListDeliveriesWebhooksRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListDeliveriesWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listDeliveriesWebhooksRequestFieldWorkspaceID)
 }
 
 // SetEndpointID sets the EndpointID field and marks it as non-optional;
@@ -301,15 +238,13 @@ func (l *ListDeliveriesWebhooksRequest) SetStatus(status *WebhookDeliveryStatus)
 }
 
 var (
-	redeliverWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	redeliverWebhooksRequestFieldEndpointID  = big.NewInt(1 << 1)
-	redeliverWebhooksRequestFieldDeliveryID  = big.NewInt(1 << 2)
+	redeliverWebhooksRequestFieldEndpointID = big.NewInt(1 << 0)
+	redeliverWebhooksRequestFieldDeliveryID = big.NewInt(1 << 1)
 )
 
 type RedeliverWebhooksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	EndpointID  string `json:"-" url:"-"`
-	DeliveryID  string `json:"-" url:"-"`
+	EndpointID string `json:"-" url:"-"`
+	DeliveryID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -322,13 +257,6 @@ func (r *RedeliverWebhooksRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RedeliverWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(redeliverWebhooksRequestFieldWorkspaceID)
 }
 
 // SetEndpointID sets the EndpointID field and marks it as non-optional;
@@ -346,54 +274,11 @@ func (r *RedeliverWebhooksRequest) SetDeliveryID(deliveryID string) {
 }
 
 var (
-	redeliverManyWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type RedeliverManyWebhooksRequest struct {
-	WorkspaceID string                    `json:"-" url:"-"`
-	Body        *WebhookRedeliveryRequest `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (r *RedeliverManyWebhooksRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if r.explicitFields != nil {
-		next.Set(r.explicitFields)
-	}
-	next.Or(next, field)
-	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RedeliverManyWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(redeliverManyWebhooksRequestFieldWorkspaceID)
-}
-
-func (r *RedeliverManyWebhooksRequest) UnmarshalJSON(data []byte) error {
-	body := new(WebhookRedeliveryRequest)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	r.Body = body
-	return nil
-}
-
-func (r *RedeliverManyWebhooksRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.Body)
-}
-
-var (
-	rotateSecretWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	rotateSecretWebhooksRequestFieldEndpointID  = big.NewInt(1 << 1)
+	rotateSecretWebhooksRequestFieldEndpointID = big.NewInt(1 << 0)
 )
 
 type RotateSecretWebhooksRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	EndpointID  string `json:"-" url:"-"`
+	EndpointID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -408,13 +293,6 @@ func (r *RotateSecretWebhooksRequest) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RotateSecretWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(rotateSecretWebhooksRequestFieldWorkspaceID)
-}
-
 // SetEndpointID sets the EndpointID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (r *RotateSecretWebhooksRequest) SetEndpointID(endpointID string) {
@@ -423,25 +301,23 @@ func (r *RotateSecretWebhooksRequest) SetEndpointID(endpointID string) {
 }
 
 var (
-	searchDeliveriesWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	searchDeliveriesWebhooksRequestFieldCursor      = big.NewInt(1 << 1)
-	searchDeliveriesWebhooksRequestFieldLimit       = big.NewInt(1 << 2)
-	searchDeliveriesWebhooksRequestFieldEventType   = big.NewInt(1 << 3)
-	searchDeliveriesWebhooksRequestFieldStatus      = big.NewInt(1 << 4)
-	searchDeliveriesWebhooksRequestFieldEndpointID  = big.NewInt(1 << 5)
-	searchDeliveriesWebhooksRequestFieldSince       = big.NewInt(1 << 6)
-	searchDeliveriesWebhooksRequestFieldUntil       = big.NewInt(1 << 7)
+	searchDeliveriesWebhooksRequestFieldCursor     = big.NewInt(1 << 0)
+	searchDeliveriesWebhooksRequestFieldLimit      = big.NewInt(1 << 1)
+	searchDeliveriesWebhooksRequestFieldEventType  = big.NewInt(1 << 2)
+	searchDeliveriesWebhooksRequestFieldStatus     = big.NewInt(1 << 3)
+	searchDeliveriesWebhooksRequestFieldEndpointID = big.NewInt(1 << 4)
+	searchDeliveriesWebhooksRequestFieldSince      = big.NewInt(1 << 5)
+	searchDeliveriesWebhooksRequestFieldUntil      = big.NewInt(1 << 6)
 )
 
 type SearchDeliveriesWebhooksRequest struct {
-	WorkspaceID string                 `json:"-" url:"-"`
-	Cursor      *string                `json:"-" url:"cursor,omitempty"`
-	Limit       *string                `json:"-" url:"limit,omitempty"`
-	EventType   *WebhookEventType      `json:"-" url:"eventType,omitempty"`
-	Status      *WebhookDeliveryStatus `json:"-" url:"status,omitempty"`
-	EndpointID  *string                `json:"-" url:"endpointId,omitempty"`
-	Since       *string                `json:"-" url:"since,omitempty"`
-	Until       *string                `json:"-" url:"until,omitempty"`
+	Cursor     *string                `json:"-" url:"cursor,omitempty"`
+	Limit      *string                `json:"-" url:"limit,omitempty"`
+	EventType  *WebhookEventType      `json:"-" url:"eventType,omitempty"`
+	Status     *WebhookDeliveryStatus `json:"-" url:"status,omitempty"`
+	EndpointID *string                `json:"-" url:"endpointId,omitempty"`
+	Since      *string                `json:"-" url:"since,omitempty"`
+	Until      *string                `json:"-" url:"until,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -454,13 +330,6 @@ func (s *SearchDeliveriesWebhooksRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SearchDeliveriesWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(searchDeliveriesWebhooksRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -513,15 +382,13 @@ func (s *SearchDeliveriesWebhooksRequest) SetUntil(until *string) {
 }
 
 var (
-	sendTestWebhooksRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	sendTestWebhooksRequestFieldEndpointID  = big.NewInt(1 << 1)
-	sendTestWebhooksRequestFieldEventType   = big.NewInt(1 << 2)
+	sendTestWebhooksRequestFieldEndpointID = big.NewInt(1 << 0)
+	sendTestWebhooksRequestFieldEventType  = big.NewInt(1 << 1)
 )
 
 type SendTestWebhooksRequest struct {
-	WorkspaceID string                        `json:"-" url:"-"`
-	EndpointID  string                        `json:"-" url:"-"`
-	EventType   *SubscribableWebhookEventType `json:"-" url:"eventType,omitempty"`
+	EndpointID string                        `json:"-" url:"-"`
+	EventType  *SubscribableWebhookEventType `json:"-" url:"eventType,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -534,13 +401,6 @@ func (s *SendTestWebhooksRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SendTestWebhooksRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(sendTestWebhooksRequestFieldWorkspaceID)
 }
 
 // SetEndpointID sets the EndpointID field and marks it as non-optional;
@@ -2631,19 +2491,17 @@ func (w *WebhookRedeliverySkipped) String() string {
 }
 
 var (
-	webhookEndpointChangeFieldWorkspaceID  = big.NewInt(1 << 0)
-	webhookEndpointChangeFieldEndpointID   = big.NewInt(1 << 1)
-	webhookEndpointChangeFieldChannelIDs   = big.NewInt(1 << 2)
-	webhookEndpointChangeFieldDescription  = big.NewInt(1 << 3)
-	webhookEndpointChangeFieldEnabled      = big.NewInt(1 << 4)
-	webhookEndpointChangeFieldEventTypes   = big.NewInt(1 << 5)
-	webhookEndpointChangeFieldHeaders      = big.NewInt(1 << 6)
-	webhookEndpointChangeFieldURL          = big.NewInt(1 << 7)
-	webhookEndpointChangeFieldWorkspaceIDs = big.NewInt(1 << 8)
+	webhookEndpointChangeFieldEndpointID   = big.NewInt(1 << 0)
+	webhookEndpointChangeFieldChannelIDs   = big.NewInt(1 << 1)
+	webhookEndpointChangeFieldDescription  = big.NewInt(1 << 2)
+	webhookEndpointChangeFieldEnabled      = big.NewInt(1 << 3)
+	webhookEndpointChangeFieldEventTypes   = big.NewInt(1 << 4)
+	webhookEndpointChangeFieldHeaders      = big.NewInt(1 << 5)
+	webhookEndpointChangeFieldURL          = big.NewInt(1 << 6)
+	webhookEndpointChangeFieldWorkspaceIDs = big.NewInt(1 << 7)
 )
 
 type WebhookEndpointChange struct {
-	WorkspaceID  string                         `json:"-" url:"-"`
 	EndpointID   string                         `json:"-" url:"-"`
 	ChannelIDs   []string                       `json:"channelIds,omitempty" url:"-"`
 	Description  *string                        `json:"description,omitempty" url:"-"`
@@ -2664,13 +2522,6 @@ func (w *WebhookEndpointChange) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	w.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WebhookEndpointChange) SetWorkspaceID(workspaceID string) {
-	w.WorkspaceID = workspaceID
-	w.require(webhookEndpointChangeFieldWorkspaceID)
 }
 
 // SetEndpointID sets the EndpointID field and marks it as non-optional;

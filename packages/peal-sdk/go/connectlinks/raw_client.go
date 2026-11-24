@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListConnectLinksRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.ConnectLink], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/connect-links",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/connect-links"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/connect-links",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/connect-links"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -136,8 +129,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/connect-links/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/connect-links/%v",
 		request.LinkID,
 	)
 	headers := internal.MergeHeaders(
@@ -182,8 +174,7 @@ func (r *RawClient) Revoke(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/connect-links/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/connect-links/%v",
 		request.LinkID,
 	)
 	headers := internal.MergeHeaders(

@@ -35,15 +35,11 @@ impl CapabilitiesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .capabilities
-    ///         .platforms(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.capabilities.platforms(None).await;
     /// }
     /// ```
     pub async fn platforms(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<PlatformCapabilities>, ApiError> {
         let options = {
@@ -56,7 +52,7 @@ impl CapabilitiesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/platforms/capabilities", workspace_id),
+                "api/v1/platforms/capabilities",
                 None,
                 None,
                 options,
@@ -88,13 +84,12 @@ impl CapabilitiesClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .capabilities
-    ///         .channel(&"workspaceId".to_string(), &"channelId".to_string(), None)
+    ///         .channel(&"channelId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn channel(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ChannelCapabilities, ApiError> {
@@ -108,10 +103,7 @@ impl CapabilitiesClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/channels/{}/capabilities",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/capabilities", channel_id),
                 None,
                 None,
                 options,

@@ -10,7 +10,7 @@ peal media generate --prompt "A paper catalogue open on a wooden table, morning 
 ```
 
 - Make an image only when the user asked for one. Each call makes a new
-  image. `GET /api/workspaces/{workspaceId}/assistant` says who makes it
+  image. `GET /api/v1/assistant` says who makes it
   (`images.source`): `workspace`, the provider the workspace set, which
   costs none of the day's assistant requests on any plan, up to 50 images
   a day (`own_image_limit_reached` past them); `server`, the
@@ -35,7 +35,7 @@ peal media generate --prompt "A paper catalogue open on a wooden table, morning 
   Past two images a workspace makes at once, it answers
   `MediaImportBusy`: try again in a moment.
 
-Over HTTP, `POST /api/workspaces/{workspaceId}/assistant/images` takes
+Over HTTP, `POST /api/v1/assistant/images` takes
 `{"prompt": "…", "aspect": "square"}` and answers 201 with the media. The
 MCP tool is `generate_image`. The writing assistant has no command and no
 tool: write the post's text yourself.

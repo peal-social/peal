@@ -322,7 +322,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   workspace's home while undecided, `ConsentSetting` on the Preferences page.
 - Pages fetch through the client derived from `peal-contract`, with
   `@effect/atom-react`: query atoms come from `PealApi` in `src/api/client.ts`.
-  Browsers call `/api`; server code calls `PEAL_API_URL`.
+  Browsers call `/api`; server code calls `PEAL_API_URL`. A call of a
+  workspace endpoint names its workspace in its own `headers`
+  (`headers: forWorkspace(workspaceId)`, from `peal-contract`, merged
+  with an idempotency key where there is one), never through a transform
+  of the client: query atoms are keyed by a call's arguments, so two
+  workspaces' queries stay apart. A link cannot carry that header: a file
+  of a workspace endpoint is fetched through the API's client
+  (`fetchFrom`, so its refusals are read as every call's, the two-step
+  notice included) and saved from an anchor put in the document
+  (`downloadExport`, `#analytics/export-download.ts`).
 - Server Components read the signed-in user with `currentUser()` from
   `#auth/session.ts` (GET /api/me with the request's cookies, once per
   request); the header uses `currentUserOrNone()`, so pages stay up when the

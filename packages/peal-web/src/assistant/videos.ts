@@ -14,6 +14,7 @@ import type {
   VideoRequestRejected,
   VideoUnavailable,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import { aiProviders } from "peal-contract/ai-providers";
 import type { AiVideoOffer } from "peal-contract/ai-providers";
@@ -106,6 +107,7 @@ export type VideoFailure =
   | VideoRequestRejected
   | VideoUnavailable
   | WorkspaceNotFound
+  | WorkspaceRequired
   // The request failed in a way the API does not declare.
   | { readonly _tag: "Unexpected" };
 
@@ -140,6 +142,7 @@ export const videoFailureKey = (failure: VideoFailure): VideoFailureKey =>
     VideoUnavailable: ({ reason }): VideoFailureKey =>
       reason === "notSet" ? "unavailable" : "keyUnreadable",
     WorkspaceNotFound: (): VideoFailureKey => "generic",
+    WorkspaceRequired: (): VideoFailureKey => "generic",
   });
 
 /** Whether the refusal is the provider's settings, to fix in the assistant settings. */

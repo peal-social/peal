@@ -61,7 +61,6 @@ public class Example {
             .build();
 
         client.apiKeys().create(
-            "workspaceId",
             NewApiKey
                 .builder()
                 .name("name")

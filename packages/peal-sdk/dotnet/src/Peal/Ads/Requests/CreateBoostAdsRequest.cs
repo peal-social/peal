@@ -7,9 +7,6 @@ namespace Peal;
 public record CreateBoostAdsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string IdempotencyKey { get; set; }
 
     [JsonIgnore]

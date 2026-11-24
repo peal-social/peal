@@ -13,7 +13,6 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     }
 
     private async Task<WithRawResponse<PartnerStanding>> GetAsyncCore(
-        GetPartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class PartnerAccountClient : IPartnerAccountClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -174,10 +182,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -231,6 +236,18 @@ public partial class PartnerAccountClient : IPartnerAccountClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -312,7 +329,6 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     }
 
     private async Task<RawResponse> CloseAsyncCore(
-        ClosePartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -331,10 +347,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Delete,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -359,6 +372,18 @@ public partial class PartnerAccountClient : IPartnerAccountClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -459,10 +484,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethodExtensions.Patch,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -516,6 +538,18 @@ public partial class PartnerAccountClient : IPartnerAccountClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -597,7 +631,6 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     }
 
     private async Task<WithRawResponse<IEnumerable<PartnerKey>>> ListKeysAsyncCore(
-        ListKeysPartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -616,10 +649,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner/keys",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account/keys",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -670,6 +700,18 @@ public partial class PartnerAccountClient : IPartnerAccountClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -758,10 +800,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner/keys",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account/keys",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -815,6 +854,18 @@ public partial class PartnerAccountClient : IPartnerAccountClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -916,8 +967,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/partner/keys/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/partner-account/keys/{0}",
                         ValueConvert.ToPathParameterString(request.PartnerKeyId)
                     ),
                     QueryString = _queryString,
@@ -944,6 +994,18 @@ public partial class PartnerAccountClient : IPartnerAccountClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1034,10 +1096,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner/overview",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account/overview",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1192,10 +1251,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/partner/workspaces",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/partner-account/workspaces",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1330,26 +1386,21 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     /// The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (`canOpen`). Needs partner:read.
     /// </summary>
     /// <example><code>
-    /// await client.PartnerAccount.GetAsync(new GetPartnerAccountRequest { WorkspaceId = "workspaceId" });
+    /// await client.PartnerAccount.GetAsync();
     /// </code></example>
     public WithRawResponseTask<PartnerStanding> GetAsync(
-        GetPartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask<PartnerStanding>(
-            GetAsyncCore(request, options, cancellationToken)
-        );
+        return new WithRawResponseTask<PartnerStanding>(GetAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 `PartnerAccountsClosed`. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
     /// </summary>
     /// <example><code>
-    /// await client.PartnerAccount.OpenAsync(
-    ///     new OpenPartner { WorkspaceId = "workspaceId", Name = "name" }
-    /// );
+    /// await client.PartnerAccount.OpenAsync(new OpenPartner { Name = "name" });
     /// </code></example>
     public WithRawResponseTask<Partner> OpenAsync(
         OpenPartner request,
@@ -1364,24 +1415,21 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     /// Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 `PartnerOwnsWorkspaces`): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
     /// </summary>
     /// <example><code>
-    /// await client.PartnerAccount.CloseAsync(
-    ///     new ClosePartnerAccountRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.PartnerAccount.CloseAsync();
     /// </code></example>
     public WithRawResponseTask CloseAsync(
-        ClosePartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
-        return new WithRawResponseTask(CloseAsyncCore(request, options, cancellationToken));
+        return new WithRawResponseTask(CloseAsyncCore(options, cancellationToken));
     }
 
     /// <summary>
     /// Changes the partner account's name, its logo (an HTTPS URL, shown from that address on the hosted pages; null removes it), its accent colour (`#RRGGBB`, drawn as a line beside the logo on the hosted pages, with at least 3:1 contrast against white and against Peal's page background `#FAFAF9`, so it is seen on Peal's light pages; null removes it) or its return origins: what is left out stays as it is. `returnOrigins` replaces the whole list, 20 at most: each is an origin as browsers write it (`https://app.example.com`: HTTPS, or HTTP on this machine alone, with nothing after the host and port). A hosted page sends a customer back only to an address whose origin is one of these, exactly. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
     /// </summary>
     /// <example><code>
-    /// await client.PartnerAccount.UpdateAsync(new PartnerChange { WorkspaceId = "workspaceId" });
+    /// await client.PartnerAccount.UpdateAsync(new PartnerChange());
     /// </code></example>
     public WithRawResponseTask<Partner> UpdateAsync(
         PartnerChange request,
@@ -1398,18 +1446,15 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     /// Lists the partner account's keys. Needs partner:read.
     /// </summary>
     /// <example><code>
-    /// await client.PartnerAccount.ListKeysAsync(
-    ///     new ListKeysPartnerAccountRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.PartnerAccount.ListKeysAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<PartnerKey>> ListKeysAsync(
-        ListKeysPartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<PartnerKey>>(
-            ListKeysAsyncCore(request, options, cancellationToken)
+            ListKeysAsyncCore(options, cancellationToken)
         );
     }
 
@@ -1420,7 +1465,6 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     /// await client.PartnerAccount.CreateKeyAsync(
     ///     new NewPartnerKey
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Name = "name",
     ///         Permissions = new List<permission>() { Permission.ActivityRead },
     ///         Scopes = new List&lt;PartnerScope&gt;() { PartnerScope.WorkspacesRead },
@@ -1444,11 +1488,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     /// </summary>
     /// <example><code>
     /// await client.PartnerAccount.RevokeKeyAsync(
-    ///     new RevokeKeyPartnerAccountRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PartnerKeyId = "partnerKeyId",
-    ///     }
+    ///     new RevokeKeyPartnerAccountRequest { PartnerKeyId = "partnerKeyId" }
     /// );
     /// </code></example>
     public WithRawResponseTask RevokeKeyAsync(
@@ -1464,9 +1504,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     /// Answers, for each workspace the partner owns, what needs attention: its channels (`connected`, `toReconnect`: to reconnect, as `channel.reconnect_needed` told; `off`: turned off), its posts (`scheduledNext7Days`, `awaitingApproval`, `failedLast7Days`: finished in the last 7 days with a channel that failed, as `post.failed` told; `unconfirmedLast7Days`: one that may be live and must be checked) and its inbox (`unanswered`: threads with a comment waiting for an answer). It tells the state at the time of the call; webhooks tell each change as it happens. A section is null where the credential may not read it, never zero. The partner's home workspace is not listed: it is no customer. Newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400): page through every customer to find those that need attention, as nothing filters them. `account` comes with the first page only: whether the account's workspaces, which share one plan and one channel count, hold more channels than the plan allows, and so schedule and publish nothing (null on a server that does not bill); with no customer yet, it is the home workspace's own standing. For the home workspace's people: each section only where the caller holds its permission in the home workspace (`channel:read`, `post:read`, `engagement:read`), as the overview across their workspaces gives it, so staff acting as a member read no inbox; `mayApprove` is always false, as they are members of no customer's workspace. Needs partner:read.
     /// </summary>
     /// <example><code>
-    /// await client.PartnerAccount.OverviewAsync(
-    ///     new OverviewPartnerAccountRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.PartnerAccount.OverviewAsync(new OverviewPartnerAccountRequest());
     /// </code></example>
     public WithRawResponseTask<PartnerHealth> OverviewAsync(
         OverviewPartnerAccountRequest request,
@@ -1483,9 +1521,7 @@ public partial class PartnerAccountClient : IPartnerAccountClient
     /// Lists the workspaces the partner account owns, newest first, each with the number of channels connected in it, 50 a page unless `limit` (at most 100) says otherwise, with the filters and the paging of the partner API's list. Needs partner:read.
     /// </summary>
     /// <example><code>
-    /// await client.PartnerAccount.ListWorkspacesAsync(
-    ///     new ListWorkspacesPartnerAccountRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.PartnerAccount.ListWorkspacesAsync(new ListWorkspacesPartnerAccountRequest());
     /// </code></example>
     public WithRawResponseTask<CustomerWorkspacePage> ListWorkspacesAsync(
         ListWorkspacesPartnerAccountRequest request,

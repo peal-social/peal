@@ -8,11 +8,10 @@ import type { signedIn } from "#workspace.ts";
 
 type SignedInClient = Effect.Success<typeof signedIn>["client"];
 
-/** Where a command sends media: the server, as the user, in a workspace. */
+/** Where a command sends media: the server, as the user, in the workspace its client names. */
 export interface MediaDestination {
   readonly client: SignedInClient;
   readonly url: string;
-  readonly workspaceId: string;
 }
 
 // The types Peal stores, by the extensions files of each carry: the server
@@ -113,7 +112,7 @@ const put = (request: SignedRequest, bytes: Uint8Array) =>
  * probes it. An upload that fails leaves no pending media behind.
  */
 export const uploadFile = (
-  { client, url, workspaceId }: MediaDestination,
+  { client, url }: MediaDestination,
   given: string,
   altText: Option.Option<string>
 ): Effect.Effect<
@@ -142,11 +141,9 @@ export const uploadFile = (
       });
     }
 
-    const params = { workspaceId };
-
     const prepared = yield* client.media
       .create({
-        params,
+        headers: {},
         // The file's own name, so the library finds it by it.
         payload: {
           ...altOf(altText),
@@ -157,7 +154,7 @@ export const uploadFile = (
       })
       .pipe(Effect.mapError(explain(url)));
 
-    const mediaParams = { ...params, mediaId: prepared.media.id };
+    const mediaParams = { mediaId: prepared.media.id };
 
     const send = Effect.gen(function* sendingFile() {
       const handle = yield* fs.open(file, { flag: "r" });
@@ -215,30 +212,34 @@ export const uploadFile = (
 
     yield* send.pipe(
       Effect.tapError(() =>
-        client.media.delete({ params: mediaParams }).pipe(Effect.ignore)
+        client.media
+          .delete({ headers: {}, params: mediaParams })
+          .pipe(Effect.ignore)
       )
     );
 
     // The server checks a few files at once: past them it answers busy,
     // the file uploaded, and completing again checks it.
-    return yield* client.media.complete({ params: mediaParams }).pipe(
-      Effect.retry({
-        schedule: completeRetrySchedule,
-        while: (error) => error._tag === "MediaImportBusy",
-      }),
-      Effect.mapError(explain(url))
-    );
+    return yield* client.media
+      .complete({ headers: {}, params: mediaParams })
+      .pipe(
+        Effect.retry({
+          schedule: completeRetrySchedule,
+          while: (error) => error._tag === "MediaImportBusy",
+        }),
+        Effect.mapError(explain(url))
+      );
   });
 
 /** Has the server fetch a file from a public address, as media. */
 export const importAddress = (
-  { client, url, workspaceId }: MediaDestination,
+  { client, url }: MediaDestination,
   address: string,
   altText: Option.Option<string>
 ) =>
   client.media
     .importFromUrl({
-      params: { workspaceId },
+      headers: {},
       payload: { ...altOf(altText), url: address },
     })
     .pipe(Effect.mapError(explain(url)));

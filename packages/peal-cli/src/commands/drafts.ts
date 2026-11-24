@@ -75,7 +75,7 @@ const list = Command.make(
 
     const page = yield* client.posts
       .drafts({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(cursor, {
             onNone: () => ({}),
@@ -182,7 +182,6 @@ const save = Command.make(
   Effect.fn("drafts.save")(function* save(input) {
     const session = yield* inWorkspace(input.workspace);
     const { client, url, workspace } = session;
-    const params = { workspaceId: workspace.id };
     const given = yield* Effect.all(input.options.map(optionsOf));
     const followUps = yield* followUpsOf(input.parts, input.partsDelay);
 
@@ -230,7 +229,7 @@ const save = Command.make(
         }).pipe(
           Effect.flatMap((payload) =>
             client.posts
-              .create({ params, payload })
+              .create({ headers: {}, payload })
               .pipe(Effect.mapError(explain(url)))
           )
         ),
@@ -238,7 +237,7 @@ const save = Command.make(
       // its text on some channels, its parts, and its options on the
       // channels it keeps.
       onSome: (postId) =>
-        client.posts.get({ params: { ...params, postId } }).pipe(
+        client.posts.get({ headers: {}, params: { postId } }).pipe(
           Effect.mapError(explain(url)),
           Effect.flatMap((draft) => {
             const channelIds =
@@ -268,7 +267,7 @@ const save = Command.make(
           }),
           Effect.flatMap((payload) =>
             client.posts
-              .update({ params: { ...params, postId }, payload })
+              .update({ headers: {}, params: { postId }, payload })
               .pipe(Effect.mapError(explain(url)))
           )
         ),
@@ -311,7 +310,7 @@ const discard = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     yield* client.posts
-      .discard({ params: { postId, workspaceId: workspace.id } })
+      .discard({ headers: {}, params: { postId } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json

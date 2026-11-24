@@ -18,6 +18,8 @@ export type BaseClientOptions = {
     baseUrl?: core.Supplier<string>;
     /** Override the Peal-Version header */
     pealVersion?: "2026-11-09";
+    /** Override the Peal-Workspace header */
+    workspace?: core.Supplier<string | undefined>;
     /** Additional headers to include in requests. */
     headers?: Record<string, string | core.Supplier<string | null | undefined> | null | undefined>;
     /** The default maximum time to wait for a response in seconds. */
@@ -43,6 +45,8 @@ export interface BaseRequestOptions {
     abortSignal?: AbortSignal;
     /** Override the Peal-Version header */
     pealVersion?: "2026-11-09";
+    /** Override the Peal-Workspace header */
+    workspace?: string | undefined;
     /** Additional query string parameters to include in the request. */
     queryParams?: Record<string, unknown>;
     /** A dictionary containing additional parameters to spread into the request's body. */
@@ -66,7 +70,7 @@ export function normalizeClientOptions<T extends BaseClientOptions = BaseClientO
     options: T
 ): NormalizedClientOptions<T> {
     const headers = mergeHeaders(
-        { "Peal-Version": options?.pealVersion ?? "2026-11-09" },
+        { "Peal-Version": options?.pealVersion ?? "2026-11-09", "Peal-Workspace": options?.workspace },
         options?.headers
     );
 

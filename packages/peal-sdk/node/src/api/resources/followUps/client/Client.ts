@@ -40,16 +40,14 @@ export class FollowUpsClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.followUps.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.followUps.list()
      */
-    public list(request: Peal.ListFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<Peal.FollowUpRulePage> {
+    public list(request: Peal.ListFollowUpsRequest = {}, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<Peal.FollowUpRulePage> {
         return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
     }
 
-    private async __list(request: Peal.ListFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRulePage>> {
-        const { workspaceId, cursor, limit, postId, status } = request;
+    private async __list(request: Peal.ListFollowUpsRequest = {}, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRulePage>> {
+        const { cursor, limit, postId, status } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             limit,
@@ -57,9 +55,9 @@ export class FollowUpsClient {
             status: status != null ? status : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/follow-ups`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/follow-ups"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -88,7 +86,7 @@ export class FollowUpsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/follow-ups");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/follow-ups");
     }
 
     /**
@@ -109,7 +107,6 @@ export class FollowUpsClient {
      *
      * @example
      *     await client.followUps.create({
-     *         workspaceId: "workspaceId",
      *         likes: 1
      *     })
      */
@@ -118,12 +115,198 @@ export class FollowUpsClient {
     }
 
     private async __create(request: Peal.NewFollowUpRule, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRule>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/follow-ups`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/follow-ups"),
             method: "POST",
+            headers: _headers,
+            contentType: "application/json",
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            requestType: "json",
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: 0,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging
+        });
+        if (_response.ok) {
+            return { data: _response.body as Peal.FollowUpRule, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
+                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
+                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
+                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
+                case 409: throw new Peal.ConflictError(_response.error.body as unknown, _response.rawResponse);
+                case 422: throw new Peal.UnprocessableEntityError(_response.error.body as unknown, _response.rawResponse);
+                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
+                default: throw new errors.PealError({
+                    statusCode: _response.error.statusCode,
+                    body: _response.error.body,
+                    rawResponse: _response.rawResponse
+                });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/follow-ups");
+    }
+
+    /**
+     * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
+     *
+     * @param {Peal.GetFollowUpsRequest} request
+     * @param {FollowUpsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link Peal.BadRequestError}
+     * @throws {@link Peal.UnauthorizedError}
+     * @throws {@link Peal.ForbiddenError}
+     * @throws {@link Peal.NotFoundError}
+     * @throws {@link Peal.TooManyRequestsError}
+     * @throws {@link errors.PealError}
+     * @throws {@link errors.PealTimeoutError}
+     *
+     * @example
+     *     await client.followUps.get({
+     *         ruleId: "ruleId"
+     *     })
+     */
+    public get(request: Peal.GetFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<Peal.FollowUpRule> {
+        return core.HttpResponsePromise.fromPromise(this.__get(request, requestOptions));
+    }
+
+    private async __get(request: Peal.GetFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRule>> {
+        const { ruleId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
+        const _response = await core.fetcher({
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging
+        });
+        if (_response.ok) {
+            return { data: _response.body as Peal.FollowUpRule, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
+                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
+                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
+                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
+                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
+                default: throw new errors.PealError({
+                    statusCode: _response.error.statusCode,
+                    body: _response.error.body,
+                    rawResponse: _response.rawResponse
+                });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/follow-ups/{ruleId}");
+    }
+
+    /**
+     * Stops a rule: it ends `stopped`, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
+     *
+     * @param {Peal.DeleteFollowUpsRequest} request
+     * @param {FollowUpsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link Peal.BadRequestError}
+     * @throws {@link Peal.UnauthorizedError}
+     * @throws {@link Peal.ForbiddenError}
+     * @throws {@link Peal.NotFoundError}
+     * @throws {@link Peal.TooManyRequestsError}
+     * @throws {@link errors.PealError}
+     * @throws {@link errors.PealTimeoutError}
+     *
+     * @example
+     *     await client.followUps.delete({
+     *         ruleId: "ruleId"
+     *     })
+     */
+    public delete(request: Peal.DeleteFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<void> {
+        return core.HttpResponsePromise.fromPromise(this.__delete(request, requestOptions));
+    }
+
+    private async __delete(request: Peal.DeleteFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
+        const { ruleId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
+        const _response = await core.fetcher({
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            method: "DELETE",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging
+        });
+        if (_response.ok) {
+            return { data: undefined, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
+                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
+                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
+                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
+                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
+                default: throw new errors.PealError({
+                    statusCode: _response.error.statusCode,
+                    body: _response.error.body,
+                    rawResponse: _response.rawResponse
+                });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/follow-ups/{ruleId}");
+    }
+
+    /**
+     * Changes a rule's `likes`, its `comment` (null takes it away) or whether it reposts, or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
+     *
+     * @param {Peal.FollowUpRuleChange} request
+     * @param {FollowUpsClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link Peal.BadRequestError}
+     * @throws {@link Peal.UnauthorizedError}
+     * @throws {@link Peal.ForbiddenError}
+     * @throws {@link Peal.NotFoundError}
+     * @throws {@link Peal.ConflictError}
+     * @throws {@link Peal.UnprocessableEntityError}
+     * @throws {@link Peal.TooManyRequestsError}
+     * @throws {@link errors.PealError}
+     * @throws {@link errors.PealTimeoutError}
+     *
+     * @example
+     *     await client.followUps.update({
+     *         ruleId: "ruleId"
+     *     })
+     */
+    public update(request: Peal.FollowUpRuleChange, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<Peal.FollowUpRule> {
+        return core.HttpResponsePromise.fromPromise(this.__update(request, requestOptions));
+    }
+
+    private async __update(request: Peal.FollowUpRuleChange, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRule>> {
+        const { ruleId, ..._body } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
+        const _response = await core.fetcher({
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            method: "PATCH",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -156,191 +339,7 @@ export class FollowUpsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/follow-ups");
-    }
-
-    /**
-     * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
-     *
-     * @param {Peal.GetFollowUpsRequest} request
-     * @param {FollowUpsClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.followUps.get({
-     *         workspaceId: "workspaceId",
-     *         ruleId: "ruleId"
-     *     })
-     */
-    public get(request: Peal.GetFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<Peal.FollowUpRule> {
-        return core.HttpResponsePromise.fromPromise(this.__get(request, requestOptions));
-    }
-
-    private async __get(request: Peal.GetFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRule>> {
-        const { workspaceId, ruleId } = request;
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}`),
-            method: "GET",
-            headers: _headers,
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: _response.body as Peal.FollowUpRule, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/follow-ups/{ruleId}");
-    }
-
-    /**
-     * Stops a rule: it ends `stopped`, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
-     *
-     * @param {Peal.DeleteFollowUpsRequest} request
-     * @param {FollowUpsClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.followUps.delete({
-     *         workspaceId: "workspaceId",
-     *         ruleId: "ruleId"
-     *     })
-     */
-    public delete(request: Peal.DeleteFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<void> {
-        return core.HttpResponsePromise.fromPromise(this.__delete(request, requestOptions));
-    }
-
-    private async __delete(request: Peal.DeleteFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, ruleId } = request;
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}`),
-            method: "DELETE",
-            headers: _headers,
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: undefined, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/follow-ups/{ruleId}");
-    }
-
-    /**
-     * Changes a rule's `likes`, its `comment` (null takes it away) or whether it reposts, or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
-     *
-     * @param {Peal.FollowUpRuleChange} request
-     * @param {FollowUpsClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.ConflictError}
-     * @throws {@link Peal.UnprocessableEntityError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.followUps.update({
-     *         workspaceId: "workspaceId",
-     *         ruleId: "ruleId"
-     *     })
-     */
-    public update(request: Peal.FollowUpRuleChange, requestOptions?: FollowUpsClient.RequestOptions): core.HttpResponsePromise<Peal.FollowUpRule> {
-        return core.HttpResponsePromise.fromPromise(this.__update(request, requestOptions));
-    }
-
-    private async __update(request: Peal.FollowUpRuleChange, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRule>> {
-        const { workspaceId, ruleId, ..._body } = request;
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}`),
-            method: "PATCH",
-            headers: _headers,
-            contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: 0,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: _response.body as Peal.FollowUpRule, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 409: throw new Peal.ConflictError(_response.error.body as unknown, _response.rawResponse);
-                case 422: throw new Peal.UnprocessableEntityError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/workspaces/{workspaceId}/follow-ups/{ruleId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/v1/follow-ups/{ruleId}");
     }
 
     /**
@@ -349,6 +348,7 @@ export class FollowUpsClient {
      * @param {Peal.ApproveFollowUpsRequest} request
      * @param {FollowUpsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -359,7 +359,6 @@ export class FollowUpsClient {
      *
      * @example
      *     await client.followUps.approve({
-     *         workspaceId: "workspaceId",
      *         ruleId: "ruleId"
      *     })
      */
@@ -368,11 +367,11 @@ export class FollowUpsClient {
     }
 
     private async __approve(request: Peal.ApproveFollowUpsRequest, requestOptions?: FollowUpsClient.RequestOptions): Promise<core.WithRawResponse<Peal.FollowUpRule>> {
-        const { workspaceId, ruleId } = request;
+        const { ruleId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}/approve`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/follow-ups/${core.url.encodePathParam(ruleId, errors.PealError)}/approve`),
             method: "POST",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -388,6 +387,7 @@ export class FollowUpsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -401,6 +401,6 @@ export class FollowUpsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/follow-ups/{ruleId}/approve");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/follow-ups/{ruleId}/approve");
     }
 }

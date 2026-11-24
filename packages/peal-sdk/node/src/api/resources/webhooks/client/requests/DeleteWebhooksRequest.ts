@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         endpointId: "endpointId"
  *     }
  */
 export interface DeleteWebhooksRequest {
-    workspaceId: string;
     endpointId: string;
 }

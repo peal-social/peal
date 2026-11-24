@@ -36,7 +36,7 @@ public class ReplyToReviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/reviewId/reply")
+                    .WithPath("/api/v1/inbox/reviews/reviewId/reply")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -49,12 +49,7 @@ public class ReplyToReviewTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.ReplyToReviewAsync(
-            new NewInboxReviewReply
-            {
-                WorkspaceId = "workspaceId",
-                ReviewId = "reviewId",
-                Text = "x",
-            }
+            new NewInboxReviewReply { ReviewId = "reviewId", Text = "x" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -86,7 +81,7 @@ public class ReplyToReviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/reviews/reviewId/reply")
+                    .WithPath("/api/v1/inbox/reviews/reviewId/reply")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -99,12 +94,7 @@ public class ReplyToReviewTest : BaseMockServerTest
             );
 
         var response = await Client.InboxReviews.ReplyToReviewAsync(
-            new NewInboxReviewReply
-            {
-                WorkspaceId = "workspaceId",
-                ReviewId = "reviewId",
-                Text = "text",
-            }
+            new NewInboxReviewReply { ReviewId = "reviewId", Text = "text" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

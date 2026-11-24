@@ -46,7 +46,7 @@ public class PreviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/preview")
+                    .WithPath("/api/v1/feeds/preview")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -59,12 +59,7 @@ public class PreviewTest : BaseMockServerTest
             );
 
         var response = await Client.Feeds.PreviewAsync(
-            new FeedPreviewRequest
-            {
-                WorkspaceId = "workspaceId",
-                Template = null,
-                Url = "url",
-            }
+            new FeedPreviewRequest { Template = null, Url = "url" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -98,7 +93,7 @@ public class PreviewTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/preview")
+                    .WithPath("/api/v1/feeds/preview")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -110,9 +105,7 @@ public class PreviewTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Feeds.PreviewAsync(
-            new FeedPreviewRequest { WorkspaceId = "workspaceId", Url = "url" }
-        );
+        var response = await Client.Feeds.PreviewAsync(new FeedPreviewRequest { Url = "url" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

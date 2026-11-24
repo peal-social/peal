@@ -32,7 +32,7 @@ public class CreateWorkspaceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces")
+                    .WithPath("/api/v1/partner/workspaces")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -73,7 +73,7 @@ public class CreateWorkspaceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces")
+                    .WithPath("/api/v1/partner/workspaces")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)

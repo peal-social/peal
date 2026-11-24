@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         capability: "text",
  *         provider: "anthropic"
  *     }
  */
 export interface AiCapabilityModelChange {
-    workspaceId: string;
     capability: Peal.AiCapability;
     model?: string;
     provider: Peal.AiProvider;

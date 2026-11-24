@@ -10,54 +10,11 @@ import (
 )
 
 var (
-	createQueuesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type CreateQueuesRequest struct {
-	WorkspaceID string        `json:"-" url:"-"`
-	Body        *QueueDetails `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (c *CreateQueuesRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CreateQueuesRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(createQueuesRequestFieldWorkspaceID)
-}
-
-func (c *CreateQueuesRequest) UnmarshalJSON(data []byte) error {
-	body := new(QueueDetails)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	c.Body = body
-	return nil
-}
-
-func (c *CreateQueuesRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.Body)
-}
-
-var (
-	deleteQueuesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteQueuesRequestFieldQueueID     = big.NewInt(1 << 1)
+	deleteQueuesRequestFieldQueueID = big.NewInt(1 << 0)
 )
 
 type DeleteQueuesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	QueueID     string `json:"-" url:"-"`
+	QueueID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -72,13 +29,6 @@ func (d *DeleteQueuesRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteQueuesRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteQueuesRequestFieldWorkspaceID)
-}
-
 // SetQueueID sets the QueueID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteQueuesRequest) SetQueueID(queueID string) {
@@ -87,13 +37,11 @@ func (d *DeleteQueuesRequest) SetQueueID(queueID string) {
 }
 
 var (
-	getQueuesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getQueuesRequestFieldQueueID     = big.NewInt(1 << 1)
+	getQueuesRequestFieldQueueID = big.NewInt(1 << 0)
 )
 
 type GetQueuesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	QueueID     string `json:"-" url:"-"`
+	QueueID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -108,13 +56,6 @@ func (g *GetQueuesRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetQueuesRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getQueuesRequestFieldWorkspaceID)
-}
-
 // SetQueueID sets the QueueID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetQueuesRequest) SetQueueID(queueID string) {
@@ -123,40 +64,11 @@ func (g *GetQueuesRequest) SetQueueID(queueID string) {
 }
 
 var (
-	listQueuesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListQueuesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListQueuesRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListQueuesRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listQueuesRequestFieldWorkspaceID)
-}
-
-var (
-	reshuffleQueuesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	reshuffleQueuesRequestFieldQueueID     = big.NewInt(1 << 1)
+	reshuffleQueuesRequestFieldQueueID = big.NewInt(1 << 0)
 )
 
 type ReshuffleQueuesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	QueueID     string `json:"-" url:"-"`
+	QueueID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -171,13 +83,6 @@ func (r *ReshuffleQueuesRequest) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReshuffleQueuesRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(reshuffleQueuesRequestFieldWorkspaceID)
-}
-
 // SetQueueID sets the QueueID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (r *ReshuffleQueuesRequest) SetQueueID(queueID string) {
@@ -186,15 +91,13 @@ func (r *ReshuffleQueuesRequest) SetQueueID(queueID string) {
 }
 
 var (
-	slotsQueuesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	slotsQueuesRequestFieldQueueID     = big.NewInt(1 << 1)
-	slotsQueuesRequestFieldCount       = big.NewInt(1 << 2)
+	slotsQueuesRequestFieldQueueID = big.NewInt(1 << 0)
+	slotsQueuesRequestFieldCount   = big.NewInt(1 << 1)
 )
 
 type SlotsQueuesRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	QueueID     string  `json:"-" url:"-"`
-	Count       *string `json:"-" url:"count,omitempty"`
+	QueueID string  `json:"-" url:"-"`
+	Count   *string `json:"-" url:"count,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -207,13 +110,6 @@ func (s *SlotsQueuesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SlotsQueuesRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(slotsQueuesRequestFieldWorkspaceID)
 }
 
 // SetQueueID sets the QueueID field and marks it as non-optional;
@@ -1143,14 +1039,12 @@ func (r ReshuffleStop) Ptr() *ReshuffleStop {
 type SlotTime = string
 
 var (
-	updateQueuesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	updateQueuesRequestFieldQueueID     = big.NewInt(1 << 1)
+	updateQueuesRequestFieldQueueID = big.NewInt(1 << 0)
 )
 
 type UpdateQueuesRequest struct {
-	WorkspaceID string        `json:"-" url:"-"`
-	QueueID     string        `json:"-" url:"-"`
-	Body        *QueueDetails `json:"-" url:"-"`
+	QueueID string        `json:"-" url:"-"`
+	Body    *QueueDetails `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1163,13 +1057,6 @@ func (u *UpdateQueuesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdateQueuesRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updateQueuesRequestFieldWorkspaceID)
 }
 
 // SetQueueID sets the QueueID field and marks it as non-optional;

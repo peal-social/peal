@@ -324,7 +324,7 @@ public class TagTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/tags")
+                    .WithPath("/api/v1/posts/postId/tags")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -339,7 +339,6 @@ public class TagTest : BaseMockServerTest
         var response = await Client.Posts.TagAsync(
             new PostTags
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 TagIds = new List<string>() { "tagIds", "tagIds" },
             }
@@ -473,7 +472,7 @@ public class TagTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/tags")
+                    .WithPath("/api/v1/posts/postId/tags")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -488,7 +487,6 @@ public class TagTest : BaseMockServerTest
         var response = await Client.Posts.TagAsync(
             new PostTags
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 TagIds = new List<string>() { "tagIds" },
             }

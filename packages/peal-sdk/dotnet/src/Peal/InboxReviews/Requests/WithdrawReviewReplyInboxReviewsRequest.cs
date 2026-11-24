@@ -7,9 +7,6 @@ namespace Peal;
 public record WithdrawReviewReplyInboxReviewsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ReviewId { get; set; }
 
     /// <inheritdoc />

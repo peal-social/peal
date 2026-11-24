@@ -38,7 +38,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .drafts(
-    ///             &"workspaceId".to_string(),
     ///             &DraftsQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl PostsClient {
     /// ```
     pub async fn drafts(
         &self,
-        workspace_id: &str,
         request: &DraftsQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<DraftPage, ApiError> {
@@ -63,7 +61,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts/drafts", workspace_id),
+                "api/v1/posts/drafts",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -99,7 +97,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .list(
-    ///             &"workspaceId".to_string(),
     ///             &PostsListQueryRequest {
     ///                 from: "from".to_string(),
     ///                 to: "to".to_string(),
@@ -111,7 +108,6 @@ impl PostsClient {
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         request: &PostsListQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<Vec<Post>, ApiError> {
@@ -125,7 +121,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts", workspace_id),
+                "api/v1/posts",
                 None,
                 QueryBuilder::new()
                     .string("from", request.from.clone())
@@ -161,7 +157,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &PostDraft {
     ///                 channel_ids: vec!["channelIds".to_string()],
     ///                 content: PostContent {
@@ -187,7 +182,6 @@ impl PostsClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &PostDraft,
         options: Option<RequestOptions>,
     ) -> Result<Post, ApiError> {
@@ -202,7 +196,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts", workspace_id),
+                "api/v1/posts",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -235,7 +229,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .search(
-    ///             &"workspaceId".to_string(),
     ///             &SearchQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -246,7 +239,6 @@ impl PostsClient {
     /// ```
     pub async fn search(
         &self,
-        workspace_id: &str,
         request: &SearchQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<PostPage, ApiError> {
@@ -260,7 +252,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts/search", workspace_id),
+                "api/v1/posts/search",
                 None,
                 QueryBuilder::new()
                     .string("authorId", request.author_id.clone())
@@ -309,7 +301,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .send(
-    ///             &"workspaceId".to_string(),
     ///             &NewPost {
     ///                 channel_ids: vec!["channelIds".to_string()],
     ///                 content: PostContent {
@@ -347,7 +338,6 @@ impl PostsClient {
     /// ```
     pub async fn send(
         &self,
-        workspace_id: &str,
         request: &NewPost,
         options: Option<RequestOptions>,
     ) -> Result<Post, ApiError> {
@@ -362,7 +352,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/send", workspace_id),
+                "api/v1/posts/send",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 QueryBuilder::new()
                     .string("wait", request.wait.clone())
@@ -397,7 +387,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .bulk(
-    ///             &"workspaceId".to_string(),
     ///             &BulkPosts {
     ///                 posts: vec![BulkPost {
     ///                     allow_duplicate: None,
@@ -437,7 +426,6 @@ impl PostsClient {
     /// ```
     pub async fn bulk(
         &self,
-        workspace_id: &str,
         request: &BulkPosts,
         options: Option<RequestOptions>,
     ) -> Result<BulkResult, ApiError> {
@@ -452,7 +440,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/bulk", workspace_id),
+                "api/v1/posts/bulk",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -485,7 +473,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .import(
-    ///             &"workspaceId".to_string(),
     ///             &PostImport {
     ///                 csv: "csv".to_string(),
     ///                 dry_run: None,
@@ -497,7 +484,6 @@ impl PostsClient {
     /// ```
     pub async fn import(
         &self,
-        workspace_id: &str,
         request: &PostImport,
         options: Option<RequestOptions>,
     ) -> Result<ImportResult, ApiError> {
@@ -512,7 +498,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/import", workspace_id),
+                "api/v1/posts/import",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -545,7 +531,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .validate(
-    ///             &"workspaceId".to_string(),
     ///             &PostToValidate {
     ///                 channel_ids: vec!["channelIds".to_string()],
     ///                 content: PostContent {
@@ -577,7 +562,6 @@ impl PostsClient {
     /// ```
     pub async fn validate(
         &self,
-        workspace_id: &str,
         request: &PostToValidate,
         options: Option<RequestOptions>,
     ) -> Result<PostValidation, ApiError> {
@@ -592,7 +576,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/validate", workspace_id),
+                "api/v1/posts/validate",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -622,15 +606,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .get(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.get(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Post, ApiError> {
@@ -644,7 +624,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts/{}", workspace_id, post_id),
+                &format!("api/v1/posts/{}", post_id),
                 None,
                 None,
                 options,
@@ -677,7 +657,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &PostDraft {
     ///                 channel_ids: vec!["channelIds".to_string()],
@@ -704,7 +683,6 @@ impl PostsClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &PostDraft,
         options: Option<RequestOptions>,
@@ -719,7 +697,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!("api/workspaces/{}/posts/{}", workspace_id, post_id),
+                &format!("api/v1/posts/{}", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -749,15 +727,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .discard(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.discard(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn discard(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -771,7 +745,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/posts/{}", workspace_id, post_id),
+                &format!("api/v1/posts/{}", post_id),
                 None,
                 None,
                 options,
@@ -804,7 +778,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .outcome(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &OutcomeQueryRequest {
     ///                 ..Default::default()
@@ -816,7 +789,6 @@ impl PostsClient {
     /// ```
     pub async fn outcome(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &OutcomeQueryRequest,
         options: Option<RequestOptions>,
@@ -831,7 +803,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts/{}/outcome", workspace_id, post_id),
+                &format!("api/v1/posts/{}/outcome", post_id),
                 None,
                 QueryBuilder::new()
                     .string("wait", request.wait.clone())
@@ -863,15 +835,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .attempts(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.attempts(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn attempts(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<PublicationAttempt>, ApiError> {
@@ -885,7 +853,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts/{}/attempts", workspace_id, post_id),
+                &format!("api/v1/posts/{}/attempts", post_id),
                 None,
                 None,
                 options,
@@ -918,7 +886,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .tag(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &PostTags {
     ///                 tag_ids: vec!["tagIds".to_string()],
@@ -930,7 +897,6 @@ impl PostsClient {
     /// ```
     pub async fn tag(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &PostTags,
         options: Option<RequestOptions>,
@@ -945,7 +911,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!("api/workspaces/{}/posts/{}/tags", workspace_id, post_id),
+                &format!("api/v1/posts/{}/tags", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -975,15 +941,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .duplicate(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.duplicate(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn duplicate(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Post, ApiError> {
@@ -998,10 +960,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/duplicate",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/posts/{}/duplicate", post_id),
                 None,
                 None,
                 options,
@@ -1034,7 +993,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .schedule(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &SchedulePost {
     ///                 at: "at".to_string(),
@@ -1048,7 +1006,6 @@ impl PostsClient {
     /// ```
     pub async fn schedule(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &SchedulePost,
         options: Option<RequestOptions>,
@@ -1064,7 +1021,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/{}/schedule", workspace_id, post_id),
+                &format!("api/v1/posts/{}/schedule", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -1097,7 +1054,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .reschedule(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &PostSchedule {
     ///                 at: "at".to_string(),
@@ -1111,7 +1067,6 @@ impl PostsClient {
     /// ```
     pub async fn reschedule(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &PostSchedule,
         options: Option<RequestOptions>,
@@ -1127,10 +1082,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/reschedule",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/posts/{}/reschedule", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -1163,7 +1115,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .enqueue(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &QueuePost {
     ///                 ..Default::default()
@@ -1175,7 +1126,6 @@ impl PostsClient {
     /// ```
     pub async fn enqueue(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &QueuePost,
         options: Option<RequestOptions>,
@@ -1191,7 +1141,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/{}/queue", workspace_id, post_id),
+                &format!("api/v1/posts/{}/queue", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -1221,15 +1171,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .unschedule(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.unschedule(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn unschedule(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Post, ApiError> {
@@ -1244,10 +1190,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/unschedule",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/posts/{}/unschedule", post_id),
                 None,
                 None,
                 options,
@@ -1279,18 +1222,12 @@ impl PostsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .posts
-    ///         .repost(
-    ///             &"workspaceId".to_string(),
-    ///             &"postId".to_string(),
-    ///             &"targetId".to_string(),
-    ///             None,
-    ///         )
+    ///         .repost(&"postId".to_string(), &"targetId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn repost(
         &self,
-        workspace_id: &str,
         post_id: &str,
         target_id: &str,
         options: Option<RequestOptions>,
@@ -1306,10 +1243,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/targets/{}/repost",
-                    workspace_id, post_id, target_id
-                ),
+                &format!("api/v1/posts/{}/targets/{}/repost", post_id, target_id),
                 None,
                 None,
                 options,
@@ -1341,18 +1275,12 @@ impl PostsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .posts
-    ///         .remove_target(
-    ///             &"workspaceId".to_string(),
-    ///             &"postId".to_string(),
-    ///             &"targetId".to_string(),
-    ///             None,
-    ///         )
+    ///         .remove_target(&"postId".to_string(), &"targetId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn remove_target(
         &self,
-        workspace_id: &str,
         post_id: &str,
         target_id: &str,
         options: Option<RequestOptions>,
@@ -1367,10 +1295,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/posts/{}/targets/{}",
-                    workspace_id, post_id, target_id
-                ),
+                &format!("api/v1/posts/{}/targets/{}", post_id, target_id),
                 None,
                 None,
                 options,
@@ -1403,7 +1328,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .confirm(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &"targetId".to_string(),
     ///             &TargetConfirmation::Published {
@@ -1419,7 +1343,6 @@ impl PostsClient {
     /// ```
     pub async fn confirm(
         &self,
-        workspace_id: &str,
         post_id: &str,
         target_id: &str,
         request: &TargetConfirmation,
@@ -1436,10 +1359,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/targets/{}/confirm",
-                    workspace_id, post_id, target_id
-                ),
+                &format!("api/v1/posts/{}/targets/{}/confirm", post_id, target_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -1471,18 +1391,12 @@ impl PostsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .posts
-    ///         .leave_out_rest(
-    ///             &"workspaceId".to_string(),
-    ///             &"postId".to_string(),
-    ///             &"targetId".to_string(),
-    ///             None,
-    ///         )
+    ///         .leave_out_rest(&"postId".to_string(), &"targetId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn leave_out_rest(
         &self,
-        workspace_id: &str,
         post_id: &str,
         target_id: &str,
         options: Option<RequestOptions>,
@@ -1499,8 +1413,8 @@ impl PostsClient {
             .execute_request(
                 Method::POST,
                 &format!(
-                    "api/workspaces/{}/posts/{}/targets/{}/leave-out-rest",
-                    workspace_id, post_id, target_id
+                    "api/v1/posts/{}/targets/{}/leave-out-rest",
+                    post_id, target_id
                 ),
                 None,
                 None,
@@ -1534,7 +1448,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .unpublish_target(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &"targetId".to_string(),
     ///             &UnpublishTargetQueryRequest {
@@ -1547,7 +1460,6 @@ impl PostsClient {
     /// ```
     pub async fn unpublish_target(
         &self,
-        workspace_id: &str,
         post_id: &str,
         target_id: &str,
         request: &UnpublishTargetQueryRequest,
@@ -1564,10 +1476,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/targets/{}/unpublish",
-                    workspace_id, post_id, target_id
-                ),
+                &format!("api/v1/posts/{}/targets/{}/unpublish", post_id, target_id),
                 None,
                 QueryBuilder::new()
                     .string("wait", request.wait.clone())
@@ -1602,7 +1511,6 @@ impl PostsClient {
     ///     client
     ///         .posts
     ///         .edit_target(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &"targetId".to_string(),
     ///             &LivePostEdit {
@@ -1617,7 +1525,6 @@ impl PostsClient {
     /// ```
     pub async fn edit_target(
         &self,
-        workspace_id: &str,
         post_id: &str,
         target_id: &str,
         request: &LivePostEdit,
@@ -1634,10 +1541,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/targets/{}/edit",
-                    workspace_id, post_id, target_id
-                ),
+                &format!("api/v1/posts/{}/targets/{}/edit", post_id, target_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 QueryBuilder::new()
                     .string("wait", request.wait.clone())
@@ -1669,15 +1573,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .unpublish(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.unpublish(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn unpublish(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<PostUnpublish, ApiError> {
@@ -1692,10 +1592,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/unpublish",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/posts/{}/unpublish", post_id),
                 None,
                 None,
                 options,
@@ -1725,15 +1622,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .changes(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.changes(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn changes(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<LivePostChanges, ApiError> {
@@ -1747,7 +1640,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts/{}/changes", workspace_id, post_id),
+                &format!("api/v1/posts/{}/changes", post_id),
                 None,
                 None,
                 options,
@@ -1777,15 +1670,11 @@ impl PostsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .posts
-    ///         .cancel(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.posts.cancel(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn cancel(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Post, ApiError> {
@@ -1800,7 +1689,7 @@ impl PostsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/{}/cancel", workspace_id, post_id),
+                &format!("api/v1/posts/{}/cancel", post_id),
                 None,
                 None,
                 options,

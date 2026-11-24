@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListActivityRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListActivityRequest{}
 //	_, err := client.Activity.List(
 //	    context.TODO(),
 //	    request,

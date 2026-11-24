@@ -9,9 +9,9 @@ Vous pouvez envoyer des publications depuis votre propre code, par l’[API HTTP
 
 ## Avant de commencer [#start]
 
-Tous les points d’accès de cette page se trouvent sous `/api/workspaces/{workspaceId}/posts`. Il vous faut une [clé d’API](/guides/workspace#api-keys), de la forme `peal_…`, et l’identifiant de son espace de travail.
+Tous les points d’accès de cette page se trouvent sous `/api/v1/posts`. Il vous faut une [clé d’API](/guides/workspace#api-keys), de la forme `peal_…`. Elle agit dans son propre espace de travail : aucune requête ne le nomme ([L’espace de travail d’une requête](/developers/conventions#workspace)).
 
-Les exemples lisent la clé dans `$PEAL_API_KEY` et l’identifiant de l’espace de travail dans `$WORKSPACE_ID` (`PEAL_WORKSPACE_ID` dans les exemples des SDK). Le premier exemple crée le client, comme le montre [SDK](/developers/sdks#credential), et les suivants le réutilisent : `peal` dans chaque langage sauf Go, où il s’appelle `client`. Les commandes agissent dans l’espace de travail où `peal` est connecté ([Ligne de commande](/developers/cli)).
+Les exemples lisent la clé dans `$PEAL_API_KEY`. Le premier exemple crée le client, comme le montre [SDK](/developers/sdks#credential), et les suivants le réutilisent : `peal` dans chaque langage sauf Go, où il s’appelle `client`. Les commandes agissent dans l’espace de travail où `peal` est connecté ([Ligne de commande](/developers/cli)).
 
 Les identifiants sont inventés et les réponses abrégées. Une vraie réponse contient toujours la publication entière, telle que la renvoie `GET …/posts/{postId}`.
 
@@ -47,10 +47,8 @@ Une publication qui montre des médias demande aussi `media:read`. Un jeton d’
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
-const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
 
 const check = await peal.posts.validate({
-  workspaceId,
   channelIds: ["0190f3a0-0000-7000-8000-00000000c001"],
   content: {
     text: "Our spring catalogue is out. Read it at https://example.com/spring #spring",
@@ -67,10 +65,8 @@ import os
 from peal import Peal, PostContent, PostTiming_At
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
-workspace_id = os.environ["PEAL_WORKSPACE_ID"]
 
 check = peal.posts.validate(
-    workspace_id=workspace_id,
     channel_ids=["0190f3a0-0000-7000-8000-00000000c001"],
     content=PostContent(
         text="Our spring catalogue is out. Read it at https://example.com/spring #spring",
@@ -92,11 +88,9 @@ import (
 )
 
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
-workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
 
 check, err := client.Posts.Validate(context.TODO(), &peal.PostToValidate{
-	WorkspaceID: workspaceID,
-	ChannelIDs:  []string{"0190f3a0-0000-7000-8000-00000000c001"},
+	ChannelIDs: []string{"0190f3a0-0000-7000-8000-00000000c001"},
 	Content: &peal.PostContent{
 		Text:      "Our spring catalogue is out. Read it at https://example.com/spring #spring",
 		Media:     []*peal.MediaAttachment{},
@@ -112,10 +106,8 @@ check, err := client.Posts.Validate(context.TODO(), &peal.PostToValidate{
 require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
-workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
 
 check = peal.posts.validate(
-  workspace_id: workspace_id,
   channel_ids: ["0190f3a0-0000-7000-8000-00000000c001"],
   content: {
     text: "Our spring catalogue is out. Read it at https://example.com/spring #spring",
@@ -135,10 +127,8 @@ import social.peal.types.*;
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
-String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
 
 PostValidation check = peal.posts().validate(
-    workspaceId,
     PostToValidate.builder()
         .content(PostContent.builder()
             .text("Our spring catalogue is out. Read it at https://example.com/spring #spring")
@@ -160,9 +150,8 @@ use Peal\Types\PostTiming;
 use Peal\Types\PostTimingAt;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
-$workspaceId = getenv('PEAL_WORKSPACE_ID');
 
-$check = $peal->posts->validate($workspaceId, new PostToValidate([
+$check = $peal->posts->validate(new PostToValidate([
     'channelIds' => ['0190f3a0-0000-7000-8000-00000000c001'],
     'content' => new PostContent([
         'text' => 'Our spring catalogue is out. Read it at https://example.com/spring #spring',
@@ -180,11 +169,9 @@ $check = $peal->posts->validate($workspaceId, new PostToValidate([
 using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
-var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
 
 var check = await peal.Posts.ValidateAsync(new PostToValidate
 {
-    WorkspaceId = workspaceId,
     ChannelIds = new List<string> { "0190f3a0-0000-7000-8000-00000000c001" },
     Content = new PostContent
     {
@@ -205,12 +192,10 @@ let peal = PealClient::new(ClientConfig {
     token: std::env::var("PEAL_API_KEY").ok(),
     ..Default::default()
 })?;
-let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
 
 let check = peal
     .posts
     .validate(
-        &workspace_id,
         &PostToValidate::builder()
             .channel_ids(vec!["0190f3a0-0000-7000-8000-00000000c001".to_string()])
             .content(
@@ -231,7 +216,7 @@ let check = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/validate \
+curl -X POST https://api.example.com/api/v1/posts/validate \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -375,7 +360,6 @@ Sans `when`, la requête est vérifiée comme un brouillon : ni l’heure, ni l
 
 ```ts Node.js
 const post = await peal.posts.send({
-  workspaceId,
   wait: "30",
   "idempotency-key": "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
   channelIds: [
@@ -395,7 +379,6 @@ const post = await peal.posts.send({
 from peal import PostTiming_Now
 
 post = peal.posts.send(
-    workspace_id=workspace_id,
     wait="30",
     idempotency_key="5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
     channel_ids=[
@@ -413,7 +396,6 @@ post = peal.posts.send(
 
 ```go Go
 post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
-	WorkspaceID:    workspaceID,
 	Wait:           peal.String("30"),
 	IdempotencyKey: peal.String("5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90"),
 	ChannelIDs: []string{
@@ -431,7 +413,6 @@ post, err := client.Posts.Send(context.TODO(), &peal.NewPost{
 
 ```ruby Ruby
 post = peal.posts.send_(
-  workspace_id: workspace_id,
   wait: "30",
   idempotency_key: "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
   channel_ids: [
@@ -449,7 +430,6 @@ post = peal.posts.send_(
 
 ```java Java
 Post post = peal.posts().send(
-    workspaceId,
     NewPost.builder()
         .content(PostContent.builder()
             .text("Our spring catalogue is out. Read it at https://example.com/spring")
@@ -467,7 +447,7 @@ Post post = peal.posts().send(
 use Peal\Posts\Requests\NewPost;
 use Peal\Types\PostTimingNow;
 
-$post = $peal->posts->send($workspaceId, new NewPost([
+$post = $peal->posts->send(new NewPost([
     'wait' => '30',
     'idempotencyKey' => '5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90',
     'channelIds' => [
@@ -486,7 +466,6 @@ $post = $peal->posts->send($workspaceId, new NewPost([
 ```csharp .NET
 var post = await peal.Posts.SendAsync(new NewPost
 {
-    WorkspaceId = workspaceId,
     Wait = "30",
     IdempotencyKey = "5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90",
     ChannelIds = new List<string>
@@ -507,7 +486,6 @@ var post = await peal.Posts.SendAsync(new NewPost
 let post = peal
     .posts
     .send(
-        &workspace_id,
         &NewPost::builder()
             .channel_ids(vec![
                 "0190f3a0-0000-7000-8000-00000000c001".to_string(),
@@ -532,7 +510,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X POST "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/send?wait=30" \
+curl -X POST "https://api.example.com/api/v1/posts/send?wait=30" \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: 5f0c2b7e-3d1a-4e58-9a6b-2c4d8e1f7a90" \
@@ -617,7 +595,6 @@ Un [fil](/guides/posts#threads) a son résultat sur un canal quand toutes ses pa
 
 ```ts Node.js
 const outcome = await peal.posts.outcome({
-  workspaceId,
   postId: "0190f3a0-0000-7000-8000-00000000b001",
   wait: "30",
 });
@@ -625,7 +602,6 @@ const outcome = await peal.posts.outcome({
 
 ```python Python
 outcome = peal.posts.outcome(
-    workspace_id=workspace_id,
     post_id="0190f3a0-0000-7000-8000-00000000b001",
     wait="30",
 )
@@ -633,15 +609,13 @@ outcome = peal.posts.outcome(
 
 ```go Go
 outcome, err := client.Posts.Outcome(context.TODO(), &peal.OutcomePostsRequest{
-	WorkspaceID: workspaceID,
-	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
-	Wait:        peal.String("30"),
+	PostID: "0190f3a0-0000-7000-8000-00000000b001",
+	Wait:   peal.String("30"),
 })
 ```
 
 ```ruby Ruby
 outcome = peal.posts.outcome(
-  workspace_id: workspace_id,
   post_id: "0190f3a0-0000-7000-8000-00000000b001",
   wait: "30"
 )
@@ -649,7 +623,6 @@ outcome = peal.posts.outcome(
 
 ```java Java
 Post outcome = peal.posts().outcome(
-    workspaceId,
     "0190f3a0-0000-7000-8000-00000000b001",
     OutcomePostsRequest.builder().wait("30").build());
 ```
@@ -658,7 +631,6 @@ Post outcome = peal.posts().outcome(
 use Peal\Posts\Requests\OutcomePostsRequest;
 
 $outcome = $peal->posts->outcome(
-    $workspaceId,
     '0190f3a0-0000-7000-8000-00000000b001',
     new OutcomePostsRequest(['wait' => '30']),
 );
@@ -667,7 +639,6 @@ $outcome = $peal->posts->outcome(
 ```csharp .NET
 var outcome = await peal.Posts.OutcomeAsync(new OutcomePostsRequest
 {
-    WorkspaceId = workspaceId,
     PostId = "0190f3a0-0000-7000-8000-00000000b001",
     Wait = "30",
 });
@@ -677,7 +648,6 @@ var outcome = await peal.Posts.OutcomeAsync(new OutcomePostsRequest
 let outcome = peal
     .posts
     .outcome(
-        &workspace_id,
         "0190f3a0-0000-7000-8000-00000000b001",
         &OutcomeQueryRequest::builder().wait("30").build()?,
         None,
@@ -686,7 +656,7 @@ let outcome = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/outcome?wait=30" \
+curl "https://api.example.com/api/v1/posts/0190f3a0-0000-7000-8000-00000000b001/outcome?wait=30" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 
@@ -795,7 +765,6 @@ Des médias propres changent quelques autres règles :
 
 ```ts Node.js
 const post = await peal.posts.removeTarget({
-  workspaceId,
   postId: "0190f3a0-0000-7000-8000-00000000b001",
   targetId: "0190f3a0-0000-7000-8000-00000000d002",
 });
@@ -803,7 +772,6 @@ const post = await peal.posts.removeTarget({
 
 ```python Python
 post = peal.posts.remove_target(
-    workspace_id=workspace_id,
     post_id="0190f3a0-0000-7000-8000-00000000b001",
     target_id="0190f3a0-0000-7000-8000-00000000d002",
 )
@@ -811,15 +779,13 @@ post = peal.posts.remove_target(
 
 ```go Go
 post, err := client.Posts.RemoveTarget(context.TODO(), &peal.RemoveTargetPostsRequest{
-	WorkspaceID: workspaceID,
-	PostID:      "0190f3a0-0000-7000-8000-00000000b001",
-	TargetID:    "0190f3a0-0000-7000-8000-00000000d002",
+	PostID:   "0190f3a0-0000-7000-8000-00000000b001",
+	TargetID: "0190f3a0-0000-7000-8000-00000000d002",
 })
 ```
 
 ```ruby Ruby
 post = peal.posts.remove_target(
-  workspace_id: workspace_id,
   post_id: "0190f3a0-0000-7000-8000-00000000b001",
   target_id: "0190f3a0-0000-7000-8000-00000000d002"
 )
@@ -827,14 +793,12 @@ post = peal.posts.remove_target(
 
 ```java Java
 Post post = peal.posts().removeTarget(
-    workspaceId,
     "0190f3a0-0000-7000-8000-00000000b001",
     "0190f3a0-0000-7000-8000-00000000d002");
 ```
 
 ```php PHP
 $post = $peal->posts->removeTarget(
-    $workspaceId,
     '0190f3a0-0000-7000-8000-00000000b001',
     '0190f3a0-0000-7000-8000-00000000d002',
 );
@@ -843,7 +807,6 @@ $post = $peal->posts->removeTarget(
 ```csharp .NET
 var post = await peal.Posts.RemoveTargetAsync(new RemoveTargetPostsRequest
 {
-    WorkspaceId = workspaceId,
     PostId = "0190f3a0-0000-7000-8000-00000000b001",
     TargetId = "0190f3a0-0000-7000-8000-00000000d002",
 });
@@ -853,7 +816,6 @@ var post = await peal.Posts.RemoveTargetAsync(new RemoveTargetPostsRequest
 let post = peal
     .posts
     .remove_target(
-        &workspace_id,
         "0190f3a0-0000-7000-8000-00000000b001",
         "0190f3a0-0000-7000-8000-00000000d002",
         None,
@@ -862,7 +824,7 @@ let post = peal
 ```
 
 ```bash curl
-curl -X DELETE "https://api.example.com/api/workspaces/$WORKSPACE_ID/posts/0190f3a0-0000-7000-8000-00000000b001/targets/0190f3a0-0000-7000-8000-00000000d002" \
+curl -X DELETE "https://api.example.com/api/v1/posts/0190f3a0-0000-7000-8000-00000000b001/targets/0190f3a0-0000-7000-8000-00000000d002" \
   -H "Authorization: Bearer $PEAL_API_KEY"
 ```
 

@@ -65,12 +65,9 @@ class PartnerAccountClient
      *
      * Example:
      * ```php
-     * $client->partnerAccount->get(
-     *     'workspaceId',
-     * );
+     * $client->partnerAccount->get();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -83,14 +80,14 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, ?array $options = null): ?PartnerStanding
+    public function get(?array $options = null): ?PartnerStanding
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner",
+                    path: "api/v1/partner-account",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -121,14 +118,12 @@ class PartnerAccountClient
      * Example:
      * ```php
      * $client->partnerAccount->open(
-     *     'workspaceId',
      *     new OpenPartner([
      *         'name' => 'name',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param OpenPartner $request
      * @param ?array{
      *   baseUrl?: string,
@@ -142,7 +137,7 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function open(string $workspaceId, OpenPartner $request, ?array $options = null): ?Partner
+    public function open(OpenPartner $request, ?array $options = null): ?Partner
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -150,7 +145,7 @@ class PartnerAccountClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner",
+                    path: "api/v1/partner-account",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -181,12 +176,9 @@ class PartnerAccountClient
      *
      * Example:
      * ```php
-     * $client->partnerAccount->close(
-     *     'workspaceId',
-     * );
+     * $client->partnerAccount->close();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -198,14 +190,14 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function close(string $workspaceId, ?array $options = null): void
+    public function close(?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner",
+                    path: "api/v1/partner-account",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -230,12 +222,10 @@ class PartnerAccountClient
      * Example:
      * ```php
      * $client->partnerAccount->update(
-     *     'workspaceId',
      *     new PartnerChange([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param PartnerChange $request
      * @param ?array{
      *   baseUrl?: string,
@@ -249,7 +239,7 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, PartnerChange $request = new PartnerChange(), ?array $options = null): ?Partner
+    public function update(PartnerChange $request = new PartnerChange(), ?array $options = null): ?Partner
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -257,7 +247,7 @@ class PartnerAccountClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner",
+                    path: "api/v1/partner-account",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -288,12 +278,9 @@ class PartnerAccountClient
      *
      * Example:
      * ```php
-     * $client->partnerAccount->listKeys(
-     *     'workspaceId',
-     * );
+     * $client->partnerAccount->listKeys();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -306,14 +293,14 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listKeys(string $workspaceId, ?array $options = null): ?array
+    public function listKeys(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner/keys",
+                    path: "api/v1/partner-account/keys",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -344,7 +331,6 @@ class PartnerAccountClient
      * Example:
      * ```php
      * $client->partnerAccount->createKey(
-     *     'workspaceId',
      *     new NewPartnerKey([
      *         'name' => 'name',
      *         'permissions' => [
@@ -357,7 +343,6 @@ class PartnerAccountClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewPartnerKey $request
      * @param ?array{
      *   baseUrl?: string,
@@ -371,7 +356,7 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function createKey(string $workspaceId, NewPartnerKey $request, ?array $options = null): ?CreatedPartnerKey
+    public function createKey(NewPartnerKey $request, ?array $options = null): ?CreatedPartnerKey
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -379,7 +364,7 @@ class PartnerAccountClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner/keys",
+                    path: "api/v1/partner-account/keys",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -411,12 +396,10 @@ class PartnerAccountClient
      * Example:
      * ```php
      * $client->partnerAccount->revokeKey(
-     *     'workspaceId',
      *     'partnerKeyId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $partnerKeyId
      * @param ?array{
      *   baseUrl?: string,
@@ -429,14 +412,14 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function revokeKey(string $workspaceId, string $partnerKeyId, ?array $options = null): void
+    public function revokeKey(string $partnerKeyId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner/keys/{$partnerKeyId}",
+                    path: "api/v1/partner-account/keys/{$partnerKeyId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -461,12 +444,10 @@ class PartnerAccountClient
      * Example:
      * ```php
      * $client->partnerAccount->overview(
-     *     'workspaceId',
      *     new OverviewPartnerAccountRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param OverviewPartnerAccountRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -480,7 +461,7 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function overview(string $workspaceId, OverviewPartnerAccountRequest $request = new OverviewPartnerAccountRequest(), ?array $options = null): ?PartnerHealth
+    public function overview(OverviewPartnerAccountRequest $request = new OverviewPartnerAccountRequest(), ?array $options = null): ?PartnerHealth
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -494,7 +475,7 @@ class PartnerAccountClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner/overview",
+                    path: "api/v1/partner-account/overview",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -526,12 +507,10 @@ class PartnerAccountClient
      * Example:
      * ```php
      * $client->partnerAccount->listWorkspaces(
-     *     'workspaceId',
      *     new ListWorkspacesPartnerAccountRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListWorkspacesPartnerAccountRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -545,7 +524,7 @@ class PartnerAccountClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listWorkspaces(string $workspaceId, ListWorkspacesPartnerAccountRequest $request = new ListWorkspacesPartnerAccountRequest(), ?array $options = null): ?CustomerWorkspacePage
+    public function listWorkspaces(ListWorkspacesPartnerAccountRequest $request = new ListWorkspacesPartnerAccountRequest(), ?array $options = null): ?CustomerWorkspacePage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -565,7 +544,7 @@ class PartnerAccountClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/partner/workspaces",
+                    path: "api/v1/partner-account/workspaces",
                     method: HttpMethod::GET,
                     query: $query,
                 ),

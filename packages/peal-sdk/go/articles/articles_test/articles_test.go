@@ -88,9 +88,7 @@ func TestArticlesListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListArticlesRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListArticlesRequest{}
 	_, invocationErr := client.Articles.List(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestArticlesListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesListWithWireMock", "GET", "/api/workspaces/workspaceId/articles", nil, 1)
+	VerifyRequestCount(t, "TestArticlesListWithWireMock", "GET", "/api/v1/articles", nil, 1)
 }
 
 func TestArticlesCreateWithWireMock(
@@ -115,7 +113,6 @@ func TestArticlesCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewArticle{
-		WorkspaceID: "workspaceId",
 		Body: &peal.ArticleBody{
 			Content: []any{},
 			Type:    peal.ArticleBodyTypeDoc,
@@ -132,7 +129,7 @@ func TestArticlesCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesCreateWithWireMock", "POST", "/api/workspaces/workspaceId/articles", nil, 1)
+	VerifyRequestCount(t, "TestArticlesCreateWithWireMock", "POST", "/api/v1/articles", nil, 1)
 }
 
 func TestArticlesGetWithWireMock(
@@ -147,8 +144,7 @@ func TestArticlesGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 	}
 	_, invocationErr := client.Articles.Get(
 		context.TODO(),
@@ -159,7 +155,7 @@ func TestArticlesGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesGetWithWireMock", "GET", "/api/workspaces/workspaceId/articles/articleId", nil, 1)
+	VerifyRequestCount(t, "TestArticlesGetWithWireMock", "GET", "/api/v1/articles/articleId", nil, 1)
 }
 
 func TestArticlesDeleteWithWireMock(
@@ -174,8 +170,7 @@ func TestArticlesDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 	}
 	invocationErr := client.Articles.Delete(
 		context.TODO(),
@@ -186,7 +181,7 @@ func TestArticlesDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/articles/articleId", nil, 1)
+	VerifyRequestCount(t, "TestArticlesDeleteWithWireMock", "DELETE", "/api/v1/articles/articleId", nil, 1)
 }
 
 func TestArticlesUpdateWithWireMock(
@@ -201,8 +196,7 @@ func TestArticlesUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UpdateArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 		Body: &peal.ArticleInput{
 			Body: &peal.ArticleBody{
 				Content: []any{},
@@ -220,7 +214,7 @@ func TestArticlesUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/articles/articleId", nil, 1)
+	VerifyRequestCount(t, "TestArticlesUpdateWithWireMock", "PATCH", "/api/v1/articles/articleId", nil, 1)
 }
 
 func TestArticlesScheduleWithWireMock(
@@ -235,8 +229,7 @@ func TestArticlesScheduleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ScheduleArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 		Body: &peal.ArticleTime{
 			TimeZone: "timeZone",
 		},
@@ -250,7 +243,7 @@ func TestArticlesScheduleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesScheduleWithWireMock", "POST", "/api/workspaces/workspaceId/articles/articleId/schedule", nil, 1)
+	VerifyRequestCount(t, "TestArticlesScheduleWithWireMock", "POST", "/api/v1/articles/articleId/schedule", nil, 1)
 }
 
 func TestArticlesUnscheduleWithWireMock(
@@ -265,8 +258,7 @@ func TestArticlesUnscheduleWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UnscheduleArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 	}
 	_, invocationErr := client.Articles.Unschedule(
 		context.TODO(),
@@ -277,7 +269,7 @@ func TestArticlesUnscheduleWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesUnscheduleWithWireMock", "POST", "/api/workspaces/workspaceId/articles/articleId/unschedule", nil, 1)
+	VerifyRequestCount(t, "TestArticlesUnscheduleWithWireMock", "POST", "/api/v1/articles/articleId/unschedule", nil, 1)
 }
 
 func TestArticlesRetryWithWireMock(
@@ -292,8 +284,7 @@ func TestArticlesRetryWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RetryArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 	}
 	_, invocationErr := client.Articles.Retry(
 		context.TODO(),
@@ -304,7 +295,7 @@ func TestArticlesRetryWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesRetryWithWireMock", "POST", "/api/workspaces/workspaceId/articles/articleId/retry", nil, 1)
+	VerifyRequestCount(t, "TestArticlesRetryWithWireMock", "POST", "/api/v1/articles/articleId/retry", nil, 1)
 }
 
 func TestArticlesUnpublishWithWireMock(
@@ -319,8 +310,7 @@ func TestArticlesUnpublishWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UnpublishArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 	}
 	_, invocationErr := client.Articles.Unpublish(
 		context.TODO(),
@@ -331,7 +321,7 @@ func TestArticlesUnpublishWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesUnpublishWithWireMock", "POST", "/api/workspaces/workspaceId/articles/articleId/unpublish", nil, 1)
+	VerifyRequestCount(t, "TestArticlesUnpublishWithWireMock", "POST", "/api/v1/articles/articleId/unpublish", nil, 1)
 }
 
 func TestArticlesUpdateOnSiteWithWireMock(
@@ -346,8 +336,7 @@ func TestArticlesUpdateOnSiteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UpdateOnSiteArticlesRequest{
-		WorkspaceID: "workspaceId",
-		ArticleID:   "articleId",
+		ArticleID: "articleId",
 		Body: &peal.ArticleInput{
 			Body: &peal.ArticleBody{
 				Content: []any{},
@@ -365,5 +354,5 @@ func TestArticlesUpdateOnSiteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestArticlesUpdateOnSiteWithWireMock", "POST", "/api/workspaces/workspaceId/articles/articleId/site", nil, 1)
+	VerifyRequestCount(t, "TestArticlesUpdateOnSiteWithWireMock", "POST", "/api/v1/articles/articleId/site", nil, 1)
 }

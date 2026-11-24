@@ -7,13 +7,11 @@ import (
 )
 
 var (
-	creatorTiktokRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	creatorTiktokRequestFieldChannelID   = big.NewInt(1 << 1)
+	creatorTiktokRequestFieldChannelID = big.NewInt(1 << 0)
 )
 
 type CreatorTiktokRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ChannelID   string `json:"-" url:"-"`
+	ChannelID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -26,13 +24,6 @@ func (c *CreatorTiktokRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CreatorTiktokRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(creatorTiktokRequestFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;

@@ -30,7 +30,7 @@ public class UpdateWorkspaceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces/workspaceId")
+                    .WithPath("/api/v1/partner/workspaces/workspaceId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -74,7 +74,7 @@ public class UpdateWorkspaceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces/workspaceId")
+                    .WithPath("/api/v1/partner/workspaces/workspaceId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)

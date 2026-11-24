@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -37,7 +38,6 @@ class RawSlideshowsClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         status: typing.Optional[SlideshowStatus] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -47,8 +47,6 @@ class RawSlideshowsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         status : typing.Optional[SlideshowStatus]
 
         request_options : typing.Optional[RequestOptions]
@@ -60,7 +58,7 @@ class RawSlideshowsClient:
             Slideshows
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows",
+            "api/v1/media/slideshows",
             method="GET",
             params={
                 "status": status,
@@ -77,6 +75,17 @@ class RawSlideshowsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -132,7 +141,6 @@ class RawSlideshowsClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         aspect: ImageAspect,
         slides: typing.Sequence[Slide],
@@ -146,8 +154,6 @@ class RawSlideshowsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         slides : typing.Sequence[Slide]
@@ -170,7 +176,7 @@ class RawSlideshowsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows",
+            "api/v1/media/slideshows",
             method="POST",
             json={
                 "aspect": aspect,
@@ -197,6 +203,17 @@ class RawSlideshowsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -284,19 +301,13 @@ class RawSlideshowsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create_from_edit(
-        self,
-        workspace_id: str,
-        *,
-        edit: typing.Dict[str, typing.Any],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, edit: typing.Dict[str, typing.Any], request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Slideshow]:
         """
         Asks the service the workspace chose for slide videos (`PUT .../assistant/models/composition`, Shotstack) to render a whole [Shotstack Edit](https://shotstack.io/docs/api/#tocs_edit), as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, `queued`, as a slide video's. A file of the workspace's library is named `peal:media/<mediaId>`: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from `https://fonts.gstatic.com/`; an asset Shotstack generates from a `prompt` needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (`format` `mp4` or none), at `preview`, `mobile`, `sd`, `hd` or `1080` (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's `aspect`), at 30 frames a second at most, without `size`, `range`, `scaleTo`, `repeat`, `poster` or `thumbnail`; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops `callback` and `disk`. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (`durationSeconds` is the latest such end). The job lists every library file the edit names in `imageMediaIds`, images or not. Follow it with `GET .../media/slideshows/{id}`; once `succeeded`, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         edit : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
@@ -311,7 +322,7 @@ class RawSlideshowsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows/edits",
+            "api/v1/media/slideshows/edits",
             method="POST",
             json={
                 "edit": edit,
@@ -332,6 +343,17 @@ class RawSlideshowsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -419,15 +441,13 @@ class RawSlideshowsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def get(
-        self, workspace_id: str, slideshow_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, slideshow_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Slideshow]:
         """
         Reads where a slide video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         slideshow_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -439,7 +459,7 @@ class RawSlideshowsClient:
             Slideshow
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows/{encode_path_param(slideshow_id)}",
+            f"api/v1/media/slideshows/{encode_path_param(slideshow_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -453,6 +473,17 @@ class RawSlideshowsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -513,7 +544,6 @@ class AsyncRawSlideshowsClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         status: typing.Optional[SlideshowStatus] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -523,8 +553,6 @@ class AsyncRawSlideshowsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         status : typing.Optional[SlideshowStatus]
 
         request_options : typing.Optional[RequestOptions]
@@ -536,7 +564,7 @@ class AsyncRawSlideshowsClient:
             Slideshows
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows",
+            "api/v1/media/slideshows",
             method="GET",
             params={
                 "status": status,
@@ -553,6 +581,17 @@ class AsyncRawSlideshowsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -608,7 +647,6 @@ class AsyncRawSlideshowsClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         aspect: ImageAspect,
         slides: typing.Sequence[Slide],
@@ -622,8 +660,6 @@ class AsyncRawSlideshowsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         aspect : ImageAspect
 
         slides : typing.Sequence[Slide]
@@ -646,7 +682,7 @@ class AsyncRawSlideshowsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows",
+            "api/v1/media/slideshows",
             method="POST",
             json={
                 "aspect": aspect,
@@ -673,6 +709,17 @@ class AsyncRawSlideshowsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -760,19 +807,13 @@ class AsyncRawSlideshowsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create_from_edit(
-        self,
-        workspace_id: str,
-        *,
-        edit: typing.Dict[str, typing.Any],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, edit: typing.Dict[str, typing.Any], request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Slideshow]:
         """
         Asks the service the workspace chose for slide videos (`PUT .../assistant/models/composition`, Shotstack) to render a whole [Shotstack Edit](https://shotstack.io/docs/api/#tocs_edit), as a video editor writes it, with the workspace's own Shotstack connection, and answers 202 with the job, `queued`, as a slide video's. A file of the workspace's library is named `peal:media/<mediaId>`: a ready file whose kind its asset takes (images for image assets, videos for video assets, audio for audio assets and the soundtrack, audio or video for captions, an image or a video for a luma matte); a font may also come from `https://fonts.gstatic.com/`; an asset Shotstack generates from a `prompt` needs no file; any other address is refused, and so are merge fields. Peal renders an MP4 (`format` `mp4` or none), at `preview`, `mobile`, `sd`, `hd` or `1080` (none: 1080p), in 16:9, 9:16 or 1:1 (none: 16:9, which gives the job's `aspect`), at 30 frames a second at most, without `size`, `range`, `scaleTo`, `repeat`, `poster` or `thumbnail`; it replaces the destinations, so Shotstack hosts no copy, turns the timeline's cache off and drops `callback` and `disk`. At most 20 tracks and 200 clips, and every clip whose start and length are numbers ends by 300 seconds (`durationSeconds` is the latest such end). The job lists every library file the edit names in `imageMediaIds`, images or not. Follow it with `GET .../media/slideshows/{id}`; once `succeeded`, the video is a file of the media library. The service receives each file through a link that works for an hour and renders with the workspace's own key, under its terms and at its prices: Peal bills nothing for it. On a server that bills, it needs a payment method on the workspace's billing account (CompositionNeedsPayment). One job at a time a workspace (CompositionBusy) and 20 a UTC day (CompositionAllowanceReached), shared with slide videos, whatever each ends with. The edit is never logged, and is kept only while the video is rendered. Needs assistant:use and media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         edit : typing.Dict[str, typing.Any]
 
         request_options : typing.Optional[RequestOptions]
@@ -787,7 +828,7 @@ class AsyncRawSlideshowsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows/edits",
+            "api/v1/media/slideshows/edits",
             method="POST",
             json={
                 "edit": edit,
@@ -808,6 +849,17 @@ class AsyncRawSlideshowsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -895,15 +947,13 @@ class AsyncRawSlideshowsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, slideshow_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, slideshow_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Slideshow]:
         """
         Reads where a slide video stands: queued, running, succeeded with its file (`mediaId`), or failed with why (`reason`). Needs assistant:use.
 
         Parameters
         ----------
-        workspace_id : str
-
         slideshow_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -915,7 +965,7 @@ class AsyncRawSlideshowsClient:
             Slideshow
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/slideshows/{encode_path_param(slideshow_id)}",
+            f"api/v1/media/slideshows/{encode_path_param(slideshow_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -929,6 +979,17 @@ class AsyncRawSlideshowsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

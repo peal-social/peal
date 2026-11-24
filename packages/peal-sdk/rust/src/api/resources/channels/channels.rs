@@ -35,14 +35,10 @@ impl ChannelsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.channels.list(&"workspaceId".to_string(), None).await;
+    ///     client.channels.list(None).await;
     /// }
     /// ```
-    pub async fn list(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Vec<Channel>, ApiError> {
+    pub async fn list(&self, options: Option<RequestOptions>) -> Result<Vec<Channel>, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -51,13 +47,7 @@ impl ChannelsClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/channels", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/channels", None, None, options)
             .await
     }
 
@@ -86,7 +76,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .find(
-    ///             &"workspaceId".to_string(),
     ///             &FindQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -97,7 +86,6 @@ impl ChannelsClient {
     /// ```
     pub async fn find(
         &self,
-        workspace_id: &str,
         request: &FindQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<ChannelPage, ApiError> {
@@ -111,7 +99,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/channels/search", workspace_id),
+                "api/v1/channels/search",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -147,15 +135,11 @@ impl ChannelsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .channels
-    ///         .platforms(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.channels.platforms(None).await;
     /// }
     /// ```
     pub async fn platforms(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ConnectablePlatforms, ApiError> {
         let options = {
@@ -168,7 +152,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/channels/platforms", workspace_id),
+                "api/v1/channels/platforms",
                 None,
                 None,
                 options,
@@ -201,7 +185,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .connect_site(
-    ///             &"workspaceId".to_string(),
     ///             &ConnectSite {
     ///                 address: "address".to_string(),
     ///                 application_password: "applicationPassword".to_string(),
@@ -215,7 +198,6 @@ impl ChannelsClient {
     /// ```
     pub async fn connect_site(
         &self,
-        workspace_id: &str,
         request: &ConnectSite,
         options: Option<RequestOptions>,
     ) -> Result<Channel, ApiError> {
@@ -230,7 +212,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/channels/websites", workspace_id),
+                "api/v1/channels/websites",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -263,7 +245,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .connect_site_with_key(
-    ///             &"workspaceId".to_string(),
     ///             &ConnectSiteWithKey {
     ///                 api_key: "apiKey".to_string(),
     ///                 platform: KeySitePlatform::Devto,
@@ -276,7 +257,6 @@ impl ChannelsClient {
     /// ```
     pub async fn connect_site_with_key(
         &self,
-        workspace_id: &str,
         request: &ConnectSiteWithKey,
         options: Option<RequestOptions>,
     ) -> Result<Channel, ApiError> {
@@ -291,7 +271,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/channels/websites/keys", workspace_id),
+                "api/v1/channels/websites/keys",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -324,7 +304,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .connect_chat(
-    ///             &"workspaceId".to_string(),
     ///             &ConnectChat::Discord {
     ///                 data: ConnectDiscordChat {
     ///                     webhook_url: "webhookUrl".to_string(),
@@ -338,7 +317,6 @@ impl ChannelsClient {
     /// ```
     pub async fn connect_chat(
         &self,
-        workspace_id: &str,
         request: &ConnectChat,
         options: Option<RequestOptions>,
     ) -> Result<Channel, ApiError> {
@@ -353,7 +331,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/channels/chats", workspace_id),
+                "api/v1/channels/chats",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -386,7 +364,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .start_site_sign_in(
-    ///             &"workspaceId".to_string(),
     ///             &OAuthSitePlatform::WordpressCom,
     ///             &StartSiteSignIn {
     ///                 ..Default::default()
@@ -398,7 +375,6 @@ impl ChannelsClient {
     /// ```
     pub async fn start_site_sign_in(
         &self,
-        workspace_id: &str,
         platform: &OAuthSitePlatform,
         request: &StartSiteSignIn,
         options: Option<RequestOptions>,
@@ -414,10 +390,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/websites/sign-in/{}",
-                    workspace_id, platform
-                ),
+                &format!("api/v1/channels/websites/sign-in/{}", platform),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -450,7 +423,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .complete_site_sign_in(
-    ///             &"workspaceId".to_string(),
     ///             &OAuthSitePlatform::WordpressCom,
     ///             &SiteSignInCallback {
     ///                 state: "state".to_string(),
@@ -464,7 +436,6 @@ impl ChannelsClient {
     /// ```
     pub async fn complete_site_sign_in(
         &self,
-        workspace_id: &str,
         platform: &OAuthSitePlatform,
         request: &SiteSignInCallback,
         options: Option<RequestOptions>,
@@ -480,10 +451,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/websites/sign-in/{}/callback",
-                    workspace_id, platform
-                ),
+                &format!("api/v1/channels/websites/sign-in/{}/callback", platform),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -516,7 +484,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .connect(
-    ///             &"workspaceId".to_string(),
     ///             &Platform::X,
     ///             &ConnectChannel {
     ///                 ..Default::default()
@@ -528,7 +495,6 @@ impl ChannelsClient {
     /// ```
     pub async fn connect(
         &self,
-        workspace_id: &str,
         platform: &Platform,
         request: &ConnectChannel,
         options: Option<RequestOptions>,
@@ -544,10 +510,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/connect/{}",
-                    workspace_id, platform
-                ),
+                &format!("api/v1/channels/connect/{}", platform),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -580,7 +543,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .complete_connect(
-    ///             &"workspaceId".to_string(),
     ///             &Platform::X,
     ///             &ConnectCallback {
     ///                 state: "state".to_string(),
@@ -595,7 +557,6 @@ impl ChannelsClient {
     /// ```
     pub async fn complete_connect(
         &self,
-        workspace_id: &str,
         platform: &Platform,
         request: &ConnectCallback,
         options: Option<RequestOptions>,
@@ -611,10 +572,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/connect/{}/callback",
-                    workspace_id, platform
-                ),
+                &format!("api/v1/channels/connect/{}/callback", platform),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -647,7 +605,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .choose_accounts(
-    ///             &"workspaceId".to_string(),
     ///             &Platform::X,
     ///             &ChooseAccounts {
     ///                 account_ids: vec!["accountIds".to_string()],
@@ -660,7 +617,6 @@ impl ChannelsClient {
     /// ```
     pub async fn choose_accounts(
         &self,
-        workspace_id: &str,
         platform: &Platform,
         request: &ChooseAccounts,
         options: Option<RequestOptions>,
@@ -676,10 +632,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/connect/{}/accounts",
-                    workspace_id, platform
-                ),
+                &format!("api/v1/channels/connect/{}/accounts", platform),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -712,7 +665,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .reconnect(
-    ///             &"workspaceId".to_string(),
     ///             &"channelId".to_string(),
     ///             &ReconnectQueryRequest {
     ///                 ..Default::default()
@@ -724,7 +676,6 @@ impl ChannelsClient {
     /// ```
     pub async fn reconnect(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         request: &ReconnectQueryRequest,
         options: Option<RequestOptions>,
@@ -740,10 +691,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/{}/reconnect",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/reconnect", channel_id),
                 None,
                 QueryBuilder::new()
                     .serialize("messages", request.messages.clone())
@@ -778,13 +726,12 @@ impl ChannelsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .channels
-    ///         .disconnect(&"workspaceId".to_string(), &"channelId".to_string(), None)
+    ///         .disconnect(&"channelId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn disconnect(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -798,7 +745,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/channels/{}", workspace_id, channel_id),
+                &format!("api/v1/channels/{}", channel_id),
                 None,
                 None,
                 options,
@@ -831,7 +778,6 @@ impl ChannelsClient {
     ///     client
     ///         .channels
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"channelId".to_string(),
     ///             &ChannelUpdate {
     ///                 ..Default::default()
@@ -843,7 +789,6 @@ impl ChannelsClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         request: &ChannelUpdate,
         options: Option<RequestOptions>,
@@ -859,7 +804,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/channels/{}", workspace_id, channel_id),
+                &format!("api/v1/channels/{}", channel_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -891,13 +836,12 @@ impl ChannelsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .channels
-    ///         .disable(&"workspaceId".to_string(), &"channelId".to_string(), None)
+    ///         .disable(&"channelId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn disable(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Channel, ApiError> {
@@ -912,10 +856,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/{}/disable",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/disable", channel_id),
                 None,
                 None,
                 options,
@@ -945,15 +886,11 @@ impl ChannelsClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .channels
-    ///         .enable(&"workspaceId".to_string(), &"channelId".to_string(), None)
-    ///         .await;
+    ///     client.channels.enable(&"channelId".to_string(), None).await;
     /// }
     /// ```
     pub async fn enable(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Channel, ApiError> {
@@ -968,10 +905,7 @@ impl ChannelsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/channels/{}/enable",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/enable", channel_id),
                 None,
                 None,
                 options,

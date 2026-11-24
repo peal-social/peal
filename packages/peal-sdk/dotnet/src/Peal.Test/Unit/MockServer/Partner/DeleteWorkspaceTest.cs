@@ -15,7 +15,7 @@ public class DeleteWorkspaceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces/workspaceId")
+                    .WithPath("/api/v1/partner/workspaces/workspaceId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
@@ -34,7 +34,7 @@ public class DeleteWorkspaceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces/workspaceId")
+                    .WithPath("/api/v1/partner/workspaces/workspaceId")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));

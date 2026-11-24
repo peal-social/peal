@@ -7,9 +7,6 @@ namespace Peal;
 public record WebhookEndpointChange
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string EndpointId { get; set; }
 
     [JsonPropertyName("channelIds")]

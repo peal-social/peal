@@ -68,7 +68,7 @@ public class ListConversationsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/conversations")
+                    .WithPath("/api/v1/inbox/messages/conversations")
                     .UsingGet()
             )
             .RespondWith(
@@ -79,7 +79,7 @@ public class ListConversationsTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.ListConversationsAsync(
-            new ListConversationsInboxMessagesRequest { WorkspaceId = "workspaceId" }
+            new ListConversationsInboxMessagesRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -115,7 +115,7 @@ public class ListConversationsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/messages/conversations")
+                    .WithPath("/api/v1/inbox/messages/conversations")
                     .UsingGet()
             )
             .RespondWith(
@@ -126,7 +126,7 @@ public class ListConversationsTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.ListConversationsAsync(
-            new ListConversationsInboxMessagesRequest { WorkspaceId = "workspaceId" }
+            new ListConversationsInboxMessagesRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

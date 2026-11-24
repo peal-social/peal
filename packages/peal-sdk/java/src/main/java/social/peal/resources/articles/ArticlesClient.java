@@ -38,246 +38,224 @@ public class ArticlesClient {
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public ArticlePage list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public ArticlePage list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public ArticlePage list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
+    public ArticlePage list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public ArticlePage list(String workspaceId, ListArticlesRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
+    public ArticlePage list(ListArticlesRequest request) {
+        return this.rawClient.list(request).body();
     }
 
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public ArticlePage list(String workspaceId, ListArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public ArticlePage list(ListArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.list(request, requestOptions).body();
     }
 
     /**
      * Writes an article for one of the workspace's websites (a channel connected with connectSite): a draft, or scheduled at once with <code>schedule</code>. A scheduled article is checked as the site would take it (ArticleRejected lists every violation); its images are files of the workspace's library, ready (UnknownMedia otherwise), the cover an image. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:create, and post:schedule with <code>schedule</code>.
      */
-    public Article create(String workspaceId, NewArticle request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public Article create(NewArticle request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Writes an article for one of the workspace's websites (a channel connected with connectSite): a draft, or scheduled at once with <code>schedule</code>. A scheduled article is checked as the site would take it (ArticleRejected lists every violation); its images are files of the workspace's library, ready (UnknownMedia otherwise), the cover an image. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:create, and post:schedule with <code>schedule</code>.
      */
-    public Article create(String workspaceId, NewArticle request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public Article create(NewArticle request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Reads an article. Needs post:read.
      */
-    public Article get(String workspaceId, String articleId) {
-        return this.rawClient.get(workspaceId, articleId).body();
+    public Article get(String articleId) {
+        return this.rawClient.get(articleId).body();
     }
 
     /**
      * Reads an article. Needs post:read.
      */
-    public Article get(String workspaceId, String articleId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, articleId, requestOptions).body();
+    public Article get(String articleId, RequestOptions requestOptions) {
+        return this.rawClient.get(articleId, requestOptions).body();
     }
 
     /**
      * Reads an article. Needs post:read.
      */
-    public Article get(String workspaceId, String articleId, GetArticlesRequest request) {
-        return this.rawClient.get(workspaceId, articleId, request).body();
+    public Article get(String articleId, GetArticlesRequest request) {
+        return this.rawClient.get(articleId, request).body();
     }
 
     /**
      * Reads an article. Needs post:read.
      */
-    public Article get(
-            String workspaceId, String articleId, GetArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .get(workspaceId, articleId, request, requestOptions)
-                .body();
+    public Article get(String articleId, GetArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.get(articleId, request, requestOptions).body();
     }
 
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public void delete(String workspaceId, String articleId) {
-        this.rawClient.delete(workspaceId, articleId).body();
+    public void delete(String articleId) {
+        this.rawClient.delete(articleId).body();
     }
 
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public void delete(String workspaceId, String articleId, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, articleId, requestOptions).body();
+    public void delete(String articleId, RequestOptions requestOptions) {
+        this.rawClient.delete(articleId, requestOptions).body();
     }
 
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public void delete(String workspaceId, String articleId, DeleteArticlesRequest request) {
-        this.rawClient.delete(workspaceId, articleId, request).body();
+    public void delete(String articleId, DeleteArticlesRequest request) {
+        this.rawClient.delete(articleId, request).body();
     }
 
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public void delete(
-            String workspaceId, String articleId, DeleteArticlesRequest request, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, articleId, request, requestOptions).body();
+    public void delete(String articleId, DeleteArticlesRequest request, RequestOptions requestOptions) {
+        this.rawClient.delete(articleId, request, requestOptions).body();
     }
 
     /**
      * Replaces what a draft, a scheduled article or one that failed says. A scheduled article is checked again and keeps its time; it is refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval. Once on the site, use updateOnSite. Needs post:update.
      */
-    public Article update(String workspaceId, String articleId, UpdateArticlesRequest request) {
-        return this.rawClient.update(workspaceId, articleId, request).body();
+    public Article update(String articleId, UpdateArticlesRequest request) {
+        return this.rawClient.update(articleId, request).body();
     }
 
     /**
      * Replaces what a draft, a scheduled article or one that failed says. A scheduled article is checked again and keeps its time; it is refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval. Once on the site, use updateOnSite. Needs post:update.
      */
-    public Article update(
-            String workspaceId, String articleId, UpdateArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .update(workspaceId, articleId, request, requestOptions)
-                .body();
+    public Article update(String articleId, UpdateArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.update(articleId, request, requestOptions).body();
     }
 
     /**
      * Schedules a draft, moves a scheduled article, or schedules one that failed again: Peal sends it at <code>at</code>, or now without it, and the site makes it what <code>siteStatus</code> says. With <code>future</code>, the site publishes it at <code>at</code>, which must be ahead, and Peal sends it at once. Everything is checked as the site would take it. What goes out is public, and cannot be taken back from Peal but by unpublishing it. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public Article schedule(String workspaceId, String articleId, ScheduleArticlesRequest request) {
-        return this.rawClient.schedule(workspaceId, articleId, request).body();
+    public Article schedule(String articleId, ScheduleArticlesRequest request) {
+        return this.rawClient.schedule(articleId, request).body();
     }
 
     /**
      * Schedules a draft, moves a scheduled article, or schedules one that failed again: Peal sends it at <code>at</code>, or now without it, and the site makes it what <code>siteStatus</code> says. With <code>future</code>, the site publishes it at <code>at</code>, which must be ahead, and Peal sends it at once. Everything is checked as the site would take it. What goes out is public, and cannot be taken back from Peal but by unpublishing it. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public Article schedule(
-            String workspaceId, String articleId, ScheduleArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .schedule(workspaceId, articleId, request, requestOptions)
-                .body();
+    public Article schedule(String articleId, ScheduleArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.schedule(articleId, request, requestOptions).body();
     }
 
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public Article unschedule(String workspaceId, String articleId) {
-        return this.rawClient.unschedule(workspaceId, articleId).body();
+    public Article unschedule(String articleId) {
+        return this.rawClient.unschedule(articleId).body();
     }
 
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public Article unschedule(String workspaceId, String articleId, RequestOptions requestOptions) {
-        return this.rawClient.unschedule(workspaceId, articleId, requestOptions).body();
+    public Article unschedule(String articleId, RequestOptions requestOptions) {
+        return this.rawClient.unschedule(articleId, requestOptions).body();
     }
 
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public Article unschedule(String workspaceId, String articleId, UnscheduleArticlesRequest request) {
-        return this.rawClient.unschedule(workspaceId, articleId, request).body();
+    public Article unschedule(String articleId, UnscheduleArticlesRequest request) {
+        return this.rawClient.unschedule(articleId, request).body();
     }
 
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public Article unschedule(
-            String workspaceId, String articleId, UnscheduleArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .unschedule(workspaceId, articleId, request, requestOptions)
-                .body();
+    public Article unschedule(String articleId, UnscheduleArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.unschedule(articleId, request, requestOptions).body();
     }
 
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public Article retry(String workspaceId, String articleId) {
-        return this.rawClient.retry(workspaceId, articleId).body();
+    public Article retry(String articleId) {
+        return this.rawClient.retry(articleId).body();
     }
 
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public Article retry(String workspaceId, String articleId, RequestOptions requestOptions) {
-        return this.rawClient.retry(workspaceId, articleId, requestOptions).body();
+    public Article retry(String articleId, RequestOptions requestOptions) {
+        return this.rawClient.retry(articleId, requestOptions).body();
     }
 
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public Article retry(String workspaceId, String articleId, RetryArticlesRequest request) {
-        return this.rawClient.retry(workspaceId, articleId, request).body();
+    public Article retry(String articleId, RetryArticlesRequest request) {
+        return this.rawClient.retry(articleId, request).body();
     }
 
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public Article retry(
-            String workspaceId, String articleId, RetryArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .retry(workspaceId, articleId, request, requestOptions)
-                .body();
+    public Article retry(String articleId, RetryArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.retry(articleId, request, requestOptions).body();
     }
 
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public Article unpublish(String workspaceId, String articleId) {
-        return this.rawClient.unpublish(workspaceId, articleId).body();
+    public Article unpublish(String articleId) {
+        return this.rawClient.unpublish(articleId).body();
     }
 
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public Article unpublish(String workspaceId, String articleId, RequestOptions requestOptions) {
-        return this.rawClient.unpublish(workspaceId, articleId, requestOptions).body();
+    public Article unpublish(String articleId, RequestOptions requestOptions) {
+        return this.rawClient.unpublish(articleId, requestOptions).body();
     }
 
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public Article unpublish(String workspaceId, String articleId, UnpublishArticlesRequest request) {
-        return this.rawClient.unpublish(workspaceId, articleId, request).body();
+    public Article unpublish(String articleId, UnpublishArticlesRequest request) {
+        return this.rawClient.unpublish(articleId, request).body();
     }
 
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public Article unpublish(
-            String workspaceId, String articleId, UnpublishArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .unpublish(workspaceId, articleId, request, requestOptions)
-                .body();
+    public Article unpublish(String articleId, UnpublishArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.unpublish(articleId, request, requestOptions).body();
     }
 
     /**
      * Replaces what the article's post says on the site (title, body, excerpt, tags, categories, cover), at once: the site keeps its status and its date, and files it has already are not sent again; a cover or an excerpt removed is removed there. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public Article updateOnSite(String workspaceId, String articleId, UpdateOnSiteArticlesRequest request) {
-        return this.rawClient.updateOnSite(workspaceId, articleId, request).body();
+    public Article updateOnSite(String articleId, UpdateOnSiteArticlesRequest request) {
+        return this.rawClient.updateOnSite(articleId, request).body();
     }
 
     /**
      * Replaces what the article's post says on the site (title, body, excerpt, tags, categories, cover), at once: the site keeps its status and its date, and files it has already are not sent again; a cover or an excerpt removed is removed there. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public Article updateOnSite(
-            String workspaceId, String articleId, UpdateOnSiteArticlesRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .updateOnSite(workspaceId, articleId, request, requestOptions)
-                .body();
+    public Article updateOnSite(String articleId, UpdateOnSiteArticlesRequest request, RequestOptions requestOptions) {
+        return this.rawClient.updateOnSite(articleId, request, requestOptions).body();
     }
 }

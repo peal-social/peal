@@ -1,7 +1,7 @@
 import type { DateTime } from "effect";
 import { Effect, Option } from "effect";
 import { Atom } from "effect/reactivity";
-import { isSocialChannel } from "peal-contract";
+import { isSocialChannel, forWorkspace } from "peal-contract";
 import type { SocialChannel } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -22,7 +22,7 @@ export const postsKeys = ["posts"];
 export const workspaceChannels = Atom.family((workspaceId: string) =>
   Atom.mapResult(
     PealApi.query("channels", "list", {
-      params: { workspaceId },
+      headers: forWorkspace(workspaceId),
       reactivityKeys: ["channels"],
     }),
     (channels): readonly SocialChannel[] => channels.filter(isSocialChannel)
@@ -35,7 +35,8 @@ export const workspaceChannels = Atom.family((workspaceId: string) =>
  */
 export const tiktokCreator = (workspaceId: string, channelId: string) =>
   PealApi.query("tiktok", "creator", {
-    params: { channelId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { channelId },
     reactivityKeys: ["channels"],
   });
 
@@ -45,7 +46,8 @@ export const tiktokCreator = (workspaceId: string, channelId: string) =>
  */
 export const channelCapabilities = (workspaceId: string, channelId: string) =>
   PealApi.query("capabilities", "channel", {
-    params: { channelId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { channelId },
     reactivityKeys: ["channels"],
   });
 
@@ -97,7 +99,8 @@ const boardLists = Atom.family((key: string) => {
       everyPage((cursor) =>
         client.lookups
           .run({
-            params: { channelId, name: "pinterestBoards", workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { channelId, name: "pinterestBoards" },
             payload: paged(cursor),
           })
           .pipe(
@@ -134,10 +137,10 @@ const sectionLists = Atom.family((key: string) => {
           ? Effect.succeed(noSections)
           : client.lookups
               .run({
+                headers: forWorkspace(workspaceId),
                 params: {
                   channelId,
                   name: "pinterestBoardSections",
-                  workspaceId,
                 },
                 payload: { ...paged(cursor), boardId },
               })
@@ -166,7 +169,8 @@ export const pinterestBoardSections = (
 /** A post of the workspace. */
 export const workspacePost = (workspaceId: string, postId: string) =>
   PealApi.query("posts", "get", {
-    params: { postId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { postId },
     reactivityKeys: postsKeys,
   });
 
@@ -177,7 +181,7 @@ export const scheduledPosts = (
   to: DateTime.Utc
 ) =>
   PealApi.query("posts", "list", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: { from, to },
     reactivityKeys: postsKeys,
   });
@@ -185,7 +189,8 @@ export const scheduledPosts = (
 /** What a post's attempts were, refreshed with the other posts queries. */
 export const postAttempts = (workspaceId: string, postId: string) =>
   PealApi.query("posts", "attempts", {
-    params: { postId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { postId },
     reactivityKeys: postsKeys,
   });
 
@@ -210,7 +215,7 @@ const searchPages = Atom.family((key: string) => {
   const query = new URLSearchParams(rest);
 
   return PealApi.query("posts", "search", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: searchOf(filtersOf(query), query.get("cursor") ?? undefined),
     reactivityKeys: postsKeys,
   });
@@ -281,6 +286,7 @@ export const editTarget = PealApi.mutation("posts", "editTarget");
 /** What was asked of a post once it was live, newest first. */
 export const postChanges = (workspaceId: string, postId: string) =>
   PealApi.query("posts", "changes", {
-    params: { postId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { postId },
     reactivityKeys: postsKeys,
   });

@@ -3,6 +3,7 @@
 import { useAtomValue } from "@effect/atom-react";
 import { Option } from "effect";
 import { AsyncResult, Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 import type { MediaAttachment } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -15,7 +16,8 @@ import type { AttachedMedia } from "#posts/media-fit.ts";
  */
 export const mediaItem = (workspaceId: string, mediaId: string) =>
   PealApi.query("media", "get", {
-    params: { mediaId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { mediaId },
     reactivityKeys: [mediaKey(workspaceId)],
   });
 

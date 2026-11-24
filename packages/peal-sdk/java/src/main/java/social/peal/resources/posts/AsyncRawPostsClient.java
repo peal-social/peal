@@ -42,7 +42,6 @@ import social.peal.resources.posts.requests.BulkPosts;
 import social.peal.resources.posts.requests.CancelPostsRequest;
 import social.peal.resources.posts.requests.ChangesPostsRequest;
 import social.peal.resources.posts.requests.ConfirmPostsRequest;
-import social.peal.resources.posts.requests.CreatePostsRequest;
 import social.peal.resources.posts.requests.DiscardPostsRequest;
 import social.peal.resources.posts.requests.DraftsPostsRequest;
 import social.peal.resources.posts.requests.DuplicatePostsRequest;
@@ -71,6 +70,7 @@ import social.peal.types.ImportResult;
 import social.peal.types.LivePostChange;
 import social.peal.types.LivePostChanges;
 import social.peal.types.Post;
+import social.peal.types.PostDraft;
 import social.peal.types.PostPage;
 import social.peal.types.PostUnpublish;
 import social.peal.types.PostValidation;
@@ -87,36 +87,32 @@ public class AsyncRawPostsClient {
     /**
      * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<DraftPage>> drafts(String workspaceId) {
-        return drafts(workspaceId, DraftsPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<DraftPage>> drafts() {
+        return drafts(DraftsPostsRequest.builder().build());
+    }
+
+    /**
+     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<DraftPage>> drafts(RequestOptions requestOptions) {
+        return drafts(DraftsPostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<DraftPage>> drafts(DraftsPostsRequest request) {
+        return drafts(request, null);
     }
 
     /**
      * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<DraftPage>> drafts(
-            String workspaceId, RequestOptions requestOptions) {
-        return drafts(workspaceId, DraftsPostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<DraftPage>> drafts(String workspaceId, DraftsPostsRequest request) {
-        return drafts(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's drafts, newest first, 20 a page unless <code>limit</code> (at most 50) says otherwise. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<DraftPage>> drafts(
-            String workspaceId, DraftsPostsRequest request, RequestOptions requestOptions) {
+            DraftsPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
-                .addPathSegments("drafts");
+                .addPathSegments("api/v1/posts/drafts");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -221,20 +217,18 @@ public class AsyncRawPostsClient {
     /**
      * Lists the posts scheduled from <code>from</code> (included) to <code>to</code> (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<Post>>> list(String workspaceId, ListPostsRequest request) {
-        return list(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<List<Post>>> list(ListPostsRequest request) {
+        return list(request, null);
     }
 
     /**
      * Lists the posts scheduled from <code>from</code> (included) to <code>to</code> (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<Post>>> list(
-            String workspaceId, ListPostsRequest request, RequestOptions requestOptions) {
+            ListPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts");
+                .addPathSegments("api/v1/posts");
         QueryStringMapper.addQueryParameter(httpUrl, "from", request.getFrom(), false);
         QueryStringMapper.addQueryParameter(httpUrl, "to", request.getTo(), false);
         if (requestOptions != null) {
@@ -335,20 +329,17 @@ public class AsyncRawPostsClient {
     /**
      * Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (<code>TargetOptions</code>, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (<code>channelSets</code>, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (<code>warnings</code>). A channel on which it gives no options takes the channel's default options, if it has some. With <code>defaultSignatures</code>, each channel's default signature goes under its text, and <code>signatureId</code> puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> create(String workspaceId, CreatePostsRequest request) {
-        return create(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Post>> create(PostDraft request) {
+        return create(request, null);
     }
 
     /**
      * Creates a draft for some of the workspace's channels, possibly none yet, with options on those whose platform takes them (<code>TargetOptions</code>, of the channel's platform). Its media must be the workspace's, and ready. Its text, media and options are checked against each platform's rules when it is scheduled, not before. It may name channel sets (<code>channelSets</code>, by id or name), whose connected channels it is for as well, with the options each set keeps; a channel of a set that is no longer connected is left out, and the answer says so (<code>warnings</code>). A channel on which it gives no options takes the channel's default options, if it has some. With <code>defaultSignatures</code>, each channel's default signature goes under its text, and <code>signatureId</code> puts one signature under it on every channel: a signature is then text of the post, never added under a text that already ends with it. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:create, channel:read, and media:read when it shows media.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> create(
-            String workspaceId, CreatePostsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Post>> create(PostDraft request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts");
+                .addPathSegments("api/v1/posts");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -358,7 +349,7 @@ public class AsyncRawPostsClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -392,6 +383,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -450,36 +446,32 @@ public class AsyncRawPostsClient {
     /**
      * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<PostPage>> search(String workspaceId) {
-        return search(workspaceId, SearchPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<PostPage>> search() {
+        return search(SearchPostsRequest.builder().build());
+    }
+
+    /**
+     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<PostPage>> search(RequestOptions requestOptions) {
+        return search(SearchPostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<PostPage>> search(SearchPostsRequest request) {
+        return search(request, null);
     }
 
     /**
      * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<PostPage>> search(
-            String workspaceId, RequestOptions requestOptions) {
-        return search(workspaceId, SearchPostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PostPage>> search(String workspaceId, SearchPostsRequest request) {
-        return search(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's posts, whatever their state, a page at a time: 20 unless <code>limit</code> (at most 100) says otherwise. Every filter given must hold: <code>status</code> (draft, scheduled, publishing, finished, cancelled), <code>outcome</code> (how a finished post ended, such as <code>failed</code> or <code>partiallyPublished</code>), <code>channelId</code> (posts with a target on that channel), <code>platform</code> (posts with a target on a connected channel of that platform), <code>tagId</code> (posts filed under that tag), <code>queueId</code> (posts that queue placed), <code>recyclingId</code> (posts that recycling rule made), <code>removed</code> (<code>true</code>: posts Peal deleted from at least one channel's platform; <code>false</code>: posts deleted from none), <code>from</code> (included) and <code>to</code> (excluded), on the scheduled instant, which leave out posts without a time, <code>createdVia</code> (<code>web</code>, <code>apiKey</code> or <code>application</code>) and <code>authorId</code>. <code>sort</code> orders them by creation (<code>createdDesc</code>, the default, or <code>createdAsc</code>) or by scheduled instant (<code>scheduledDesc</code>, <code>scheduledAsc</code>, which list only posts with a time). Pass the page's <code>nextCursor</code> as <code>cursor</code>, with the same filters and sort, for the next page: a cursor marks where its page ended, so posts created, moved or deleted meanwhile make no page repeat or skip one; a cursor of another sort, or none a page gave, is a bad request. Each post comes whole, with its targets, their status, address and failure reason, and <code>channels</code> gives the platform of each channel the page names. Needs post:read and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<PostPage>> search(
-            String workspaceId, SearchPostsRequest request, RequestOptions requestOptions) {
+            SearchPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
-                .addPathSegments("search");
+                .addPathSegments("api/v1/posts/search");
         if (request.getAuthorId().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "authorId", request.getAuthorId().get(), false);
@@ -635,21 +627,17 @@ public class AsyncRawPostsClient {
     /**
      * Creates a post and sends it to some of the workspace's channels in one call: <code>when</code> is <code>now</code>, which publishes at once, <code>at</code> an instant, kept with its IANA time zone, or <code>queue</code>, which puts it on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (<code>channelSets</code>, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's <code>warnings</code>, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. <code>defaultSignatures</code> puts each channel's default signature under its text, and <code>signatureId</code> one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status <code>awaitingApproval</code>: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an <code>Idempotency-Key</code> header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says <code>allowDuplicate: true</code>; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless <code>wait</code> says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (<code>status</code> <code>finished</code>, with its <code>outcome</code>, each target <code>published</code> with its <code>permalink</code> or <code>failed</code> with its <code>failureReason</code>), or the post as it stands when the time runs out, some targets still <code>pending</code> or <code>publishing</code>: it goes on publishing, and <code>GET …/posts/{postId}/outcome</code> waits for the rest. The answer is 201 either way: the post was made. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> send(String workspaceId, NewPost request) {
-        return send(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Post>> send(NewPost request) {
+        return send(request, null);
     }
 
     /**
      * Creates a post and sends it to some of the workspace's channels in one call: <code>when</code> is <code>now</code>, which publishes at once, <code>at</code> an instant, kept with its IANA time zone, or <code>queue</code>, which puts it on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts sent together never take the same slot; it is then an ordinary scheduled post, through every rule a time chosen by hand goes through, the plan's room counted in the slot's month (PlanLimitReached, never a later month), and with no channel or channel set named it goes to the queue's (QueueHasNoRoom when the queue has no free slot within 366 days). Instead of listing channels, or beside them, it may name channel sets (<code>channelSets</code>, by id or name): it goes to their connected channels, with the options each set keeps where it gives none, and a channel of a set that is no longer connected is left out and told in the answer's <code>warnings</code>, never silently; a set none of whose channels is left, with no other channel, is refused (UnknownChannels). A channel on which it gives no options takes the channel's default options. <code>defaultSignatures</code> puts each channel's default signature under its text, and <code>signatureId</code> one signature on every channel: signatures are text of the post, counted against each platform's limit, and never added twice. It goes through every rule scheduling a draft does (each platform's limits on text, media and options, the account's own, the plan's), and answers every violation at once (PostContentInvalid): nothing is made then. In a workspace that asks for approvals, a post that needs one is answered with the status <code>awaitingApproval</code>: it keeps its time and goes out only once it is approved. What it publishes reaches the platforms' public, and cannot be taken back from Peal once it is out; until its time, cancel or unschedule it. Send an <code>Idempotency-Key</code> header (any text of your choosing, at most 255 characters, such as a UUID) to make a request safe to send again: within 24 hours, the same key with the same body answers the post the first request made, as it now stands, and makes no other; the same key with another body is refused (IdempotencyKeyReused), and answers PostNotFound once that post was deleted. Keys are kept per workspace, as digests. Apart from keys, a post whose content already goes to one of its channels less than 23 hours from its time is refused (DuplicatePost), as a request made twice by mistake would be, unless it says <code>allowDuplicate: true</code>; scheduling a draft is not checked. It answers as soon as the post is made, while it publishes, unless <code>wait</code> says to wait for the outcome: up to that many seconds (60 at most) for a post that goes out now, the answer is then the post once every channel has its result (<code>status</code> <code>finished</code>, with its <code>outcome</code>, each target <code>published</code> with its <code>permalink</code> or <code>failed</code> with its <code>failureReason</code>), or the post as it stands when the time runs out, some targets still <code>pending</code> or <code>publishing</code>: it goes on publishing, and <code>GET …/posts/{postId}/outcome</code> waits for the rest. The answer is 201 either way: the post was made. <code>shortenLinks: true</code> sends its links shortened where the server has short links (<code>shortLinks.status</code>), <code>false</code> as written; left out, the post takes the workspace's default (<code>byDefault</code>) when it is made, and keeps it. Needs post:schedule and channel:read, and media:read when it shows media; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> send(
-            String workspaceId, NewPost request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Post>> send(NewPost request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
-                .addPathSegments("send");
+                .addPathSegments("api/v1/posts/send");
         if (request.getWait().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "wait", request.getWait().get(), false);
@@ -701,6 +689,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -769,21 +762,18 @@ public class AsyncRawPostsClient {
     /**
      * Creates and sends up to 50 posts in one request, each as <code>send</code> would: one post per item, each with its own channels, content, options and time, so the same content at several times, or at a time of its own on each channel, is several items. Items are taken in order, one at a time, each on its own: one refused keeps none of the others from being made, and nothing is undone. The answer is 200 whenever the request itself was read, even if every item was refused: <code>items</code> says, for each by its place in the request, <code>created</code> with its post, or <code>refused</code> with what <code>send</code> would have answered for it alone (its content's violations, unknown channels or media, a time gone by, the plan's limit, a duplicate). A request that cannot be read at all (malformed, no item, more than 50) is 400, and makes nothing. The plan's limits hold across the request: once the month has no room, the items left are refused. Each item is checked against the posts made before it, the request's earlier items included, for the same content on the same channel (DuplicatePost). An <code>Idempotency-Key</code> header makes the whole request safe to send again within 24 hours: each item is kept under the key and its place, so the same request sent again answers the posts it made (<code>replayed</code>), makes those that were not made the first time if they now can be, and an item that changed under the same key is refused (IdempotencyKeyReused). An item's own <code>idempotencyKey</code> is used instead of the header's for that item. Needs post:schedule and channel:read, and media:read for the items that show media; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<PealClientHttpResponse<BulkResult>> bulk(String workspaceId, BulkPosts request) {
-        return bulk(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<BulkResult>> bulk(BulkPosts request) {
+        return bulk(request, null);
     }
 
     /**
      * Creates and sends up to 50 posts in one request, each as <code>send</code> would: one post per item, each with its own channels, content, options and time, so the same content at several times, or at a time of its own on each channel, is several items. Items are taken in order, one at a time, each on its own: one refused keeps none of the others from being made, and nothing is undone. The answer is 200 whenever the request itself was read, even if every item was refused: <code>items</code> says, for each by its place in the request, <code>created</code> with its post, or <code>refused</code> with what <code>send</code> would have answered for it alone (its content's violations, unknown channels or media, a time gone by, the plan's limit, a duplicate). A request that cannot be read at all (malformed, no item, more than 50) is 400, and makes nothing. The plan's limits hold across the request: once the month has no room, the items left are refused. Each item is checked against the posts made before it, the request's earlier items included, for the same content on the same channel (DuplicatePost). An <code>Idempotency-Key</code> header makes the whole request safe to send again within 24 hours: each item is kept under the key and its place, so the same request sent again answers the posts it made (<code>replayed</code>), makes those that were not made the first time if they now can be, and an item that changed under the same key is refused (IdempotencyKeyReused). An item's own <code>idempotencyKey</code> is used instead of the header's for that item. Needs post:schedule and channel:read, and media:read for the items that show media; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<BulkResult>> bulk(
-            String workspaceId, BulkPosts request, RequestOptions requestOptions) {
+            BulkPosts request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
-                .addPathSegments("bulk");
+                .addPathSegments("api/v1/posts/bulk");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -831,6 +821,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -884,21 +879,18 @@ public class AsyncRawPostsClient {
     /**
      * Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: <code>text</code> and <code>channels</code> (channel ids separated by spaces, commas or semicolons) are required columns, <code>at</code> too (<code>now</code>, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's <code>time_zone</code>, an IANA zone, UTC if left out); <code>media</code> (ids of ready media of the workspace), <code>allow_duplicate</code> (<code>true</code> or <code>false</code>) and <code>idempotency_key</code> are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (<code>strayQuote</code>). Blank lines are no rows. The file is checked first, every row, as <code>validate</code> checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and <code>rows</code> says which are <code>valid</code>, <code>refused</code> (with what <code>send</code> would have answered) or <code>unreadable</code> (with the cells at fault). <code>dryRun</code> stops there even when every row is valid. Otherwise the rows are then made in order as <code>bulk</code> makes its items, each <code>created</code> or, when something changed since the check or a row repeats an earlier one, <code>refused</code>. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An <code>Idempotency-Key</code> header works as on <code>bulk</code>, by row. A file has no column for short links: each post takes the workspace's default (<code>shortLinks.status</code>'s <code>byDefault</code>). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<PealClientHttpResponse<ImportResult>> import_(String workspaceId, PostImport request) {
-        return import_(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<ImportResult>> import_(PostImport request) {
+        return import_(request, null);
     }
 
     /**
      * Creates and sends the posts a CSV file lists, one per row, at most 100 rows under its first line, which names the columns, in any order: <code>text</code> and <code>channels</code> (channel ids separated by spaces, commas or semicolons) are required columns, <code>at</code> too (<code>now</code>, an instant with its offset such as 2026-11-20T09:00:00Z, or a local time without one such as 2026-11-20 10:00, read in the row's <code>time_zone</code>, an IANA zone, UTC if left out); <code>media</code> (ids of ready media of the workspace), <code>allow_duplicate</code> (<code>true</code> or <code>false</code>) and <code>idempotency_key</code> are optional. Cells follow RFC 4180, strictly: a cell with a comma, a quote or a line break is written between double quotes, a quote inside it doubled; a quote anywhere else is ImportUnreadable (<code>strayQuote</code>). Blank lines are no rows. The file is checked first, every row, as <code>validate</code> checks a post and as the file it is (a row an earlier row leaves no room for in its month, one that repeats an earlier row's content near its time, and one that carries an earlier row's key with another post are refused; a row with more or fewer cells than the first line names is unreadable, never guessed); unless every row is valid, nothing is made, and <code>rows</code> says which are <code>valid</code>, <code>refused</code> (with what <code>send</code> would have answered) or <code>unreadable</code> (with the cells at fault). <code>dryRun</code> stops there even when every row is valid. Otherwise the rows are then made in order as <code>bulk</code> makes its items, each <code>created</code> or, when something changed since the check or a row repeats an earlier one, <code>refused</code>. The answer is 200 once the file was read; a file that cannot be read at all is ImportUnreadable. An <code>Idempotency-Key</code> header works as on <code>bulk</code>, by row. A file has no column for short links: each post takes the workspace's default (<code>shortLinks.status</code>'s <code>byDefault</code>). Needs post:schedule, post:read and channel:read, and media:read for rows with media; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<ImportResult>> import_(
-            String workspaceId, PostImport request, RequestOptions requestOptions) {
+            PostImport request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
-                .addPathSegments("import");
+                .addPathSegments("api/v1/posts/import");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -946,6 +938,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1004,22 +1001,18 @@ public class AsyncRawPostsClient {
     /**
      * Checks a post without making it, and changes nothing: send what <code>send</code> takes, or a draft (no <code>when</code>). It answers 200 whether or not the post would go through, with <code>valid</code> and everything that would refuse it, all at once: per channel, the text the channel receives, counted as its platform counts it against each of its limits, its hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats, sizes, counts and durations, options) and of the account's own where its platform tells them; the channels and media that are not the workspace's; and, when <code>when</code> is given, whether the time can be kept (for <code>queue</code>, the slot it would take now, <code>queueSlot</code>, or why there is none, <code>queueNoRoom</code>: QueueNotFound when the queue is not the workspace's), whether the workspace's plan has room, and the channels that already have the same content from another post (<code>duplicates</code>, as DuplicatePost tells them; none with <code>allowDuplicate</code>). A post that is valid now can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and channel:read, and media:read when it shows media.
      */
-    public CompletableFuture<PealClientHttpResponse<PostValidation>> validate(
-            String workspaceId, PostToValidate request) {
-        return validate(workspaceId, request, null);
+    public CompletableFuture<PealClientHttpResponse<PostValidation>> validate(PostToValidate request) {
+        return validate(request, null);
     }
 
     /**
      * Checks a post without making it, and changes nothing: send what <code>send</code> takes, or a draft (no <code>when</code>). It answers 200 whether or not the post would go through, with <code>valid</code> and everything that would refuse it, all at once: per channel, the text the channel receives, counted as its platform counts it against each of its limits, its hashtags, mentions, links and media, and every violation of the platform's rules (text, media formats, sizes, counts and durations, options) and of the account's own where its platform tells them; the channels and media that are not the workspace's; and, when <code>when</code> is given, whether the time can be kept (for <code>queue</code>, the slot it would take now, <code>queueSlot</code>, or why there is none, <code>queueNoRoom</code>: QueueNotFound when the queue is not the workspace's), whether the workspace's plan has room, and the channels that already have the same content from another post (<code>duplicates</code>, as DuplicatePost tells them; none with <code>allowDuplicate</code>). A post that is valid now can still be refused later: a channel disconnected, a plan's month filled meanwhile. Needs post:read and channel:read, and media:read when it shows media.
      */
     public CompletableFuture<PealClientHttpResponse<PostValidation>> validate(
-            String workspaceId, PostToValidate request, RequestOptions requestOptions) {
+            PostToValidate request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
-                .addPathSegments("validate");
+                .addPathSegments("api/v1/posts/validate");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -1064,6 +1057,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1117,36 +1115,32 @@ public class AsyncRawPostsClient {
     /**
      * Answers with a post of the workspace. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> get(String workspaceId, String postId) {
-        return get(workspaceId, postId, GetPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> get(String postId) {
+        return get(postId, GetPostsRequest.builder().build());
+    }
+
+    /**
+     * Answers with a post of the workspace. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> get(String postId, RequestOptions requestOptions) {
+        return get(postId, GetPostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Answers with a post of the workspace. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> get(String postId, GetPostsRequest request) {
+        return get(postId, request, null);
     }
 
     /**
      * Answers with a post of the workspace. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> get(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return get(workspaceId, postId, GetPostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers with a post of the workspace. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> get(
-            String workspaceId, String postId, GetPostsRequest request) {
-        return get(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Answers with a post of the workspace. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> get(
-            String workspaceId, String postId, GetPostsRequest request, RequestOptions requestOptions) {
+            String postId, GetPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1186,6 +1180,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1239,21 +1238,18 @@ public class AsyncRawPostsClient {
     /**
      * Replaces a draft's content, channels and options: options left out are removed. Its tags are replaced by <code>tagIds</code> when given, and kept otherwise. A post that is no longer a draft is a conflict. Needs post:update, channel:read, and media:read when it shows media.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> update(
-            String workspaceId, String postId, UpdatePostsRequest request) {
-        return update(workspaceId, postId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Post>> update(String postId, UpdatePostsRequest request) {
+        return update(postId, request, null);
     }
 
     /**
      * Replaces a draft's content, channels and options: options left out are removed. Its tags are replaced by <code>tagIds</code> when given, and kept otherwise. A post that is no longer a draft is a conflict. Needs post:update, channel:read, and media:read when it shows media.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> update(
-            String workspaceId, String postId, UpdatePostsRequest request, RequestOptions requestOptions) {
+            String postId, UpdatePostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1303,6 +1299,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1366,36 +1367,32 @@ public class AsyncRawPostsClient {
     /**
      * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
      */
-    public CompletableFuture<PealClientHttpResponse<Void>> discard(String workspaceId, String postId) {
-        return discard(workspaceId, postId, DiscardPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Void>> discard(String postId) {
+        return discard(postId, DiscardPostsRequest.builder().build());
+    }
+
+    /**
+     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> discard(String postId, RequestOptions requestOptions) {
+        return discard(postId, DiscardPostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
+     */
+    public CompletableFuture<PealClientHttpResponse<Void>> discard(String postId, DiscardPostsRequest request) {
+        return discard(postId, request, null);
     }
 
     /**
      * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
      */
     public CompletableFuture<PealClientHttpResponse<Void>> discard(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return discard(workspaceId, postId, DiscardPostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> discard(
-            String workspaceId, String postId, DiscardPostsRequest request) {
-        return discard(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
-     */
-    public CompletableFuture<PealClientHttpResponse<Void>> discard(
-            String workspaceId, String postId, DiscardPostsRequest request, RequestOptions requestOptions) {
+            String postId, DiscardPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1437,6 +1434,11 @@ public class AsyncRawPostsClient {
                     String responseBodyString = responseBody != null ? responseBody.string() : "{}";
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1495,36 +1497,32 @@ public class AsyncRawPostsClient {
     /**
      * Answers with a post once it has gone out: it waits up to <code>wait</code> seconds (60 at most; none unless given) until every channel has its result, and answers the post then (<code>status</code> <code>finished</code>), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> outcome(String workspaceId, String postId) {
-        return outcome(workspaceId, postId, OutcomePostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> outcome(String postId) {
+        return outcome(postId, OutcomePostsRequest.builder().build());
+    }
+
+    /**
+     * Answers with a post once it has gone out: it waits up to <code>wait</code> seconds (60 at most; none unless given) until every channel has its result, and answers the post then (<code>status</code> <code>finished</code>), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> outcome(String postId, RequestOptions requestOptions) {
+        return outcome(postId, OutcomePostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Answers with a post once it has gone out: it waits up to <code>wait</code> seconds (60 at most; none unless given) until every channel has its result, and answers the post then (<code>status</code> <code>finished</code>), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> outcome(String postId, OutcomePostsRequest request) {
+        return outcome(postId, request, null);
     }
 
     /**
      * Answers with a post once it has gone out: it waits up to <code>wait</code> seconds (60 at most; none unless given) until every channel has its result, and answers the post then (<code>status</code> <code>finished</code>), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> outcome(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return outcome(workspaceId, postId, OutcomePostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers with a post once it has gone out: it waits up to <code>wait</code> seconds (60 at most; none unless given) until every channel has its result, and answers the post then (<code>status</code> <code>finished</code>), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> outcome(
-            String workspaceId, String postId, OutcomePostsRequest request) {
-        return outcome(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Answers with a post once it has gone out: it waits up to <code>wait</code> seconds (60 at most; none unless given) until every channel has its result, and answers the post then (<code>status</code> <code>finished</code>), or as it stands when the time runs out, which a client asks again. A draft, a cancelled post and a post scheduled for later than the wait are answered at once. Waiting changes nothing and holds nothing: the post publishes in its own job either way. Needs post:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> outcome(
-            String workspaceId, String postId, OutcomePostsRequest request, RequestOptions requestOptions) {
+            String postId, OutcomePostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("outcome");
         if (request.getWait().isPresent()) {
@@ -1569,6 +1567,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1622,37 +1625,34 @@ public class AsyncRawPostsClient {
     /**
      * Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<List<PublicationAttempt>>> attempts(
-            String workspaceId, String postId) {
-        return attempts(workspaceId, postId, AttemptsPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<List<PublicationAttempt>>> attempts(String postId) {
+        return attempts(postId, AttemptsPostsRequest.builder().build());
     }
 
     /**
      * Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<PublicationAttempt>>> attempts(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return attempts(workspaceId, postId, AttemptsPostsRequest.builder().build(), requestOptions);
+            String postId, RequestOptions requestOptions) {
+        return attempts(postId, AttemptsPostsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<PublicationAttempt>>> attempts(
-            String workspaceId, String postId, AttemptsPostsRequest request) {
-        return attempts(workspaceId, postId, request, null);
+            String postId, AttemptsPostsRequest request) {
+        return attempts(postId, request, null);
     }
 
     /**
      * Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<List<PublicationAttempt>>> attempts(
-            String workspaceId, String postId, AttemptsPostsRequest request, RequestOptions requestOptions) {
+            String postId, AttemptsPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("attempts");
         if (requestOptions != null) {
@@ -1695,6 +1695,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1748,20 +1753,18 @@ public class AsyncRawPostsClient {
     /**
      * Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> tag(String workspaceId, String postId, PostTags request) {
-        return tag(workspaceId, postId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Post>> tag(String postId, PostTags request) {
+        return tag(postId, request, null);
     }
 
     /**
      * Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> tag(
-            String workspaceId, String postId, PostTags request, RequestOptions requestOptions) {
+            String postId, PostTags request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("tags");
         if (requestOptions != null) {
@@ -1812,6 +1815,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1870,36 +1878,32 @@ public class AsyncRawPostsClient {
     /**
      * Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> duplicate(String workspaceId, String postId) {
-        return duplicate(workspaceId, postId, DuplicatePostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> duplicate(String postId) {
+        return duplicate(postId, DuplicatePostsRequest.builder().build());
+    }
+
+    /**
+     * Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> duplicate(String postId, RequestOptions requestOptions) {
+        return duplicate(postId, DuplicatePostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> duplicate(String postId, DuplicatePostsRequest request) {
+        return duplicate(postId, request, null);
     }
 
     /**
      * Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> duplicate(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return duplicate(workspaceId, postId, DuplicatePostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> duplicate(
-            String workspaceId, String postId, DuplicatePostsRequest request) {
-        return duplicate(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> duplicate(
-            String workspaceId, String postId, DuplicatePostsRequest request, RequestOptions requestOptions) {
+            String postId, DuplicatePostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("duplicate");
         if (requestOptions != null) {
@@ -1939,6 +1943,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -1997,21 +2006,18 @@ public class AsyncRawPostsClient {
     /**
      * Schedules a draft on some of the workspace's channels at an instant, kept with the IANA time zone it was chosen in. The content must fit each platform's rules, its media included: file types, sizes, durations, dimensions, alt text, how many videos, and whether images and videos go together. A channel whose platform takes options needs those it requires, as the draft gives them on that channel: a channel the draft was not for has none yet. A time up to a minute ago publishes now. On a server that bills, the posts going out in that month (UTC) must fit the workspace's plan (PlanLimitReached). Where the workspace asks for an approval of this post (its approval policy), the post is not scheduled: it answers with the status <code>awaitingApproval</code>, keeps its time, and goes out only once approved; contributors may then ask too, with post:create. Needs post:schedule and channel:read, and media:read when it shows media.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> schedule(
-            String workspaceId, String postId, SchedulePost request) {
-        return schedule(workspaceId, postId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Post>> schedule(String postId, SchedulePost request) {
+        return schedule(postId, request, null);
     }
 
     /**
      * Schedules a draft on some of the workspace's channels at an instant, kept with the IANA time zone it was chosen in. The content must fit each platform's rules, its media included: file types, sizes, durations, dimensions, alt text, how many videos, and whether images and videos go together. A channel whose platform takes options needs those it requires, as the draft gives them on that channel: a channel the draft was not for has none yet. A time up to a minute ago publishes now. On a server that bills, the posts going out in that month (UTC) must fit the workspace's plan (PlanLimitReached). Where the workspace asks for an approval of this post (its approval policy), the post is not scheduled: it answers with the status <code>awaitingApproval</code>, keeps its time, and goes out only once approved; contributors may then ask too, with post:create. Needs post:schedule and channel:read, and media:read when it shows media.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> schedule(
-            String workspaceId, String postId, SchedulePost request, RequestOptions requestOptions) {
+            String postId, SchedulePost request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("schedule");
         if (requestOptions != null) {
@@ -2057,6 +2063,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2125,21 +2136,18 @@ public class AsyncRawPostsClient {
     /**
      * Moves a scheduled post, or one awaiting approval, to another instant, or schedules a draft on the channels it has. A post that needs an approval it does not have waits for it (<code>awaitingApproval</code>). Moved to another month, or scheduled, it must fit that month's posts in the workspace's plan (PlanLimitReached). Needs post:schedule, and channel:read for a draft.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> reschedule(
-            String workspaceId, String postId, ReschedulePostsRequest request) {
-        return reschedule(workspaceId, postId, request, null);
+    public CompletableFuture<PealClientHttpResponse<Post>> reschedule(String postId, ReschedulePostsRequest request) {
+        return reschedule(postId, request, null);
     }
 
     /**
      * Moves a scheduled post, or one awaiting approval, to another instant, or schedules a draft on the channels it has. A post that needs an approval it does not have waits for it (<code>awaitingApproval</code>). Moved to another month, or scheduled, it must fit that month's posts in the workspace's plan (PlanLimitReached). Needs post:schedule, and channel:read for a draft.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> reschedule(
-            String workspaceId, String postId, ReschedulePostsRequest request, RequestOptions requestOptions) {
+            String postId, ReschedulePostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("reschedule");
         if (requestOptions != null) {
@@ -2185,6 +2193,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2253,36 +2266,32 @@ public class AsyncRawPostsClient {
     /**
      * Puts a post on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts added together never take the same slot. A draft is scheduled there as <code>schedule</code> schedules it, on <code>channelIds</code> when given, on the channels it has otherwise, or, when it has none, where the same content sent with <code>when: queue</code> would go: the queue's connected channels and its channel set's, with the options the set keeps and the channels' default options; a channel of either that is no longer connected is left out and told in <code>warnings</code> (<code>queueChannelsDropped</code>, <code>channelsDropped</code>), and none left is UnknownChannels; a scheduled post, or one awaiting approval, is moved there as <code>reschedule</code> moves it, on the channels it has. Every rule of scheduling applies at that time, the approval gate and the plan's room in the slot's month included (PlanLimitReached, never a later month). A queue without a free slot within 366 days is QueueHasNoRoom, and nothing is changed. Needs post:schedule and channel:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> enqueue(String workspaceId, String postId) {
-        return enqueue(workspaceId, postId, QueuePost.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> enqueue(String postId) {
+        return enqueue(postId, QueuePost.builder().build());
+    }
+
+    /**
+     * Puts a post on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts added together never take the same slot. A draft is scheduled there as <code>schedule</code> schedules it, on <code>channelIds</code> when given, on the channels it has otherwise, or, when it has none, where the same content sent with <code>when: queue</code> would go: the queue's connected channels and its channel set's, with the options the set keeps and the channels' default options; a channel of either that is no longer connected is left out and told in <code>warnings</code> (<code>queueChannelsDropped</code>, <code>channelsDropped</code>), and none left is UnknownChannels; a scheduled post, or one awaiting approval, is moved there as <code>reschedule</code> moves it, on the channels it has. Every rule of scheduling applies at that time, the approval gate and the plan's room in the slot's month included (PlanLimitReached, never a later month). A queue without a free slot within 366 days is QueueHasNoRoom, and nothing is changed. Needs post:schedule and channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> enqueue(String postId, RequestOptions requestOptions) {
+        return enqueue(postId, QueuePost.builder().build(), requestOptions);
+    }
+
+    /**
+     * Puts a post on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts added together never take the same slot. A draft is scheduled there as <code>schedule</code> schedules it, on <code>channelIds</code> when given, on the channels it has otherwise, or, when it has none, where the same content sent with <code>when: queue</code> would go: the queue's connected channels and its channel set's, with the options the set keeps and the channels' default options; a channel of either that is no longer connected is left out and told in <code>warnings</code> (<code>queueChannelsDropped</code>, <code>channelsDropped</code>), and none left is UnknownChannels; a scheduled post, or one awaiting approval, is moved there as <code>reschedule</code> moves it, on the channels it has. Every rule of scheduling applies at that time, the approval gate and the plan's room in the slot's month included (PlanLimitReached, never a later month). A queue without a free slot within 366 days is QueueHasNoRoom, and nothing is changed. Needs post:schedule and channel:read.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> enqueue(String postId, QueuePost request) {
+        return enqueue(postId, request, null);
     }
 
     /**
      * Puts a post on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts added together never take the same slot. A draft is scheduled there as <code>schedule</code> schedules it, on <code>channelIds</code> when given, on the channels it has otherwise, or, when it has none, where the same content sent with <code>when: queue</code> would go: the queue's connected channels and its channel set's, with the options the set keeps and the channels' default options; a channel of either that is no longer connected is left out and told in <code>warnings</code> (<code>queueChannelsDropped</code>, <code>channelsDropped</code>), and none left is UnknownChannels; a scheduled post, or one awaiting approval, is moved there as <code>reschedule</code> moves it, on the channels it has. Every rule of scheduling applies at that time, the approval gate and the plan's room in the slot's month included (PlanLimitReached, never a later month). A queue without a free slot within 366 days is QueueHasNoRoom, and nothing is changed. Needs post:schedule and channel:read.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> enqueue(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return enqueue(workspaceId, postId, QueuePost.builder().build(), requestOptions);
-    }
-
-    /**
-     * Puts a post on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts added together never take the same slot. A draft is scheduled there as <code>schedule</code> schedules it, on <code>channelIds</code> when given, on the channels it has otherwise, or, when it has none, where the same content sent with <code>when: queue</code> would go: the queue's connected channels and its channel set's, with the options the set keeps and the channels' default options; a channel of either that is no longer connected is left out and told in <code>warnings</code> (<code>queueChannelsDropped</code>, <code>channelsDropped</code>), and none left is UnknownChannels; a scheduled post, or one awaiting approval, is moved there as <code>reschedule</code> moves it, on the channels it has. Every rule of scheduling applies at that time, the approval gate and the plan's room in the slot's month included (PlanLimitReached, never a later month). A queue without a free slot within 366 days is QueueHasNoRoom, and nothing is changed. Needs post:schedule and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> enqueue(
-            String workspaceId, String postId, QueuePost request) {
-        return enqueue(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Puts a post on the next free slot of a queue (<code>queueId</code>, or the workspace's default queue), decided when the request is received so that posts added together never take the same slot. A draft is scheduled there as <code>schedule</code> schedules it, on <code>channelIds</code> when given, on the channels it has otherwise, or, when it has none, where the same content sent with <code>when: queue</code> would go: the queue's connected channels and its channel set's, with the options the set keeps and the channels' default options; a channel of either that is no longer connected is left out and told in <code>warnings</code> (<code>queueChannelsDropped</code>, <code>channelsDropped</code>), and none left is UnknownChannels; a scheduled post, or one awaiting approval, is moved there as <code>reschedule</code> moves it, on the channels it has. Every rule of scheduling applies at that time, the approval gate and the plan's room in the slot's month included (PlanLimitReached, never a later month). A queue without a free slot within 366 days is QueueHasNoRoom, and nothing is changed. Needs post:schedule and channel:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> enqueue(
-            String workspaceId, String postId, QueuePost request, RequestOptions requestOptions) {
+            String postId, QueuePost request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("queue");
         if (requestOptions != null) {
@@ -2328,6 +2337,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2396,36 +2410,32 @@ public class AsyncRawPostsClient {
     /**
      * Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> unschedule(String workspaceId, String postId) {
-        return unschedule(workspaceId, postId, UnschedulePostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> unschedule(String postId) {
+        return unschedule(postId, UnschedulePostsRequest.builder().build());
+    }
+
+    /**
+     * Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> unschedule(String postId, RequestOptions requestOptions) {
+        return unschedule(postId, UnschedulePostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> unschedule(String postId, UnschedulePostsRequest request) {
+        return unschedule(postId, request, null);
     }
 
     /**
      * Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> unschedule(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return unschedule(workspaceId, postId, UnschedulePostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> unschedule(
-            String workspaceId, String postId, UnschedulePostsRequest request) {
-        return unschedule(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> unschedule(
-            String workspaceId, String postId, UnschedulePostsRequest request, RequestOptions requestOptions) {
+            String postId, UnschedulePostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("unschedule");
         if (requestOptions != null) {
@@ -2465,6 +2475,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2523,42 +2538,34 @@ public class AsyncRawPostsClient {
     /**
      * Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as <code>partsNotSent</code> is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> repost(String workspaceId, String postId, String targetId) {
-        return repost(
-                workspaceId, postId, targetId, RepostPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> repost(String postId, String targetId) {
+        return repost(postId, targetId, RepostPostsRequest.builder().build());
     }
 
     /**
      * Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as <code>partsNotSent</code> is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> repost(
-            String workspaceId, String postId, String targetId, RequestOptions requestOptions) {
-        return repost(
-                workspaceId, postId, targetId, RepostPostsRequest.builder().build(), requestOptions);
+            String postId, String targetId, RequestOptions requestOptions) {
+        return repost(postId, targetId, RepostPostsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as <code>partsNotSent</code> is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> repost(
-            String workspaceId, String postId, String targetId, RepostPostsRequest request) {
-        return repost(workspaceId, postId, targetId, request, null);
+            String postId, String targetId, RepostPostsRequest request) {
+        return repost(postId, targetId, request, null);
     }
 
     /**
      * Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as <code>partsNotSent</code> is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> repost(
-            String workspaceId,
-            String postId,
-            String targetId,
-            RepostPostsRequest request,
-            RequestOptions requestOptions) {
+            String postId, String targetId, RepostPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("targets")
                 .addPathSegment(PathSegments.validate(targetId))
@@ -2600,6 +2607,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2658,50 +2670,34 @@ public class AsyncRawPostsClient {
     /**
      * Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is <code>cancelled</code> with <code>dropped</code>, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear <code>post.cancelled</code> naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> removeTarget(
-            String workspaceId, String postId, String targetId) {
-        return removeTarget(
-                workspaceId,
-                postId,
-                targetId,
-                RemoveTargetPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> removeTarget(String postId, String targetId) {
+        return removeTarget(postId, targetId, RemoveTargetPostsRequest.builder().build());
     }
 
     /**
      * Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is <code>cancelled</code> with <code>dropped</code>, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear <code>post.cancelled</code> naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> removeTarget(
-            String workspaceId, String postId, String targetId, RequestOptions requestOptions) {
-        return removeTarget(
-                workspaceId,
-                postId,
-                targetId,
-                RemoveTargetPostsRequest.builder().build(),
-                requestOptions);
+            String postId, String targetId, RequestOptions requestOptions) {
+        return removeTarget(postId, targetId, RemoveTargetPostsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is <code>cancelled</code> with <code>dropped</code>, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear <code>post.cancelled</code> naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> removeTarget(
-            String workspaceId, String postId, String targetId, RemoveTargetPostsRequest request) {
-        return removeTarget(workspaceId, postId, targetId, request, null);
+            String postId, String targetId, RemoveTargetPostsRequest request) {
+        return removeTarget(postId, targetId, request, null);
     }
 
     /**
      * Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is <code>cancelled</code> with <code>dropped</code>, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear <code>post.cancelled</code> naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> removeTarget(
-            String workspaceId,
-            String postId,
-            String targetId,
-            RemoveTargetPostsRequest request,
-            RequestOptions requestOptions) {
+            String postId, String targetId, RemoveTargetPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("targets")
                 .addPathSegment(PathSegments.validate(targetId));
@@ -2746,6 +2742,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2805,24 +2806,18 @@ public class AsyncRawPostsClient {
      * Says what you found on the platform for a post unconfirmed on one channel: <code>published</code>, with its address if you have it, or <code>notPublished</code>, which fails it there so it can be reposted. Its notifications are marked read. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> confirm(
-            String workspaceId, String postId, String targetId, ConfirmPostsRequest request) {
-        return confirm(workspaceId, postId, targetId, request, null);
+            String postId, String targetId, ConfirmPostsRequest request) {
+        return confirm(postId, targetId, request, null);
     }
 
     /**
      * Says what you found on the platform for a post unconfirmed on one channel: <code>published</code>, with its address if you have it, or <code>notPublished</code>, which fails it there so it can be reposted. Its notifications are marked read. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> confirm(
-            String workspaceId,
-            String postId,
-            String targetId,
-            ConfirmPostsRequest request,
-            RequestOptions requestOptions) {
+            String postId, String targetId, ConfirmPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("targets")
                 .addPathSegment(PathSegments.validate(targetId))
@@ -2870,6 +2865,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -2928,50 +2928,34 @@ public class AsyncRawPostsClient {
     /**
      * Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (<code>parts.live</code>); it becomes <code>published</code>, as that part, with <code>partsLeftOut</code>, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> leaveOutRest(
-            String workspaceId, String postId, String targetId) {
-        return leaveOutRest(
-                workspaceId,
-                postId,
-                targetId,
-                LeaveOutRestPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> leaveOutRest(String postId, String targetId) {
+        return leaveOutRest(postId, targetId, LeaveOutRestPostsRequest.builder().build());
     }
 
     /**
      * Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (<code>parts.live</code>); it becomes <code>published</code>, as that part, with <code>partsLeftOut</code>, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> leaveOutRest(
-            String workspaceId, String postId, String targetId, RequestOptions requestOptions) {
-        return leaveOutRest(
-                workspaceId,
-                postId,
-                targetId,
-                LeaveOutRestPostsRequest.builder().build(),
-                requestOptions);
+            String postId, String targetId, RequestOptions requestOptions) {
+        return leaveOutRest(postId, targetId, LeaveOutRestPostsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (<code>parts.live</code>); it becomes <code>published</code>, as that part, with <code>partsLeftOut</code>, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> leaveOutRest(
-            String workspaceId, String postId, String targetId, LeaveOutRestPostsRequest request) {
-        return leaveOutRest(workspaceId, postId, targetId, request, null);
+            String postId, String targetId, LeaveOutRestPostsRequest request) {
+        return leaveOutRest(postId, targetId, request, null);
     }
 
     /**
      * Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (<code>parts.live</code>); it becomes <code>published</code>, as that part, with <code>partsLeftOut</code>, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> leaveOutRest(
-            String workspaceId,
-            String postId,
-            String targetId,
-            LeaveOutRestPostsRequest request,
-            RequestOptions requestOptions) {
+            String postId, String targetId, LeaveOutRestPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("targets")
                 .addPathSegment(PathSegments.validate(targetId))
@@ -3013,6 +2997,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -3071,50 +3060,36 @@ public class AsyncRawPostsClient {
     /**
      * Deletes the post from one channel's platform, for everyone: every part of a thread, the last first, so a deletion that stops midway leaves a shorter thread that still reads from its start. It cannot be undone from Peal. The request is accepted (202) and a job deletes it, one call at a time with the channel's other calls; a part the platform no longer has counts as deleted (<code>alreadyGone</code>), and a call that fails is tried again (as long as the platform asks to wait, and five more times while it cannot be reached), after which the change is <code>failed</code> with its <code>code</code> and asking again deletes the parts left. <code>wait</code> waits up to that many seconds (60 at most) for the change to end, and answers it as it then stands. Once done, the target keeps the status <code>published</code> with its <code>removedAt</code> (the month's count and the usage stay, as the post did go out), analytics stops reading it and keeps what it read, and the inbox stops reading its comments and keeps those it has. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted already, Peal has no id for a part of it, the platform does not let Peal delete it (the capabilities' <code>livePost</code> say so beforehand), another change of it is pending, the channel cannot be used, or a boost that is not over shows it. Webhooks hear <code>post.unpublished</code> or <code>post.unpublish_failed</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<PealClientHttpResponse<LivePostChange>> unpublishTarget(
-            String workspaceId, String postId, String targetId) {
+    public CompletableFuture<PealClientHttpResponse<LivePostChange>> unpublishTarget(String postId, String targetId) {
         return unpublishTarget(
-                workspaceId,
-                postId,
-                targetId,
-                UnpublishTargetPostsRequest.builder().build());
+                postId, targetId, UnpublishTargetPostsRequest.builder().build());
     }
 
     /**
      * Deletes the post from one channel's platform, for everyone: every part of a thread, the last first, so a deletion that stops midway leaves a shorter thread that still reads from its start. It cannot be undone from Peal. The request is accepted (202) and a job deletes it, one call at a time with the channel's other calls; a part the platform no longer has counts as deleted (<code>alreadyGone</code>), and a call that fails is tried again (as long as the platform asks to wait, and five more times while it cannot be reached), after which the change is <code>failed</code> with its <code>code</code> and asking again deletes the parts left. <code>wait</code> waits up to that many seconds (60 at most) for the change to end, and answers it as it then stands. Once done, the target keeps the status <code>published</code> with its <code>removedAt</code> (the month's count and the usage stay, as the post did go out), analytics stops reading it and keeps what it read, and the inbox stops reading its comments and keeps those it has. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted already, Peal has no id for a part of it, the platform does not let Peal delete it (the capabilities' <code>livePost</code> say so beforehand), another change of it is pending, the channel cannot be used, or a boost that is not over shows it. Webhooks hear <code>post.unpublished</code> or <code>post.unpublish_failed</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChange>> unpublishTarget(
-            String workspaceId, String postId, String targetId, RequestOptions requestOptions) {
+            String postId, String targetId, RequestOptions requestOptions) {
         return unpublishTarget(
-                workspaceId,
-                postId,
-                targetId,
-                UnpublishTargetPostsRequest.builder().build(),
-                requestOptions);
+                postId, targetId, UnpublishTargetPostsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Deletes the post from one channel's platform, for everyone: every part of a thread, the last first, so a deletion that stops midway leaves a shorter thread that still reads from its start. It cannot be undone from Peal. The request is accepted (202) and a job deletes it, one call at a time with the channel's other calls; a part the platform no longer has counts as deleted (<code>alreadyGone</code>), and a call that fails is tried again (as long as the platform asks to wait, and five more times while it cannot be reached), after which the change is <code>failed</code> with its <code>code</code> and asking again deletes the parts left. <code>wait</code> waits up to that many seconds (60 at most) for the change to end, and answers it as it then stands. Once done, the target keeps the status <code>published</code> with its <code>removedAt</code> (the month's count and the usage stay, as the post did go out), analytics stops reading it and keeps what it read, and the inbox stops reading its comments and keeps those it has. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted already, Peal has no id for a part of it, the platform does not let Peal delete it (the capabilities' <code>livePost</code> say so beforehand), another change of it is pending, the channel cannot be used, or a boost that is not over shows it. Webhooks hear <code>post.unpublished</code> or <code>post.unpublish_failed</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChange>> unpublishTarget(
-            String workspaceId, String postId, String targetId, UnpublishTargetPostsRequest request) {
-        return unpublishTarget(workspaceId, postId, targetId, request, null);
+            String postId, String targetId, UnpublishTargetPostsRequest request) {
+        return unpublishTarget(postId, targetId, request, null);
     }
 
     /**
      * Deletes the post from one channel's platform, for everyone: every part of a thread, the last first, so a deletion that stops midway leaves a shorter thread that still reads from its start. It cannot be undone from Peal. The request is accepted (202) and a job deletes it, one call at a time with the channel's other calls; a part the platform no longer has counts as deleted (<code>alreadyGone</code>), and a call that fails is tried again (as long as the platform asks to wait, and five more times while it cannot be reached), after which the change is <code>failed</code> with its <code>code</code> and asking again deletes the parts left. <code>wait</code> waits up to that many seconds (60 at most) for the change to end, and answers it as it then stands. Once done, the target keeps the status <code>published</code> with its <code>removedAt</code> (the month's count and the usage stay, as the post did go out), analytics stops reading it and keeps what it read, and the inbox stops reading its comments and keeps those it has. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted already, Peal has no id for a part of it, the platform does not let Peal delete it (the capabilities' <code>livePost</code> say so beforehand), another change of it is pending, the channel cannot be used, or a boost that is not over shows it. Webhooks hear <code>post.unpublished</code> or <code>post.unpublish_failed</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChange>> unpublishTarget(
-            String workspaceId,
-            String postId,
-            String targetId,
-            UnpublishTargetPostsRequest request,
-            RequestOptions requestOptions) {
+            String postId, String targetId, UnpublishTargetPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("targets")
                 .addPathSegment(PathSegments.validate(targetId))
@@ -3161,6 +3136,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -3220,20 +3200,18 @@ public class AsyncRawPostsClient {
      * Replaces the text of one part of the post (<code>part</code>, from 0, the post itself by default) on one channel's platform, for everyone: only the text changes, never the media, the options or the time. The change is public at once. Peal edits on Mastodon and Google Business Profile; the capabilities' <code>livePost.edit</code> say where, and <code>editBlockedBy</code> why not elsewhere. The text is checked as that channel's text is when a post is scheduled (PostContentInvalid, a Mastodon content warning counted), and must not be empty. The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is <code>failed</code> with its <code>code</code> (<code>postGone</code> when the platform no longer has the post, <code>pollNotEditable</code> for a Mastodon post with a poll, which the edit would remove, <code>permissionDenied</code> for a Mastodon channel to reconnect) and may be asked again. <code>wait</code> waits up to that many seconds (60 at most) for it to end. Once done, the text is that part's own text on that channel in Peal (the other channels keep theirs), the target has its <code>editedAt</code>, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (<code>approvalRequired</code>: an approver makes the edit). Webhooks hear <code>post.edited</code> or <code>post.edit_failed</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChange>> editTarget(
-            String workspaceId, String postId, String targetId, LivePostEdit request) {
-        return editTarget(workspaceId, postId, targetId, request, null);
+            String postId, String targetId, LivePostEdit request) {
+        return editTarget(postId, targetId, request, null);
     }
 
     /**
      * Replaces the text of one part of the post (<code>part</code>, from 0, the post itself by default) on one channel's platform, for everyone: only the text changes, never the media, the options or the time. The change is public at once. Peal edits on Mastodon and Google Business Profile; the capabilities' <code>livePost.edit</code> say where, and <code>editBlockedBy</code> why not elsewhere. The text is checked as that channel's text is when a post is scheduled (PostContentInvalid, a Mastodon content warning counted), and must not be empty. The request is accepted (202) and a job makes the edit, one call at a time with the channel's other calls; a call that fails is tried again as a deletion is, after which the change is <code>failed</code> with its <code>code</code> (<code>postGone</code> when the platform no longer has the post, <code>pollNotEditable</code> for a Mastodon post with a poll, which the edit would remove, <code>permissionDenied</code> for a Mastodon channel to reconnect) and may be asked again. <code>wait</code> waits up to that many seconds (60 at most) for it to end. Once done, the text is that part's own text on that channel in Peal (the other channels keep theirs), the target has its <code>editedAt</code>, and Peal keeps no earlier text. Refused (LivePostNotChangeable) before anything is called where it is not live there, was deleted, Peal has no id for that part, the platform does not let Peal edit it, another change of it is pending, the channel cannot be used, or your posts need an approval (<code>approvalRequired</code>: an approver makes the edit). Webhooks hear <code>post.edited</code> or <code>post.edit_failed</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChange>> editTarget(
-            String workspaceId, String postId, String targetId, LivePostEdit request, RequestOptions requestOptions) {
+            String postId, String targetId, LivePostEdit request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("targets")
                 .addPathSegment(PathSegments.validate(targetId))
@@ -3286,6 +3264,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -3349,36 +3332,34 @@ public class AsyncRawPostsClient {
     /**
      * Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (<code>changes</code>) and, beside them, why it could not be on the others (<code>refused</code>, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<PealClientHttpResponse<PostUnpublish>> unpublish(String workspaceId, String postId) {
-        return unpublish(workspaceId, postId, UnpublishPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<PostUnpublish>> unpublish(String postId) {
+        return unpublish(postId, UnpublishPostsRequest.builder().build());
     }
 
     /**
      * Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (<code>changes</code>) and, beside them, why it could not be on the others (<code>refused</code>, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<PostUnpublish>> unpublish(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return unpublish(workspaceId, postId, UnpublishPostsRequest.builder().build(), requestOptions);
+            String postId, RequestOptions requestOptions) {
+        return unpublish(postId, UnpublishPostsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (<code>changes</code>) and, beside them, why it could not be on the others (<code>refused</code>, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<PostUnpublish>> unpublish(
-            String workspaceId, String postId, UnpublishPostsRequest request) {
-        return unpublish(workspaceId, postId, request, null);
+            String postId, UnpublishPostsRequest request) {
+        return unpublish(postId, request, null);
     }
 
     /**
      * Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (<code>changes</code>) and, beside them, why it could not be on the others (<code>refused</code>, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<PealClientHttpResponse<PostUnpublish>> unpublish(
-            String workspaceId, String postId, UnpublishPostsRequest request, RequestOptions requestOptions) {
+            String postId, UnpublishPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("unpublish");
         if (requestOptions != null) {
@@ -3419,6 +3400,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -3472,36 +3458,34 @@ public class AsyncRawPostsClient {
     /**
      * Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its <code>kind</code> and where it stands: <code>pending</code>, <code>done</code> or <code>failed</code> with its <code>code</code>. Needs post:read.
      */
-    public CompletableFuture<PealClientHttpResponse<LivePostChanges>> changes(String workspaceId, String postId) {
-        return changes(workspaceId, postId, ChangesPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<LivePostChanges>> changes(String postId) {
+        return changes(postId, ChangesPostsRequest.builder().build());
     }
 
     /**
      * Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its <code>kind</code> and where it stands: <code>pending</code>, <code>done</code> or <code>failed</code> with its <code>code</code>. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChanges>> changes(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return changes(workspaceId, postId, ChangesPostsRequest.builder().build(), requestOptions);
+            String postId, RequestOptions requestOptions) {
+        return changes(postId, ChangesPostsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its <code>kind</code> and where it stands: <code>pending</code>, <code>done</code> or <code>failed</code> with its <code>code</code>. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChanges>> changes(
-            String workspaceId, String postId, ChangesPostsRequest request) {
-        return changes(workspaceId, postId, request, null);
+            String postId, ChangesPostsRequest request) {
+        return changes(postId, request, null);
     }
 
     /**
      * Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its <code>kind</code> and where it stands: <code>pending</code>, <code>done</code> or <code>failed</code> with its <code>code</code>. Needs post:read.
      */
     public CompletableFuture<PealClientHttpResponse<LivePostChanges>> changes(
-            String workspaceId, String postId, ChangesPostsRequest request, RequestOptions requestOptions) {
+            String postId, ChangesPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("changes");
         if (requestOptions != null) {
@@ -3543,6 +3527,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -3596,36 +3585,32 @@ public class AsyncRawPostsClient {
     /**
      * Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
      */
-    public CompletableFuture<PealClientHttpResponse<Post>> cancel(String workspaceId, String postId) {
-        return cancel(workspaceId, postId, CancelPostsRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Post>> cancel(String postId) {
+        return cancel(postId, CancelPostsRequest.builder().build());
+    }
+
+    /**
+     * Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> cancel(String postId, RequestOptions requestOptions) {
+        return cancel(postId, CancelPostsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
+     */
+    public CompletableFuture<PealClientHttpResponse<Post>> cancel(String postId, CancelPostsRequest request) {
+        return cancel(postId, request, null);
     }
 
     /**
      * Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
      */
     public CompletableFuture<PealClientHttpResponse<Post>> cancel(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return cancel(workspaceId, postId, CancelPostsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> cancel(
-            String workspaceId, String postId, CancelPostsRequest request) {
-        return cancel(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
-     */
-    public CompletableFuture<PealClientHttpResponse<Post>> cancel(
-            String workspaceId, String postId, CancelPostsRequest request, RequestOptions requestOptions) {
+            String postId, CancelPostsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("posts")
+                .addPathSegments("api/v1/posts")
                 .addPathSegment(PathSegments.validate(postId))
                 .addPathSegments("cancel");
         if (requestOptions != null) {
@@ -3665,6 +3650,11 @@ public class AsyncRawPostsClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

@@ -7,9 +7,6 @@ namespace Peal;
 public record SetAnsweredInboxRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string CommentId { get; set; }
 
     [JsonPropertyName("answered")]

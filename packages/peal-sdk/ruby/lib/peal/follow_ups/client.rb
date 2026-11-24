@@ -21,14 +21,13 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
       # @option params [String, nil] :post_id
       # @option params [Peal::Types::FollowUpRuleStatus, nil] :status
       #
       # @example
-      #   client.follow_ups.list(workspace_id: "workspaceId")
+      #   client.follow_ups.list
       #
       # @return [Peal::Types::FollowUpRulePage]
       def list(request_options: {}, **params)
@@ -42,7 +41,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/follow-ups",
+          path: "api/v1/follow-ups",
           query: query_params,
           request_options: request_options
         )
@@ -90,26 +89,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.follow_ups.create(
-      #     workspace_id: "workspaceId",
-      #     likes: 1
-      #   )
+      #   client.follow_ups.create(likes: 1)
       #
       # @return [Peal::Types::FollowUpRule]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::FollowUps::Types::NewFollowUpRule.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/follow-ups",
-          body: body,
+          path: "api/v1/follow-ups",
+          body: Peal::FollowUps::Types::NewFollowUpRule.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -140,14 +131,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :rule_id
       #
       # @example
-      #   client.follow_ups.get(
-      #     workspace_id: "workspaceId",
-      #     rule_id: "ruleId"
-      #   )
+      #   client.follow_ups.get(rule_id: "ruleId")
       #
       # @return [Peal::Types::FollowUpRule]
       def get(request_options: {}, **params)
@@ -155,7 +142,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}",
+          path: "api/v1/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -187,14 +174,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :rule_id
       #
       # @example
-      #   client.follow_ups.delete(
-      #     workspace_id: "workspaceId",
-      #     rule_id: "ruleId"
-      #   )
+      #   client.follow_ups.delete(rule_id: "ruleId")
       #
       # @return [untyped]
       def delete(request_options: {}, **params)
@@ -202,7 +185,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}",
+          path: "api/v1/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -235,26 +218,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :rule_id
       #
       # @example
-      #   client.follow_ups.update(
-      #     workspace_id: "workspaceId",
-      #     rule_id: "ruleId"
-      #   )
+      #   client.follow_ups.update(rule_id: "ruleId")
       #
       # @return [Peal::Types::FollowUpRule]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::FollowUps::Types::FollowUpRuleChange.new(params).to_h
-        non_body_param_names = %w[workspaceId ruleId]
+        non_body_param_names = %w[ruleId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}",
+          path: "api/v1/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -288,14 +267,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :rule_id
       #
       # @example
-      #   client.follow_ups.approve(
-      #     workspace_id: "workspaceId",
-      #     rule_id: "ruleId"
-      #   )
+      #   client.follow_ups.approve(rule_id: "ruleId")
       #
       # @return [Peal::Types::FollowUpRule]
       def approve(request_options: {}, **params)
@@ -303,7 +278,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}/approve",
+          path: "api/v1/follow-ups/#{URI.encode_uri_component(params[:rule_id].to_s)}/approve",
           request_options: request_options,
           max_retries: 0
         )

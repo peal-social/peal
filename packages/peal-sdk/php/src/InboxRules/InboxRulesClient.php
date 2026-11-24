@@ -59,12 +59,10 @@ class InboxRulesClient
      * Example:
      * ```php
      * $client->inboxRules->listCommentRules(
-     *     'workspaceId',
      *     new ListCommentRulesInboxRulesRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListCommentRulesInboxRulesRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -78,7 +76,7 @@ class InboxRulesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function listCommentRules(string $workspaceId, ListCommentRulesInboxRulesRequest $request = new ListCommentRulesInboxRulesRequest(), ?array $options = null): ?CommentRulePage
+    public function listCommentRules(ListCommentRulesInboxRulesRequest $request = new ListCommentRulesInboxRulesRequest(), ?array $options = null): ?CommentRulePage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -95,7 +93,7 @@ class InboxRulesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/rules",
+                    path: "api/v1/inbox/rules",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -127,7 +125,6 @@ class InboxRulesClient
      * Example:
      * ```php
      * $client->inboxRules->createCommentRule(
-     *     'workspaceId',
      *     new NewCommentRule([
      *         'keywords' => [
      *             'keywords',
@@ -137,7 +134,6 @@ class InboxRulesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewCommentRule $request
      * @param ?array{
      *   baseUrl?: string,
@@ -151,7 +147,7 @@ class InboxRulesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function createCommentRule(string $workspaceId, NewCommentRule $request, ?array $options = null): ?CommentRule
+    public function createCommentRule(NewCommentRule $request, ?array $options = null): ?CommentRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -159,7 +155,7 @@ class InboxRulesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/rules",
+                    path: "api/v1/inbox/rules",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -191,12 +187,10 @@ class InboxRulesClient
      * Example:
      * ```php
      * $client->inboxRules->getCommentRule(
-     *     'workspaceId',
      *     'ruleId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param ?array{
      *   baseUrl?: string,
@@ -210,14 +204,14 @@ class InboxRulesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function getCommentRule(string $workspaceId, string $ruleId, ?array $options = null): ?CommentRule
+    public function getCommentRule(string $ruleId, ?array $options = null): ?CommentRule
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/rules/{$ruleId}",
+                    path: "api/v1/inbox/rules/{$ruleId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -248,12 +242,10 @@ class InboxRulesClient
      * Example:
      * ```php
      * $client->inboxRules->deleteCommentRule(
-     *     'workspaceId',
      *     'ruleId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param ?array{
      *   baseUrl?: string,
@@ -266,14 +258,14 @@ class InboxRulesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function deleteCommentRule(string $workspaceId, string $ruleId, ?array $options = null): void
+    public function deleteCommentRule(string $ruleId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/rules/{$ruleId}",
+                    path: "api/v1/inbox/rules/{$ruleId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -298,13 +290,11 @@ class InboxRulesClient
      * Example:
      * ```php
      * $client->inboxRules->updateCommentRule(
-     *     'workspaceId',
      *     'ruleId',
      *     new CommentRuleChange([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $ruleId
      * @param CommentRuleChange $request
      * @param ?array{
@@ -319,7 +309,7 @@ class InboxRulesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function updateCommentRule(string $workspaceId, string $ruleId, CommentRuleChange $request = new CommentRuleChange(), ?array $options = null): ?CommentRule
+    public function updateCommentRule(string $ruleId, CommentRuleChange $request = new CommentRuleChange(), ?array $options = null): ?CommentRule
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -327,7 +317,7 @@ class InboxRulesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/inbox/rules/{$ruleId}",
+                    path: "api/v1/inbox/rules/{$ruleId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),

@@ -39,7 +39,7 @@ public class CreateLinkTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/review-links")
+                    .WithPath("/api/v1/posts/postId/review-links")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -54,7 +54,6 @@ public class CreateLinkTest : BaseMockServerTest
         var response = await Client.Review.CreateLinkAsync(
             new NewReviewLink
             {
-                WorkspaceId = "workspaceId",
                 PostId = "postId",
                 Access = ReviewLinkAccess.View,
                 ExpiresInHours = null,
@@ -93,7 +92,7 @@ public class CreateLinkTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/review-links")
+                    .WithPath("/api/v1/posts/postId/review-links")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -106,12 +105,7 @@ public class CreateLinkTest : BaseMockServerTest
             );
 
         var response = await Client.Review.CreateLinkAsync(
-            new NewReviewLink
-            {
-                WorkspaceId = "workspaceId",
-                PostId = "postId",
-                Access = ReviewLinkAccess.View,
-            }
+            new NewReviewLink { PostId = "postId", Access = ReviewLinkAccess.View }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

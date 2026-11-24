@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         boostId: "boostId"
  *     }
  */
 export interface PauseBoostAdsRequest {
-    workspaceId: string;
     boostId: string;
 }

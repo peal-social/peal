@@ -10,6 +10,7 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.bad_request_error import BadRequestError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
@@ -28,16 +29,12 @@ class RawApiKeysClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[ApiKey]]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[ApiKey]]:
         """
         Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -47,7 +44,7 @@ class RawApiKeysClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/api-keys",
+            "api/v1/api-keys",
             method="GET",
             request_options=request_options,
         )
@@ -61,6 +58,17 @@ class RawApiKeysClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -116,7 +124,6 @@ class RawApiKeysClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -128,8 +135,6 @@ class RawApiKeysClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -148,7 +153,7 @@ class RawApiKeysClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/api-keys",
+            "api/v1/api-keys",
             method="POST",
             json={
                 "expiresInDays": expires_in_days,
@@ -171,6 +176,17 @@ class RawApiKeysClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -224,16 +240,12 @@ class RawApiKeysClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def revoke(
-        self, workspace_id: str, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def revoke(self, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -244,13 +256,24 @@ class RawApiKeysClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/api-keys/{encode_path_param(api_key_id)}",
+            f"api/v1/api-keys/{encode_path_param(api_key_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -310,15 +333,13 @@ class AsyncRawApiKeysClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[ApiKey]]:
         """
         Lists the workspace's API keys, with the member who made each. Needs apiKey:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -328,7 +349,7 @@ class AsyncRawApiKeysClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/api-keys",
+            "api/v1/api-keys",
             method="GET",
             request_options=request_options,
         )
@@ -342,6 +363,17 @@ class AsyncRawApiKeysClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -397,7 +429,6 @@ class AsyncRawApiKeysClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -409,8 +440,6 @@ class AsyncRawApiKeysClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -429,7 +458,7 @@ class AsyncRawApiKeysClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/api-keys",
+            "api/v1/api-keys",
             method="POST",
             json={
                 "expiresInDays": expires_in_days,
@@ -452,6 +481,17 @@ class AsyncRawApiKeysClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -506,15 +546,13 @@ class AsyncRawApiKeysClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke(
-        self, workspace_id: str, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, api_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Revokes an API key of the workspace: it stops working at once. Needs apiKey:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         api_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -525,13 +563,24 @@ class AsyncRawApiKeysClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/api-keys/{encode_path_param(api_key_id)}",
+            f"api/v1/api-keys/{encode_path_param(api_key_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

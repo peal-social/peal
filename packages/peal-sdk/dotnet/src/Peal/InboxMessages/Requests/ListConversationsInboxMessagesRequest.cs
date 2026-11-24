@@ -7,9 +7,6 @@ namespace Peal;
 public record ListConversationsInboxMessagesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? ChannelId { get; set; }
 
     [JsonIgnore]

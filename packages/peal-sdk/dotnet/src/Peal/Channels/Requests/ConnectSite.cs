@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record ConnectSite
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("address")]
     public required string Address { get; set; }
 

@@ -43,10 +43,7 @@ func (r *RawClient) ListConversations(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/conversations",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/messages/conversations"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -96,8 +93,7 @@ func (r *RawClient) GetConversation(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/conversations/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/messages/conversations/%v",
 		request.ConversationID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -149,8 +145,7 @@ func (r *RawClient) SendMessage(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/conversations/%v/messages",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/messages/conversations/%v/messages",
 		request.ConversationID,
 	)
 	headers := internal.MergeHeaders(
@@ -199,10 +194,7 @@ func (r *RawClient) SendPrivateReply(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/private-replies",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/messages/private-replies"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -250,8 +242,7 @@ func (r *RawClient) GetPrivateReply(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/private-replies/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/messages/private-replies/%v",
 		request.PrivateReplyID,
 	)
 	headers := internal.MergeHeaders(
@@ -296,8 +287,7 @@ func (r *RawClient) ConfirmPrivateReply(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/private-replies/%v/confirm",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/messages/private-replies/%v/confirm",
 		request.PrivateReplyID,
 	)
 	headers := internal.MergeHeaders(
@@ -344,8 +334,7 @@ func (r *RawClient) SetConversationRead(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/conversations/%v/read",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/messages/conversations/%v/read",
 		request.ConversationID,
 	)
 	headers := internal.MergeHeaders(
@@ -382,7 +371,6 @@ func (r *RawClient) SetConversationRead(
 
 func (r *RawClient) GetMessageSettings(
 	ctx context.Context,
-	request *peal.GetMessageSettingsInboxMessagesRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.InboxMessageSettings], error) {
 	options := core.NewRequestOptions(opts...)
@@ -391,10 +379,7 @@ func (r *RawClient) GetMessageSettings(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/settings",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/messages/settings"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -437,8 +422,7 @@ func (r *RawClient) SetChannelMessages(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/channels/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/messages/channels/%v",
 		request.ChannelID,
 	)
 	headers := internal.MergeHeaders(
@@ -484,10 +468,7 @@ func (r *RawClient) SetMessageApplication(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/applications",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/inbox/messages/applications"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -532,8 +513,7 @@ func (r *RawClient) ConfirmMessage(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/inbox/messages/outgoing/%v/confirmation",
-		request.WorkspaceID,
+		baseURL+"/api/v1/inbox/messages/outgoing/%v/confirmation",
 		request.MessageID,
 	)
 	headers := internal.MergeHeaders(

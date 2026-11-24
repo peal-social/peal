@@ -2,7 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import { AssistantApiLive, MediaAudioApiLive } from "#assistant/container.ts";
@@ -52,13 +52,13 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("make a voice-over once a provider is chosen for speech", () =>
       Effect.gen(function* voiceover() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const owner = yield* as(workspaceId, "owner");
         const editor = yield* as(workspaceId, "editor");
         const payload = { text: "A synthetic voice-over.", voice: "Rachel" };
 
         const off = yield* editor.mediaAudio
-          .createVoiceover({ params, payload })
+          .createVoiceover({ headers, payload })
           .pipe(Effect.flip);
 
         assert.deepInclude(off, {
@@ -70,7 +70,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         // ElevenLabs is reached at its own address alone.
         const proxied = yield* owner.assistant
           .connectProvider({
-            params: { ...params, provider: "elevenlabs" },
+            headers,
+            params: { provider: "elevenlabs" },
             payload: {
               apiKey: syntheticKey,
               baseUrl: "https://proxy.example.com",
@@ -84,21 +85,24 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         });
 
         yield* owner.assistant.connectProvider({
-          params: { ...params, provider: "elevenlabs" },
+          headers,
+          params: { provider: "elevenlabs" },
           payload: { apiKey: syntheticKey },
         });
 
         // It writes no text: neither a text model nor a test.
         const noText = yield* owner.assistant
           .setModel({
-            params: { ...params, capability: "text" },
+            headers,
+            params: { capability: "text" },
             payload: { model: "synthetic", provider: "elevenlabs" },
           })
           .pipe(Effect.flip);
 
         const noTest = yield* owner.assistant
           .testProvider({
-            params: { ...params, provider: "elevenlabs" },
+            headers,
+            params: { provider: "elevenlabs" },
             payload: {},
           })
           .pipe(Effect.flip);
@@ -106,7 +110,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         // Nor through the deprecated text provider endpoint.
         const noTextProvider = yield* owner.assistant
           .setTextProvider({
-            params,
+            headers,
             payload: {
               apiKey: syntheticKey,
               model: "synthetic",
@@ -120,11 +124,12 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         assert.strictEqual(noTextProvider._tag, "AiCapabilityNotOffered");
 
         yield* owner.assistant.setModel({
-          params: { ...params, capability: "speech" },
+          headers,
+          params: { capability: "speech" },
           payload: { model: "eleven_multilingual_v2", provider: "elevenlabs" },
         });
 
-        const status = yield* editor.assistant.status({ params });
+        const status = yield* editor.assistant.status({ headers });
 
         assert.deepInclude(status.voiceovers, {
           available: true,
@@ -138,7 +143,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         });
 
         const made = yield* editor.mediaAudio.createVoiceover({
-          params,
+          headers,
           payload,
         });
 
@@ -149,7 +154,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
         });
 
         const blank = yield* editor.mediaAudio
-          .createVoiceover({ params, payload: { text: " " } })
+          .createVoiceover({ headers, payload: { text: " " } })
           .pipe(Effect.flip);
 
         assert.deepInclude(blank, {
@@ -164,21 +169,24 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
       () =>
         Effect.gen(function* transcript() {
           const workspaceId = yield* freshWorkspace;
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
           const owner = yield* as(workspaceId, "owner");
           const editor = yield* as(workspaceId, "editor");
 
           yield* owner.assistant.connectProvider({
-            params: { ...params, provider: "groq" },
+            headers,
+            params: { provider: "groq" },
             payload: { apiKey: syntheticKey },
           });
           yield* owner.assistant.setModel({
-            params: { ...params, capability: "transcription" },
+            headers,
+            params: { capability: "transcription" },
             payload: { model: "whisper-large-v3-turbo", provider: "groq" },
           });
 
           const answered = yield* editor.mediaAudio.transcribe({
-            params: { ...params, mediaId: recordingId },
+            headers,
+            params: { mediaId: recordingId },
             payload: { saveAsDescription: true },
           });
 
@@ -191,8 +199,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           const tooLarge = yield* editor.mediaAudio
             .transcribe({
+              headers,
               params: {
-                ...params,
                 mediaId: "019a0000-0000-7000-8000-00000000a0d4",
               },
               payload: {},
@@ -201,7 +209,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
 
           const missing = yield* editor.mediaAudio
             .transcribe({
-              params: { ...params, mediaId: "not-an-id" },
+              headers,
+              params: { mediaId: "not-an-id" },
               payload: {},
             })
             .pipe(Effect.flip);
@@ -218,16 +227,17 @@ layer(DatabaseTest, { timeout: "60 seconds" })(
     it.effect("refuse viewers, who may not use the assistant", () =>
       Effect.gen(function* viewers() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const viewer = yield* as(workspaceId, "viewer");
 
         const refusals = yield* Effect.all([
           viewer.mediaAudio
-            .createVoiceover({ params, payload: { text: "Synthetic." } })
+            .createVoiceover({ headers, payload: { text: "Synthetic." } })
             .pipe(Effect.flip),
           viewer.mediaAudio
             .transcribe({
-              params: { ...params, mediaId: recordingId },
+              headers,
+              params: { mediaId: recordingId },
               payload: {},
             })
             .pipe(Effect.flip),

@@ -126,10 +126,7 @@ public class ListCommentRulesTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/inbox/rules").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -139,7 +136,7 @@ public class ListCommentRulesTest : BaseMockServerTest
             );
 
         var response = await Client.InboxRules.ListCommentRulesAsync(
-            new ListCommentRulesInboxRulesRequest { WorkspaceId = "workspaceId" }
+            new ListCommentRulesInboxRulesRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -187,10 +184,7 @@ public class ListCommentRulesTest : BaseMockServerTest
 
         Server
             .Given(
-                WireMock
-                    .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/rules")
-                    .UsingGet()
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/inbox/rules").UsingGet()
             )
             .RespondWith(
                 WireMock
@@ -200,7 +194,7 @@ public class ListCommentRulesTest : BaseMockServerTest
             );
 
         var response = await Client.InboxRules.ListCommentRulesAsync(
-            new ListCommentRulesInboxRulesRequest { WorkspaceId = "workspaceId" }
+            new ListCommentRulesInboxRulesRequest()
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

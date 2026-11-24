@@ -27,16 +27,12 @@ class ChannelDefaultsClient:
         """
         return self._raw_client
 
-    def get(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ChannelDefaults:
+    def get(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ChannelDefaults:
         """
         Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -52,31 +48,24 @@ class ChannelDefaultsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channel_defaults.get(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.get(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.get(channel_id, request_options=request_options)
         return _response.data
 
     def set(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        options: TargetOptions,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, options: TargetOptions, request_options: typing.Optional[RequestOptions] = None
     ) -> ChannelDefaults:
         """
         Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (`TargetOptions`), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         options : TargetOptions
@@ -94,27 +83,23 @@ class ChannelDefaultsClient:
         from peal import Peal, TargetOptions_Youtube
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channel_defaults.set(
-            workspace_id="workspaceId",
             channel_id="channelId",
             options=TargetOptions_Youtube(),
         )
         """
-        _response = self._raw_client.set(workspace_id, channel_id, options=options, request_options=request_options)
+        _response = self._raw_client.set(channel_id, options=options, request_options=request_options)
         return _response.data
 
-    def clear(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def clear(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -129,14 +114,14 @@ class ChannelDefaultsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.channel_defaults.clear(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.clear(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.clear(channel_id, request_options=request_options)
         return _response.data
 
 
@@ -155,16 +140,12 @@ class AsyncChannelDefaultsClient:
         """
         return self._raw_client
 
-    async def get(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> ChannelDefaults:
+    async def get(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> ChannelDefaults:
         """
         Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -182,37 +163,30 @@ class AsyncChannelDefaultsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channel_defaults.get(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.get(channel_id, request_options=request_options)
         return _response.data
 
     async def set(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        options: TargetOptions,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, options: TargetOptions, request_options: typing.Optional[RequestOptions] = None
     ) -> ChannelDefaults:
         """
         Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (`TargetOptions`), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         options : TargetOptions
@@ -232,13 +206,13 @@ class AsyncChannelDefaultsClient:
         from peal import AsyncPeal, TargetOptions_Youtube
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channel_defaults.set(
-                workspace_id="workspaceId",
                 channel_id="channelId",
                 options=TargetOptions_Youtube(),
             )
@@ -246,21 +220,15 @@ class AsyncChannelDefaultsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.set(
-            workspace_id, channel_id, options=options, request_options=request_options
-        )
+        _response = await self._raw_client.set(channel_id, options=options, request_options=request_options)
         return _response.data
 
-    async def clear(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def clear(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -277,18 +245,18 @@ class AsyncChannelDefaultsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.channel_defaults.clear(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.clear(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.clear(channel_id, request_options=request_options)
         return _response.data

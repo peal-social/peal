@@ -74,10 +74,10 @@ const status = Command.make(
   "status",
   { json: jsonFlag, workspace: workspaceFlag },
   Effect.fn("shortLinks.status")(function* shortLinksStatus(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const answered = yield* client.shortLinks
-      .status({ params: { workspaceId: workspace.id } })
+      .status({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -108,11 +108,11 @@ const setDefault = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("shortLinks.setDefault")(function* shortLinksDefault(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const answered = yield* client.shortLinks
       .setDefault({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: { byDefault: input.choice === "on" },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -204,7 +204,7 @@ const list = Command.make(
     }
 
     const page = yield* client.shortLinks
-      .list({ params: { workspaceId: workspace.id }, query })
+      .list({ headers: {}, query })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -257,11 +257,12 @@ const show = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("shortLinks.show")(function* showShortLink(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const report = yield* client.shortLinks
       .get({
-        params: { linkId: input.linkId, workspaceId: workspace.id },
+        headers: {},
+        params: { linkId: input.linkId },
         query: daysOf(input),
       })
       .pipe(Effect.mapError(explain(url)));

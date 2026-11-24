@@ -3,7 +3,6 @@ export type { BulkPosts } from "./BulkPosts.js";
 export type { CancelPostsRequest } from "./CancelPostsRequest.js";
 export type { ChangesPostsRequest } from "./ChangesPostsRequest.js";
 export type { ConfirmPostsRequest } from "./ConfirmPostsRequest.js";
-export type { CreatePostsRequest } from "./CreatePostsRequest.js";
 export type { DiscardPostsRequest } from "./DiscardPostsRequest.js";
 export type { DraftsPostsRequest } from "./DraftsPostsRequest.js";
 export type { DuplicatePostsRequest } from "./DuplicatePostsRequest.js";

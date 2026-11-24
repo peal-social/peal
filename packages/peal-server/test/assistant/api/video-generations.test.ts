@@ -2,7 +2,7 @@ import { assert, layer } from "@effect/vitest";
 import { Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import {
@@ -49,26 +49,28 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
     () =>
       Effect.gen(function* makes() {
         const workspaceId = yield* freshWorkspace;
-        const params = { workspaceId };
+        const headers = forWorkspace(workspaceId);
         const owner = yield* as(workspaceId, "owner");
         const editor = yield* as(workspaceId, "editor");
 
         // Off until a provider is chosen.
         const off = yield* editor.videoGenerations
-          .create({ params, payload: { aspect: "landscape", prompt } })
+          .create({ headers, payload: { aspect: "landscape", prompt } })
           .pipe(Effect.flip);
 
         assert.deepInclude(off, { _tag: "VideoUnavailable", reason: "notSet" });
 
         // OpenAI makes no videos here.
         yield* owner.assistant.connectProvider({
-          params: { ...params, provider: "openai" },
+          headers,
+          params: { provider: "openai" },
           payload: { apiKey: syntheticKey },
         });
 
         const notOffered = yield* owner.assistant
           .setModel({
-            params: { ...params, capability: "video" },
+            headers,
+            params: { capability: "video" },
             payload: { model: "synthetic-video-model", provider: "openai" },
           })
           .pipe(Effect.flip);
@@ -76,12 +78,14 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
         assert.strictEqual(notOffered._tag, "AiCapabilityNotOffered");
 
         yield* owner.assistant.connectProvider({
-          params: { ...params, provider: "xai" },
+          headers,
+          params: { provider: "xai" },
           payload: { apiKey: syntheticKey },
         });
 
         const chosen = yield* owner.assistant.setModel({
-          params: { ...params, capability: "video" },
+          headers,
+          params: { capability: "video" },
           payload: { model: "grok-imagine-video", provider: "xai" },
         });
 
@@ -91,7 +95,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
           serverModel: false,
         });
 
-        const status = yield* editor.assistant.status({ params });
+        const status = yield* editor.assistant.status({ headers });
 
         assert.deepInclude(status.videos, {
           available: true,
@@ -100,7 +104,7 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
         });
 
         const job = yield* editor.videoGenerations.create({
-          params,
+          headers,
           payload: { aspect: "square", durationSeconds: 5, prompt },
         });
 
@@ -115,11 +119,12 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
         assert.notInclude(JSON.stringify(job), prompt);
 
         const read = yield* editor.videoGenerations.get({
-          params: { ...params, generationId: job.id },
+          headers,
+          params: { generationId: job.id },
         });
 
         const listed = yield* editor.videoGenerations.list({
-          params,
+          headers,
           query: { status: "queued" },
         });
 
@@ -130,14 +135,14 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
         );
 
         const busy = yield* editor.videoGenerations
-          .create({ params, payload: { aspect: "landscape", prompt } })
+          .create({ headers, payload: { aspect: "landscape", prompt } })
           .pipe(Effect.flip);
 
         assert.deepInclude(busy, { _tag: "VideoBusy", generationId: job.id });
 
         const tooLong = yield* editor.videoGenerations
           .create({
-            params,
+            headers,
             payload: { aspect: "landscape", durationSeconds: 30, prompt },
           })
           .pipe(Effect.flip);
@@ -149,8 +154,8 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
 
         const missing = yield* editor.videoGenerations
           .get({
+            headers,
             params: {
-              ...params,
               generationId: "019a0000-0000-7000-8000-00000000dead",
             },
           })
@@ -163,14 +168,14 @@ layer(DatabaseTest, { timeout: "60 seconds" })("the video endpoints", (it) => {
   it.effect("refuse viewers, who may not use the assistant", () =>
     Effect.gen(function* viewers() {
       const workspaceId = yield* freshWorkspace;
-      const params = { workspaceId };
+      const headers = forWorkspace(workspaceId);
       const viewer = yield* as(workspaceId, "viewer");
 
       const refusals = yield* Effect.all([
         viewer.videoGenerations
-          .create({ params, payload: { aspect: "landscape", prompt } })
+          .create({ headers, payload: { aspect: "landscape", prompt } })
           .pipe(Effect.flip),
-        viewer.videoGenerations.list({ params, query: {} }).pipe(Effect.flip),
+        viewer.videoGenerations.list({ headers, query: {} }).pipe(Effect.flip),
       ]);
 
       assert.deepStrictEqual(

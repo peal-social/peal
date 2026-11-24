@@ -27,6 +27,7 @@ import { ReplyPending } from "./reply-pending.ts";
 import { ReplyStatusConflict } from "./reply-status-conflict.ts";
 import { UsageAllowanceReached } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // The inbox: the comments people leave under a workspace's published
 // posts, read from their platforms and answered from Peal. The server's
@@ -438,13 +439,11 @@ export const InboxModerationActionSchema = Schema.Literals([
 
 export type InboxModerationAction = typeof InboxModerationActionSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
+const thread = { threadId: Schema.String };
 
-const thread = { ...workspace, threadId: Schema.String };
+const comment = { commentId: Schema.String };
 
-const comment = { ...workspace, commentId: Schema.String };
-
-const reply = { ...workspace, replyId: Schema.String };
+const reply = { replyId: Schema.String };
 
 const reading = "Needs engagement:read.";
 
@@ -459,7 +458,8 @@ export class InboxApi extends HttpApiGroup.make("inbox")
   .add(
     HttpApiEndpoint.get("listThreads", "/threads", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         channelId: Schema.optionalKey(Schema.String),
         cursor: Schema.optionalKey(Schema.String),
@@ -481,6 +481,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
     ),
     HttpApiEndpoint.get("getThread", "/threads/:threadId", {
       error: [Forbidden, InboxThreadNotFound],
+      headers: workspaceHeaders,
       params: thread,
       success: InboxThreadDetailSchema,
     }).annotateMerge(
@@ -491,7 +492,8 @@ export class InboxApi extends HttpApiGroup.make("inbox")
     ),
     HttpApiEndpoint.get("getAbilities", "/channels/:channelId/abilities", {
       error: [Forbidden, ChannelNotFound],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       success: InboxAbilitiesSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -511,6 +513,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
         UsageAllowanceReached,
       ],
       headers: {
+        ...workspaceHeaders,
         "idempotency-key": Schema.optionalKey(
           Schema.String.check(
             Schema.isBetweenLength(1, maxIdempotencyKeyLength)
@@ -528,6 +531,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
     ),
     HttpApiEndpoint.post("setAnswered", "/comments/:commentId/answered", {
       error: [Forbidden, InboxCommentNotFound, InboxCommentGone],
+      headers: workspaceHeaders,
       params: comment,
       payload: Schema.Struct({ answered: Schema.Boolean }),
       success: InboxCommentSchema,
@@ -545,6 +549,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
         InboxActionUnavailable,
         InboxActionFailed,
       ],
+      headers: workspaceHeaders,
       params: comment,
       payload: Schema.Struct({ action: InboxModerationActionSchema }),
       success: InboxCommentSchema,
@@ -556,6 +561,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
     ),
     HttpApiEndpoint.post("confirmReply", "/replies/:replyId/confirmation", {
       error: [Forbidden, InboxReplyNotFound, ReplyStatusConflict],
+      headers: workspaceHeaders,
       params: reply,
       payload: Schema.Struct({ sent: Schema.Boolean }),
       success: InboxReplySchema,
@@ -573,6 +579,7 @@ export class InboxApi extends HttpApiGroup.make("inbox")
         InboxActionUnavailable,
         InboxActionFailed,
       ],
+      headers: workspaceHeaders,
       params: reply,
       success: InboxReplySchema,
     }).annotateMerge(
@@ -584,4 +591,4 @@ export class InboxApi extends HttpApiGroup.make("inbox")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/inbox") {}
+  .prefix("/api/v1/inbox") {}

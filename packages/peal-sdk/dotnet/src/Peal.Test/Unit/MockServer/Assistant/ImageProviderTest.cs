@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -29,7 +28,7 @@ public class ImageProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/image-provider")
+                    .WithPath("/api/v1/assistant/image-provider")
                     .UsingGet()
             )
             .RespondWith(
@@ -39,9 +38,7 @@ public class ImageProviderTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.ImageProviderAsync(
-            new ImageProviderAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.ImageProviderAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -65,7 +62,7 @@ public class ImageProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/image-provider")
+                    .WithPath("/api/v1/assistant/image-provider")
                     .UsingGet()
             )
             .RespondWith(
@@ -75,9 +72,7 @@ public class ImageProviderTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Assistant.ImageProviderAsync(
-            new ImageProviderAssistantRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Assistant.ImageProviderAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

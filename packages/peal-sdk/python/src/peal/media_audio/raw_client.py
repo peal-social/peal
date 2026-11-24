@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_gateway_error import BadGatewayError
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -33,20 +34,13 @@ class RawMediaAudioClient:
         self._client_wrapper = client_wrapper
 
     def create_voiceover(
-        self,
-        workspace_id: str,
-        *,
-        text: str,
-        voice: typing.Optional[str] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, text: str, voice: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Media]:
         """
         Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models/speech`) to speak the text, in `voice` when given, and answers with the audio as a new file of the media library, marked `aiGenerated`, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         text : str
 
         voice : typing.Optional[str]
@@ -63,7 +57,7 @@ class RawMediaAudioClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/voiceovers",
+            "api/v1/media/voiceovers",
             method="POST",
             json={
                 "text": text,
@@ -85,6 +79,17 @@ class RawMediaAudioClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -195,7 +200,6 @@ class RawMediaAudioClient:
 
     def transcribe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         save_as_description: typing.Optional[bool] = OMIT,
@@ -206,8 +210,6 @@ class RawMediaAudioClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         save_as_description : typing.Optional[bool]
@@ -224,7 +226,7 @@ class RawMediaAudioClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}/transcription",
+            f"api/v1/media/{encode_path_param(media_id)}/transcription",
             method="POST",
             json={
                 "saveAsDescription": save_as_description,
@@ -245,6 +247,17 @@ class RawMediaAudioClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -348,20 +361,13 @@ class AsyncRawMediaAudioClient:
         self._client_wrapper = client_wrapper
 
     async def create_voiceover(
-        self,
-        workspace_id: str,
-        *,
-        text: str,
-        voice: typing.Optional[str] = OMIT,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, text: str, voice: typing.Optional[str] = OMIT, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Media]:
         """
         Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models/speech`) to speak the text, in `voice` when given, and answers with the audio as a new file of the media library, marked `aiGenerated`, without a description. Only the workspace's own provider speaks, with its key, under its terms and at its prices: Peal bills nothing for it. 50 a UTC day (AudioAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest voice-over before anything is asked. Neither the text nor the audio is logged. Needs assistant:use and media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         text : str
 
         voice : typing.Optional[str]
@@ -378,7 +384,7 @@ class AsyncRawMediaAudioClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/voiceovers",
+            "api/v1/media/voiceovers",
             method="POST",
             json={
                 "text": text,
@@ -400,6 +406,17 @@ class AsyncRawMediaAudioClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -510,7 +527,6 @@ class AsyncRawMediaAudioClient:
 
     async def transcribe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         save_as_description: typing.Optional[bool] = OMIT,
@@ -521,8 +537,6 @@ class AsyncRawMediaAudioClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         save_as_description : typing.Optional[bool]
@@ -539,7 +553,7 @@ class AsyncRawMediaAudioClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}/transcription",
+            f"api/v1/media/{encode_path_param(media_id)}/transcription",
             method="POST",
             json={
                 "saveAsDescription": save_as_description,
@@ -560,6 +574,17 @@ class AsyncRawMediaAudioClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

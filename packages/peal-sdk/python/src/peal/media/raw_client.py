@@ -38,7 +38,6 @@ class RawMediaClient:
 
     def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         kind: typing.Optional[MediaKind] = None,
@@ -51,8 +50,6 @@ class RawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         kind : typing.Optional[MediaKind]
@@ -70,7 +67,7 @@ class RawMediaClient:
             MediaPage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media",
+            "api/v1/media",
             method="GET",
             params={
                 "cursor": cursor,
@@ -167,7 +164,6 @@ class RawMediaClient:
 
     def create(
         self,
-        workspace_id: str,
         *,
         byte_size: int,
         content_type: str,
@@ -180,8 +176,6 @@ class RawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         byte_size : int
 
         content_type : str
@@ -202,7 +196,7 @@ class RawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media",
+            "api/v1/media",
             method="POST",
             json={
                 "altText": alt_text,
@@ -226,6 +220,17 @@ class RawMediaClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -314,7 +319,6 @@ class RawMediaClient:
 
     def import_from_url(
         self,
-        workspace_id: str,
         *,
         url: str,
         alt_text: typing.Optional[str] = OMIT,
@@ -325,8 +329,6 @@ class RawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         alt_text : typing.Optional[str]
@@ -343,7 +345,7 @@ class RawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/import",
+            "api/v1/media/import",
             method="POST",
             json={
                 "altText": alt_text,
@@ -365,6 +367,17 @@ class RawMediaClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -451,16 +464,12 @@ class RawMediaClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def get(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Media]:
+    def get(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Media]:
         """
         Shows one of the workspace's media. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -472,7 +481,7 @@ class RawMediaClient:
             Media
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}",
+            f"api/v1/media/{encode_path_param(media_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -486,6 +495,17 @@ class RawMediaClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -550,16 +570,12 @@ class RawMediaClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def delete(self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (`MediaInUse`, listing them): take them back to draft first. Needs media:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -570,13 +586,24 @@ class RawMediaClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}",
+            f"api/v1/media/{encode_path_param(media_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -654,7 +681,6 @@ class RawMediaClient:
 
     def describe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         alt_text: typing.Optional[str] = OMIT,
@@ -665,8 +691,6 @@ class RawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         alt_text : typing.Optional[str]
@@ -683,7 +707,7 @@ class RawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}",
+            f"api/v1/media/{encode_path_param(media_id)}",
             method="PATCH",
             json={
                 "altText": alt_text,
@@ -704,6 +728,17 @@ class RawMediaClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -780,15 +815,13 @@ class RawMediaClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def complete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Media]:
         """
         Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (`tooLarge`, `tooManyPages`, `unreadable`), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached `mediaStorage`). Needs media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -803,7 +836,7 @@ class RawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}/complete",
+            f"api/v1/media/{encode_path_param(media_id)}/complete",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -817,6 +850,17 @@ class RawMediaClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -915,15 +959,13 @@ class RawMediaClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def usage(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[MediaUsage]:
         """
         Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -935,7 +977,7 @@ class RawMediaClient:
             MediaUsage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}/usage",
+            f"api/v1/media/{encode_path_param(media_id)}/usage",
             method="GET",
             request_options=request_options,
         )
@@ -949,6 +991,17 @@ class RawMediaClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1009,7 +1062,6 @@ class AsyncRawMediaClient:
 
     async def list(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         kind: typing.Optional[MediaKind] = None,
@@ -1022,8 +1074,6 @@ class AsyncRawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         kind : typing.Optional[MediaKind]
@@ -1041,7 +1091,7 @@ class AsyncRawMediaClient:
             MediaPage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media",
+            "api/v1/media",
             method="GET",
             params={
                 "cursor": cursor,
@@ -1138,7 +1188,6 @@ class AsyncRawMediaClient:
 
     async def create(
         self,
-        workspace_id: str,
         *,
         byte_size: int,
         content_type: str,
@@ -1151,8 +1200,6 @@ class AsyncRawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         byte_size : int
 
         content_type : str
@@ -1173,7 +1220,7 @@ class AsyncRawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media",
+            "api/v1/media",
             method="POST",
             json={
                 "altText": alt_text,
@@ -1197,6 +1244,17 @@ class AsyncRawMediaClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1285,7 +1343,6 @@ class AsyncRawMediaClient:
 
     async def import_from_url(
         self,
-        workspace_id: str,
         *,
         url: str,
         alt_text: typing.Optional[str] = OMIT,
@@ -1296,8 +1353,6 @@ class AsyncRawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         url : str
 
         alt_text : typing.Optional[str]
@@ -1314,7 +1369,7 @@ class AsyncRawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/import",
+            "api/v1/media/import",
             method="POST",
             json={
                 "altText": alt_text,
@@ -1336,6 +1391,17 @@ class AsyncRawMediaClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1423,15 +1489,13 @@ class AsyncRawMediaClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def get(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Media]:
         """
         Shows one of the workspace's media. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1443,7 +1507,7 @@ class AsyncRawMediaClient:
             Media
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}",
+            f"api/v1/media/{encode_path_param(media_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1457,6 +1521,17 @@ class AsyncRawMediaClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1522,15 +1597,13 @@ class AsyncRawMediaClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes the media and its file, and cancels its upload if it is still pending. Drafts that show it lose it. Posts scheduled or publishing that show it refuse the deletion (`MediaInUse`, listing them): take them back to draft first. Needs media:delete.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1541,13 +1614,24 @@ class AsyncRawMediaClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}",
+            f"api/v1/media/{encode_path_param(media_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1625,7 +1709,6 @@ class AsyncRawMediaClient:
 
     async def describe(
         self,
-        workspace_id: str,
         media_id: str,
         *,
         alt_text: typing.Optional[str] = OMIT,
@@ -1636,8 +1719,6 @@ class AsyncRawMediaClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         alt_text : typing.Optional[str]
@@ -1654,7 +1735,7 @@ class AsyncRawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}",
+            f"api/v1/media/{encode_path_param(media_id)}",
             method="PATCH",
             json={
                 "altText": alt_text,
@@ -1675,6 +1756,17 @@ class AsyncRawMediaClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1751,15 +1843,13 @@ class AsyncRawMediaClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def complete(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Media]:
         """
         Checks that the file reached the store with the declared size and type, joining its parts first, then probes it: the media is ready, or stays uploaded with why it could not be probed. Calling it again is safe, and probes an uploaded file again, unless its probe refused the file for what its bytes hold (`tooLarge`, `tooManyPages`, `unreadable`), which probing again would only repeat: upload it again instead. A workspace probes two files at once, and the server eight (429 MediaImportBusy: the upload is completed and the media left uploaded; ask again in a moment). On a server that bills, the room an upload was given is held while its URLs work: completed later, it needs room in the plan's media storage again, and without it the file is deleted (PlanLimitReached `mediaStorage`). Needs media:upload.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1774,7 +1864,7 @@ class AsyncRawMediaClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}/complete",
+            f"api/v1/media/{encode_path_param(media_id)}/complete",
             method="POST",
             request_options=_request_options_with_retries_disabled,
         )
@@ -1788,6 +1878,17 @@ class AsyncRawMediaClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1886,15 +1987,13 @@ class AsyncRawMediaClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def usage(
-        self, workspace_id: str, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, media_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[MediaUsage]:
         """
         Lists the posts that show the media: drafts, which lose it if it is deleted, and posts scheduled or publishing, which keep it from being deleted. Needs media:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         media_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1906,7 +2005,7 @@ class AsyncRawMediaClient:
             MediaUsage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/media/{encode_path_param(media_id)}/usage",
+            f"api/v1/media/{encode_path_param(media_id)}/usage",
             method="GET",
             request_options=request_options,
         )
@@ -1920,6 +2019,17 @@ class AsyncRawMediaClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

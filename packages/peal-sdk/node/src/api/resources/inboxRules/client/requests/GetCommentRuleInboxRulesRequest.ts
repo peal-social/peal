@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         ruleId: "ruleId"
  *     }
  */
 export interface GetCommentRuleInboxRulesRequest {
-    workspaceId: string;
     ruleId: string;
 }

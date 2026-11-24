@@ -23,6 +23,7 @@ import social.peal.core.PealClientHttpResponse;
 import social.peal.core.QueryStringMapper;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
@@ -47,35 +48,32 @@ public class RawVideoGenerationsClient {
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public PealClientHttpResponse<VideoGenerations> list(String workspaceId) {
-        return list(workspaceId, ListVideoGenerationsRequest.builder().build());
+    public PealClientHttpResponse<VideoGenerations> list() {
+        return list(ListVideoGenerationsRequest.builder().build());
     }
 
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public PealClientHttpResponse<VideoGenerations> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListVideoGenerationsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<VideoGenerations> list(RequestOptions requestOptions) {
+        return list(ListVideoGenerationsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
-    public PealClientHttpResponse<VideoGenerations> list(String workspaceId, ListVideoGenerationsRequest request) {
-        return list(workspaceId, request, null);
+    public PealClientHttpResponse<VideoGenerations> list(ListVideoGenerationsRequest request) {
+        return list(request, null);
     }
 
     /**
      * Lists the videos the workspace asked for, newest first, 50 at most, only those with <code>status</code> when given. Needs assistant:use.
      */
     public PealClientHttpResponse<VideoGenerations> list(
-            String workspaceId, ListVideoGenerationsRequest request, RequestOptions requestOptions) {
+            ListVideoGenerationsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media/videos")
-                .addPathSegments("generations");
+                .addPathSegments("api/v1/media/videos/generations");
         if (request.getStatus().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "status", request.getStatus().get(), false);
@@ -113,6 +111,9 @@ public class RawVideoGenerationsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -143,21 +144,18 @@ public class RawVideoGenerationsClient {
     /**
      * Asks the provider the workspace chose for videos (<code>PUT .../assistant/models/video</code>) for one video from the prompt, in the aspect asked, optionally of a length and from a first frame, and answers 202 with the job, <code>queued</code>: making a video takes minutes. Follow it with <code>GET .../media/videos/generations/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>), ready to attach, marked <code>aiGenerated</code>, and the member who asked is told in the app. Only the workspace's own provider makes videos, with its key, under its terms and at its prices: Peal bills nothing for them. One video at a time a workspace (VideoBusy), 20 a UTC day (VideoAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is made fails it (<code>interrupted</code>), as the provider may have made and billed it. Neither the prompt nor the video is logged, and the prompt is kept only while the video is made. Needs assistant:use and media:upload.
      */
-    public PealClientHttpResponse<VideoGeneration> create(String workspaceId, VideoGenerationRequest request) {
-        return create(workspaceId, request, null);
+    public PealClientHttpResponse<VideoGeneration> create(VideoGenerationRequest request) {
+        return create(request, null);
     }
 
     /**
      * Asks the provider the workspace chose for videos (<code>PUT .../assistant/models/video</code>) for one video from the prompt, in the aspect asked, optionally of a length and from a first frame, and answers 202 with the job, <code>queued</code>: making a video takes minutes. Follow it with <code>GET .../media/videos/generations/{id}</code>; once <code>succeeded</code>, the video is a file of the media library (<code>mediaId</code>), ready to attach, marked <code>aiGenerated</code>, and the member who asked is told in the app. Only the workspace's own provider makes videos, with its key, under its terms and at its prices: Peal bills nothing for them. One video at a time a workspace (VideoBusy), 20 a UTC day (VideoAllowanceReached), whatever each ends with. The plan's media storage must have room for the largest video Peal keeps before anything is asked. A job is never asked again: a server that stops while it is made fails it (<code>interrupted</code>), as the provider may have made and billed it. Neither the prompt nor the video is logged, and the prompt is kept only while the video is made. Needs assistant:use and media:upload.
      */
     public PealClientHttpResponse<VideoGeneration> create(
-            String workspaceId, VideoGenerationRequest request, RequestOptions requestOptions) {
+            VideoGenerationRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media/videos")
-                .addPathSegments("generations");
+                .addPathSegments("api/v1/media/videos/generations");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -196,6 +194,9 @@ public class RawVideoGenerationsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -235,41 +236,32 @@ public class RawVideoGenerationsClient {
     /**
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
-    public PealClientHttpResponse<VideoGeneration> get(String workspaceId, String generationId) {
-        return get(
-                workspaceId, generationId, GetVideoGenerationsRequest.builder().build());
+    public PealClientHttpResponse<VideoGeneration> get(String generationId) {
+        return get(generationId, GetVideoGenerationsRequest.builder().build());
+    }
+
+    /**
+     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
+     */
+    public PealClientHttpResponse<VideoGeneration> get(String generationId, RequestOptions requestOptions) {
+        return get(generationId, GetVideoGenerationsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
+     */
+    public PealClientHttpResponse<VideoGeneration> get(String generationId, GetVideoGenerationsRequest request) {
+        return get(generationId, request, null);
     }
 
     /**
      * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
      */
     public PealClientHttpResponse<VideoGeneration> get(
-            String workspaceId, String generationId, RequestOptions requestOptions) {
-        return get(
-                workspaceId, generationId, GetVideoGenerationsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
-     */
-    public PealClientHttpResponse<VideoGeneration> get(
-            String workspaceId, String generationId, GetVideoGenerationsRequest request) {
-        return get(workspaceId, generationId, request, null);
-    }
-
-    /**
-     * Reads where a video stands: queued, running, succeeded with its file (<code>mediaId</code>), or failed with why (<code>reason</code>). Needs assistant:use.
-     */
-    public PealClientHttpResponse<VideoGeneration> get(
-            String workspaceId,
-            String generationId,
-            GetVideoGenerationsRequest request,
-            RequestOptions requestOptions) {
+            String generationId, GetVideoGenerationsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("media/videos/generations")
+                .addPathSegments("api/v1/media/videos/generations")
                 .addPathSegment(PathSegments.validate(generationId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -304,6 +296,9 @@ public class RawVideoGenerationsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

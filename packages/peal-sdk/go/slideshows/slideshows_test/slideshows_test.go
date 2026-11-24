@@ -88,9 +88,7 @@ func TestSlideshowsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListSlideshowsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListSlideshowsRequest{}
 	_, invocationErr := client.Slideshows.List(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestSlideshowsListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSlideshowsListWithWireMock", "GET", "/api/workspaces/workspaceId/media/slideshows", nil, 1)
+	VerifyRequestCount(t, "TestSlideshowsListWithWireMock", "GET", "/api/v1/media/slideshows", nil, 1)
 }
 
 func TestSlideshowsCreateWithWireMock(
@@ -115,8 +113,7 @@ func TestSlideshowsCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SlideshowRequest{
-		WorkspaceID: "workspaceId",
-		Aspect:      peal.ImageAspectSquare,
+		Aspect: peal.ImageAspectSquare,
 		Slides: []*peal.Slide{
 			&peal.Slide{
 				MediaID: "mediaId",
@@ -132,7 +129,7 @@ func TestSlideshowsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSlideshowsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/media/slideshows", nil, 1)
+	VerifyRequestCount(t, "TestSlideshowsCreateWithWireMock", "POST", "/api/v1/media/slideshows", nil, 1)
 }
 
 func TestSlideshowsCreateFromEditWithWireMock(
@@ -147,7 +144,6 @@ func TestSlideshowsCreateFromEditWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.EditRenderRequest{
-		WorkspaceID: "workspaceId",
 		Edit: map[string]any{
 			"key": "value",
 		},
@@ -161,7 +157,7 @@ func TestSlideshowsCreateFromEditWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSlideshowsCreateFromEditWithWireMock", "POST", "/api/workspaces/workspaceId/media/slideshows/edits", nil, 1)
+	VerifyRequestCount(t, "TestSlideshowsCreateFromEditWithWireMock", "POST", "/api/v1/media/slideshows/edits", nil, 1)
 }
 
 func TestSlideshowsGetWithWireMock(
@@ -176,7 +172,6 @@ func TestSlideshowsGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetSlideshowsRequest{
-		WorkspaceID: "workspaceId",
 		SlideshowID: "slideshowId",
 	}
 	_, invocationErr := client.Slideshows.Get(
@@ -188,5 +183,5 @@ func TestSlideshowsGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestSlideshowsGetWithWireMock", "GET", "/api/workspaces/workspaceId/media/slideshows/slideshowId", nil, 1)
+	VerifyRequestCount(t, "TestSlideshowsGetWithWireMock", "GET", "/api/v1/media/slideshows/slideshowId", nil, 1)
 }

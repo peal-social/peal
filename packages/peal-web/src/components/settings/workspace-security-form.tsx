@@ -4,7 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Cause, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { Forbidden } from "peal-contract";
+import { Forbidden, forWorkspace } from "peal-contract";
 import { toast } from "peal-ui/components/toast";
 import { useState, useTransition } from "react";
 import type { ReactNode } from "react";
@@ -71,7 +71,7 @@ const LoadedSecurity = ({
   const change = (twoStepRequired: boolean) => {
     startTransition(async () => {
       const exit = await secure({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: { twoStepRequired },
         reactivityKeys: [`security:${workspaceId}`],
       });

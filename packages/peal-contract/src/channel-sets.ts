@@ -17,6 +17,7 @@ import { TooManyChannelSets } from "./too-many-channel-sets.ts";
 import { UnknownChannels } from "./unknown-channels.ts";
 import { AllowanceReasonSchema } from "./usage-allowance-reached.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** The longest name a channel set has. */
 export const maxChannelSetNameLength = 60;
@@ -121,16 +122,15 @@ export const PostWarningSchema = Schema.Union([
 
 export type PostWarning = typeof PostWarningSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const set = { ...workspace, channelSetId: Schema.String };
+const set = { channelSetId: Schema.String };
 
 /** A workspace's channel sets: selections of channels kept under a name. */
 export class ChannelSetsApi extends HttpApiGroup.make("channelSets")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(ChannelSetSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -147,7 +147,8 @@ export class ChannelSetsApi extends HttpApiGroup.make("channelSets")
         UnknownChannels,
         PostContentInvalid,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: ChannelSetDetailsSchema,
       success: ChannelSetSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -164,6 +165,7 @@ export class ChannelSetsApi extends HttpApiGroup.make("channelSets")
         UnknownChannels,
         PostContentInvalid,
       ],
+      headers: workspaceHeaders,
       params: set,
       payload: ChannelSetDetailsSchema,
       success: ChannelSetSchema,
@@ -176,6 +178,7 @@ export class ChannelSetsApi extends HttpApiGroup.make("channelSets")
     ),
     HttpApiEndpoint.delete("delete", "/:channelSetId", {
       error: [Forbidden, ChannelSetNotFound],
+      headers: workspaceHeaders,
       params: set,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -188,4 +191,4 @@ export class ChannelSetsApi extends HttpApiGroup.make("channelSets")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/channel-sets") {}
+  .prefix("/api/v1/channel-sets") {}

@@ -4,8 +4,6 @@ module Peal
   module Recycling
     module Types
       class RecyclingRuleChange < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :rule_id, -> { String }, optional: false, nullable: false, api_name: "ruleId"
 
         field :count, -> { Integer }, optional: true, nullable: true

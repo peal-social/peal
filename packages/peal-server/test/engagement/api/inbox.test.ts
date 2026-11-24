@@ -11,6 +11,7 @@ import {
   ReplyInvalid,
   ReplyPending,
   ReplyStatusConflict,
+  forWorkspace,
 } from "peal-contract";
 
 import { SendReply } from "#engagement/application/send-reply.ts";
@@ -72,7 +73,7 @@ const worldWithComments = (): World => {
   return world;
 };
 
-const params = { workspaceId };
+const headers = forWorkspace(workspaceId);
 
 const editor = permissionsFor("editor");
 
@@ -82,7 +83,7 @@ describe("the inbox endpoints", () => {
 
     return Effect.gen(function* reads() {
       const client = yield* clientAs(world, permissionsFor("viewer"));
-      const page = yield* client.inbox.listThreads({ params, query: {} });
+      const page = yield* client.inbox.listThreads({ headers, query: {} });
 
       assert.deepStrictEqual(
         page.items.map(({ comments, id, unanswered }) => ({
@@ -95,7 +96,8 @@ describe("the inbox endpoints", () => {
       assert.isNull(page.nextCursor);
 
       const detail = yield* client.inbox.getThread({
-        params: { ...params, threadId: thread(50).id },
+        headers,
+        params: { threadId: thread(50).id },
       });
 
       assert.strictEqual(detail.platform, "mastodon");
@@ -139,8 +141,8 @@ describe("the inbox endpoints", () => {
         const client = yield* clientAs(world, editor);
 
         const reply = yield* client.inbox.reply({
-          headers: {},
-          params: { ...params, commentId: commentId(101) },
+          headers,
+          params: { commentId: commentId(101) },
           payload: { text: "Thank you!" },
         });
 
@@ -150,8 +152,8 @@ describe("the inbox endpoints", () => {
 
         const again = yield* client.inbox
           .reply({
-            headers: {},
-            params: { ...params, commentId: commentId(101) },
+            headers,
+            params: { commentId: commentId(101) },
             payload: { text: "Thank you!" },
           })
           .pipe(Effect.flip);
@@ -169,7 +171,8 @@ describe("the inbox endpoints", () => {
         );
 
         const detail = yield* client.inbox.getThread({
-          params: { ...params, threadId: thread(50).id },
+          headers,
+          params: { threadId: thread(50).id },
         });
 
         assert.deepStrictEqual(
@@ -191,7 +194,8 @@ describe("the inbox endpoints", () => {
 
         const confirmed = yield* client.inbox
           .confirmReply({
-            params: { ...params, replyId: reply.id },
+            headers,
+            params: { replyId: reply.id },
             payload: { sent: true },
           })
           .pipe(Effect.flip);
@@ -200,7 +204,8 @@ describe("the inbox endpoints", () => {
         assert.strictEqual(confirmed.status, "sent");
 
         const withdrawn = yield* client.inbox.withdrawReply({
-          params: { ...params, replyId: reply.id },
+          headers,
+          params: { replyId: reply.id },
         });
 
         assert.strictEqual(withdrawn.status, "withdrawn");
@@ -216,7 +221,7 @@ describe("the inbox endpoints", () => {
       return Effect.gen(function* refuses() {
         const viewer = yield* clientAs(world, permissionsFor("viewer"));
         const member = yield* clientAs(world, editor);
-        const comment101 = { ...params, commentId: commentId(101) };
+        const comment101 = { commentId: commentId(101) };
 
         const forbidden = yield* viewer.inbox
           .reply({
@@ -229,7 +234,11 @@ describe("the inbox endpoints", () => {
         assert.instanceOf(forbidden, Forbidden);
 
         const hidden = yield* member.inbox
-          .moderate({ params: comment101, payload: { action: "hide" } })
+          .moderate({
+            headers,
+            params: comment101,
+            payload: { action: "hide" },
+          })
           .pipe(Effect.flip);
 
         assert.instanceOf(hidden, InboxActionUnavailable);
@@ -270,12 +279,13 @@ describe("the inbox endpoints", () => {
       const client = yield* clientAs(world, editor);
 
       const noThread = yield* client.inbox
-        .getThread({ params: { ...params, threadId: "not-an-id" } })
+        .getThread({ headers, params: { threadId: "not-an-id" } })
         .pipe(Effect.flip);
 
       const noComment = yield* client.inbox
         .setAnswered({
-          params: { ...params, commentId: commentId(999) },
+          headers,
+          params: { commentId: commentId(999) },
           payload: { answered: true },
         })
         .pipe(Effect.flip);
@@ -305,7 +315,7 @@ describe("the inbox endpoints", () => {
         const client = yield* clientAs(world, editor);
 
         const first = yield* client.inbox.listThreads({
-          params,
+          headers,
           query: { limit: 1 },
         });
 
@@ -316,7 +326,7 @@ describe("the inbox endpoints", () => {
         assert.isNotNull(first.nextCursor);
 
         const second = yield* client.inbox.listThreads({
-          params,
+          headers,
           query: { cursor: first.nextCursor ?? "", limit: 1 },
         });
 
@@ -326,14 +336,15 @@ describe("the inbox endpoints", () => {
         );
 
         const answered = yield* client.inbox.setAnswered({
-          params: { ...params, commentId: later.id },
+          headers,
+          params: { commentId: later.id },
           payload: { answered: true },
         });
 
         assert.strictEqual(answered.state, "answered");
 
         const waiting = yield* client.inbox.listThreads({
-          params,
+          headers,
           query: { unanswered: "true" },
         });
 

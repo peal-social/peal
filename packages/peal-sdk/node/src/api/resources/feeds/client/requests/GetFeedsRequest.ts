@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         feedId: "feedId"
  *     }
  */
 export interface GetFeedsRequest {
-    workspaceId: string;
     feedId: string;
 }

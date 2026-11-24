@@ -32,6 +32,7 @@ import {
   PostValidationSchema,
   SignatureSchema,
   TagSchema,
+  forWorkspace,
 } from "peal-contract";
 import type { TargetOptions } from "peal-contract";
 
@@ -2797,7 +2798,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           const publisher = yield* connected(fixture.publishing);
           const reader = yield* connected(fixture.reading);
           const headers = { cookie: owner.cookies };
-          const base = `/api/workspaces/${workspaceId}`;
+          const base = "/api/v1";
 
           // This server runs no job, so no notice is emailed here: the owner
           // reads theirs in the app.
@@ -2811,7 +2812,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // asks for them to go out: in person, and with an API key.
           yield* app.request(`${base}/review/settings`, {
             body: { approvalPolicy: "always" },
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
             method: "PUT",
           });
 
@@ -2832,7 +2833,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
                   channelIds: [fixture.channelId],
                   content: content("A synthetic post that waits."),
                 },
-                headers: credentials,
+                headers: { ...credentials, ...forWorkspace(workspaceId) },
               })
             );
 
@@ -2844,7 +2845,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
                   channelIds: [fixture.channelId],
                   timeZone: "Europe/Paris",
                 },
-                headers: credentials,
+                headers: { ...credentials, ...forWorkspace(workspaceId) },
               }
             );
 
@@ -2969,7 +2970,7 @@ layer(ToolsFixtureLive, { excludeTestServices: true, timeout: "180 seconds" })(
           // Back to never, for the tests that follow.
           yield* app.request(`${base}/review/settings`, {
             body: { approvalPolicy: "never" },
-            headers,
+            headers: { ...headers, ...forWorkspace(workspaceId) },
             method: "PUT",
           });
         })

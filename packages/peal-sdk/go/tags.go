@@ -10,54 +10,11 @@ import (
 )
 
 var (
-	createTagsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type CreateTagsRequest struct {
-	WorkspaceID string      `json:"-" url:"-"`
-	Body        *TagDetails `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (c *CreateTagsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if c.explicitFields != nil {
-		next.Set(c.explicitFields)
-	}
-	next.Or(next, field)
-	c.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CreateTagsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(createTagsRequestFieldWorkspaceID)
-}
-
-func (c *CreateTagsRequest) UnmarshalJSON(data []byte) error {
-	body := new(TagDetails)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	c.Body = body
-	return nil
-}
-
-func (c *CreateTagsRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(c.Body)
-}
-
-var (
-	deleteTagsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteTagsRequestFieldTagID       = big.NewInt(1 << 1)
+	deleteTagsRequestFieldTagID = big.NewInt(1 << 0)
 )
 
 type DeleteTagsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	TagID       string `json:"-" url:"-"`
+	TagID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -72,45 +29,11 @@ func (d *DeleteTagsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteTagsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteTagsRequestFieldWorkspaceID)
-}
-
 // SetTagID sets the TagID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteTagsRequest) SetTagID(tagID string) {
 	d.TagID = tagID
 	d.require(deleteTagsRequestFieldTagID)
-}
-
-var (
-	listTagsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListTagsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListTagsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListTagsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listTagsRequestFieldWorkspaceID)
 }
 
 var (
@@ -393,14 +316,12 @@ func (t *TagDetails) String() string {
 }
 
 var (
-	updateTagsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	updateTagsRequestFieldTagID       = big.NewInt(1 << 1)
+	updateTagsRequestFieldTagID = big.NewInt(1 << 0)
 )
 
 type UpdateTagsRequest struct {
-	WorkspaceID string      `json:"-" url:"-"`
-	TagID       string      `json:"-" url:"-"`
-	Body        *TagDetails `json:"-" url:"-"`
+	TagID string      `json:"-" url:"-"`
+	Body  *TagDetails `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -413,13 +334,6 @@ func (u *UpdateTagsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdateTagsRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updateTagsRequestFieldWorkspaceID)
 }
 
 // SetTagID sets the TagID field and marks it as non-optional;

@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId",
  *         timeZone: "timeZone"
  *     }
  */
 export interface BestTimesAnalyticsRequest {
-    workspaceId: string;
     channelId: string;
     days?: string;
     timeZone: string;

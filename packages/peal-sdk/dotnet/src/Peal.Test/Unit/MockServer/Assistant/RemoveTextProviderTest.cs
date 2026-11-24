@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 
 namespace Peal.Test.Unit.MockServer.Assistant;
@@ -15,16 +14,12 @@ public class RemoveTextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider")
+                    .WithPath("/api/v1/assistant/text-provider")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
-        Assert.DoesNotThrowAsync(async () =>
-            await Client.Assistant.RemoveTextProviderAsync(
-                new RemoveTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-            )
-        );
+        Assert.DoesNotThrowAsync(async () => await Client.Assistant.RemoveTextProviderAsync());
     }
 
     [NUnit.Framework.Test]
@@ -34,15 +29,11 @@ public class RemoveTextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider")
+                    .WithPath("/api/v1/assistant/text-provider")
                     .UsingDelete()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
-        Assert.DoesNotThrowAsync(async () =>
-            await Client.Assistant.RemoveTextProviderAsync(
-                new RemoveTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-            )
-        );
+        Assert.DoesNotThrowAsync(async () => await Client.Assistant.RemoveTextProviderAsync());
     }
 }

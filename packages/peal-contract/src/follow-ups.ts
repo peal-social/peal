@@ -29,10 +29,9 @@ import { Forbidden } from "./forbidden.ts";
 import { PostNotFound } from "./post-not-found.ts";
 import { TooManyFollowUpRules } from "./too-many-follow-up-rules.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
-const workspace = { workspaceId: Schema.String };
-
-const rule = { ...workspace, ruleId: Schema.String };
+const rule = { ruleId: Schema.String };
 
 const rules = `A rule acts on the workspace's own posts only, from the channel's own account: once a post it acts on has \`likes\` likes on a channel, as analytics last counted them (hourly for two days, then daily: a rule never asks a platform for more, nor makes a paid read happen), it publishes its \`comment\` under the post, as the account's own reply after the post's last part, and reposts it when \`repost\` is set, once each, within ${String(followUpWindowDays)} days of the post going live there. A post is followed up once of each kind whatever rules act on it, and a channel carries ${String(maxFollowUpsPerChannelDay)} follow-ups a UTC day at most: those past it wait for the next day, within their window. Comments go out on Bluesky, Mastodon and X (a post X bills, and only where the server sends X threads), reposts on Bluesky (a channel connected before Peal asked for it must be connected again) and Mastodon; LinkedIn's terms forbid both, and elsewhere \`channels\` says why not. Nothing likes, follows or messages anyone. It acts as whoever started it, with what they may do then: where the approval policy holds their posts it waits for a member who approves posts to approve it, and it ends when they can no longer publish. What each did is in \`followUps\`.`;
 
@@ -44,7 +43,8 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         limit: Schema.optionalKey(
@@ -71,7 +71,8 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
         PostNotFound,
         TooManyFollowUpRules,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewFollowUpRuleSchema,
       success: FollowUpRuleSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -82,6 +83,7 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
     ),
     HttpApiEndpoint.get("get", "/:ruleId", {
       error: [Forbidden, FollowUpRuleNotFound],
+      headers: workspaceHeaders,
       params: rule,
       success: FollowUpRuleSchema,
     }).annotateMerge(
@@ -97,6 +99,7 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
         FollowUpRuleEnded,
         FollowUpRuleNotFound,
       ],
+      headers: workspaceHeaders,
       params: rule,
       payload: FollowUpRuleChangeSchema,
       success: FollowUpRuleSchema,
@@ -109,6 +112,7 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
     ),
     HttpApiEndpoint.post("approve", "/:ruleId/approve", {
       error: [Forbidden, FollowUpRuleEnded, FollowUpRuleNotFound],
+      headers: workspaceHeaders,
       params: rule,
       success: FollowUpRuleSchema,
     }).annotateMerge(
@@ -120,6 +124,7 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
     ),
     HttpApiEndpoint.delete("delete", "/:ruleId", {
       error: [Forbidden, FollowUpRuleNotFound],
+      headers: workspaceHeaders,
       params: rule,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -132,4 +137,4 @@ export class FollowUpsApi extends HttpApiGroup.make("followUps")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/follow-ups") {}
+  .prefix("/api/v1/follow-ups") {}

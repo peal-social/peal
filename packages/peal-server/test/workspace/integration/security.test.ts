@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { assert, layer } from "@effect/vitest";
 import { Context, Effect, Layer, Schema } from "effect";
-import { MeSchema } from "peal-contract";
+import { MeSchema, forWorkspace } from "peal-contract";
 
 import {
   apiKeyOf,
@@ -87,21 +87,28 @@ const MatrixLive = Layer.effect(
 
 const bearer = (key: string) => ({ authorization: `Bearer ${key}` });
 
-const apiKeys = (workspaceId: string) =>
-  `/api/workspaces/${workspaceId}/api-keys`;
+const apiKeys = "/api/v1/api-keys";
 
-const channels = (workspaceId: string) =>
-  `/api/workspaces/${workspaceId}/channels`;
+const channels = "/api/v1/channels";
 
 interface Case {
   readonly expected: number;
   readonly headers?: (fixture: Fixture) => Record<string, string>;
   readonly method?: "GET" | "POST";
   readonly name: string;
-  readonly path: (fixture: Fixture) => string;
+  readonly path: string;
+  /** The workspace the request names in its `Peal-Workspace` header. */
+  readonly workspace?: (fixture: Fixture) => string;
 }
 
 const newKey = { name: "deploy", permissions: ["post:read"] };
+
+// The header that names a case's workspace, none when it names none.
+const named = (
+  workspace: Case["workspace"],
+  fixture: Fixture
+): Readonly<Record<string, string>> =>
+  workspace === undefined ? {} : forWorkspace(workspace(fixture));
 
 // The browser staff impersonate a member from.
 const staffBrowser = "Synthetic staff browser";
@@ -120,62 +127,72 @@ const cases: readonly Case[] = [
   {
     expected: 401,
     name: "no credentials",
-    path: (fixture) => apiKeys(fixture.workspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 200,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a member's session",
-    path: (fixture) => apiKeys(fixture.workspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 404,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a session on a workspace the user is not a member of",
-    path: (fixture) => apiKeys(fixture.otherWorkspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.otherWorkspaceId,
   },
   {
     expected: 404,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a session on a workspace id that is not one",
-    path: () => apiKeys("studio"),
+    path: apiKeys,
+    workspace: () => "studio",
   },
   {
     expected: 200,
     headers: (fixture) => bearer(fixture.key),
     name: "an API key of the workspace",
-    path: (fixture) => apiKeys(fixture.workspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 403,
     headers: (fixture) => bearer(fixture.key),
     name: "an API key on another workspace",
-    path: (fixture) => apiKeys(fixture.otherWorkspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.otherWorkspaceId,
   },
   {
     expected: 403,
     headers: (fixture) => bearer(fixture.postReaderKey),
     name: "an API key without the permission",
-    path: (fixture) => apiKeys(fixture.workspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 401,
     headers: () => bearer("peal_not-a-key-that-was-ever-issued"),
     name: "an API key that was never issued",
-    path: (fixture) => apiKeys(fixture.workspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 403,
     headers: (fixture) => ({ cookie: fixture.bannedCookies }),
     name: "a banned user's cached session, reading",
-    path: (fixture) => apiKeys(fixture.bannedWorkspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.bannedWorkspaceId,
   },
   {
     expected: 401,
     headers: (fixture) => ({ cookie: fixture.bannedCookies }),
     method: "POST",
     name: "a banned user's cached session, writing",
-    path: (fixture) => apiKeys(fixture.bannedWorkspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.bannedWorkspaceId,
   },
   {
     expected: 403,
@@ -185,95 +202,101 @@ const cases: readonly Case[] = [
     }),
     method: "POST",
     name: "a member's session sent by another site",
-    path: (fixture) => apiKeys(fixture.workspaceId),
+    path: apiKeys,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 401,
     name: "no credentials on the channels",
-    path: (fixture) => channels(fixture.workspaceId),
+    path: channels,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 200,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a member's session on the channels",
-    path: (fixture) => channels(fixture.workspaceId),
+    path: channels,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 404,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a session on another workspace's channels",
-    path: (fixture) => channels(fixture.otherWorkspaceId),
+    path: channels,
+    workspace: (fixture) => fixture.otherWorkspaceId,
   },
   {
     expected: 403,
     headers: (fixture) => bearer(fixture.key),
     name: "an API key without channel:read on the channels",
-    path: (fixture) => channels(fixture.workspaceId),
+    path: channels,
+    workspace: (fixture) => fixture.workspaceId,
   },
   {
     expected: 403,
     headers: (fixture) => bearer(fixture.key),
     name: "an API key on another workspace's channels",
-    path: (fixture) => channels(fixture.otherWorkspaceId),
+    path: channels,
+    workspace: (fixture) => fixture.otherWorkspaceId,
   },
   {
     expected: 401,
     name: "no credentials on /api/me",
-    path: () => "/api/me",
+    path: "/api/me",
   },
   {
     expected: 200,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a session on /api/me",
-    path: () => "/api/me",
+    path: "/api/me",
   },
   {
     expected: 403,
     headers: (fixture) => bearer(fixture.key),
     name: "an API key on /api/me",
-    path: () => "/api/me",
+    path: "/api/me",
   },
   {
     expected: 403,
     headers: (fixture) => ({ cookie: fixture.bannedCookies }),
     name: "a banned user's cached session on /api/me",
-    path: () => "/api/me",
+    path: "/api/me",
   },
   {
     expected: 401,
     name: "no credentials on the user's notices",
-    path: () => "/api/me/notices",
+    path: "/api/me/notices",
   },
   {
     expected: 200,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a session on the user's notices",
-    path: () => "/api/me/notices",
+    path: "/api/me/notices",
   },
   {
     expected: 403,
     headers: (fixture) => bearer(fixture.key),
     name: "an API key on the user's notices",
-    path: () => "/api/me/notices/unread",
+    path: "/api/me/notices/unread",
   },
   {
     expected: 403,
     headers: (fixture) => ({ cookie: fixture.bannedCookies }),
     name: "a banned user's cached session on the user's notices",
-    path: () => "/api/me/notices/unread",
+    path: "/api/me/notices/unread",
   },
   {
     expected: 200,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     name: "a session on the user's notification preferences",
-    path: () => "/api/me/notification-preferences",
+    path: "/api/me/notification-preferences",
   },
   {
     expected: 200,
     headers: (fixture) => ({ cookie: fixture.ownerCookies }),
     method: "POST",
     name: "a session marking the user's notices read",
-    path: () => "/api/me/notices/read-all",
+    path: "/api/me/notices/read-all",
   },
   {
     expected: 403,
@@ -283,14 +306,14 @@ const cases: readonly Case[] = [
     }),
     method: "POST",
     name: "a session sent by another site marking the user's notices read",
-    path: () => "/api/me/notices/read-all",
+    path: "/api/me/notices/read-all",
   },
   {
     expected: 403,
     headers: (fixture) => bearer(fixture.key),
     method: "POST",
     name: "an API key marking the user's notices read",
-    path: () => "/api/me/notices/read-all",
+    path: "/api/me/notices/read-all",
   },
 ];
 
@@ -299,14 +322,18 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
   (it) => {
     it.effect.each(cases)(
       "answers $expected to $name",
-      ({ expected, headers, method = "GET", path }) =>
+      ({ expected, headers, method = "GET", path, workspace }) =>
         Effect.gen(function* answers() {
           const app = yield* TestApp;
           const fixture = yield* Matrix;
 
-          const reply = yield* app.request(path(fixture), {
+          const reply = yield* app.request(path, {
             body: method === "POST" ? newKey : undefined,
-            headers: { origin, ...headers?.(fixture) },
+            headers: {
+              origin,
+              ...named(workspace, fixture),
+              ...headers?.(fixture),
+            },
             method,
           });
 
@@ -383,9 +410,9 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
           );
           assert.include(me.workspaces[0]?.permissions ?? [], "post:create");
 
-          const created = yield* app.request(apiKeys(workspaceId), {
+          const created = yield* app.request(apiKeys, {
             body: newKey,
-            headers: { cookie },
+            headers: { cookie, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(created.status, 403);
@@ -449,10 +476,11 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
           }
 
           // Nor deleting it, which goes through Peal's API.
-          const workspaceDeleted = yield* app.request(
-            `/api/workspaces/${workspaceId}`,
-            { body: { name: "Shop" }, headers: { cookie }, method: "DELETE" }
-          );
+          const workspaceDeleted = yield* app.request(`/api/v1/workspace`, {
+            body: { name: "Shop" },
+            headers: { cookie, ...forWorkspace(workspaceId) },
+            method: "DELETE",
+          });
 
           assert.strictEqual(workspaceDeleted.status, 403);
 
@@ -465,7 +493,7 @@ layer(MatrixLive, { excludeTestServices: true, timeout: "180 seconds" })(
           assert.strictEqual(renamed.status, 403);
 
           // The key, and the member's place in the workspace, are untouched.
-          const stillWorks = yield* app.request(apiKeys(workspaceId), {
+          const stillWorks = yield* app.request(apiKeys, {
             headers: bearer(key),
           });
 

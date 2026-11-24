@@ -1,6 +1,3 @@
-export type { ClosePartnerAccountRequest } from "./ClosePartnerAccountRequest.js";
-export type { GetPartnerAccountRequest } from "./GetPartnerAccountRequest.js";
-export type { ListKeysPartnerAccountRequest } from "./ListKeysPartnerAccountRequest.js";
 export type { ListWorkspacesPartnerAccountRequest } from "./ListWorkspacesPartnerAccountRequest.js";
 export type { NewPartnerKey } from "./NewPartnerKey.js";
 export type { OpenPartner } from "./OpenPartner.js";

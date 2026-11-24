@@ -58,7 +58,7 @@ Vous pouvez lancer la même recherche depuis chacun de ces outils :
 
 - La [ligne de commande](/developers/cli/posts#media) : `peal media list --search "…" --kind image`.
 - Un [client MCP](/developers/mcp/tools#tools) : les paramètres `q` et `kind` de l’outil `list_media`.
-- L’API : `GET /api/workspaces/{workspaceId}/media?q=…&kind=…`, avec `fileName` dans chaque média qu’elle renvoie.
+- L’API : `GET /api/v1/media?q=…&kind=…`, avec `fileName` dans chaque média qu’elle renvoie.
 
 Un envoi donne le nom dans `fileName` quand il commence (`POST …/media`). Le nom est le texte du membre lui-même : affichez-le comme du texte.
 
@@ -83,7 +83,7 @@ L’outil `import_media`, depuis un [client MCP](/developers/mcp/tools#tools).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/import`, avec l’adresse du fichier (`url`) et, si vous le souhaitez, son texte alternatif (`altText`).
+`POST /api/v1/media/import`, avec l’adresse du fichier (`url`) et, si vous le souhaitez, son texte alternatif (`altText`).
 
 </Tab>
 </Tabs>
@@ -128,7 +128,7 @@ L’outil `generate_image`, depuis un [client MCP](/developers/mcp/tools#tools).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/assistant/images`, avec la description (`prompt`) et le format (`aspect` : `square`, `landscape` ou `portrait`).
+`POST /api/v1/assistant/images`, avec la description (`prompt`) et le format (`aspect` : `square`, `landscape` ou `portrait`).
 
 </Tab>
 </Tabs>
@@ -197,7 +197,7 @@ Voyez [`peal media video`](/developers/cli/posts#media-video).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/videos/generations`, avec le `prompt`, l’`aspect` et, au besoin, `durationSeconds` et `imageMediaId`. La réponse est `202` avec la tâche. Suivez-la avec `GET /api/workspaces/{workspaceId}/media/videos/generations/{id}` jusqu’à ce que son `status` soit `succeeded`, avec le `mediaId` de la vidéo, ou `failed`, avec sa `reason`.
+`POST /api/v1/media/videos/generations`, avec le `prompt`, l’`aspect` et, au besoin, `durationSeconds` et `imageMediaId`. La réponse est `202` avec la tâche. Suivez-la avec `GET /api/v1/media/videos/generations/{id}` jusqu’à ce que son `status` soit `succeeded`, avec le `mediaId` de la vidéo, ou `failed`, avec sa `reason`.
 
 </Tab>
 </Tabs>
@@ -272,7 +272,7 @@ Voir [`peal media voiceover`](/developers/cli/posts#media-audio).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/voiceovers`, avec le `text` et, au choix, une `voice`. La réponse est `201` avec le nouveau fichier de la médiathèque.
+`POST /api/v1/media/voiceovers`, avec le `text` et, au choix, une `voice`. La réponse est `201` avec le nouveau fichier de la médiathèque.
 
 </Tab>
 </Tabs>
@@ -311,7 +311,7 @@ peal media transcribe <media-id> --save-description
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/{mediaId}/transcription`, avec `saveAsDescription` quand la transcription doit devenir la description du fichier. La réponse contient le `text`, la `language` et la `durationSeconds` quand le fournisseur les donne, et `descriptionSaved`.
+`POST /api/v1/media/{mediaId}/transcription`, avec `saveAsDescription` quand la transcription doit devenir la description du fichier. La réponse contient le `text`, la `language` et la `durationSeconds` quand le fournisseur les donne, et `descriptionSaved`.
 
 </Tab>
 </Tabs>
@@ -362,7 +362,7 @@ Voir [`peal media slideshow`](/developers/cli/posts#media-slideshow).
 </Tab>
 <Tab title="API">
 
-`POST /api/workspaces/{workspaceId}/media/slideshows`, avec `aspect` et `slides`, chacune un `mediaId` avec `caption` et `motion` facultatifs, et au besoin `secondsPerSlide`, `transition` et `voiceoverMediaId`. La réponse est `202` avec la tâche. Suivez-la avec `GET /api/workspaces/{workspaceId}/media/slideshows/{id}` jusqu’à ce que son `status` soit `succeeded`, avec le `mediaId` de la vidéo, ou `failed`, avec sa raison (`reason`).
+`POST /api/v1/media/slideshows`, avec `aspect` et `slides`, chacune un `mediaId` avec `caption` et `motion` facultatifs, et au besoin `secondsPerSlide`, `transition` et `voiceoverMediaId`. La réponse est `202` avec la tâche. Suivez-la avec `GET /api/v1/media/slideshows/{id}` jusqu’à ce que son `status` soit `succeeded`, avec le `mediaId` de la vidéo, ou `failed`, avec sa raison (`reason`).
 
 </Tab>
 </Tabs>
@@ -428,7 +428,7 @@ La vidéo est un fichier MP4 de la médiathèque, sans description. Elle est mar
 
 Un programme, ou un éditeur vidéo qui écrit le format de Shotstack, peut envoyer un [montage Shotstack](https://shotstack.io/docs/api/#tocs_edit) entier plutôt qu’une liste d’images. Peal le vérifie et le fait rendre par la connexion Shotstack de l’espace de travail, comme la même tâche qu’une vidéo de diapositives, avec les mêmes droits.
 
-Envoyez `POST /api/workspaces/{workspaceId}/media/slideshows/edits` avec le montage dans `edit`. La réponse est `202` avec la tâche, que vous suivez comme plus haut. Le `durationSeconds` de la tâche est la fin la plus tardive d’un clip dont le début et la durée sont des nombres, et son `imageMediaIds` liste chaque fichier de la médiathèque que le montage nomme, images ou non.
+Envoyez `POST /api/v1/media/slideshows/edits` avec le montage dans `edit`. La réponse est `202` avec la tâche, que vous suivez comme plus haut. Le `durationSeconds` de la tâche est la fin la plus tardive d’un clip dont le début et la durée sont des nombres, et son `imageMediaIds` liste chaque fichier de la médiathèque que le montage nomme, images ou non.
 
 ```json
 {

@@ -164,7 +164,7 @@ const threads = Command.make(
 
     const page = yield* client.inbox
       .listThreads({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(flags.channel, {
             onNone: () => ({}),
@@ -229,11 +229,12 @@ const thread = Command.make(
   "thread",
   { json: jsonFlag, threadId: threadArgument, workspace: workspaceFlag },
   Effect.fn("inbox.thread")(function* thread(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const detail = yield* client.inbox
       .getThread({
-        params: { threadId: flags.threadId, workspaceId: workspace.id },
+        headers: {},
+        params: { threadId: flags.threadId },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -324,7 +325,7 @@ const reply = Command.make(
   Effect.fn("inbox.reply")(function* reply(flags) {
     yield* keyChecked(flags.idempotencyKey);
 
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const sent = yield* client.inbox
       .reply({
@@ -332,7 +333,7 @@ const reply = Command.make(
           onNone: () => ({}),
           onSome: (key) => ({ "idempotency-key": key }),
         }),
-        params: { commentId: flags.commentId, workspaceId: workspace.id },
+        params: { commentId: flags.commentId },
         payload: { text: flags.text },
       })
       .pipe(
@@ -381,11 +382,12 @@ const answered = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("inbox.answered")(function* answered(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const comment = yield* client.inbox
       .setAnswered({
-        params: { commentId: flags.commentId, workspaceId: workspace.id },
+        headers: {},
+        params: { commentId: flags.commentId },
         payload: { answered: !flags.undo },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -419,11 +421,12 @@ const moderate = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("inbox.moderate")(function* moderate(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const comment = yield* client.inbox
       .moderate({
-        params: { commentId: flags.commentId, workspaceId: workspace.id },
+        headers: {},
+        params: { commentId: flags.commentId },
         payload: { action: flags.action },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -468,11 +471,12 @@ const confirm = Command.make(
           })
         )
       : Effect.void;
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const settled = yield* client.inbox
       .confirmReply({
-        params: { replyId: flags.replyId, workspaceId: workspace.id },
+        headers: {},
+        params: { replyId: flags.replyId },
         payload: { sent: flags.sent },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -495,11 +499,12 @@ const withdraw = Command.make(
   "withdraw",
   { json: jsonFlag, replyId: replyArgument, workspace: workspaceFlag },
   Effect.fn("inbox.withdraw")(function* withdraw(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const withdrawn = yield* client.inbox
       .withdrawReply({
-        params: { replyId: flags.replyId, workspaceId: workspace.id },
+        headers: {},
+        params: { replyId: flags.replyId },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -527,11 +532,12 @@ const abilities = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("inbox.abilities")(function* abilities(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const found = yield* client.inbox
       .getAbilities({
-        params: { channelId: flags.channelId, workspaceId: workspace.id },
+        headers: {},
+        params: { channelId: flags.channelId },
       })
       .pipe(Effect.mapError(explain(url)));
 

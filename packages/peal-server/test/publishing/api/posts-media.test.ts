@@ -2,7 +2,12 @@ import { assert, describe, it } from "@effect/vitest";
 import { Duration, Effect, Layer } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
-import { Api, PostContentInvalid, UnknownMedia } from "peal-contract";
+import {
+  Api,
+  PostContentInvalid,
+  UnknownMedia,
+  forWorkspace,
+} from "peal-contract";
 import type { PostContent, SchedulePost } from "peal-contract";
 
 import { PostsHandlers } from "#publishing/api/posts.ts";
@@ -69,7 +74,7 @@ describe("the posts endpoints, with media", () => {
           const second = yield* storeMedia(workspaceId);
 
           const draft = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: {
               channelIds: [mastodon],
               content: showing(second, photo),
@@ -82,7 +87,8 @@ describe("the posts endpoints, with media", () => {
           ]);
 
           const scheduled = yield* client.posts.schedule({
-            params: { postId: draft.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: draft.id },
             payload: { ...later, channelIds: [mastodon] },
           });
 
@@ -116,7 +122,7 @@ describe("the posts endpoints, with media", () => {
           const refused = (...mediaIds: readonly string[]) =>
             client.posts
               .create({
-                params: { workspaceId },
+                headers: forWorkspace(workspaceId),
                 payload: {
                   channelIds: [mastodon],
                   content: showing(...mediaIds),
@@ -138,7 +144,7 @@ describe("the posts endpoints, with media", () => {
           );
 
           const response = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: showing(uploading) },
             responseMode: "response-only",
           });
@@ -148,7 +154,7 @@ describe("the posts endpoints, with media", () => {
           // A draft's media is looked up again as it is scheduled: media
           // deleted since is unknown.
           const draft = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [mastodon], content: showing(ready) },
           });
 
@@ -156,7 +162,8 @@ describe("the posts endpoints, with media", () => {
 
           const gone = yield* client.posts
             .schedule({
-              params: { postId: draft.id, workspaceId },
+              headers: forWorkspace(workspaceId),
+              params: { postId: draft.id },
               payload: { ...later, channelIds: [mastodon] },
             })
             .pipe(Effect.flip);
@@ -186,13 +193,14 @@ describe("the posts endpoints, with media", () => {
           );
 
           const album = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [], content: showing(...photos) },
           });
 
           const tooMany = yield* client.posts
             .schedule({
-              params: { postId: album.id, workspaceId },
+              headers: forWorkspace(workspaceId),
+              params: { postId: album.id },
               payload: { ...later, channelIds: [threads, bluesky] },
             })
             .pipe(Effect.flip);
@@ -226,11 +234,11 @@ describe("the posts endpoints, with media", () => {
           });
 
           const mixed = yield* client.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [], content: showing(gif, clip) },
           });
 
-          const params = { postId: mixed.id, workspaceId };
+          const params = { postId: mixed.id };
 
           const payload: SchedulePost = {
             ...later,
@@ -238,7 +246,7 @@ describe("the posts endpoints, with media", () => {
           };
 
           const refused = yield* client.posts
-            .schedule({ params, payload })
+            .schedule({ headers: forWorkspace(workspaceId), params, payload })
             .pipe(Effect.flip);
 
           assert.deepStrictEqual(
@@ -273,6 +281,7 @@ describe("the posts endpoints, with media", () => {
           );
 
           const response = yield* client.posts.schedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload,
             responseMode: "response-only",

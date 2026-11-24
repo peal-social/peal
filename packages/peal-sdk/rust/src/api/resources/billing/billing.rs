@@ -35,14 +35,10 @@ impl BillingClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.billing.get(&"workspaceId".to_string(), None).await;
+    ///     client.billing.get(None).await;
     /// }
     /// ```
-    pub async fn get(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Billing, ApiError> {
+    pub async fn get(&self, options: Option<RequestOptions>) -> Result<Billing, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -51,13 +47,7 @@ impl BillingClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/billing", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/billing", None, None, options)
             .await
     }
 
@@ -83,17 +73,10 @@ impl BillingClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .billing
-    ///         .standing(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.billing.standing(None).await;
     /// }
     /// ```
-    pub async fn standing(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Standing, ApiError> {
+    pub async fn standing(&self, options: Option<RequestOptions>) -> Result<Standing, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -102,13 +85,7 @@ impl BillingClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/billing/standing", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/billing/standing", None, None, options)
             .await
     }
 }

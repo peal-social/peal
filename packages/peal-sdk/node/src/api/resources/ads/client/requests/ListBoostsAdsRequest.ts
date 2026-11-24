@@ -2,12 +2,9 @@
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListBoostsAdsRequest {
-    workspaceId: string;
     cursor?: string;
     postId?: string;
 }

@@ -45,7 +45,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId")
+                    .WithPath("/api/v1/queues/queueId")
                     .UsingGet()
             )
             .RespondWith(
@@ -55,9 +55,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Queues.GetAsync(
-            new GetQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-        );
+        var response = await Client.Queues.GetAsync(new GetQueuesRequest { QueueId = "queueId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -91,7 +89,7 @@ public class GetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/queues/queueId")
+                    .WithPath("/api/v1/queues/queueId")
                     .UsingGet()
             )
             .RespondWith(
@@ -101,9 +99,7 @@ public class GetTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Queues.GetAsync(
-            new GetQueuesRequest { WorkspaceId = "workspaceId", QueueId = "queueId" }
-        );
+        var response = await Client.Queues.GetAsync(new GetQueuesRequest { QueueId = "queueId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

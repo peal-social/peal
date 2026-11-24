@@ -4,6 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { Permission, Platform, Post } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import { toast } from "peal-ui/components/toast";
@@ -66,7 +67,8 @@ const FollowUpForm = ({
   }) => {
     startTransition(async () => {
       const exit = await reconnect({
-        params: { channelId: channel.channelId, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: channel.channelId },
         query: { reposts: "true" },
       });
 
@@ -96,7 +98,7 @@ const FollowUpForm = ({
 
     startTransition(async () => {
       const exit = await start({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: request.value,
         reactivityKeys: followUpsChanged(workspaceId),
       });

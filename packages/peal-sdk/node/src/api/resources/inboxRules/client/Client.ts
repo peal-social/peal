@@ -40,25 +40,23 @@ export class InboxRulesClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.inboxRules.listCommentRules({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.inboxRules.listCommentRules()
      */
-    public listCommentRules(request: Peal.ListCommentRulesInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<Peal.CommentRulePage> {
+    public listCommentRules(request: Peal.ListCommentRulesInboxRulesRequest = {}, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<Peal.CommentRulePage> {
         return core.HttpResponsePromise.fromPromise(this.__listCommentRules(request, requestOptions));
     }
 
-    private async __listCommentRules(request: Peal.ListCommentRulesInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.CommentRulePage>> {
-        const { workspaceId, cursor, limit, status } = request;
+    private async __listCommentRules(request: Peal.ListCommentRulesInboxRulesRequest = {}, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.CommentRulePage>> {
+        const { cursor, limit, status } = request;
         const _queryParams: Record<string, unknown> = {
             cursor,
             limit,
             status: status != null ? status : undefined
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/rules`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/rules"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -87,7 +85,7 @@ export class InboxRulesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/rules");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/rules");
     }
 
     /**
@@ -108,7 +106,6 @@ export class InboxRulesClient {
      *
      * @example
      *     await client.inboxRules.createCommentRule({
-     *         workspaceId: "workspaceId",
      *         keywords: ["keywords"],
      *         reply: "reply"
      *     })
@@ -118,12 +115,198 @@ export class InboxRulesClient {
     }
 
     private async __createCommentRule(request: Peal.NewCommentRule, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.CommentRule>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/rules`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/inbox/rules"),
             method: "POST",
+            headers: _headers,
+            contentType: "application/json",
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            requestType: "json",
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: 0,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging
+        });
+        if (_response.ok) {
+            return { data: _response.body as Peal.CommentRule, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
+                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
+                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
+                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
+                case 409: throw new Peal.ConflictError(_response.error.body as unknown, _response.rawResponse);
+                case 422: throw new Peal.UnprocessableEntityError(_response.error.body as unknown, _response.rawResponse);
+                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
+                default: throw new errors.PealError({
+                    statusCode: _response.error.statusCode,
+                    body: _response.error.body,
+                    rawResponse: _response.rawResponse
+                });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/inbox/rules");
+    }
+
+    /**
+     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
+     *
+     * @param {Peal.GetCommentRuleInboxRulesRequest} request
+     * @param {InboxRulesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link Peal.BadRequestError}
+     * @throws {@link Peal.UnauthorizedError}
+     * @throws {@link Peal.ForbiddenError}
+     * @throws {@link Peal.NotFoundError}
+     * @throws {@link Peal.TooManyRequestsError}
+     * @throws {@link errors.PealError}
+     * @throws {@link errors.PealTimeoutError}
+     *
+     * @example
+     *     await client.inboxRules.getCommentRule({
+     *         ruleId: "ruleId"
+     *     })
+     */
+    public getCommentRule(request: Peal.GetCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<Peal.CommentRule> {
+        return core.HttpResponsePromise.fromPromise(this.__getCommentRule(request, requestOptions));
+    }
+
+    private async __getCommentRule(request: Peal.GetCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.CommentRule>> {
+        const { ruleId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
+        const _response = await core.fetcher({
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/rules/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            method: "GET",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging
+        });
+        if (_response.ok) {
+            return { data: _response.body as Peal.CommentRule, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
+                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
+                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
+                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
+                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
+                default: throw new errors.PealError({
+                    statusCode: _response.error.statusCode,
+                    body: _response.error.body,
+                    rawResponse: _response.rawResponse
+                });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/inbox/rules/{ruleId}");
+    }
+
+    /**
+     * Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
+     *
+     * @param {Peal.DeleteCommentRuleInboxRulesRequest} request
+     * @param {InboxRulesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link Peal.BadRequestError}
+     * @throws {@link Peal.UnauthorizedError}
+     * @throws {@link Peal.ForbiddenError}
+     * @throws {@link Peal.NotFoundError}
+     * @throws {@link Peal.TooManyRequestsError}
+     * @throws {@link errors.PealError}
+     * @throws {@link errors.PealTimeoutError}
+     *
+     * @example
+     *     await client.inboxRules.deleteCommentRule({
+     *         ruleId: "ruleId"
+     *     })
+     */
+    public deleteCommentRule(request: Peal.DeleteCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<void> {
+        return core.HttpResponsePromise.fromPromise(this.__deleteCommentRule(request, requestOptions));
+    }
+
+    private async __deleteCommentRule(request: Peal.DeleteCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<void>> {
+        const { ruleId } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
+        const _response = await core.fetcher({
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/rules/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            method: "DELETE",
+            headers: _headers,
+            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
+            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
+            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
+            abortSignal: requestOptions?.abortSignal,
+            fetchFn: this._options?.fetch,
+            logging: this._options.logging
+        });
+        if (_response.ok) {
+            return { data: undefined, rawResponse: _response.rawResponse };
+        }
+
+        if (_response.error.reason === "status-code") {
+            switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
+                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
+                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
+                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
+                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
+                default: throw new errors.PealError({
+                    statusCode: _response.error.statusCode,
+                    body: _response.error.body,
+                    rawResponse: _response.rawResponse
+                });
+            }
+        }
+
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/inbox/rules/{ruleId}");
+    }
+
+    /**
+     * Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
+     *
+     * @param {Peal.CommentRuleChange} request
+     * @param {InboxRulesClient.RequestOptions} requestOptions - Request-specific configuration.
+     *
+     * @throws {@link Peal.BadRequestError}
+     * @throws {@link Peal.UnauthorizedError}
+     * @throws {@link Peal.ForbiddenError}
+     * @throws {@link Peal.NotFoundError}
+     * @throws {@link Peal.ConflictError}
+     * @throws {@link Peal.UnprocessableEntityError}
+     * @throws {@link Peal.TooManyRequestsError}
+     * @throws {@link errors.PealError}
+     * @throws {@link errors.PealTimeoutError}
+     *
+     * @example
+     *     await client.inboxRules.updateCommentRule({
+     *         ruleId: "ruleId"
+     *     })
+     */
+    public updateCommentRule(request: Peal.CommentRuleChange, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<Peal.CommentRule> {
+        return core.HttpResponsePromise.fromPromise(this.__updateCommentRule(request, requestOptions));
+    }
+
+    private async __updateCommentRule(request: Peal.CommentRuleChange, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.CommentRule>> {
+        const { ruleId, ..._body } = request;
+        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
+        const _response = await core.fetcher({
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/inbox/rules/${core.url.encodePathParam(ruleId, errors.PealError)}`),
+            method: "PATCH",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -156,190 +339,6 @@ export class InboxRulesClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/inbox/rules");
-    }
-
-    /**
-     * Answers a comment rule of the workspace, what its channels can carry and what it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
-     *
-     * @param {Peal.GetCommentRuleInboxRulesRequest} request
-     * @param {InboxRulesClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.inboxRules.getCommentRule({
-     *         workspaceId: "workspaceId",
-     *         ruleId: "ruleId"
-     *     })
-     */
-    public getCommentRule(request: Peal.GetCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<Peal.CommentRule> {
-        return core.HttpResponsePromise.fromPromise(this.__getCommentRule(request, requestOptions));
-    }
-
-    private async __getCommentRule(request: Peal.GetCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.CommentRule>> {
-        const { workspaceId, ruleId } = request;
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/rules/${core.url.encodePathParam(ruleId, errors.PealError)}`),
-            method: "GET",
-            headers: _headers,
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: _response.body as Peal.CommentRule, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/inbox/rules/{ruleId}");
-    }
-
-    /**
-     * Stops a rule: it answers nothing more; the replies it sent stay, and the inbox withdraws one as any other. Needs engagement:reply.
-     *
-     * @param {Peal.DeleteCommentRuleInboxRulesRequest} request
-     * @param {InboxRulesClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.inboxRules.deleteCommentRule({
-     *         workspaceId: "workspaceId",
-     *         ruleId: "ruleId"
-     *     })
-     */
-    public deleteCommentRule(request: Peal.DeleteCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<void> {
-        return core.HttpResponsePromise.fromPromise(this.__deleteCommentRule(request, requestOptions));
-    }
-
-    private async __deleteCommentRule(request: Peal.DeleteCommentRuleInboxRulesRequest, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, ruleId } = request;
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/rules/${core.url.encodePathParam(ruleId, errors.PealError)}`),
-            method: "DELETE",
-            headers: _headers,
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: undefined, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/inbox/rules/{ruleId}");
-    }
-
-    /**
-     * Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
-     *
-     * @param {Peal.CommentRuleChange} request
-     * @param {InboxRulesClient.RequestOptions} requestOptions - Request-specific configuration.
-     *
-     * @throws {@link Peal.UnauthorizedError}
-     * @throws {@link Peal.ForbiddenError}
-     * @throws {@link Peal.NotFoundError}
-     * @throws {@link Peal.ConflictError}
-     * @throws {@link Peal.UnprocessableEntityError}
-     * @throws {@link Peal.TooManyRequestsError}
-     * @throws {@link errors.PealError}
-     * @throws {@link errors.PealTimeoutError}
-     *
-     * @example
-     *     await client.inboxRules.updateCommentRule({
-     *         workspaceId: "workspaceId",
-     *         ruleId: "ruleId"
-     *     })
-     */
-    public updateCommentRule(request: Peal.CommentRuleChange, requestOptions?: InboxRulesClient.RequestOptions): core.HttpResponsePromise<Peal.CommentRule> {
-        return core.HttpResponsePromise.fromPromise(this.__updateCommentRule(request, requestOptions));
-    }
-
-    private async __updateCommentRule(request: Peal.CommentRuleChange, requestOptions?: InboxRulesClient.RequestOptions): Promise<core.WithRawResponse<Peal.CommentRule>> {
-        const { workspaceId, ruleId, ..._body } = request;
-        const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
-        const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/inbox/rules/${core.url.encodePathParam(ruleId, errors.PealError)}`),
-            method: "PATCH",
-            headers: _headers,
-            contentType: "application/json",
-            queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
-            requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
-            timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
-            maxRetries: 0,
-            abortSignal: requestOptions?.abortSignal,
-            fetchFn: this._options?.fetch,
-            logging: this._options.logging
-        });
-        if (_response.ok) {
-            return { data: _response.body as Peal.CommentRule, rawResponse: _response.rawResponse };
-        }
-
-        if (_response.error.reason === "status-code") {
-            switch (_response.error.statusCode) {
-                case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
-                case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
-                case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
-                case 409: throw new Peal.ConflictError(_response.error.body as unknown, _response.rawResponse);
-                case 422: throw new Peal.UnprocessableEntityError(_response.error.body as unknown, _response.rawResponse);
-                case 429: throw new Peal.TooManyRequestsError(_response.error.body as unknown, _response.rawResponse);
-                default: throw new errors.PealError({
-                    statusCode: _response.error.statusCode,
-                    body: _response.error.body,
-                    rawResponse: _response.rawResponse
-                });
-            }
-        }
-
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/workspaces/{workspaceId}/inbox/rules/{ruleId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/v1/inbox/rules/{ruleId}");
     }
 }

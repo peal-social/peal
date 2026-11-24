@@ -4,8 +4,6 @@ module Peal
   module Feeds
     module Types
       class NewFeed < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :attach_picture, -> { Internal::Types::Boolean }, optional: true, nullable: false, api_name: "attachPicture"
 
         field :channel_ids, -> { Internal::Types::Array[String] }, optional: true, nullable: false, api_name: "channelIds"

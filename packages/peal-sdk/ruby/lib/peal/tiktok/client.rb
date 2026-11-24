@@ -21,14 +21,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       #
       # @example
-      #   client.tiktok.creator(
-      #     workspace_id: "workspaceId",
-      #     channel_id: "channelId"
-      #   )
+      #   client.tiktok.creator(channel_id: "channelId")
       #
       # @return [Peal::Types::TikTokAccount]
       def creator(request_options: {}, **params)
@@ -36,7 +32,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/tiktok-creator",
+          path: "api/v1/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}/tiktok-creator",
           request_options: request_options
         )
         begin

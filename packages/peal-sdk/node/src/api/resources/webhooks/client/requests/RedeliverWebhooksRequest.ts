@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         endpointId: "endpointId",
  *         deliveryId: "deliveryId"
  *     }
  */
 export interface RedeliverWebhooksRequest {
-    workspaceId: string;
     endpointId: string;
     deliveryId: string;
 }

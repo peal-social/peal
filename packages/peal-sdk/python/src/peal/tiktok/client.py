@@ -23,16 +23,12 @@ class TiktokClient:
         """
         return self._raw_client
 
-    def creator(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> TikTokAccount:
+    def creator(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> TikTokAccount:
         """
         Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -48,14 +44,14 @@ class TiktokClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.tiktok.creator(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.creator(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.creator(channel_id, request_options=request_options)
         return _response.data
 
 
@@ -75,15 +71,13 @@ class AsyncTiktokClient:
         return self._raw_client
 
     async def creator(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> TikTokAccount:
         """
         Reads a TikTok channel's creator from TikTok: their nickname, the audiences the account offers, the interactions they turned off and the longest video they may post, or why they cannot post now. A channel that is not TikTok's is ChannelNotFound. Needs post:create.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -101,18 +95,18 @@ class AsyncTiktokClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.tiktok.creator(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.creator(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.creator(channel_id, request_options=request_options)
         return _response.data

@@ -39,7 +39,6 @@ func NewClient(options *core.RequestOptions) *Client {
 // Example:
 //
 //	request := &peal.VoiceoverRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Text: "text",
 //	}
 //	_, err := client.MediaAudio.CreateVoiceover(
@@ -67,7 +66,6 @@ func (c *Client) CreateVoiceover(
 // Example:
 //
 //	request := &peal.TranscriptionRequest{
-//	    WorkspaceID: "workspaceId",
 //	    MediaID: "mediaId",
 //	}
 //	_, err := client.MediaAudio.Transcribe(

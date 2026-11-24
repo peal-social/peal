@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -22,7 +21,7 @@ public class SettingsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/review/settings")
+                    .WithPath("/api/v1/review/settings")
                     .UsingGet()
             )
             .RespondWith(
@@ -32,9 +31,7 @@ public class SettingsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Review.SettingsAsync(
-            new SettingsReviewRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Review.SettingsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -51,7 +48,7 @@ public class SettingsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/review/settings")
+                    .WithPath("/api/v1/review/settings")
                     .UsingGet()
             )
             .RespondWith(
@@ -61,9 +58,7 @@ public class SettingsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Review.SettingsAsync(
-            new SettingsReviewRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Review.SettingsAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

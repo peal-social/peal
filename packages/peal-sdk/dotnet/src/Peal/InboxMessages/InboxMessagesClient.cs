@@ -36,10 +36,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/conversations",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/inbox/messages/conversations",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -193,8 +190,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/conversations/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/messages/conversations/{0}",
                         ValueConvert.ToPathParameterString(request.ConversationId)
                     ),
                     QueryString = _queryString,
@@ -349,8 +345,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/conversations/{1}/messages",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/messages/conversations/{0}/messages",
                         ValueConvert.ToPathParameterString(request.ConversationId)
                     ),
                     Body = request,
@@ -406,6 +401,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -531,10 +538,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/private-replies",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/inbox/messages/private-replies",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -588,6 +592,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -713,8 +729,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/private-replies/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/messages/private-replies/{0}",
                         ValueConvert.ToPathParameterString(request.PrivateReplyId)
                     ),
                     QueryString = _queryString,
@@ -767,6 +782,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -856,8 +883,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/private-replies/{1}/confirm",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/messages/private-replies/{0}/confirm",
                         ValueConvert.ToPathParameterString(request.PrivateReplyId)
                     ),
                     Body = request,
@@ -913,6 +939,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1014,8 +1052,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/conversations/{1}/read",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/messages/conversations/{0}/read",
                         ValueConvert.ToPathParameterString(request.ConversationId)
                     ),
                     Body = request,
@@ -1071,6 +1108,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1140,7 +1189,6 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     }
 
     private async Task<WithRawResponse<InboxMessageSettings>> GetMessageSettingsAsyncCore(
-        GetMessageSettingsInboxMessagesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -1159,10 +1207,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/settings",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/inbox/messages/settings",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -1213,6 +1258,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1302,8 +1359,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/channels/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/messages/channels/{0}",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     Body = request,
@@ -1358,6 +1414,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1458,10 +1526,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Put,
-                    Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/applications",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/inbox/messages/applications",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -1514,6 +1579,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1603,8 +1680,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
                 {
                     Method = HttpMethod.Post,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/messages/outgoing/{1}/confirmation",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/messages/outgoing/{0}/confirmation",
                         ValueConvert.ToPathParameterString(request.MessageId)
                     ),
                     Body = request,
@@ -1660,6 +1736,18 @@ public partial class InboxMessagesClient : IInboxMessagesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -1744,9 +1832,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// Lists the workspace's conversations, the latest message first, 30 a page unless `limit` (at most 100) says otherwise. `channelId` and `unread` narrow the list. Pass the page's `nextCursor` as `cursor` for the next one. Who is in each and how many messages it holds are listed; what they say, never: read a conversation for that. Peal reads a channel's direct messages, on Mastodon, Bluesky, Facebook Pages (Messenger) and Instagram where the server's operator turned them on, only once a member turned them on for that channel. It keeps each message 30 days after it was sent, and a conversation until its last message is that old; it deletes a channel's conversations at once when the channel is disconnected or its messages turned off; a message the platform no longer shows within a day, and a conversation once two whole listings in a row no longer show it, where Peal can read them whole (otherwise by the 30 days; a listing that comes back empty deletes nothing). On Messenger and Instagram, Meta gives only a conversation's 20 latest messages, so a longer one is never read whole; a message taken back on Instagram is deleted when Meta tells of it, and Messenger tells of none, so one taken back there stays until its 30 days. Peal never starts a conversation: it answers those someone else began. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never.
     /// </summary>
     /// <example><code>
-    /// await client.InboxMessages.ListConversationsAsync(
-    ///     new ListConversationsInboxMessagesRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.InboxMessages.ListConversationsAsync(new ListConversationsInboxMessagesRequest());
     /// </code></example>
     public WithRawResponseTask<InboxConversationPage> ListConversationsAsync(
         ListConversationsInboxMessagesRequest request,
@@ -1764,11 +1850,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.GetConversationAsync(
-    ///     new GetConversationInboxMessagesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ConversationId = "conversationId",
-    ///     }
+    ///     new GetConversationInboxMessagesRequest { ConversationId = "conversationId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxConversationDetail> GetConversationAsync(
@@ -1787,12 +1869,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.SendMessageAsync(
-    ///     new NewInboxMessage
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ConversationId = "conversationId",
-    ///         Text = "text",
-    ///     }
+    ///     new NewInboxMessage { ConversationId = "conversationId", Text = "text" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxOutgoingMessage> SendMessageAsync(
@@ -1811,12 +1888,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.SendPrivateReplyAsync(
-    ///     new NewInboxPrivateReply
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         CommentId = "commentId",
-    ///         Text = "text",
-    ///     }
+    ///     new NewInboxPrivateReply { CommentId = "commentId", Text = "text" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxPrivateReply> SendPrivateReplyAsync(
@@ -1835,11 +1907,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.GetPrivateReplyAsync(
-    ///     new GetPrivateReplyInboxMessagesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PrivateReplyId = "privateReplyId",
-    ///     }
+    ///     new GetPrivateReplyInboxMessagesRequest { PrivateReplyId = "privateReplyId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxPrivateReply> GetPrivateReplyAsync(
@@ -1858,12 +1926,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.ConfirmPrivateReplyAsync(
-    ///     new ConfirmPrivateReplyInboxMessagesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         PrivateReplyId = "privateReplyId",
-    ///         Went = true,
-    ///     }
+    ///     new ConfirmPrivateReplyInboxMessagesRequest { PrivateReplyId = "privateReplyId", Went = true }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxPrivateReply> ConfirmPrivateReplyAsync(
@@ -1882,12 +1945,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.SetConversationReadAsync(
-    ///     new SetConversationReadInboxMessagesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ConversationId = "conversationId",
-    ///         Read = true,
-    ///     }
+    ///     new SetConversationReadInboxMessagesRequest { ConversationId = "conversationId", Read = true }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxConversation> SetConversationReadAsync(
@@ -1905,18 +1963,15 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// Lists the channels whose direct messages the workspace turned on, and the applications its owner let read and answer them. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.InboxMessages.GetMessageSettingsAsync(
-    ///     new GetMessageSettingsInboxMessagesRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.InboxMessages.GetMessageSettingsAsync();
     /// </code></example>
     public WithRawResponseTask<InboxMessageSettings> GetMessageSettingsAsync(
-        GetMessageSettingsInboxMessagesRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<InboxMessageSettings>(
-            GetMessageSettingsAsyncCore(request, options, cancellationToken)
+            GetMessageSettingsAsyncCore(options, cancellationToken)
         );
     }
 
@@ -1925,12 +1980,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.SetChannelMessagesAsync(
-    ///     new SetChannelMessagesInboxMessagesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ChannelId = "channelId",
-    ///         Enabled = true,
-    ///     }
+    ///     new SetChannelMessagesInboxMessagesRequest { ChannelId = "channelId", Enabled = true }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxMessageSettings> SetChannelMessagesAsync(
@@ -1949,12 +1999,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.SetMessageApplicationAsync(
-    ///     new SetMessageApplicationInboxMessagesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Allowed = true,
-    ///         ClientId = "clientId",
-    ///     }
+    ///     new SetMessageApplicationInboxMessagesRequest { Allowed = true, ClientId = "clientId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxMessageSettings> SetMessageApplicationAsync(
@@ -1973,12 +2018,7 @@ public partial class InboxMessagesClient : IInboxMessagesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxMessages.ConfirmMessageAsync(
-    ///     new ConfirmMessageInboxMessagesRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         MessageId = "messageId",
-    ///         Sent = true,
-    ///     }
+    ///     new ConfirmMessageInboxMessagesRequest { MessageId = "messageId", Sent = true }
     /// );
     /// </code></example>
     public WithRawResponseTask<InboxOutgoingMessage> ConfirmMessageAsync(

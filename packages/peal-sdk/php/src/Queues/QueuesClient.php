@@ -13,7 +13,7 @@ use Peal\Core\Client\HttpMethod;
 use Peal\Core\Json\JsonDecoder;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Peal\Queues\Requests\CreateQueuesRequest;
+use Peal\Types\QueueDetails;
 use Peal\Queues\Requests\UpdateQueuesRequest;
 use Peal\Queues\Requests\SlotsQueuesRequest;
 use Peal\Types\QueuePreview;
@@ -60,12 +60,9 @@ class QueuesClient
      *
      * Example:
      * ```php
-     * $client->queues->list(
-     *     'workspaceId',
-     * );
+     * $client->queues->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -78,14 +75,14 @@ class QueuesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/queues",
+                    path: "api/v1/queues",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -116,24 +113,20 @@ class QueuesClient
      * Example:
      * ```php
      * $client->queues->create(
-     *     'workspaceId',
-     *     new CreateQueuesRequest([
-     *         'body' => new QueueDetails([
-     *             'name' => 'name',
-     *             'slots' => [
-     *                 new QueueSlot([
-     *                     'day' => Weekday::Monday->value,
-     *                     'time' => 'time',
-     *                 ]),
-     *             ],
-     *             'timeZone' => 'timeZone',
-     *         ]),
+     *     new QueueDetails([
+     *         'name' => 'name',
+     *         'slots' => [
+     *             new QueueSlot([
+     *                 'day' => Weekday::Monday->value,
+     *                 'time' => 'time',
+     *             ]),
+     *         ],
+     *         'timeZone' => 'timeZone',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param CreateQueuesRequest $request
+     * @param QueueDetails $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -146,7 +139,7 @@ class QueuesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, CreateQueuesRequest $request, ?array $options = null): ?Queue
+    public function create(QueueDetails $request, ?array $options = null): ?Queue
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -154,9 +147,9 @@ class QueuesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/queues",
+                    path: "api/v1/queues",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -186,12 +179,10 @@ class QueuesClient
      * Example:
      * ```php
      * $client->queues->get(
-     *     'workspaceId',
      *     'queueId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $queueId
      * @param ?array{
      *   baseUrl?: string,
@@ -205,14 +196,14 @@ class QueuesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $queueId, ?array $options = null): ?Queue
+    public function get(string $queueId, ?array $options = null): ?Queue
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/queues/{$queueId}",
+                    path: "api/v1/queues/{$queueId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -243,7 +234,6 @@ class QueuesClient
      * Example:
      * ```php
      * $client->queues->update(
-     *     'workspaceId',
      *     'queueId',
      *     new UpdateQueuesRequest([
      *         'body' => new QueueDetails([
@@ -260,7 +250,6 @@ class QueuesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $queueId
      * @param UpdateQueuesRequest $request
      * @param ?array{
@@ -275,14 +264,14 @@ class QueuesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $queueId, UpdateQueuesRequest $request, ?array $options = null): ?Queue
+    public function update(string $queueId, UpdateQueuesRequest $request, ?array $options = null): ?Queue
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/queues/{$queueId}",
+                    path: "api/v1/queues/{$queueId}",
                     method: HttpMethod::PUT,
                     body: $request->body,
                 ),
@@ -314,12 +303,10 @@ class QueuesClient
      * Example:
      * ```php
      * $client->queues->delete(
-     *     'workspaceId',
      *     'queueId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $queueId
      * @param ?array{
      *   baseUrl?: string,
@@ -332,14 +319,14 @@ class QueuesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $queueId, ?array $options = null): void
+    public function delete(string $queueId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/queues/{$queueId}",
+                    path: "api/v1/queues/{$queueId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -364,13 +351,11 @@ class QueuesClient
      * Example:
      * ```php
      * $client->queues->slots(
-     *     'workspaceId',
      *     'queueId',
      *     new SlotsQueuesRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $queueId
      * @param SlotsQueuesRequest $request
      * @param ?array{
@@ -385,7 +370,7 @@ class QueuesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function slots(string $workspaceId, string $queueId, SlotsQueuesRequest $request = new SlotsQueuesRequest(), ?array $options = null): ?QueuePreview
+    public function slots(string $queueId, SlotsQueuesRequest $request = new SlotsQueuesRequest(), ?array $options = null): ?QueuePreview
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -396,7 +381,7 @@ class QueuesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/queues/{$queueId}/slots",
+                    path: "api/v1/queues/{$queueId}/slots",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -428,12 +413,10 @@ class QueuesClient
      * Example:
      * ```php
      * $client->queues->reshuffle(
-     *     'workspaceId',
      *     'queueId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $queueId
      * @param ?array{
      *   baseUrl?: string,
@@ -447,7 +430,7 @@ class QueuesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function reshuffle(string $workspaceId, string $queueId, ?array $options = null): ?QueueReshuffle
+    public function reshuffle(string $queueId, ?array $options = null): ?QueueReshuffle
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -455,7 +438,7 @@ class QueuesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/queues/{$queueId}/reshuffle",
+                    path: "api/v1/queues/{$queueId}/reshuffle",
                     method: HttpMethod::POST,
                 ),
                 $options,

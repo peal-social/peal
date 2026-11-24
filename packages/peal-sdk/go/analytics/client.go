@@ -40,7 +40,6 @@ func NewClient(options *core.RequestOptions) *Client {
 // Example:
 //
 //	request := &peal.SummaryAnalyticsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    From: "from",
 //	    TimeZone: "timeZone",
 //	    To: "to",
@@ -70,7 +69,6 @@ func (c *Client) Summary(
 // Example:
 //
 //	request := &peal.DashboardAnalyticsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    TimeZone: "timeZone",
 //	}
 //	_, err := client.Analytics.Dashboard(
@@ -98,7 +96,6 @@ func (c *Client) Dashboard(
 // Example:
 //
 //	request := &peal.ChannelAnalyticsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	    TimeZone: "timeZone",
 //	}
@@ -127,7 +124,6 @@ func (c *Client) Channel(
 // Example:
 //
 //	request := &peal.ExportAnalyticsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    TimeZone: "timeZone",
 //	    Kind: peal.AnalyticsExportKindPosts,
 //	}
@@ -156,7 +152,6 @@ func (c *Client) Export(
 // Example:
 //
 //	request := &peal.BestTimesAnalyticsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	    TimeZone: "timeZone",
 //	}
@@ -185,7 +180,6 @@ func (c *Client) BestTimes(
 // Example:
 //
 //	request := &peal.PostAnalyticsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Analytics.Post(

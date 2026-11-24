@@ -7,9 +7,6 @@ namespace Peal;
 public record NewPost
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Wait { get; set; }
 
     [JsonIgnore]

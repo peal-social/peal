@@ -13,24 +13,22 @@ module Peal
       # Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.webhooks.list(workspace_id: "workspaceId")
+      #   client.webhooks.list
       #
       # @return [Array[Peal::Types::WebhookEndpoint]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks",
+          path: "api/v1/webhooks",
           request_options: request_options
         )
         begin
@@ -76,11 +74,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.webhooks.create(
-      #     workspace_id: "workspaceId",
       #     event_types: ["post.scheduled"],
       #     url: "url"
       #   )
@@ -88,15 +84,11 @@ module Peal
       # @return [Peal::Types::WebhookEndpointSecret]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Webhooks::Types::NewWebhookEndpoint.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks",
-          body: body,
+          path: "api/v1/webhooks",
+          body: Peal::Webhooks::Types::NewWebhookEndpoint.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -132,7 +124,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
       # @option params [Peal::Types::WebhookEventType, nil] :event_type
@@ -142,7 +133,7 @@ module Peal
       # @option params [String, nil] :until_
       #
       # @example
-      #   client.webhooks.search_deliveries(workspace_id: "workspaceId")
+      #   client.webhooks.search_deliveries
       #
       # @return [Peal::Types::WebhookDeliveryPage]
       def search_deliveries(request_options: {}, **params)
@@ -159,7 +150,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/deliveries",
+          path: "api/v1/webhooks/deliveries",
           query: query_params,
           request_options: request_options
         )
@@ -198,25 +189,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.webhooks.redeliver_many(
-      #     workspace_id: "workspaceId",
-      #     delivery_ids: ["deliveryIds"]
-      #   )
+      #   client.webhooks.redeliver_many(delivery_ids: ["deliveryIds"])
       #
       # @return [Peal::Types::WebhookBulkRedelivery]
       def redeliver_many(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        path_param_names = %i[workspace_id]
-        body_params = params.except(*path_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/deliveries/redeliver",
-          body: Peal::Types::WebhookRedeliveryRequest.new(body_params).to_h,
+          path: "api/v1/webhooks/deliveries/redeliver",
+          body: Peal::Types::WebhookRedeliveryRequest.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -247,14 +231,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :endpoint_id
       #
       # @example
-      #   client.webhooks.get(
-      #     workspace_id: "workspaceId",
-      #     endpoint_id: "endpointId"
-      #   )
+      #   client.webhooks.get(endpoint_id: "endpointId")
       #
       # @return [Peal::Types::WebhookEndpoint]
       def get(request_options: {}, **params)
@@ -262,7 +242,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}",
+          path: "api/v1/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -292,14 +272,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :endpoint_id
       #
       # @example
-      #   client.webhooks.delete(
-      #     workspace_id: "workspaceId",
-      #     endpoint_id: "endpointId"
-      #   )
+      #   client.webhooks.delete(endpoint_id: "endpointId")
       #
       # @return [untyped]
       def delete(request_options: {}, **params)
@@ -307,7 +283,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}",
+          path: "api/v1/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -343,26 +319,22 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :endpoint_id
       #
       # @example
-      #   client.webhooks.update(
-      #     workspace_id: "workspaceId",
-      #     endpoint_id: "endpointId"
-      #   )
+      #   client.webhooks.update(endpoint_id: "endpointId")
       #
       # @return [Peal::Types::WebhookEndpoint]
       def update(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Webhooks::Types::WebhookEndpointChange.new(params).to_h
-        non_body_param_names = %w[workspaceId endpointId]
+        non_body_param_names = %w[endpointId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}",
+          path: "api/v1/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -396,14 +368,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :endpoint_id
       #
       # @example
-      #   client.webhooks.rotate_secret(
-      #     workspace_id: "workspaceId",
-      #     endpoint_id: "endpointId"
-      #   )
+      #   client.webhooks.rotate_secret(endpoint_id: "endpointId")
       #
       # @return [Peal::Types::WebhookEndpointSecret]
       def rotate_secret(request_options: {}, **params)
@@ -411,7 +379,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/secret",
+          path: "api/v1/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/secret",
           request_options: request_options,
           max_retries: 0
         )
@@ -446,15 +414,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :endpoint_id
       # @option params [Peal::Types::SubscribableWebhookEventType, nil] :event_type
       #
       # @example
-      #   client.webhooks.send_test(
-      #     workspace_id: "workspaceId",
-      #     endpoint_id: "endpointId"
-      #   )
+      #   client.webhooks.send_test(endpoint_id: "endpointId")
       #
       # @return [Peal::Types::WebhookDelivery]
       def send_test(request_options: {}, **params)
@@ -465,7 +429,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/test",
+          path: "api/v1/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/test",
           query: query_params,
           request_options: request_options,
           max_retries: 0
@@ -500,7 +464,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :endpoint_id
       # @option params [String, nil] :cursor
       # @option params [String, nil] :limit
@@ -508,10 +471,7 @@ module Peal
       # @option params [Peal::Types::WebhookDeliveryStatus, nil] :status
       #
       # @example
-      #   client.webhooks.list_deliveries(
-      #     workspace_id: "workspaceId",
-      #     endpoint_id: "endpointId"
-      #   )
+      #   client.webhooks.list_deliveries(endpoint_id: "endpointId")
       #
       # @return [Peal::Types::WebhookDeliveryPage]
       def list_deliveries(request_options: {}, **params)
@@ -525,7 +485,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/deliveries",
+          path: "api/v1/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/deliveries",
           query: query_params,
           request_options: request_options
         )
@@ -558,13 +518,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :endpoint_id
       # @option params [String] :delivery_id
       #
       # @example
       #   client.webhooks.redeliver(
-      #     workspace_id: "workspaceId",
       #     endpoint_id: "endpointId",
       #     delivery_id: "deliveryId"
       #   )
@@ -575,7 +533,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/deliveries/#{URI.encode_uri_component(params[:delivery_id].to_s)}/redeliver",
+          path: "api/v1/webhooks/#{URI.encode_uri_component(params[:endpoint_id].to_s)}/deliveries/#{URI.encode_uri_component(params[:delivery_id].to_s)}/redeliver",
           request_options: request_options,
           max_retries: 0
         )

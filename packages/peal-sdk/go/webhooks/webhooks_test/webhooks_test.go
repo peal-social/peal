@@ -88,19 +88,15 @@ func TestWebhooksListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListWebhooksRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Webhooks.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestWebhooksListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksListWithWireMock", "GET", "/api/workspaces/workspaceId/webhooks", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksListWithWireMock", "GET", "/api/v1/webhooks", nil, 1)
 }
 
 func TestWebhooksCreateWithWireMock(
@@ -115,7 +111,6 @@ func TestWebhooksCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewWebhookEndpoint{
-		WorkspaceID: "workspaceId",
 		EventTypes: []peal.SubscribableWebhookEventType{
 			peal.SubscribableWebhookEventTypePostScheduled,
 		},
@@ -130,7 +125,7 @@ func TestWebhooksCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksCreateWithWireMock", "POST", "/api/workspaces/workspaceId/webhooks", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksCreateWithWireMock", "POST", "/api/v1/webhooks", nil, 1)
 }
 
 func TestWebhooksSearchDeliveriesWithWireMock(
@@ -144,9 +139,7 @@ func TestWebhooksSearchDeliveriesWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.SearchDeliveriesWebhooksRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.SearchDeliveriesWebhooksRequest{}
 	_, invocationErr := client.Webhooks.SearchDeliveries(
 		context.TODO(),
 		request,
@@ -156,7 +149,7 @@ func TestWebhooksSearchDeliveriesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksSearchDeliveriesWithWireMock", "GET", "/api/workspaces/workspaceId/webhooks/deliveries", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksSearchDeliveriesWithWireMock", "GET", "/api/v1/webhooks/deliveries", nil, 1)
 }
 
 func TestWebhooksRedeliverManyWithWireMock(
@@ -170,13 +163,10 @@ func TestWebhooksRedeliverManyWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.RedeliverManyWebhooksRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.WebhookRedeliveryRequest{
-			WebhookRedeliveryByIDs: &peal.WebhookRedeliveryByIDs{
-				DeliveryIDs: []string{
-					"deliveryIds",
-				},
+	request := &peal.WebhookRedeliveryRequest{
+		WebhookRedeliveryByIDs: &peal.WebhookRedeliveryByIDs{
+			DeliveryIDs: []string{
+				"deliveryIds",
 			},
 		},
 	}
@@ -189,7 +179,7 @@ func TestWebhooksRedeliverManyWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksRedeliverManyWithWireMock", "POST", "/api/workspaces/workspaceId/webhooks/deliveries/redeliver", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksRedeliverManyWithWireMock", "POST", "/api/v1/webhooks/deliveries/redeliver", nil, 1)
 }
 
 func TestWebhooksGetWithWireMock(
@@ -204,8 +194,7 @@ func TestWebhooksGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetWebhooksRequest{
-		WorkspaceID: "workspaceId",
-		EndpointID:  "endpointId",
+		EndpointID: "endpointId",
 	}
 	_, invocationErr := client.Webhooks.Get(
 		context.TODO(),
@@ -216,7 +205,7 @@ func TestWebhooksGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksGetWithWireMock", "GET", "/api/workspaces/workspaceId/webhooks/endpointId", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksGetWithWireMock", "GET", "/api/v1/webhooks/endpointId", nil, 1)
 }
 
 func TestWebhooksDeleteWithWireMock(
@@ -231,8 +220,7 @@ func TestWebhooksDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteWebhooksRequest{
-		WorkspaceID: "workspaceId",
-		EndpointID:  "endpointId",
+		EndpointID: "endpointId",
 	}
 	invocationErr := client.Webhooks.Delete(
 		context.TODO(),
@@ -243,7 +231,7 @@ func TestWebhooksDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/webhooks/endpointId", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksDeleteWithWireMock", "DELETE", "/api/v1/webhooks/endpointId", nil, 1)
 }
 
 func TestWebhooksUpdateWithWireMock(
@@ -258,8 +246,7 @@ func TestWebhooksUpdateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.WebhookEndpointChange{
-		WorkspaceID: "workspaceId",
-		EndpointID:  "endpointId",
+		EndpointID: "endpointId",
 	}
 	_, invocationErr := client.Webhooks.Update(
 		context.TODO(),
@@ -270,7 +257,7 @@ func TestWebhooksUpdateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksUpdateWithWireMock", "PATCH", "/api/workspaces/workspaceId/webhooks/endpointId", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksUpdateWithWireMock", "PATCH", "/api/v1/webhooks/endpointId", nil, 1)
 }
 
 func TestWebhooksRotateSecretWithWireMock(
@@ -285,8 +272,7 @@ func TestWebhooksRotateSecretWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RotateSecretWebhooksRequest{
-		WorkspaceID: "workspaceId",
-		EndpointID:  "endpointId",
+		EndpointID: "endpointId",
 	}
 	_, invocationErr := client.Webhooks.RotateSecret(
 		context.TODO(),
@@ -297,7 +283,7 @@ func TestWebhooksRotateSecretWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksRotateSecretWithWireMock", "POST", "/api/workspaces/workspaceId/webhooks/endpointId/secret", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksRotateSecretWithWireMock", "POST", "/api/v1/webhooks/endpointId/secret", nil, 1)
 }
 
 func TestWebhooksSendTestWithWireMock(
@@ -312,8 +298,7 @@ func TestWebhooksSendTestWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.SendTestWebhooksRequest{
-		WorkspaceID: "workspaceId",
-		EndpointID:  "endpointId",
+		EndpointID: "endpointId",
 	}
 	_, invocationErr := client.Webhooks.SendTest(
 		context.TODO(),
@@ -324,7 +309,7 @@ func TestWebhooksSendTestWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksSendTestWithWireMock", "POST", "/api/workspaces/workspaceId/webhooks/endpointId/test", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksSendTestWithWireMock", "POST", "/api/v1/webhooks/endpointId/test", nil, 1)
 }
 
 func TestWebhooksListDeliveriesWithWireMock(
@@ -339,8 +324,7 @@ func TestWebhooksListDeliveriesWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ListDeliveriesWebhooksRequest{
-		WorkspaceID: "workspaceId",
-		EndpointID:  "endpointId",
+		EndpointID: "endpointId",
 	}
 	_, invocationErr := client.Webhooks.ListDeliveries(
 		context.TODO(),
@@ -351,7 +335,7 @@ func TestWebhooksListDeliveriesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksListDeliveriesWithWireMock", "GET", "/api/workspaces/workspaceId/webhooks/endpointId/deliveries", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksListDeliveriesWithWireMock", "GET", "/api/v1/webhooks/endpointId/deliveries", nil, 1)
 }
 
 func TestWebhooksRedeliverWithWireMock(
@@ -366,9 +350,8 @@ func TestWebhooksRedeliverWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RedeliverWebhooksRequest{
-		WorkspaceID: "workspaceId",
-		EndpointID:  "endpointId",
-		DeliveryID:  "deliveryId",
+		EndpointID: "endpointId",
+		DeliveryID: "deliveryId",
 	}
 	_, invocationErr := client.Webhooks.Redeliver(
 		context.TODO(),
@@ -379,5 +362,5 @@ func TestWebhooksRedeliverWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestWebhooksRedeliverWithWireMock", "POST", "/api/workspaces/workspaceId/webhooks/endpointId/deliveries/deliveryId/redeliver", nil, 1)
+	VerifyRequestCount(t, "TestWebhooksRedeliverWithWireMock", "POST", "/api/v1/webhooks/endpointId/deliveries/deliveryId/redeliver", nil, 1)
 }

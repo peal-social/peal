@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListFollowUpsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListFollowUpsRequest{}
 //	_, err := client.FollowUps.List(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewFollowUpRule{
-//	    WorkspaceID: "workspaceId",
 //	    Likes: 1,
 //	}
 //	_, err := client.FollowUps.Create(
@@ -94,7 +91,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.GetFollowUpsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.FollowUps.Get(
@@ -122,7 +118,6 @@ func (c *Client) Get(
 // Example:
 //
 //	request := &peal.DeleteFollowUpsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	err := client.FollowUps.Delete(
@@ -150,7 +145,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.FollowUpRuleChange{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.FollowUps.Update(
@@ -178,7 +172,6 @@ func (c *Client) Update(
 // Example:
 //
 //	request := &peal.ApproveFollowUpsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    RuleID: "ruleId",
 //	}
 //	_, err := client.FollowUps.Approve(

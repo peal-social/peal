@@ -330,7 +330,7 @@ public class ValidateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/validate")
+                    .WithPath("/api/v1/posts/validate")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -345,7 +345,6 @@ public class ValidateTest : BaseMockServerTest
         var response = await Client.Posts.ValidateAsync(
             new PostToValidate
             {
-                WorkspaceId = "workspaceId",
                 AllowDuplicate = null,
                 ChannelIds = new List<string>() { "channelIds", "channelIds" },
                 ChannelSets = null,
@@ -517,7 +516,7 @@ public class ValidateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/validate")
+                    .WithPath("/api/v1/posts/validate")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -532,7 +531,6 @@ public class ValidateTest : BaseMockServerTest
         var response = await Client.Posts.ValidateAsync(
             new PostToValidate
             {
-                WorkspaceId = "workspaceId",
                 ChannelIds = new List<string>() { "channelIds" },
                 Content = new PostContent
                 {

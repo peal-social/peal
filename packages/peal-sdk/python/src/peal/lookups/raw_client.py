@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_gateway_error import BadGatewayError
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -31,15 +32,13 @@ class RawLookupsClient:
         self._client_wrapper = client_wrapper
 
     def list(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[LookupDescription]]:
         """
         Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -51,7 +50,7 @@ class RawLookupsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/lookups",
+            f"api/v1/channels/{encode_path_param(channel_id)}/lookups",
             method="GET",
             request_options=request_options,
         )
@@ -65,6 +64,17 @@ class RawLookupsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -120,7 +130,6 @@ class RawLookupsClient:
 
     def run(
         self,
-        workspace_id: str,
         channel_id: str,
         name: str,
         *,
@@ -137,8 +146,6 @@ class RawLookupsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         name : str
@@ -167,7 +174,7 @@ class RawLookupsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/lookups/{encode_path_param(name)}",
+            f"api/v1/channels/{encode_path_param(channel_id)}/lookups/{encode_path_param(name)}",
             method="POST",
             json={
                 "boardId": board_id,
@@ -193,6 +200,17 @@ class RawLookupsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -285,15 +303,13 @@ class AsyncRawLookupsClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[LookupDescription]]:
         """
         Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -305,7 +321,7 @@ class AsyncRawLookupsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/lookups",
+            f"api/v1/channels/{encode_path_param(channel_id)}/lookups",
             method="GET",
             request_options=request_options,
         )
@@ -319,6 +335,17 @@ class AsyncRawLookupsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -374,7 +401,6 @@ class AsyncRawLookupsClient:
 
     async def run(
         self,
-        workspace_id: str,
         channel_id: str,
         name: str,
         *,
@@ -391,8 +417,6 @@ class AsyncRawLookupsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         name : str
@@ -421,7 +445,7 @@ class AsyncRawLookupsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/lookups/{encode_path_param(name)}",
+            f"api/v1/channels/{encode_path_param(channel_id)}/lookups/{encode_path_param(name)}",
             method="POST",
             json={
                 "boardId": board_id,
@@ -447,6 +471,17 @@ class AsyncRawLookupsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

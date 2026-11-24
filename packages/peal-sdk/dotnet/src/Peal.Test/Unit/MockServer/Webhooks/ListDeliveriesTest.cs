@@ -64,7 +64,7 @@ public class ListDeliveriesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId/deliveries")
+                    .WithPath("/api/v1/webhooks/endpointId/deliveries")
                     .UsingGet()
             )
             .RespondWith(
@@ -75,11 +75,7 @@ public class ListDeliveriesTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.ListDeliveriesAsync(
-            new ListDeliveriesWebhooksRequest
-            {
-                WorkspaceId = "workspaceId",
-                EndpointId = "endpointId",
-            }
+            new ListDeliveriesWebhooksRequest { EndpointId = "endpointId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -119,7 +115,7 @@ public class ListDeliveriesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/webhooks/endpointId/deliveries")
+                    .WithPath("/api/v1/webhooks/endpointId/deliveries")
                     .UsingGet()
             )
             .RespondWith(
@@ -130,11 +126,7 @@ public class ListDeliveriesTest : BaseMockServerTest
             );
 
         var response = await Client.Webhooks.ListDeliveriesAsync(
-            new ListDeliveriesWebhooksRequest
-            {
-                WorkspaceId = "workspaceId",
-                EndpointId = "endpointId",
-            }
+            new ListDeliveriesWebhooksRequest { EndpointId = "endpointId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

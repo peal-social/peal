@@ -15,6 +15,7 @@ import { PlatformSchema } from "./platform.ts";
 import type { Platform } from "./platform.ts";
 import { WeekdaySchema } from "./queues.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 const isCalendarDay = (written: string): boolean => {
   const [year = 0, month = 0, day = 0] = written.split("-").map(Number);
@@ -466,14 +467,13 @@ export const BestTimesSchema = Schema.Struct({
 
 export type BestTimes = typeof BestTimesSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
 /** What a workspace's posts did on their platforms. */
 export class AnalyticsApi extends HttpApiGroup.make("analytics")
   .add(
     HttpApiEndpoint.get("summary", "/summary", {
       error: [Forbidden, InvalidDateRange, InvalidTimeZone],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         from: CalendarDaySchema,
         timeZone: Schema.String,
@@ -489,7 +489,8 @@ export class AnalyticsApi extends HttpApiGroup.make("analytics")
     ),
     HttpApiEndpoint.get("dashboard", "/dashboard", {
       error: [Forbidden, InvalidDateRange, InvalidTimeZone],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         ...range,
         topPosts: Schema.optionalKey(
@@ -511,7 +512,8 @@ export class AnalyticsApi extends HttpApiGroup.make("analytics")
     ),
     HttpApiEndpoint.get("channel", "/channels/:channelId", {
       error: [Forbidden, InvalidDateRange, InvalidTimeZone],
-      params: { ...workspace, channelId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       query: range,
       success: ChannelSeriesSchema,
     }).annotateMerge(
@@ -522,7 +524,8 @@ export class AnalyticsApi extends HttpApiGroup.make("analytics")
     ),
     HttpApiEndpoint.get("export", "/export", {
       error: [Forbidden, InvalidDateRange, InvalidTimeZone],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         ...range,
         format: Schema.optionalKey(ExportFormatSchema),
@@ -539,7 +542,8 @@ export class AnalyticsApi extends HttpApiGroup.make("analytics")
     ),
     HttpApiEndpoint.get("bestTimes", "/best-times", {
       error: [Forbidden, ChannelNotFound, InvalidTimeZone],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         channelId: Schema.String,
         days: Schema.optionalKey(
@@ -558,7 +562,8 @@ export class AnalyticsApi extends HttpApiGroup.make("analytics")
     ),
     HttpApiEndpoint.get("post", "/posts/:postId", {
       error: [Forbidden],
-      params: { ...workspace, postId: Schema.String },
+      headers: workspaceHeaders,
+      params: { postId: Schema.String },
       success: PostAnalyticsSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -570,4 +575,4 @@ export class AnalyticsApi extends HttpApiGroup.make("analytics")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/analytics") {}
+  .prefix("/api/v1/analytics") {}

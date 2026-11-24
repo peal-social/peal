@@ -13,7 +13,6 @@ public partial class InvitationsClient : IInvitationsClient
     }
 
     private async Task<WithRawResponse<IEnumerable<Invitation>>> ListAsyncCore(
-        ListInvitationsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class InvitationsClient : IInvitationsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/invitations",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/invitations",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class InvitationsClient : IInvitationsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -174,10 +182,7 @@ public partial class InvitationsClient : IInvitationsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/invitations",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/invitations",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -356,8 +361,7 @@ public partial class InvitationsClient : IInvitationsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/invitations/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/invitations/{0}",
                         ValueConvert.ToPathParameterString(request.InvitationId)
                     ),
                     QueryString = _queryString,
@@ -384,6 +388,18 @@ public partial class InvitationsClient : IInvitationsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -456,16 +472,15 @@ public partial class InvitationsClient : IInvitationsClient
     /// Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
     /// </summary>
     /// <example><code>
-    /// await client.Invitations.ListAsync(new ListInvitationsRequest { WorkspaceId = "workspaceId" });
+    /// await client.Invitations.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<Invitation>> ListAsync(
-        ListInvitationsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<Invitation>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -473,14 +488,7 @@ public partial class InvitationsClient : IInvitationsClient
     /// Invites someone to the workspace with a role: Peal emails them a link that works for 7 days, in their language when they have an account, in the inviter's otherwise. A pending invitation to the same address is revoked, and its link stops working. Only owners invite owners. On a server that bills, the members and the other pending invitations must leave room in the workspace's plan (PlanLimitReached). Needs invitation:create, and a member in person: not an API key, nor staff impersonating one.
     /// </summary>
     /// <example><code>
-    /// await client.Invitations.CreateAsync(
-    ///     new NewInvitation
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Email = "email",
-    ///         Role = Role.Owner,
-    ///     }
-    /// );
+    /// await client.Invitations.CreateAsync(new NewInvitation { Email = "email", Role = Role.Owner });
     /// </code></example>
     public WithRawResponseTask<Invitation> CreateAsync(
         NewInvitation request,
@@ -498,7 +506,7 @@ public partial class InvitationsClient : IInvitationsClient
     /// </summary>
     /// <example><code>
     /// await client.Invitations.RevokeAsync(
-    ///     new RevokeInvitationsRequest { WorkspaceId = "workspaceId", InvitationId = "invitationId" }
+    ///     new RevokeInvitationsRequest { InvitationId = "invitationId" }
     /// );
     /// </code></example>
     public WithRawResponseTask RevokeAsync(

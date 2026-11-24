@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelId: "channelId",
  *         timeZone: "timeZone"
  *     }
  */
 export interface ChannelAnalyticsRequest {
-    workspaceId: string;
     channelId: string;
     days?: string;
     from?: Peal.CalendarDay;

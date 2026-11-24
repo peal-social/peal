@@ -1,6 +1,6 @@
 import { Effect } from "effect";
 import { Atom } from "effect/reactivity";
-import { maxRecyclingPageSize } from "peal-contract";
+import { maxRecyclingPageSize, forWorkspace } from "peal-contract";
 import type { RecyclingRule, RecyclingRulePage } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -44,7 +44,7 @@ export const workspaceRules = Atom.family((workspaceId: string) =>
       PealApi.use((client) =>
         everyRule((cursor) =>
           client.recycling.list({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             query:
               cursor === undefined
                 ? { limit: maxRecyclingPageSize }

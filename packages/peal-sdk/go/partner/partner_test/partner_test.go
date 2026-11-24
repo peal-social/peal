@@ -96,7 +96,7 @@ func TestPartnerAccountWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerAccountWithWireMock", "GET", "/api/partner", nil, 1)
+	VerifyRequestCount(t, "TestPartnerAccountWithWireMock", "GET", "/api/v1/partner", nil, 1)
 }
 
 func TestPartnerOverviewWithWireMock(
@@ -120,7 +120,7 @@ func TestPartnerOverviewWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerOverviewWithWireMock", "GET", "/api/partner/overview", nil, 1)
+	VerifyRequestCount(t, "TestPartnerOverviewWithWireMock", "GET", "/api/v1/partner/overview", nil, 1)
 }
 
 func TestPartnerListWorkspacesWithWireMock(
@@ -144,7 +144,7 @@ func TestPartnerListWorkspacesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerListWorkspacesWithWireMock", "GET", "/api/partner/workspaces", nil, 1)
+	VerifyRequestCount(t, "TestPartnerListWorkspacesWithWireMock", "GET", "/api/v1/partner/workspaces", nil, 1)
 }
 
 func TestPartnerCreateWorkspaceWithWireMock(
@@ -170,7 +170,7 @@ func TestPartnerCreateWorkspaceWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerCreateWorkspaceWithWireMock", "POST", "/api/partner/workspaces", nil, 1)
+	VerifyRequestCount(t, "TestPartnerCreateWorkspaceWithWireMock", "POST", "/api/v1/partner/workspaces", nil, 1)
 }
 
 func TestPartnerGetWorkspaceWithWireMock(
@@ -196,7 +196,7 @@ func TestPartnerGetWorkspaceWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerGetWorkspaceWithWireMock", "GET", "/api/partner/workspaces/workspaceId", nil, 1)
+	VerifyRequestCount(t, "TestPartnerGetWorkspaceWithWireMock", "GET", "/api/v1/partner/workspaces/workspaceId", nil, 1)
 }
 
 func TestPartnerDeleteWorkspaceWithWireMock(
@@ -222,7 +222,7 @@ func TestPartnerDeleteWorkspaceWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerDeleteWorkspaceWithWireMock", "DELETE", "/api/partner/workspaces/workspaceId", nil, 1)
+	VerifyRequestCount(t, "TestPartnerDeleteWorkspaceWithWireMock", "DELETE", "/api/v1/partner/workspaces/workspaceId", nil, 1)
 }
 
 func TestPartnerUpdateWorkspaceWithWireMock(
@@ -248,7 +248,7 @@ func TestPartnerUpdateWorkspaceWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerUpdateWorkspaceWithWireMock", "PATCH", "/api/partner/workspaces/workspaceId", nil, 1)
+	VerifyRequestCount(t, "TestPartnerUpdateWorkspaceWithWireMock", "PATCH", "/api/v1/partner/workspaces/workspaceId", nil, 1)
 }
 
 func TestPartnerMoveChannelWithWireMock(
@@ -276,5 +276,5 @@ func TestPartnerMoveChannelWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestPartnerMoveChannelWithWireMock", "POST", "/api/partner/workspaces/workspaceId/channels/channelId/move", nil, 1)
+	VerifyRequestCount(t, "TestPartnerMoveChannelWithWireMock", "POST", "/api/v1/partner/workspaces/workspaceId/channels/channelId/move", nil, 1)
 }

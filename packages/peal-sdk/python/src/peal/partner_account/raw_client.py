@@ -36,16 +36,12 @@ class RawPartnerAccountClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def get(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[PartnerStanding]:
+    def get(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[PartnerStanding]:
         """
         The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (`canOpen`). Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -55,7 +51,7 @@ class RawPartnerAccountClient:
             PartnerStanding
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="GET",
             request_options=request_options,
         )
@@ -69,6 +65,17 @@ class RawPartnerAccountClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -122,16 +129,12 @@ class RawPartnerAccountClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def open(
-        self, workspace_id: str, *, name: str, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[Partner]:
+    def open(self, *, name: str, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[Partner]:
         """
         Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 `PartnerAccountsClosed`. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         request_options : typing.Optional[RequestOptions]
@@ -146,7 +149,7 @@ class RawPartnerAccountClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="POST",
             json={
                 "name": name,
@@ -167,6 +170,17 @@ class RawPartnerAccountClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -231,16 +245,12 @@ class RawPartnerAccountClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def close(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def close(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 `PartnerOwnsWorkspaces`): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -249,13 +259,24 @@ class RawPartnerAccountClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -322,7 +343,6 @@ class RawPartnerAccountClient:
 
     def update(
         self,
-        workspace_id: str,
         *,
         accent_color: typing.Optional[str] = OMIT,
         logo_url: typing.Optional[str] = OMIT,
@@ -335,8 +355,6 @@ class RawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         accent_color : typing.Optional[str]
 
         logo_url : typing.Optional[str]
@@ -357,7 +375,7 @@ class RawPartnerAccountClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="PATCH",
             json={
                 "accentColor": accent_color,
@@ -381,6 +399,17 @@ class RawPartnerAccountClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -446,15 +475,13 @@ class RawPartnerAccountClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def list_keys(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[typing.List[PartnerKey]]:
         """
         Lists the partner account's keys. Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -464,7 +491,7 @@ class RawPartnerAccountClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/keys",
+            "api/v1/partner-account/keys",
             method="GET",
             request_options=request_options,
         )
@@ -478,6 +505,17 @@ class RawPartnerAccountClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -533,7 +571,6 @@ class RawPartnerAccountClient:
 
     def create_key(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -546,8 +583,6 @@ class RawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -568,7 +603,7 @@ class RawPartnerAccountClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/keys",
+            "api/v1/partner-account/keys",
             method="POST",
             json={
                 "expiresInDays": expires_in_days,
@@ -592,6 +627,17 @@ class RawPartnerAccountClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -657,15 +703,13 @@ class RawPartnerAccountClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def revoke_key(
-        self, workspace_id: str, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[None]:
         """
         Revokes a partner key: it stops working at once. Needs partner:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         partner_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -676,13 +720,24 @@ class RawPartnerAccountClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/keys/{encode_path_param(partner_key_id)}",
+            f"api/v1/partner-account/keys/{encode_path_param(partner_key_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -738,7 +793,6 @@ class RawPartnerAccountClient:
 
     def overview(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -749,8 +803,6 @@ class RawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -764,7 +816,7 @@ class RawPartnerAccountClient:
             PartnerHealth
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/overview",
+            "api/v1/partner-account/overview",
             method="GET",
             params={
                 "before": before,
@@ -848,7 +900,6 @@ class RawPartnerAccountClient:
 
     def list_workspaces(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         external_id: typing.Optional[str] = None,
@@ -861,8 +912,6 @@ class RawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         external_id : typing.Optional[str]
@@ -880,7 +929,7 @@ class RawPartnerAccountClient:
             CustomerWorkspacePage
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/workspaces",
+            "api/v1/partner-account/workspaces",
             method="GET",
             params={
                 "before": before,
@@ -970,15 +1019,13 @@ class AsyncRawPartnerAccountClient:
         self._client_wrapper = client_wrapper
 
     async def get(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[PartnerStanding]:
         """
         The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (`canOpen`). Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -988,7 +1035,7 @@ class AsyncRawPartnerAccountClient:
             PartnerStanding
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="GET",
             request_options=request_options,
         )
@@ -1002,6 +1049,17 @@ class AsyncRawPartnerAccountClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1056,15 +1114,13 @@ class AsyncRawPartnerAccountClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def open(
-        self, workspace_id: str, *, name: str, request_options: typing.Optional[RequestOptions] = None
+        self, *, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Partner]:
         """
         Opens a partner account for the workspace, which becomes its home workspace, under the name its customers will read; answers the one it has when it has one. On a server that opens partner accounts through its staff only, answers 403 `PartnerAccountsClosed`. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1079,7 +1135,7 @@ class AsyncRawPartnerAccountClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="POST",
             json={
                 "name": name,
@@ -1100,6 +1156,17 @@ class AsyncRawPartnerAccountClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1164,16 +1231,12 @@ class AsyncRawPartnerAccountClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    async def close(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[None]:
+    async def close(self, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[None]:
         """
         Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 `PartnerOwnsWorkspaces`): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1182,13 +1245,24 @@ class AsyncRawPartnerAccountClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1255,7 +1329,6 @@ class AsyncRawPartnerAccountClient:
 
     async def update(
         self,
-        workspace_id: str,
         *,
         accent_color: typing.Optional[str] = OMIT,
         logo_url: typing.Optional[str] = OMIT,
@@ -1268,8 +1341,6 @@ class AsyncRawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         accent_color : typing.Optional[str]
 
         logo_url : typing.Optional[str]
@@ -1290,7 +1361,7 @@ class AsyncRawPartnerAccountClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner",
+            "api/v1/partner-account",
             method="PATCH",
             json={
                 "accentColor": accent_color,
@@ -1314,6 +1385,17 @@ class AsyncRawPartnerAccountClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1379,15 +1461,13 @@ class AsyncRawPartnerAccountClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def list_keys(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[PartnerKey]]:
         """
         Lists the partner account's keys. Needs partner:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -1397,7 +1477,7 @@ class AsyncRawPartnerAccountClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/keys",
+            "api/v1/partner-account/keys",
             method="GET",
             request_options=request_options,
         )
@@ -1411,6 +1491,17 @@ class AsyncRawPartnerAccountClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1466,7 +1557,6 @@ class AsyncRawPartnerAccountClient:
 
     async def create_key(
         self,
-        workspace_id: str,
         *,
         name: str,
         permissions: typing.Sequence[Permission],
@@ -1479,8 +1569,6 @@ class AsyncRawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         name : str
 
         permissions : typing.Sequence[Permission]
@@ -1501,7 +1589,7 @@ class AsyncRawPartnerAccountClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/keys",
+            "api/v1/partner-account/keys",
             method="POST",
             json={
                 "expiresInDays": expires_in_days,
@@ -1525,6 +1613,17 @@ class AsyncRawPartnerAccountClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1590,15 +1689,13 @@ class AsyncRawPartnerAccountClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def revoke_key(
-        self, workspace_id: str, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, partner_key_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Revokes a partner key: it stops working at once. Needs partner:manage.
 
         Parameters
         ----------
-        workspace_id : str
-
         partner_key_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1609,13 +1706,24 @@ class AsyncRawPartnerAccountClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/keys/{encode_path_param(partner_key_id)}",
+            f"api/v1/partner-account/keys/{encode_path_param(partner_key_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1671,7 +1779,6 @@ class AsyncRawPartnerAccountClient:
 
     async def overview(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -1682,8 +1789,6 @@ class AsyncRawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -1697,7 +1802,7 @@ class AsyncRawPartnerAccountClient:
             PartnerHealth
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/overview",
+            "api/v1/partner-account/overview",
             method="GET",
             params={
                 "before": before,
@@ -1781,7 +1886,6 @@ class AsyncRawPartnerAccountClient:
 
     async def list_workspaces(
         self,
-        workspace_id: str,
         *,
         before: typing.Optional[str] = None,
         external_id: typing.Optional[str] = None,
@@ -1794,8 +1898,6 @@ class AsyncRawPartnerAccountClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         before : typing.Optional[str]
 
         external_id : typing.Optional[str]
@@ -1813,7 +1915,7 @@ class AsyncRawPartnerAccountClient:
             CustomerWorkspacePage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/partner/workspaces",
+            "api/v1/partner-account/workspaces",
             method="GET",
             params={
                 "before": before,

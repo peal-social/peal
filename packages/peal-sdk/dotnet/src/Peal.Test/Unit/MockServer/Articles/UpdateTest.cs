@@ -69,7 +69,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId")
+                    .WithPath("/api/v1/articles/articleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -84,7 +84,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Articles.UpdateAsync(
             new UpdateArticlesRequest
             {
-                WorkspaceId = "workspaceId",
                 ArticleId = "articleId",
                 Body = new ArticleInput
                 {
@@ -157,7 +156,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId")
+                    .WithPath("/api/v1/articles/articleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -172,7 +171,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Articles.UpdateAsync(
             new UpdateArticlesRequest
             {
-                WorkspaceId = "workspaceId",
                 ArticleId = "articleId",
                 Body = new ArticleInput
                 {

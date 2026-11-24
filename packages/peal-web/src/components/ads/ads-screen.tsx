@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AdAccount, AdConnection, AdNetwork } from "peal-contract";
 import {
   AlertDialog,
@@ -84,7 +85,10 @@ const Connect = ({
 
   const handleConnect = (network: AdNetwork) => () => {
     startTransition(async () => {
-      const exit = await start({ params: { network, workspaceId } });
+      const exit = await start({
+        headers: forWorkspace(workspaceId),
+        params: { network },
+      });
 
       if (Exit.isSuccess(exit)) {
         setError(null);
@@ -172,7 +176,8 @@ const RemoveSignIn = ({
   const handleRemove = () => {
     startRemoving(async () => {
       const exit = await remove({
-        params: { connectionId: connection.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { connectionId: connection.id },
         reactivityKeys: adsChanged(workspaceId),
       });
 
@@ -240,7 +245,8 @@ const Disconnect = ({
   const handleRemove = () => {
     startRemoving(async () => {
       const exit = await remove({
-        params: { accountId: account.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { accountId: account.id },
         reactivityKeys: adsChanged(workspaceId),
       });
 
@@ -305,7 +311,8 @@ const Spending = ({
   const [error, setError] = useState<AdsError | null>(null);
   const [isPending, startTransition] = useTransition();
   const { currency, minorUnitDigits: digits, name } = account;
-  const params = { accountId: account.id, workspaceId };
+  const params = { accountId: account.id };
+  const headers = forWorkspace(workspaceId);
 
   const handleSubmit = () => {
     const amount = parseAmount(ceiling, digits).pipe(
@@ -319,6 +326,7 @@ const Spending = ({
     startTransition(async () => {
       const exit = await decide({
         params,
+        headers,
         payload: {
           enabled: true,
           monthlyCeiling: { amount: amount.value, currency },
@@ -343,6 +351,7 @@ const Spending = ({
     startTransition(async () => {
       const exit = await decide({
         params,
+        headers,
         payload: { enabled: false },
         reactivityKeys: adsChanged(workspaceId),
       });

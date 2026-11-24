@@ -5,13 +5,11 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         timeZone: "timeZone",
  *         kind: "posts"
  *     }
  */
 export interface ExportAnalyticsRequest {
-    workspaceId: string;
     days?: string;
     from?: Peal.CalendarDay;
     timeZone: string;

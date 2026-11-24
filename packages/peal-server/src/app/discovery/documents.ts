@@ -142,7 +142,7 @@ export const llmsText = ({ docs, origin }: Places): string =>
     "",
     "> Peal schedules social media posts for teams: a post is written once, scheduled across platforms, and its results read in one place. This server answers an HTTP API, an MCP endpoint for AI agents and Peal's command line.",
     "",
-    "A program acts in a workspace with an API key (`Authorization: Bearer peal_…`) or an OAuth access token, and may do what the key's permissions or the token's scopes allow. What is scheduled or published goes out in public on the platforms and cannot be taken back from Peal: publishing takes the scope `workspace:publish` or the permission `post:schedule`, and a draft is the safe default. Every error carries a stable `code`, a `message` and the `requestId` to quote when asking for help.",
+    "A program acts in a workspace with an API key (`Authorization: Bearer peal_…`) or an OAuth access token, and may do what the key's permissions or the token's scopes allow. The workspace endpoints are under `/api/v1`: a request acts in its key's workspace, or in the one its `Peal-Workspace` header names, which a token bound to no workspace and a partner key always send. What is scheduled or published goes out in public on the platforms and cannot be taken back from Peal: publishing takes the scope `workspace:publish` or the permission `post:schedule`, and a draft is the safe default. Every error carries a stable `code`, a `message` and the `requestId` to quote when asking for help.",
     "",
     ...section("API", [
       [

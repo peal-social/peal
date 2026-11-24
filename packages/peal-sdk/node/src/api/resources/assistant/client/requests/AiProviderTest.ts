@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         provider: "anthropic"
  *     }
  */
 export interface AiProviderTest {
-    workspaceId: string;
     provider: Peal.AiProvider;
     model?: string;
 }

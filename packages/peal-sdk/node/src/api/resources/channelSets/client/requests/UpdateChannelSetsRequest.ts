@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         channelSetId: "channelSetId",
  *         body: {
  *             channelIds: ["channelIds"],
@@ -14,7 +13,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface UpdateChannelSetsRequest {
-    workspaceId: string;
     channelSetId: string;
     body: Peal.ChannelSetDetails;
 }

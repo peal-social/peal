@@ -39,16 +39,14 @@ export class ActivityClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.activity.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.activity.list()
      */
-    public list(request: Peal.ListActivityRequest, requestOptions?: ActivityClient.RequestOptions): core.HttpResponsePromise<Peal.ActivityPage> {
+    public list(request: Peal.ListActivityRequest = {}, requestOptions?: ActivityClient.RequestOptions): core.HttpResponsePromise<Peal.ActivityPage> {
         return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
     }
 
-    private async __list(request: Peal.ListActivityRequest, requestOptions?: ActivityClient.RequestOptions): Promise<core.WithRawResponse<Peal.ActivityPage>> {
-        const { workspaceId, actor, cursor, limit, operation } = request;
+    private async __list(request: Peal.ListActivityRequest = {}, requestOptions?: ActivityClient.RequestOptions): Promise<core.WithRawResponse<Peal.ActivityPage>> {
+        const { actor, cursor, limit, operation } = request;
         const _queryParams: Record<string, unknown> = {
             actor,
             cursor,
@@ -56,9 +54,9 @@ export class ActivityClient {
             operation
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/activity`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/activity"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -87,6 +85,6 @@ export class ActivityClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/activity");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/activity");
     }
 }

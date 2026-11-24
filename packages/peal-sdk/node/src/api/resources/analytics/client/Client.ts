@@ -41,7 +41,6 @@ export class AnalyticsClient {
      *
      * @example
      *     await client.analytics.summary({
-     *         workspaceId: "workspaceId",
      *         from: "from",
      *         timeZone: "timeZone",
      *         to: "to"
@@ -52,16 +51,16 @@ export class AnalyticsClient {
     }
 
     private async __summary(request: Peal.SummaryAnalyticsRequest, requestOptions?: AnalyticsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AnalyticsSummary>> {
-        const { workspaceId, "from": from_, timeZone, to } = request;
+        const { "from": from_, timeZone, to } = request;
         const _queryParams: Record<string, unknown> = {
             from: from_,
             timeZone,
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/analytics/summary`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/analytics/summary"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -91,7 +90,7 @@ export class AnalyticsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/analytics/summary");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/analytics/summary");
     }
 
     /**
@@ -111,7 +110,6 @@ export class AnalyticsClient {
      *
      * @example
      *     await client.analytics.dashboard({
-     *         workspaceId: "workspaceId",
      *         timeZone: "timeZone"
      *     })
      */
@@ -120,7 +118,7 @@ export class AnalyticsClient {
     }
 
     private async __dashboard(request: Peal.DashboardAnalyticsRequest, requestOptions?: AnalyticsClient.RequestOptions): Promise<core.WithRawResponse<Peal.AnalyticsDashboard>> {
-        const { workspaceId, days, "from": from_, timeZone, to, topPosts } = request;
+        const { days, "from": from_, timeZone, to, topPosts } = request;
         const _queryParams: Record<string, unknown> = {
             days,
             from: from_,
@@ -129,9 +127,9 @@ export class AnalyticsClient {
             topPosts
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/analytics/dashboard`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/analytics/dashboard"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -161,7 +159,7 @@ export class AnalyticsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/analytics/dashboard");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/analytics/dashboard");
     }
 
     /**
@@ -181,7 +179,6 @@ export class AnalyticsClient {
      *
      * @example
      *     await client.analytics.channel({
-     *         workspaceId: "workspaceId",
      *         channelId: "channelId",
      *         timeZone: "timeZone"
      *     })
@@ -191,7 +188,7 @@ export class AnalyticsClient {
     }
 
     private async __channel(request: Peal.ChannelAnalyticsRequest, requestOptions?: AnalyticsClient.RequestOptions): Promise<core.WithRawResponse<Peal.ChannelSeries>> {
-        const { workspaceId, channelId, days, "from": from_, timeZone, to } = request;
+        const { channelId, days, "from": from_, timeZone, to } = request;
         const _queryParams: Record<string, unknown> = {
             days,
             from: from_,
@@ -199,9 +196,9 @@ export class AnalyticsClient {
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/analytics/channels/${core.url.encodePathParam(channelId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/analytics/channels/${core.url.encodePathParam(channelId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -231,7 +228,7 @@ export class AnalyticsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/analytics/channels/{channelId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/analytics/channels/{channelId}");
     }
 
     /**
@@ -251,7 +248,7 @@ export class AnalyticsClient {
     }
 
     private async __export(request: Peal.ExportAnalyticsRequest, requestOptions?: AnalyticsClient.RequestOptions): Promise<core.WithRawResponse<core.BinaryResponse>> {
-        const { workspaceId, days, "from": from_, timeZone, to, format, kind } = request;
+        const { days, "from": from_, timeZone, to, format, kind } = request;
         const _queryParams: Record<string, unknown> = {
             days,
             from: from_,
@@ -261,9 +258,9 @@ export class AnalyticsClient {
             kind
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher<core.BinaryResponse>({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/analytics/export`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/analytics/export"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -294,7 +291,7 @@ export class AnalyticsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/analytics/export");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/analytics/export");
     }
 
     /**
@@ -303,6 +300,7 @@ export class AnalyticsClient {
      * @param {Peal.BestTimesAnalyticsRequest} request
      * @param {AnalyticsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -313,7 +311,6 @@ export class AnalyticsClient {
      *
      * @example
      *     await client.analytics.bestTimes({
-     *         workspaceId: "workspaceId",
      *         channelId: "channelId",
      *         timeZone: "timeZone"
      *     })
@@ -323,16 +320,16 @@ export class AnalyticsClient {
     }
 
     private async __bestTimes(request: Peal.BestTimesAnalyticsRequest, requestOptions?: AnalyticsClient.RequestOptions): Promise<core.WithRawResponse<Peal.BestTimes>> {
-        const { workspaceId, channelId, days, timeZone } = request;
+        const { channelId, days, timeZone } = request;
         const _queryParams: Record<string, unknown> = {
             channelId,
             days,
             timeZone
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/analytics/best-times`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/analytics/best-times"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -348,6 +345,7 @@ export class AnalyticsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -361,7 +359,7 @@ export class AnalyticsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/analytics/best-times");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/analytics/best-times");
     }
 
     /**
@@ -370,6 +368,7 @@ export class AnalyticsClient {
      * @param {Peal.PostAnalyticsRequest} request
      * @param {AnalyticsClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -379,7 +378,6 @@ export class AnalyticsClient {
      *
      * @example
      *     await client.analytics.post({
-     *         workspaceId: "workspaceId",
      *         postId: "postId"
      *     })
      */
@@ -388,11 +386,11 @@ export class AnalyticsClient {
     }
 
     private async __post(request: Peal.PostAnalyticsRequest, requestOptions?: AnalyticsClient.RequestOptions): Promise<core.WithRawResponse<Peal.PostAnalytics>> {
-        const { workspaceId, postId } = request;
+        const { postId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/analytics/posts/${core.url.encodePathParam(postId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/analytics/posts/${core.url.encodePathParam(postId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -408,6 +406,7 @@ export class AnalyticsClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -420,6 +419,6 @@ export class AnalyticsClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/analytics/posts/{postId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/analytics/posts/{postId}");
     }
 }

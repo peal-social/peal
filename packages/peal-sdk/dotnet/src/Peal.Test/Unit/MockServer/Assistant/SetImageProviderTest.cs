@@ -33,7 +33,7 @@ public class SetImageProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/image-provider")
+                    .WithPath("/api/v1/assistant/image-provider")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -48,7 +48,6 @@ public class SetImageProviderTest : BaseMockServerTest
         var response = await Client.Assistant.SetImageProviderAsync(
             new ImageProviderChange
             {
-                WorkspaceId = "workspaceId",
                 ApiKey = null,
                 BaseUrl = null,
                 Model = "x",
@@ -82,7 +81,7 @@ public class SetImageProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/image-provider")
+                    .WithPath("/api/v1/assistant/image-provider")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -95,7 +94,7 @@ public class SetImageProviderTest : BaseMockServerTest
             );
 
         var response = await Client.Assistant.SetImageProviderAsync(
-            new ImageProviderChange { WorkspaceId = "workspaceId", Model = "model" }
+            new ImageProviderChange { Model = "model" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

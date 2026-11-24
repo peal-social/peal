@@ -34,7 +34,6 @@ class InboxMessagesClient:
 
     def list_conversations(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -47,8 +46,6 @@ class InboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -70,25 +67,18 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.inbox_messages.list_conversations(
-            workspace_id="workspaceId",
-        )
+        client.inbox_messages.list_conversations()
         """
         _response = self._raw_client.list_conversations(
-            workspace_id,
-            channel_id=channel_id,
-            cursor=cursor,
-            limit=limit,
-            unread=unread,
-            request_options=request_options,
+            channel_id=channel_id, cursor=cursor, limit=limit, unread=unread, request_options=request_options
         )
         return _response.data
 
     def get_conversation(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -100,8 +90,6 @@ class InboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         cursor : typing.Optional[str]
@@ -121,21 +109,20 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.get_conversation(
-            workspace_id="workspaceId",
             conversation_id="conversationId",
         )
         """
         _response = self._raw_client.get_conversation(
-            workspace_id, conversation_id, cursor=cursor, limit=limit, request_options=request_options
+            conversation_id, cursor=cursor, limit=limit, request_options=request_options
         )
         return _response.data
 
     def send_message(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         text: str,
@@ -147,8 +134,6 @@ class InboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         text : str
@@ -168,22 +153,21 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.send_message(
-            workspace_id="workspaceId",
             conversation_id="conversationId",
             text="text",
         )
         """
         _response = self._raw_client.send_message(
-            workspace_id, conversation_id, text=text, idempotency_key=idempotency_key, request_options=request_options
+            conversation_id, text=text, idempotency_key=idempotency_key, request_options=request_options
         )
         return _response.data
 
     def send_private_reply(
         self,
-        workspace_id: str,
         *,
         comment_id: str,
         text: str,
@@ -195,8 +179,6 @@ class InboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         comment_id : str
 
         text : str
@@ -216,33 +198,27 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.send_private_reply(
-            workspace_id="workspaceId",
             comment_id="commentId",
             text="text",
         )
         """
         _response = self._raw_client.send_private_reply(
-            workspace_id,
-            comment_id=comment_id,
-            text=text,
-            idempotency_key=idempotency_key,
-            request_options=request_options,
+            comment_id=comment_id, text=text, idempotency_key=idempotency_key, request_options=request_options
         )
         return _response.data
 
     def get_private_reply(
-        self, workspace_id: str, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxPrivateReply:
         """
         Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -258,31 +234,24 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.get_private_reply(
-            workspace_id="workspaceId",
             private_reply_id="privateReplyId",
         )
         """
-        _response = self._raw_client.get_private_reply(workspace_id, private_reply_id, request_options=request_options)
+        _response = self._raw_client.get_private_reply(private_reply_id, request_options=request_options)
         return _response.data
 
     def confirm_private_reply(
-        self,
-        workspace_id: str,
-        private_reply_id: str,
-        *,
-        went: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, private_reply_id: str, *, went: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxPrivateReply:
         """
         Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         went : bool
@@ -300,34 +269,25 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.confirm_private_reply(
-            workspace_id="workspaceId",
             private_reply_id="privateReplyId",
             went=True,
         )
         """
-        _response = self._raw_client.confirm_private_reply(
-            workspace_id, private_reply_id, went=went, request_options=request_options
-        )
+        _response = self._raw_client.confirm_private_reply(private_reply_id, went=went, request_options=request_options)
         return _response.data
 
     def set_conversation_read(
-        self,
-        workspace_id: str,
-        conversation_id: str,
-        *,
-        read: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, conversation_id: str, *, read: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxConversation:
         """
         Says a conversation was read (`read: true`), or is unread again (`false`). Nothing is sent to the platform. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         read : bool
@@ -345,29 +305,23 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.set_conversation_read(
-            workspace_id="workspaceId",
             conversation_id="conversationId",
             read=True,
         )
         """
-        _response = self._raw_client.set_conversation_read(
-            workspace_id, conversation_id, read=read, request_options=request_options
-        )
+        _response = self._raw_client.set_conversation_read(conversation_id, read=read, request_options=request_options)
         return _response.data
 
-    def get_message_settings(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> InboxMessageSettings:
+    def get_message_settings(self, *, request_options: typing.Optional[RequestOptions] = None) -> InboxMessageSettings:
         """
         Lists the channels whose direct messages the workspace turned on, and the applications its owner let read and answer them. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -381,30 +335,22 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.inbox_messages.get_message_settings(
-            workspace_id="workspaceId",
-        )
+        client.inbox_messages.get_message_settings()
         """
-        _response = self._raw_client.get_message_settings(workspace_id, request_options=request_options)
+        _response = self._raw_client.get_message_settings(request_options=request_options)
         return _response.data
 
     def set_channel_messages(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        enabled: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, enabled: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxMessageSettings:
         """
         Turns a channel's direct messages on (`enabled: true`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 `InboxActionUnavailable`, `unsupported`), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (`reconnect`): reconnect it with `messages=true`, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         enabled : bool
@@ -422,34 +368,25 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.set_channel_messages(
-            workspace_id="workspaceId",
             channel_id="channelId",
             enabled=True,
         )
         """
-        _response = self._raw_client.set_channel_messages(
-            workspace_id, channel_id, enabled=enabled, request_options=request_options
-        )
+        _response = self._raw_client.set_channel_messages(channel_id, enabled=enabled, request_options=request_options)
         return _response.data
 
     def set_message_application(
-        self,
-        workspace_id: str,
-        *,
-        allowed: bool,
-        client_id: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, allowed: bool, client_id: str, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxMessageSettings:
         """
         Lets an application connected through OAuth (by its client id) read and answer the workspace's direct messages, for the members who hold the permissions, or takes that back (`allowed: false`). An application not let in lists conversations, never their messages. Needs organization:secure, which owners alone hold. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         allowed : bool
 
         client_id : str
@@ -467,29 +404,27 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.set_message_application(
-            workspace_id="workspaceId",
             allowed=True,
             client_id="clientId",
         )
         """
         _response = self._raw_client.set_message_application(
-            workspace_id, allowed=allowed, client_id=client_id, request_options=request_options
+            allowed=allowed, client_id=client_id, request_options=request_options
         )
         return _response.data
 
     def confirm_message(
-        self, workspace_id: str, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
+        self, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxOutgoingMessage:
         """
         Records what someone found on the platform for an unconfirmed message: it is there (`sent: true`), or it never went out (`false`). Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         message_id : str
 
         sent : bool
@@ -507,17 +442,15 @@ class InboxMessagesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.inbox_messages.confirm_message(
-            workspace_id="workspaceId",
             message_id="messageId",
             sent=True,
         )
         """
-        _response = self._raw_client.confirm_message(
-            workspace_id, message_id, sent=sent, request_options=request_options
-        )
+        _response = self._raw_client.confirm_message(message_id, sent=sent, request_options=request_options)
         return _response.data
 
 
@@ -538,7 +471,6 @@ class AsyncInboxMessagesClient:
 
     async def list_conversations(
         self,
-        workspace_id: str,
         *,
         channel_id: typing.Optional[str] = None,
         cursor: typing.Optional[str] = None,
@@ -551,8 +483,6 @@ class AsyncInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : typing.Optional[str]
 
         cursor : typing.Optional[str]
@@ -576,31 +506,24 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.inbox_messages.list_conversations(
-                workspace_id="workspaceId",
-            )
+            await client.inbox_messages.list_conversations()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.list_conversations(
-            workspace_id,
-            channel_id=channel_id,
-            cursor=cursor,
-            limit=limit,
-            unread=unread,
-            request_options=request_options,
+            channel_id=channel_id, cursor=cursor, limit=limit, unread=unread, request_options=request_options
         )
         return _response.data
 
     async def get_conversation(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         cursor: typing.Optional[str] = None,
@@ -612,8 +535,6 @@ class AsyncInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         cursor : typing.Optional[str]
@@ -635,13 +556,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.get_conversation(
-                workspace_id="workspaceId",
                 conversation_id="conversationId",
             )
 
@@ -649,13 +570,12 @@ class AsyncInboxMessagesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.get_conversation(
-            workspace_id, conversation_id, cursor=cursor, limit=limit, request_options=request_options
+            conversation_id, cursor=cursor, limit=limit, request_options=request_options
         )
         return _response.data
 
     async def send_message(
         self,
-        workspace_id: str,
         conversation_id: str,
         *,
         text: str,
@@ -667,8 +587,6 @@ class AsyncInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         text : str
@@ -690,13 +608,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.send_message(
-                workspace_id="workspaceId",
                 conversation_id="conversationId",
                 text="text",
             )
@@ -705,13 +623,12 @@ class AsyncInboxMessagesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.send_message(
-            workspace_id, conversation_id, text=text, idempotency_key=idempotency_key, request_options=request_options
+            conversation_id, text=text, idempotency_key=idempotency_key, request_options=request_options
         )
         return _response.data
 
     async def send_private_reply(
         self,
-        workspace_id: str,
         *,
         comment_id: str,
         text: str,
@@ -723,8 +640,6 @@ class AsyncInboxMessagesClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         comment_id : str
 
         text : str
@@ -746,13 +661,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.send_private_reply(
-                workspace_id="workspaceId",
                 comment_id="commentId",
                 text="text",
             )
@@ -761,24 +676,18 @@ class AsyncInboxMessagesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.send_private_reply(
-            workspace_id,
-            comment_id=comment_id,
-            text=text,
-            idempotency_key=idempotency_key,
-            request_options=request_options,
+            comment_id=comment_id, text=text, idempotency_key=idempotency_key, request_options=request_options
         )
         return _response.data
 
     async def get_private_reply(
-        self, workspace_id: str, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, private_reply_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxPrivateReply:
         """
         Shows a private reply sent to a comment's author, and how it stands. Needs engagement:readMessages, which owners, admins and editors hold, an OAuth client only with the scope workspace:publish, and staff acting as a member never. An application connected through OAuth also needs the workspace's owner to have let it (otherwise 403 `Forbidden`, `personRequired`): without that it lists conversations, never their messages.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -796,39 +705,30 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.get_private_reply(
-                workspace_id="workspaceId",
                 private_reply_id="privateReplyId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_private_reply(
-            workspace_id, private_reply_id, request_options=request_options
-        )
+        _response = await self._raw_client.get_private_reply(private_reply_id, request_options=request_options)
         return _response.data
 
     async def confirm_private_reply(
-        self,
-        workspace_id: str,
-        private_reply_id: str,
-        *,
-        went: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, private_reply_id: str, *, went: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxPrivateReply:
         """
         Records what someone found in the person's conversation for an unconfirmed private reply: it went out (`went: true`), or it did not (`false`), which counts no inbox message, and lets the comment get another. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         private_reply_id : str
 
         went : bool
@@ -848,13 +748,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.confirm_private_reply(
-                workspace_id="workspaceId",
                 private_reply_id="privateReplyId",
                 went=True,
             )
@@ -863,25 +763,18 @@ class AsyncInboxMessagesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.confirm_private_reply(
-            workspace_id, private_reply_id, went=went, request_options=request_options
+            private_reply_id, went=went, request_options=request_options
         )
         return _response.data
 
     async def set_conversation_read(
-        self,
-        workspace_id: str,
-        conversation_id: str,
-        *,
-        read: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, conversation_id: str, *, read: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxConversation:
         """
         Says a conversation was read (`read: true`), or is unread again (`false`). Nothing is sent to the platform. Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         conversation_id : str
 
         read : bool
@@ -901,13 +794,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.set_conversation_read(
-                workspace_id="workspaceId",
                 conversation_id="conversationId",
                 read=True,
             )
@@ -916,20 +809,18 @@ class AsyncInboxMessagesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.set_conversation_read(
-            workspace_id, conversation_id, read=read, request_options=request_options
+            conversation_id, read=read, request_options=request_options
         )
         return _response.data
 
     async def get_message_settings(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxMessageSettings:
         """
         Lists the channels whose direct messages the workspace turned on, and the applications its owner let read and answer them. Needs channel:connect.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -945,36 +836,28 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.inbox_messages.get_message_settings(
-                workspace_id="workspaceId",
-            )
+            await client.inbox_messages.get_message_settings()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get_message_settings(workspace_id, request_options=request_options)
+        _response = await self._raw_client.get_message_settings(request_options=request_options)
         return _response.data
 
     async def set_channel_messages(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        enabled: bool,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, enabled: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxMessageSettings:
         """
         Turns a channel's direct messages on (`enabled: true`): Peal reads its conversations from the next run, and tells of the messages sent after that. Turning them off deletes at once every conversation Peal kept of the channel. A channel on a platform whose messages the server does not read is refused (409 `InboxActionUnavailable`, `unsupported`), and a Bluesky, Facebook Page or Instagram channel whose account has not granted the permissions its messages take too (`reconnect`): reconnect it with `messages=true`, then turn its messages on. On Messenger and Instagram, Meta lets an app not yet through its App Review read only the messages of people with a role on the app, and an Instagram account's owner must allow connected tools to access its messages in Instagram's settings. Needs channel:connect. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         enabled : bool
@@ -994,13 +877,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.set_channel_messages(
-                workspace_id="workspaceId",
                 channel_id="channelId",
                 enabled=True,
             )
@@ -1009,25 +892,18 @@ class AsyncInboxMessagesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.set_channel_messages(
-            workspace_id, channel_id, enabled=enabled, request_options=request_options
+            channel_id, enabled=enabled, request_options=request_options
         )
         return _response.data
 
     async def set_message_application(
-        self,
-        workspace_id: str,
-        *,
-        allowed: bool,
-        client_id: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, allowed: bool, client_id: str, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxMessageSettings:
         """
         Lets an application connected through OAuth (by its client id) read and answer the workspace's direct messages, for the members who hold the permissions, or takes that back (`allowed: false`). An application not let in lists conversations, never their messages. Needs organization:secure, which owners alone hold. Only a member signed in in person (a session of the web app) may: an API key or an OAuth application is refused (403 `Forbidden`, `personRequired`).
 
         Parameters
         ----------
-        workspace_id : str
-
         allowed : bool
 
         client_id : str
@@ -1047,13 +923,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.set_message_application(
-                workspace_id="workspaceId",
                 allowed=True,
                 client_id="clientId",
             )
@@ -1062,20 +938,18 @@ class AsyncInboxMessagesClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.set_message_application(
-            workspace_id, allowed=allowed, client_id=client_id, request_options=request_options
+            allowed=allowed, client_id=client_id, request_options=request_options
         )
         return _response.data
 
     async def confirm_message(
-        self, workspace_id: str, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
+        self, message_id: str, *, sent: bool, request_options: typing.Optional[RequestOptions] = None
     ) -> InboxOutgoingMessage:
         """
         Records what someone found on the platform for an unconfirmed message: it is there (`sent: true`), or it never went out (`false`). Needs engagement:message, which an OAuth client holds only with the scope workspace:publish and, like reading, only once the workspace's owner let it; staff acting as a member never hold it.
 
         Parameters
         ----------
-        workspace_id : str
-
         message_id : str
 
         sent : bool
@@ -1095,13 +969,13 @@ class AsyncInboxMessagesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.inbox_messages.confirm_message(
-                workspace_id="workspaceId",
                 message_id="messageId",
                 sent=True,
             )
@@ -1109,7 +983,5 @@ class AsyncInboxMessagesClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.confirm_message(
-            workspace_id, message_id, sent=sent, request_options=request_options
-        )
+        _response = await self._raw_client.confirm_message(message_id, sent=sent, request_options=request_options)
         return _response.data

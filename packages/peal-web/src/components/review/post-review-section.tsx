@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { NewComment, Permission, Post } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
@@ -76,7 +77,8 @@ export const PostReviewSection = ({
   const [isPending, startTransition] = useTransition();
   const [asking, setAsking] = useState(false);
   const can = (permission: Permission) => permissions.includes(permission);
-  const params = { postId: post.id, workspaceId };
+  const params = { postId: post.id };
+  const headers = forWorkspace(workspaceId);
   const waiting = post.status === "awaitingApproval";
   const mayDecide = waiting && can("post:approve");
 
@@ -108,11 +110,14 @@ export const PostReviewSection = ({
   };
 
   const onComment = async (payload: NewComment) =>
-    settled(await comment({ params, payload, reactivityKeys: reviewKeys }));
+    settled(
+      await comment({ params, headers, payload, reactivityKeys: reviewKeys })
+    );
 
   const onResolve = async (commentId: string, resolved: boolean) => {
     settled(
       await resolve({
+        headers,
         params: { ...params, commentId },
         payload: { resolved },
         reactivityKeys: reviewKeys,
@@ -124,6 +129,7 @@ export const PostReviewSection = ({
     startTransition(async () => {
       const exit = await approve({
         params,
+        headers,
         payload: shown,
         reactivityKeys: [...reviewKeys, ...postsKeys],
       });
@@ -229,6 +235,7 @@ export const PostReviewSection = ({
                               const taken = settled(
                                 await sendBack({
                                   params,
+                                  headers,
                                   payload: { ...shown, comment: text },
                                   reactivityKeys: [...reviewKeys, ...postsKeys],
                                 })

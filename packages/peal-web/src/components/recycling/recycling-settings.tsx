@@ -5,6 +5,7 @@ import { Option } from "effect";
 import type { Exit } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { RecyclingRule } from "peal-contract";
 import {
   AlertDialog,
@@ -79,7 +80,8 @@ const RuleActions = ({
   const stop = useAtomSet(stopRule, { mode: "promiseExit" });
   const answered = useAnswered();
   const [busy, start] = useTransition();
-  const params = { ruleId: rule.id, workspaceId };
+  const params = { ruleId: rule.id };
+  const headers = forWorkspace(workspaceId);
   const reactivityKeys = rulesChanged(workspaceId);
 
   return (
@@ -94,6 +96,7 @@ const RuleActions = ({
               answered(
                 await update({
                   params,
+                  headers,
                   payload: { paused: true },
                   reactivityKeys,
                 }),
@@ -113,7 +116,7 @@ const RuleActions = ({
           onClick={() => {
             start(async () => {
               answered(
-                await resume({ params, payload: {}, reactivityKeys }),
+                await resume({ params, headers, payload: {}, reactivityKeys }),
                 t("resumed")
               );
             });
@@ -142,7 +145,7 @@ const RuleActions = ({
                 onClick={() => {
                   start(async () => {
                     answered(
-                      await stop({ params, reactivityKeys }),
+                      await stop({ params, headers, reactivityKeys }),
                       t("stopped")
                     );
                   });

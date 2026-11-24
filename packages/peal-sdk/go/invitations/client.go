@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListInvitationsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Invitations.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListInvitationsRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.Invitation, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -66,7 +60,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.NewInvitation{
-//	    WorkspaceID: "workspaceId",
 //	    Email: "email",
 //	    Role: peal.RoleOwner,
 //	}
@@ -95,7 +88,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.RevokeInvitationsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    InvitationID: "invitationId",
 //	}
 //	err := client.Invitations.Revoke(

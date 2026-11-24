@@ -128,7 +128,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId")
+                    .WithPath("/api/v1/recycling/ruleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -143,7 +143,6 @@ public class UpdateTest : BaseMockServerTest
         var response = await Client.Recycling.UpdateAsync(
             new RecyclingRuleChange
             {
-                WorkspaceId = "workspaceId",
                 RuleId = "ruleId",
                 Count = null,
                 Paused = null,
@@ -211,7 +210,7 @@ public class UpdateTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/recycling/ruleId")
+                    .WithPath("/api/v1/recycling/ruleId")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPatch()
                     .WithBodyAsJson(requestJson)
@@ -224,7 +223,7 @@ public class UpdateTest : BaseMockServerTest
             );
 
         var response = await Client.Recycling.UpdateAsync(
-            new RecyclingRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+            new RecyclingRuleChange { RuleId = "ruleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

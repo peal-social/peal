@@ -618,13 +618,11 @@ describe(ChannelsBody, () => {
 });
 
 describe(ExportBody, () => {
-  it("links both files", async () => {
-    const html = await render(
-      "fr",
-      <ExportBody accounts="/export?kind=accounts" posts="/export?kind=posts" />
-    );
+  it("offers both files as buttons, as a link cannot name the workspace", async () => {
+    const html = await render("fr", <ExportBody onDownload={() => {}} />);
 
-    expect(html).toContain('href="/export?kind=posts"');
-    expect(html).toContain('href="/export?kind=accounts"');
+    expect(html).toContain("Publications de la période");
+    expect(html).toContain("Comptes, jour par jour");
+    expect(html).not.toContain("href=");
   });
 });

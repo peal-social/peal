@@ -45,10 +45,7 @@ func (r *RawClient) Summary(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/analytics/summary",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/analytics/summary"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -97,10 +94,7 @@ func (r *RawClient) Dashboard(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/analytics/dashboard",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/analytics/dashboard"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -150,8 +144,7 @@ func (r *RawClient) Channel(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/analytics/channels/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/analytics/channels/%v",
 		request.ChannelID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -202,10 +195,7 @@ func (r *RawClient) Export(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/analytics/export",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/analytics/export"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -254,10 +244,7 @@ func (r *RawClient) BestTimes(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/analytics/best-times",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/analytics/best-times"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -307,8 +294,7 @@ func (r *RawClient) Post(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/analytics/posts/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/analytics/posts/%v",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(

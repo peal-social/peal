@@ -35,10 +35,7 @@ public partial class InboxRulesClient : IInboxRulesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/inbox/rules",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/inbox/rules",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -189,10 +186,7 @@ public partial class InboxRulesClient : IInboxRulesClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/inbox/rules",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/inbox/rules",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -371,8 +365,7 @@ public partial class InboxRulesClient : IInboxRulesClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/rules/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/rules/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     QueryString = _queryString,
@@ -425,6 +418,18 @@ public partial class InboxRulesClient : IInboxRulesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -514,8 +519,7 @@ public partial class InboxRulesClient : IInboxRulesClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/rules/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/rules/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     QueryString = _queryString,
@@ -542,6 +546,18 @@ public partial class InboxRulesClient : IInboxRulesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -631,8 +647,7 @@ public partial class InboxRulesClient : IInboxRulesClient
                 {
                     Method = HttpMethodExtensions.Patch,
                     Path = string.Format(
-                        "api/workspaces/{0}/inbox/rules/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/inbox/rules/{0}",
                         ValueConvert.ToPathParameterString(request.RuleId)
                     ),
                     Body = request,
@@ -688,6 +703,18 @@ public partial class InboxRulesClient : IInboxRulesClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -784,9 +811,7 @@ public partial class InboxRulesClient : IInboxRulesClient
     /// Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at most 100) says otherwise, those with `status` alone when given, each with what its channels can carry and the latest 20 comments it matched. A rule's `privateReply`, and each match's `privateCode`, `privateReplyId` and `privateStatus`, are null to a reader who may not read private replies: one without engagement:readMessages, or an application the owner did not let read the workspace's messages. Needs engagement:read.
     /// </summary>
     /// <example><code>
-    /// await client.InboxRules.ListCommentRulesAsync(
-    ///     new ListCommentRulesInboxRulesRequest { WorkspaceId = "workspaceId" }
-    /// );
+    /// await client.InboxRules.ListCommentRulesAsync(new ListCommentRulesInboxRulesRequest());
     /// </code></example>
     public WithRawResponseTask<CommentRulePage> ListCommentRulesAsync(
         ListCommentRulesInboxRulesRequest request,
@@ -806,7 +831,6 @@ public partial class InboxRulesClient : IInboxRulesClient
     /// await client.InboxRules.CreateCommentRuleAsync(
     ///     new NewCommentRule
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         Keywords = new List&lt;string&gt;() { "keywords" },
     ///         Reply = "reply",
     ///     }
@@ -828,7 +852,7 @@ public partial class InboxRulesClient : IInboxRulesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxRules.GetCommentRuleAsync(
-    ///     new GetCommentRuleInboxRulesRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+    ///     new GetCommentRuleInboxRulesRequest { RuleId = "ruleId" }
     /// );
     /// </code></example>
     public WithRawResponseTask<CommentRule> GetCommentRuleAsync(
@@ -847,7 +871,7 @@ public partial class InboxRulesClient : IInboxRulesClient
     /// </summary>
     /// <example><code>
     /// await client.InboxRules.DeleteCommentRuleAsync(
-    ///     new DeleteCommentRuleInboxRulesRequest { WorkspaceId = "workspaceId", RuleId = "ruleId" }
+    ///     new DeleteCommentRuleInboxRulesRequest { RuleId = "ruleId" }
     /// );
     /// </code></example>
     public WithRawResponseTask DeleteCommentRuleAsync(
@@ -865,9 +889,7 @@ public partial class InboxRulesClient : IInboxRulesClient
     /// Changes a rule's keywords, reply or private reply (`privateReply` null takes it off), or pauses it (`paused` true) or sets it going again (false); what it leaves out stays. A paused rule looks at nothing, answers no comment received while it was paused, and sends none of the private replies that waited for their public reply. An ended rule changes no more (CommentRuleEnded). Needs engagement:reply, and engagement:message to give a private reply, or to change the keywords or the reply of a rule that holds one or set it going again (an application, the owner's consent for messages too); pausing a rule, or taking its private reply off, needs engagement:reply alone.
     /// </summary>
     /// <example><code>
-    /// await client.InboxRules.UpdateCommentRuleAsync(
-    ///     new CommentRuleChange { WorkspaceId = "workspaceId", RuleId = "ruleId" }
-    /// );
+    /// await client.InboxRules.UpdateCommentRuleAsync(new CommentRuleChange { RuleId = "ruleId" });
     /// </code></example>
     public WithRawResponseTask<CommentRule> UpdateCommentRuleAsync(
         CommentRuleChange request,

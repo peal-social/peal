@@ -18,6 +18,7 @@ import { VideoGenerationNotFound } from "./video-generation-not-found.ts";
 import { VideoRequestRejected } from "./video-request-rejected.ts";
 import { VideoUnavailable } from "./video-unavailable.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * The longest description a video is made from, and how many videos a
@@ -139,8 +140,6 @@ export const VideoGenerationsSchema = Schema.Struct({
 
 export type VideoGenerations = typeof VideoGenerationsSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
 /**
  * Videos made for the workspace's media library by the provider it chose
  * for videos, with its own key: a durable job each, which a request starts
@@ -158,7 +157,8 @@ export class VideoGenerationsApi extends HttpApiGroup.make("videoGenerations")
         VideoAllowanceReached,
         PlanLimitReached,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: VideoGenerationRequestSchema,
       success: VideoGenerationSchema.pipe(HttpApiSchema.status(202)),
     }).annotateMerge(
@@ -169,7 +169,8 @@ export class VideoGenerationsApi extends HttpApiGroup.make("videoGenerations")
     ),
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: { status: Schema.optionalKey(VideoGenerationStatusSchema) },
       success: VideoGenerationsSchema,
     }).annotateMerge(
@@ -180,7 +181,8 @@ export class VideoGenerationsApi extends HttpApiGroup.make("videoGenerations")
     ),
     HttpApiEndpoint.get("get", "/:generationId", {
       error: [Forbidden, VideoGenerationNotFound],
-      params: { generationId: Schema.String, workspaceId: Schema.String },
+      headers: workspaceHeaders,
+      params: { generationId: Schema.String },
       success: VideoGenerationSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -192,4 +194,4 @@ export class VideoGenerationsApi extends HttpApiGroup.make("videoGenerations")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/media/videos/generations") {}
+  .prefix("/api/v1/media/videos/generations") {}

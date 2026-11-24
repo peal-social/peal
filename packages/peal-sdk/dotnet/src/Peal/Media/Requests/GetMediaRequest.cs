@@ -7,9 +7,6 @@ namespace Peal;
 public record GetMediaRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string MediaId { get; set; }
 
     /// <inheritdoc />

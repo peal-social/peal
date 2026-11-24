@@ -7,9 +7,6 @@ namespace Peal;
 public record ListPostsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string From { get; set; }
 
     [JsonIgnore]

@@ -14,6 +14,7 @@ import { MediaStoreUnavailable } from "./media-store-unavailable.ts";
 import { PartnerOwnsWorkspaces } from "./partner-owns-workspaces.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
 import { WorkspaceBusy } from "./workspace-busy.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 import { WorkspaceNameMismatch } from "./workspace-name-mismatch.ts";
 import { WorkspaceSubscribed } from "./workspace-subscribed.ts";
 
@@ -71,7 +72,8 @@ export class WorkspacesApi extends HttpApiGroup.make("workspaces")
         MediaStoreUnavailable,
         DeletionIncomplete,
       ],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       payload: DeleteWorkspaceSchema,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -85,7 +87,8 @@ export class WorkspacesApi extends HttpApiGroup.make("workspaces")
   .add(
     HttpApiEndpoint.get("security", "/security", {
       error: [Forbidden],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       success: WorkspaceSecuritySchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -98,7 +101,8 @@ export class WorkspacesApi extends HttpApiGroup.make("workspaces")
   .add(
     HttpApiEndpoint.put("secure", "/security", {
       error: [Forbidden],
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       payload: SecureWorkspaceSchema,
       success: WorkspaceSecuritySchema,
     }).annotateMerge(
@@ -111,4 +115,4 @@ export class WorkspacesApi extends HttpApiGroup.make("workspaces")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId") {}
+  .prefix("/api/v1/workspace") {}

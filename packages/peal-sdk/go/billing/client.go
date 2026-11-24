@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.GetBillingRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Billing.Get(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Get(
 	ctx context.Context,
-	request *peal.GetBillingRequest,
 	opts ...option.RequestOption,
 ) (*peal.Billing, error) {
 	response, err := c.WithRawResponse.Get(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,21 +59,15 @@ func (c *Client) Get(
 //
 // Example:
 //
-//	request := &peal.StandingBillingRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Billing.Standing(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Standing(
 	ctx context.Context,
-	request *peal.StandingBillingRequest,
 	opts ...option.RequestOption,
 ) (*peal.Standing, error) {
 	response, err := c.WithRawResponse.Standing(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {

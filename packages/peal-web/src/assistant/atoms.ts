@@ -1,4 +1,5 @@
 import { Atom } from "effect/reactivity";
+import { forWorkspace } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
 
@@ -13,14 +14,14 @@ export const providersChanged = (workspaceId: string) => [
 
 export const workspaceProviders = Atom.family((workspaceId: string) =>
   PealApi.query("assistant", "providers", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: providersChanged(workspaceId),
   })
 );
 
 export const workspaceModels = Atom.family((workspaceId: string) =>
   PealApi.query("assistant", "models", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     reactivityKeys: providersChanged(workspaceId),
   })
 );

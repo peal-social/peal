@@ -1,5 +1,6 @@
 import { assert } from "@effect/vitest";
 import { Effect, Schema } from "effect";
+import { forWorkspace } from "peal-contract";
 
 import {
   bodyOf,
@@ -79,9 +80,9 @@ export const partnerOf = Effect.fn("partnerOf")(function* partnerOf(
   const owner = yield* signedUpUnconfirmed(label);
   const home = yield* workspaceOf(owner, label);
 
-  const opened = yield* app.request(`/api/workspaces/${home}/partner`, {
+  const opened = yield* app.request(`/api/v1/partner-account`, {
     body: { name: `${label} Suite` },
-    headers: { cookie: owner.cookies },
+    headers: { cookie: owner.cookies, ...forWorkspace(home) },
   });
 
   assert.strictEqual(opened.status, 201);
@@ -103,9 +104,9 @@ export const keyOf = Effect.fn("keyOf")(function* keyOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(`/api/workspaces/${home}/partner/keys`, {
+  const reply = yield* app.request(`/api/v1/partner-account/keys`, {
     body: { name: "backend", permissions, scopes },
-    headers: { cookie: owner.cookies },
+    headers: { cookie: owner.cookies, ...forWorkspace(home) },
   });
 
   assert.strictEqual(reply.status, 201);
@@ -121,7 +122,7 @@ export const customerOf = Effect.fn("customerOf")(function* customerOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request("/api/partner/workspaces", {
+  const reply = yield* app.request("/api/v1/partner/workspaces", {
     body: { externalId, name },
     headers: bearer(key),
   });

@@ -7,9 +7,6 @@ namespace Peal;
 public record ListWorkspacesPartnerAccountRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? Before { get; set; }
 
     [JsonIgnore]

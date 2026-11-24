@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         conversationId: "conversationId",
  *         read: true
  *     }
  */
 export interface SetConversationReadInboxMessagesRequest {
-    workspaceId: string;
     conversationId: string;
     read: boolean;
 }

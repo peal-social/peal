@@ -173,7 +173,8 @@ const previewOf = (
 ) =>
   session.client.queues
     .slots({
-      params: { queueId: queue.id, workspaceId: session.workspace.id },
+      headers: {},
+      params: { queueId: queue.id },
       query: { count },
     })
     .pipe(Effect.mapError(explain(session.url)));
@@ -200,7 +201,7 @@ const list = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Console.log(`Queues of ${workspace.name}:`);
 
@@ -236,7 +237,7 @@ const show = Command.make(
       return;
     }
 
-    const names = yield* channelNames(session.client, session.workspace.id);
+    const names = yield* channelNames(session.client);
     const preview = yield* previewOf(session, queue, 5);
 
     yield* Console.log(`${queue.name} (${queue.id}): ${summary(queue)}.`);
@@ -358,7 +359,7 @@ const create = Command.make(
     });
 
     const made = yield* client.queues
-      .create({ params: { workspaceId: workspace.id }, payload })
+      .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -503,7 +504,8 @@ const update = Command.make(
 
     const changed = yield* client.queues
       .update({
-        params: { queueId: queue.id, workspaceId: workspace.id },
+        headers: {},
+        params: { queueId: queue.id },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -552,11 +554,11 @@ const reshuffle = Command.make(
     workspace: choice,
   }) {
     const session = yield* inWorkspace(choice);
-    const { client, url, workspace } = session;
+    const { client, url } = session;
     const queue = yield* findQueue(session, given);
 
     const done = yield* client.queues
-      .reshuffle({ params: { queueId: queue.id, workspaceId: workspace.id } })
+      .reshuffle({ headers: {}, params: { queueId: queue.id } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -588,7 +590,7 @@ const remove = Command.make(
     const queue = yield* findQueue(session, given);
 
     yield* client.queues
-      .delete({ params: { queueId: queue.id, workspaceId: workspace.id } })
+      .delete({ headers: {}, params: { queueId: queue.id } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json

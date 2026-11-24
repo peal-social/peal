@@ -39,7 +39,7 @@ public class ConnectSiteWithKeyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/websites/keys")
+                    .WithPath("/api/v1/channels/websites/keys")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -54,7 +54,6 @@ public class ConnectSiteWithKeyTest : BaseMockServerTest
         var response = await Client.Channels.ConnectSiteWithKeyAsync(
             new ConnectSiteWithKey
             {
-                WorkspaceId = "workspaceId",
                 ApiKey = "x",
                 Platform = KeySitePlatform.Devto,
                 Publication = null,
@@ -93,7 +92,7 @@ public class ConnectSiteWithKeyTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/websites/keys")
+                    .WithPath("/api/v1/channels/websites/keys")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -106,12 +105,7 @@ public class ConnectSiteWithKeyTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.ConnectSiteWithKeyAsync(
-            new ConnectSiteWithKey
-            {
-                WorkspaceId = "workspaceId",
-                ApiKey = "apiKey",
-                Platform = KeySitePlatform.Devto,
-            }
+            new ConnectSiteWithKey { ApiKey = "apiKey", Platform = KeySitePlatform.Devto }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

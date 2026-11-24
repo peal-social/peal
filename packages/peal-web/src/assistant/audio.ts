@@ -17,6 +17,7 @@ import type {
   VoiceNotOffered,
   VoiceoverRequest,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 import { aiProviders } from "peal-contract/ai-providers";
 import type { AiSpeechOffer } from "peal-contract/ai-providers";
@@ -89,6 +90,7 @@ export type AudioFailure =
   | Unauthenticated
   | VoiceNotOffered
   | WorkspaceNotFound
+  | WorkspaceRequired
   // The request failed in a way the API does not declare.
   | { readonly _tag: "Unexpected" };
 
@@ -129,6 +131,7 @@ export const audioFailureKey = (failure: AudioFailure): AudioFailureKey =>
     Unexpected: (): AudioFailureKey => "generic",
     VoiceNotOffered: (): AudioFailureKey => "voiceNotOffered",
     WorkspaceNotFound: (): AudioFailureKey => "generic",
+    WorkspaceRequired: (): AudioFailureKey => "generic",
   });
 
 /** Whether the refusal is the provider's settings, to fix in the assistant settings. */

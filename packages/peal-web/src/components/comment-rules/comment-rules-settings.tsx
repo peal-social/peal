@@ -4,7 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Cause, Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { CommentRuleNotPossible } from "peal-contract";
+import { CommentRuleNotPossible, forWorkspace } from "peal-contract";
 import type { CommentRule } from "peal-contract";
 import {
   SettingsCard,
@@ -84,7 +84,8 @@ const RuleActions = ({
   const update = useAtomSet(updateCommentRule, { mode: "promiseExit" });
   const stop = useAtomSet(stopCommentRule, { mode: "promiseExit" });
   const [busy, start] = useTransition();
-  const params = { ruleId: rule.id, workspaceId };
+  const params = { ruleId: rule.id };
+  const headers = forWorkspace(workspaceId);
   const reactivityKeys = commentRulesChanged(workspaceId);
 
   const answered = (
@@ -105,7 +106,12 @@ const RuleActions = ({
       onPause={(paused) => {
         start(async () => {
           answered(
-            await update({ params, payload: { paused }, reactivityKeys }),
+            await update({
+              params,
+              headers,
+              payload: { paused },
+              reactivityKeys,
+            }),
             paused ? t("paused") : t("resumed")
           );
         });
@@ -115,6 +121,7 @@ const RuleActions = ({
           answered(
             await update({
               params,
+              headers,
               payload: { privateReply: null },
               reactivityKeys,
             }),
@@ -124,7 +131,10 @@ const RuleActions = ({
       }}
       onStop={() => {
         start(async () => {
-          answered(await stop({ params, reactivityKeys }), t("stopped"));
+          answered(
+            await stop({ params, headers, reactivityKeys }),
+            t("stopped")
+          );
         });
       }}
     />
@@ -174,7 +184,7 @@ const NewRule = ({
 
     start(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: request,
         reactivityKeys: commentRulesChanged(workspaceId),
       });

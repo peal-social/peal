@@ -5,8 +5,6 @@ package social.peal.resources.billing;
 
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
-import social.peal.resources.billing.requests.GetBillingRequest;
-import social.peal.resources.billing.requests.StandingBillingRequest;
 import social.peal.types.Billing;
 import social.peal.types.Standing;
 
@@ -30,56 +28,28 @@ public class BillingClient {
     /**
      * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
      */
-    public Billing get(String workspaceId) {
-        return this.rawClient.get(workspaceId).body();
+    public Billing get() {
+        return this.rawClient.get().body();
     }
 
     /**
      * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
      */
-    public Billing get(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
-     */
-    public Billing get(String workspaceId, GetBillingRequest request) {
-        return this.rawClient.get(workspaceId, request).body();
-    }
-
-    /**
-     * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
-     */
-    public Billing get(String workspaceId, GetBillingRequest request, RequestOptions requestOptions) {
-        return this.rawClient.get(workspaceId, request, requestOptions).body();
+    public Billing get(RequestOptions requestOptions) {
+        return this.rawClient.get(requestOptions).body();
     }
 
     /**
      * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
      */
-    public Standing standing(String workspaceId) {
-        return this.rawClient.standing(workspaceId).body();
+    public Standing standing() {
+        return this.rawClient.standing().body();
     }
 
     /**
      * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
      */
-    public Standing standing(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.standing(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
-     */
-    public Standing standing(String workspaceId, StandingBillingRequest request) {
-        return this.rawClient.standing(workspaceId, request).body();
-    }
-
-    /**
-     * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
-     */
-    public Standing standing(String workspaceId, StandingBillingRequest request, RequestOptions requestOptions) {
-        return this.rawClient.standing(workspaceId, request, requestOptions).body();
+    public Standing standing(RequestOptions requestOptions) {
+        return this.rawClient.standing(requestOptions).body();
     }
 }

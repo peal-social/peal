@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 using Peal.Test.Utils;
 
@@ -62,7 +61,7 @@ public class StandingTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/billing/standing")
+                    .WithPath("/api/v1/billing/standing")
                     .UsingGet()
             )
             .RespondWith(
@@ -72,9 +71,7 @@ public class StandingTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Billing.StandingAsync(
-            new StandingBillingRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Billing.StandingAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -122,7 +119,7 @@ public class StandingTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/billing/standing")
+                    .WithPath("/api/v1/billing/standing")
                     .UsingGet()
             )
             .RespondWith(
@@ -132,9 +129,7 @@ public class StandingTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Billing.StandingAsync(
-            new StandingBillingRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Billing.StandingAsync();
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

@@ -7,9 +7,6 @@ namespace Peal;
 public record AdSignInCallback
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required AdNetwork Network { get; set; }
 
     [JsonPropertyName("code")]

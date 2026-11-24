@@ -228,7 +228,7 @@ export const importPosts = Command.make(
       : Effect.void;
 
     const csv = yield* contentsOf(input.file);
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const result = yield* client.posts
       .import({
@@ -236,7 +236,7 @@ export const importPosts = Command.make(
           onNone: () => ({}),
           onSome: (key) => ({ "idempotency-key": key }),
         }),
-        params: { workspaceId: workspace.id },
+
         payload: input.dryRun ? { csv, dryRun: true } : { csv },
       })
       .pipe(explainingPublishing(url));

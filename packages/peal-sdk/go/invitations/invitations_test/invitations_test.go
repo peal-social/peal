@@ -88,19 +88,15 @@ func TestInvitationsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListInvitationsRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Invitations.List(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestInvitationsListWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInvitationsListWithWireMock", "GET", "/api/workspaces/workspaceId/invitations", nil, 1)
+	VerifyRequestCount(t, "TestInvitationsListWithWireMock", "GET", "/api/v1/invitations", nil, 1)
 }
 
 func TestInvitationsCreateWithWireMock(
@@ -115,9 +111,8 @@ func TestInvitationsCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewInvitation{
-		WorkspaceID: "workspaceId",
-		Email:       "email",
-		Role:        peal.RoleOwner,
+		Email: "email",
+		Role:  peal.RoleOwner,
 	}
 	_, invocationErr := client.Invitations.Create(
 		context.TODO(),
@@ -128,7 +123,7 @@ func TestInvitationsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInvitationsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/invitations", nil, 1)
+	VerifyRequestCount(t, "TestInvitationsCreateWithWireMock", "POST", "/api/v1/invitations", nil, 1)
 }
 
 func TestInvitationsRevokeWithWireMock(
@@ -143,7 +138,6 @@ func TestInvitationsRevokeWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RevokeInvitationsRequest{
-		WorkspaceID:  "workspaceId",
 		InvitationID: "invitationId",
 	}
 	invocationErr := client.Invitations.Revoke(
@@ -155,5 +149,5 @@ func TestInvitationsRevokeWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestInvitationsRevokeWithWireMock", "DELETE", "/api/workspaces/workspaceId/invitations/invitationId", nil, 1)
+	VerifyRequestCount(t, "TestInvitationsRevokeWithWireMock", "DELETE", "/api/v1/invitations/invitationId", nil, 1)
 }

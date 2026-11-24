@@ -8,11 +8,10 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.channelsets.requests.CreateChannelSetsRequest;
 import social.peal.resources.channelsets.requests.DeleteChannelSetsRequest;
-import social.peal.resources.channelsets.requests.ListChannelSetsRequest;
 import social.peal.resources.channelsets.requests.UpdateChannelSetsRequest;
 import social.peal.types.ChannelSet;
+import social.peal.types.ChannelSetDetails;
 
 public class AsyncChannelSetsClient {
     protected final ClientOptions clientOptions;
@@ -34,8 +33,8 @@ public class AsyncChannelSetsClient {
     /**
      * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public CompletableFuture<List<ChannelSet>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<ChannelSet>> list() {
+        CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<ChannelSet>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -48,40 +47,8 @@ public class AsyncChannelSetsClient {
     /**
      * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public CompletableFuture<List<ChannelSet>> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<ChannelSet>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public CompletableFuture<List<ChannelSet>> list(String workspaceId, ListChannelSetsRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> rawFuture =
-                this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<ChannelSet>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public CompletableFuture<List<ChannelSet>> list(
-            String workspaceId, ListChannelSetsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<List<ChannelSet>> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<ChannelSet>>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<List<ChannelSet>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -94,8 +61,8 @@ public class AsyncChannelSetsClient {
     /**
      * Saves a selection of the workspace's channels under a name no other set of the workspace has whatever its case, 50 channels at most, with the options posts take on those whose platform has some (<code>TargetOptions</code>, of the channel's platform; unfinished options are kept, and checked when a post that takes them is scheduled). A post names a set by its id or its name (<code>channelSets</code>) instead of listing its channels. A workspace keeps 50 sets at most. Needs post:update and channel:read.
      */
-    public CompletableFuture<ChannelSet> create(String workspaceId, CreateChannelSetsRequest request) {
-        CompletableFuture<PealClientHttpResponse<ChannelSet>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<ChannelSet> create(ChannelSetDetails request) {
+        CompletableFuture<PealClientHttpResponse<ChannelSet>> rawFuture = this.rawClient.create(request);
         CompletableFuture<ChannelSet> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -108,10 +75,23 @@ public class AsyncChannelSetsClient {
     /**
      * Saves a selection of the workspace's channels under a name no other set of the workspace has whatever its case, 50 channels at most, with the options posts take on those whose platform has some (<code>TargetOptions</code>, of the channel's platform; unfinished options are kept, and checked when a post that takes them is scheduled). A post names a set by its id or its name (<code>channelSets</code>) instead of listing its channels. A workspace keeps 50 sets at most. Needs post:update and channel:read.
      */
-    public CompletableFuture<ChannelSet> create(
-            String workspaceId, CreateChannelSetsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<ChannelSet> create(ChannelSetDetails request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelSet>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+                this.rawClient.create(request, requestOptions);
+        CompletableFuture<ChannelSet> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Replaces a set's name, channels and options: every channel must be connected now, so this is also how a disconnected one is taken out. Posts made with the set before keep their channels. Needs post:update and channel:read.
+     */
+    public CompletableFuture<ChannelSet> update(String channelSetId, UpdateChannelSetsRequest request) {
+        CompletableFuture<PealClientHttpResponse<ChannelSet>> rawFuture = this.rawClient.update(channelSetId, request);
         CompletableFuture<ChannelSet> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -125,25 +105,9 @@ public class AsyncChannelSetsClient {
      * Replaces a set's name, channels and options: every channel must be connected now, so this is also how a disconnected one is taken out. Posts made with the set before keep their channels. Needs post:update and channel:read.
      */
     public CompletableFuture<ChannelSet> update(
-            String workspaceId, String channelSetId, UpdateChannelSetsRequest request) {
+            String channelSetId, UpdateChannelSetsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<ChannelSet>> rawFuture =
-                this.rawClient.update(workspaceId, channelSetId, request);
-        CompletableFuture<ChannelSet> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Replaces a set's name, channels and options: every channel must be connected now, so this is also how a disconnected one is taken out. Posts made with the set before keep their channels. Needs post:update and channel:read.
-     */
-    public CompletableFuture<ChannelSet> update(
-            String workspaceId, String channelSetId, UpdateChannelSetsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ChannelSet>> rawFuture =
-                this.rawClient.update(workspaceId, channelSetId, request, requestOptions);
+                this.rawClient.update(channelSetId, request, requestOptions);
         CompletableFuture<ChannelSet> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -156,8 +120,8 @@ public class AsyncChannelSetsClient {
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String channelSetId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, channelSetId);
+    public CompletableFuture<Void> delete(String channelSetId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(channelSetId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -170,9 +134,8 @@ public class AsyncChannelSetsClient {
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String channelSetId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, channelSetId, requestOptions);
+    public CompletableFuture<Void> delete(String channelSetId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(channelSetId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -185,9 +148,8 @@ public class AsyncChannelSetsClient {
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String channelSetId, DeleteChannelSetsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, channelSetId, request);
+    public CompletableFuture<Void> delete(String channelSetId, DeleteChannelSetsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(channelSetId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -201,9 +163,9 @@ public class AsyncChannelSetsClient {
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
     public CompletableFuture<Void> delete(
-            String workspaceId, String channelSetId, DeleteChannelSetsRequest request, RequestOptions requestOptions) {
+            String channelSetId, DeleteChannelSetsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, channelSetId, request, requestOptions);
+                this.rawClient.delete(channelSetId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -13,7 +13,7 @@ use Peal\Core\Client\HttpMethod;
 use Peal\Core\Json\JsonDecoder;
 use JsonException;
 use Psr\Http\Client\ClientExceptionInterface;
-use Peal\Signatures\Requests\CreateSignaturesRequest;
+use Peal\Types\SignatureDetails;
 use Peal\Signatures\Requests\UpdateSignaturesRequest;
 
 class SignaturesClient
@@ -57,12 +57,9 @@ class SignaturesClient
      *
      * Example:
      * ```php
-     * $client->signatures->list(
-     *     'workspaceId',
-     * );
+     * $client->signatures->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -75,14 +72,14 @@ class SignaturesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/signatures",
+                    path: "api/v1/signatures",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -113,18 +110,14 @@ class SignaturesClient
      * Example:
      * ```php
      * $client->signatures->create(
-     *     'workspaceId',
-     *     new CreateSignaturesRequest([
-     *         'body' => new SignatureDetails([
-     *             'name' => 'name',
-     *             'text' => 'text',
-     *         ]),
+     *     new SignatureDetails([
+     *         'name' => 'name',
+     *         'text' => 'text',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
-     * @param CreateSignaturesRequest $request
+     * @param SignatureDetails $request
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -137,7 +130,7 @@ class SignaturesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, CreateSignaturesRequest $request, ?array $options = null): ?Signature
+    public function create(SignatureDetails $request, ?array $options = null): ?Signature
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -145,9 +138,9 @@ class SignaturesClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/signatures",
+                    path: "api/v1/signatures",
                     method: HttpMethod::POST,
-                    body: $request->body,
+                    body: $request,
                 ),
                 $options,
             );
@@ -177,7 +170,6 @@ class SignaturesClient
      * Example:
      * ```php
      * $client->signatures->update(
-     *     'workspaceId',
      *     'signatureId',
      *     new UpdateSignaturesRequest([
      *         'body' => new SignatureDetails([
@@ -188,7 +180,6 @@ class SignaturesClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $signatureId
      * @param UpdateSignaturesRequest $request
      * @param ?array{
@@ -203,14 +194,14 @@ class SignaturesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $signatureId, UpdateSignaturesRequest $request, ?array $options = null): ?Signature
+    public function update(string $signatureId, UpdateSignaturesRequest $request, ?array $options = null): ?Signature
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/signatures/{$signatureId}",
+                    path: "api/v1/signatures/{$signatureId}",
                     method: HttpMethod::PUT,
                     body: $request->body,
                 ),
@@ -242,12 +233,10 @@ class SignaturesClient
      * Example:
      * ```php
      * $client->signatures->delete(
-     *     'workspaceId',
      *     'signatureId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $signatureId
      * @param ?array{
      *   baseUrl?: string,
@@ -260,14 +249,14 @@ class SignaturesClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $signatureId, ?array $options = null): void
+    public function delete(string $signatureId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/signatures/{$signatureId}",
+                    path: "api/v1/signatures/{$signatureId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

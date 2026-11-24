@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.bad_request_error import BadRequestError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
@@ -30,15 +31,13 @@ class RawChannelDefaultsClient:
         self._client_wrapper = client_wrapper
 
     def get(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ChannelDefaults]:
         """
         Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -50,7 +49,7 @@ class RawChannelDefaultsClient:
             ChannelDefaults
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/default-options",
+            f"api/v1/channels/{encode_path_param(channel_id)}/default-options",
             method="GET",
             request_options=request_options,
         )
@@ -64,6 +63,17 @@ class RawChannelDefaultsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -118,20 +128,13 @@ class RawChannelDefaultsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def set(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        options: TargetOptions,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, options: TargetOptions, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ChannelDefaults]:
         """
         Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (`TargetOptions`), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         options : TargetOptions
@@ -145,7 +148,7 @@ class RawChannelDefaultsClient:
             ChannelDefaults
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/default-options",
+            f"api/v1/channels/{encode_path_param(channel_id)}/default-options",
             method="PUT",
             json={
                 "options": convert_and_respect_annotation_metadata(
@@ -168,6 +171,17 @@ class RawChannelDefaultsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -232,16 +246,12 @@ class RawChannelDefaultsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def clear(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def clear(self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -252,13 +262,24 @@ class RawChannelDefaultsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/default-options",
+            f"api/v1/channels/{encode_path_param(channel_id)}/default-options",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -318,15 +339,13 @@ class AsyncRawChannelDefaultsClient:
         self._client_wrapper = client_wrapper
 
     async def get(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ChannelDefaults]:
         """
         Answers the options new posts take on the channel when they give none there, or null. Needs post:read and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -338,7 +357,7 @@ class AsyncRawChannelDefaultsClient:
             ChannelDefaults
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/default-options",
+            f"api/v1/channels/{encode_path_param(channel_id)}/default-options",
             method="GET",
             request_options=request_options,
         )
@@ -352,6 +371,17 @@ class AsyncRawChannelDefaultsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -406,20 +436,13 @@ class AsyncRawChannelDefaultsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def set(
-        self,
-        workspace_id: str,
-        channel_id: str,
-        *,
-        options: TargetOptions,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, channel_id: str, *, options: TargetOptions, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ChannelDefaults]:
         """
         Keeps these as the channel's default options, instead of any it had: options of the channel's own platform (`TargetOptions`), unfinished as a draft's may be. A new draft, and a post made in one call, takes them on the channel when it gives no options there and no channel set it names does; a draft that is updated keeps what it is given. Defaults are a starting point, never a way round the rules: a post that takes them is checked when it is scheduled as one that wrote them itself. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         options : TargetOptions
@@ -433,7 +456,7 @@ class AsyncRawChannelDefaultsClient:
             ChannelDefaults
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/default-options",
+            f"api/v1/channels/{encode_path_param(channel_id)}/default-options",
             method="PUT",
             json={
                 "options": convert_and_respect_annotation_metadata(
@@ -456,6 +479,17 @@ class AsyncRawChannelDefaultsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -521,15 +555,13 @@ class AsyncRawChannelDefaultsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def clear(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Leaves the channel without default options. Posts already made keep theirs. Needs post:update and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -540,13 +572,24 @@ class AsyncRawChannelDefaultsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/default-options",
+            f"api/v1/channels/{encode_path_param(channel_id)}/default-options",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

@@ -6,7 +6,6 @@ public partial interface IAssistantClient
     /// Tells whether the assistant writes for the workspace, so clients show it or hide it, and who writes (`source`: the workspace's own text provider, the server's language model, or nobody), who makes the workspace's images (`images.source`: the workspace's own provider, the server's image model, or nobody) and what one costs, and how many requests the workspace has left today. On a server that bills, `month` and `images.month` tell the billing account's month of the server's models (included, used, price and ceiling), and `reason` `paymentMethod` why they are off without a payment method. Needs assistant:use.
     /// </summary>
     WithRawResponseTask<AssistantStatus> StatusAsync(
-        StatusAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -33,7 +32,6 @@ public partial interface IAssistantClient
     /// Reads the image provider the workspace brought, a provider Peal knows by name (OpenAI, Google Gemini, xAI, Together AI) or an endpoint that speaks the OpenAI images API (`POST {baseUrl}/images/generations`), whose images then spend none of the workspace's daily assistant requests: its address and model, never its key, or null. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
     /// </summary>
     WithRawResponseTask<ImageProviderSetting> ImageProviderAsync(
-        ImageProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -51,7 +49,6 @@ public partial interface IAssistantClient
     /// Removes the workspace's image provider and its key: images are made by the server's image model again, if it has one, and cost the workspace's daily requests. Needs assistant:configure, which no OAuth client holds but Peal's command line (since 2026-11-13; before, any client with workspace:write did).
     /// </summary>
     WithRawResponseTask RemoveImageProviderAsync(
-        RemoveImageProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -60,7 +57,6 @@ public partial interface IAssistantClient
     /// Reads the text provider the workspace brought, Anthropic's Messages API or an endpoint that speaks the OpenAI chat completions API, whose suggestions then spend none of the workspace's daily assistant requests: the API it speaks, its address and model, never its key, or null. Needs assistant:configure.
     /// </summary>
     WithRawResponseTask<TextProviderSetting> TextProviderAsync(
-        TextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -78,7 +74,6 @@ public partial interface IAssistantClient
     /// Removes the workspace's text provider and its key: the server's language model writes again, if it has one, within the workspace's daily requests. Needs assistant:configure.
     /// </summary>
     WithRawResponseTask RemoveTextProviderAsync(
-        RemoveTextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -87,7 +82,6 @@ public partial interface IAssistantClient
     /// Sends the workspace's text provider one short request, a rewrite of a fixed sentence, as a member's request would go, and answers 204 once the provider gave a suggestion the assistant can use. Otherwise the answer says why, as a suggestion's would: TextProviderRefused (its settings, a redirect, its address or its key) or AssistantFailed (unreachable, timed out, declined, or an answer the assistant cannot use: often a model without structured output). It counts as one of the day's requests to that provider, and nothing of Peal's. Needs assistant:configure.
     /// </summary>
     WithRawResponseTask TestTextProviderAsync(
-        TestTextProviderAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -96,7 +90,6 @@ public partial interface IAssistantClient
     /// Lists the AI providers the workspace connected with a key of its own: where each is reached, never its key. What it uses each for is `GET .../assistant/models`'s to say. Needs assistant:configure, which no OAuth client holds but Peal's command line.
     /// </summary>
     WithRawResponseTask<AiProviderConnections> ProvidersAsync(
-        ProvidersAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -132,7 +125,6 @@ public partial interface IAssistantClient
     /// Tells, for each use (text, images, videos, voice-overs, transcripts, slide videos), the connected provider and the model the workspace chose, or none, and whether the server has a model of its own that works meanwhile. Needs assistant:configure, which no OAuth client holds but Peal's command line.
     /// </summary>
     WithRawResponseTask<AiCapabilityModels> ModelsAsync(
-        ModelsAssistantRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

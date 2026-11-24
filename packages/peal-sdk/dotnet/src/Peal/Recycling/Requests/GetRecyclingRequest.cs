@@ -7,9 +7,6 @@ namespace Peal;
 public record GetRecyclingRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string RuleId { get; set; }
 
     /// <inheritdoc />

@@ -17,18 +17,16 @@ import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
 import social.peal.core.ClientOptions;
 import social.peal.core.ObjectMappers;
-import social.peal.core.PathSegments;
 import social.peal.core.PealClientApiException;
 import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
-import social.peal.resources.billing.requests.GetBillingRequest;
-import social.peal.resources.billing.requests.StandingBillingRequest;
 import social.peal.types.Billing;
 import social.peal.types.Standing;
 import social.peal.types.UnauthenticatedEncoded;
@@ -43,45 +41,28 @@ public class AsyncRawBillingClient {
     /**
      * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Billing>> get(String workspaceId) {
-        return get(workspaceId, GetBillingRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Billing>> get() {
+        return get(null);
     }
 
     /**
      * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
      */
-    public CompletableFuture<PealClientHttpResponse<Billing>> get(String workspaceId, RequestOptions requestOptions) {
-        return get(workspaceId, GetBillingRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Billing>> get(String workspaceId, GetBillingRequest request) {
-        return get(workspaceId, request, null);
-    }
-
-    /**
-     * Answers with the workspace's plan (<code>free</code>, <code>payAsYouGo</code>, or a plan priced by tiers of channels a subscription still holds), the subscription that buys it, what each limit allows its billing account, how much of it the workspace uses, and the plans it can be on. On a server that does not bill, nothing is limited. Needs billing:read.
-     */
-    public CompletableFuture<PealClientHttpResponse<Billing>> get(
-            String workspaceId, GetBillingRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Billing>> get(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("billing");
+                .addPathSegments("api/v1/billing");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -109,6 +90,11 @@ public class AsyncRawBillingClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(
@@ -162,48 +148,28 @@ public class AsyncRawBillingClient {
     /**
      * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
      */
-    public CompletableFuture<PealClientHttpResponse<Standing>> standing(String workspaceId) {
-        return standing(workspaceId, StandingBillingRequest.builder().build());
+    public CompletableFuture<PealClientHttpResponse<Standing>> standing() {
+        return standing(null);
     }
 
     /**
      * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
      */
-    public CompletableFuture<PealClientHttpResponse<Standing>> standing(
-            String workspaceId, RequestOptions requestOptions) {
-        return standing(workspaceId, StandingBillingRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
-     */
-    public CompletableFuture<PealClientHttpResponse<Standing>> standing(
-            String workspaceId, StandingBillingRequest request) {
-        return standing(workspaceId, request, null);
-    }
-
-    /**
-     * Answers where the workspace stands against its plan: what it holds beyond it, as on the free tier with more than 2 connected accounts across its billing account after a subscription ended, whether it must come back within it before anything else (more channels or members than the plan allows: nothing is scheduled or published until then, and posts already scheduled fail when due with <code>planLimit</code>), until when a grace keeps it publishing (<code>graceUntil</code>), the plan that holds everything (<code>payAsYouGo</code>, with a payment method), and how many posts wait. Those who manage billing add a payment method, or choose what stays, in the web app. For every member of the workspace.
-     */
-    public CompletableFuture<PealClientHttpResponse<Standing>> standing(
-            String workspaceId, StandingBillingRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<PealClientHttpResponse<Standing>> standing(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("billing")
-                .addPathSegments("standing");
+                .addPathSegments("api/v1/billing/standing");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -231,6 +197,11 @@ public class AsyncRawBillingClient {
                     }
                     try {
                         switch (response.code()) {
+                            case 400:
+                                future.completeExceptionally(new BadRequestError(
+                                        ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class),
+                                        response));
+                                return;
                             case 401:
                                 future.completeExceptionally(new UnauthorizedError(
                                         ObjectMappers.JSON_MAPPER.readValue(

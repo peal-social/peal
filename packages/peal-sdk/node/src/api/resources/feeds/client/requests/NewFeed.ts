@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         url: "url"
  *     }
  */
 export interface NewFeed {
-    workspaceId: string;
     attachPicture?: boolean;
     channelIds?: string[];
     channelSetId?: string;

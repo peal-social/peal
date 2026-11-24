@@ -24,6 +24,7 @@ import type {
   TooManyRequests,
   Unauthenticated,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 
 // What the slide video dialog holds, the request it sends, and how a
@@ -282,6 +283,7 @@ export type SlideshowFailure =
   | TooManyRequests
   | Unauthenticated
   | WorkspaceNotFound
+  | WorkspaceRequired
   // The request failed in a way the API does not declare.
   | { readonly _tag: "Unexpected" };
 
@@ -314,6 +316,7 @@ export const slideshowFailureKey = (
     Unauthenticated: (): SlideshowFailureKey => "generic",
     Unexpected: (): SlideshowFailureKey => "generic",
     WorkspaceNotFound: (): SlideshowFailureKey => "generic",
+    WorkspaceRequired: (): SlideshowFailureKey => "generic",
   });
 
 /** Whether the refusal is the service's settings, to fix in the assistant settings. */

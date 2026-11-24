@@ -76,7 +76,7 @@ class CredentialClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/credential",
+                    path: "api/v1/credential",
                     method: HttpMethod::GET,
                 ),
                 $options,

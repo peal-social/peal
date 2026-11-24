@@ -57,12 +57,9 @@ class ConnectLinksClient
      *
      * Example:
      * ```php
-     * $client->connectLinks->list(
-     *     'workspaceId',
-     * );
+     * $client->connectLinks->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -75,14 +72,14 @@ class ConnectLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/connect-links",
+                    path: "api/v1/connect-links",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -113,12 +110,10 @@ class ConnectLinksClient
      * Example:
      * ```php
      * $client->connectLinks->create(
-     *     'workspaceId',
      *     new NewConnectLink([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewConnectLink $request
      * @param ?array{
      *   baseUrl?: string,
@@ -132,7 +127,7 @@ class ConnectLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewConnectLink $request = new NewConnectLink(), ?array $options = null): ?CreatedConnectLink
+    public function create(NewConnectLink $request = new NewConnectLink(), ?array $options = null): ?CreatedConnectLink
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -140,7 +135,7 @@ class ConnectLinksClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/connect-links",
+                    path: "api/v1/connect-links",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -172,12 +167,10 @@ class ConnectLinksClient
      * Example:
      * ```php
      * $client->connectLinks->get(
-     *     'workspaceId',
      *     'linkId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $linkId
      * @param ?array{
      *   baseUrl?: string,
@@ -191,14 +184,14 @@ class ConnectLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $linkId, ?array $options = null): ?ConnectLink
+    public function get(string $linkId, ?array $options = null): ?ConnectLink
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/connect-links/{$linkId}",
+                    path: "api/v1/connect-links/{$linkId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -229,12 +222,10 @@ class ConnectLinksClient
      * Example:
      * ```php
      * $client->connectLinks->revoke(
-     *     'workspaceId',
      *     'linkId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $linkId
      * @param ?array{
      *   baseUrl?: string,
@@ -248,14 +239,14 @@ class ConnectLinksClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function revoke(string $workspaceId, string $linkId, ?array $options = null): ?ConnectLink
+    public function revoke(string $linkId, ?array $options = null): ?ConnectLink
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/connect-links/{$linkId}",
+                    path: "api/v1/connect-links/{$linkId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

@@ -7,9 +7,6 @@ namespace Peal;
 public record UpdateOnSiteArticlesRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string ArticleId { get; set; }
 
     [JsonIgnore]

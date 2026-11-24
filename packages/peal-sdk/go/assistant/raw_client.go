@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) Status(
 	ctx context.Context,
-	request *peal.StatusAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.AssistantStatus], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) Status(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) Suggest(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/suggestions",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/suggestions"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -135,10 +128,7 @@ func (r *RawClient) GenerateImage(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/images",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/images"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -173,7 +163,6 @@ func (r *RawClient) GenerateImage(
 
 func (r *RawClient) ImageProvider(
 	ctx context.Context,
-	request *peal.ImageProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.ImageProviderSetting], error) {
 	options := core.NewRequestOptions(opts...)
@@ -182,10 +171,7 @@ func (r *RawClient) ImageProvider(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/image-provider",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/image-provider"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -227,10 +213,7 @@ func (r *RawClient) SetImageProvider(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/image-provider",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/image-provider"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -265,7 +248,6 @@ func (r *RawClient) SetImageProvider(
 
 func (r *RawClient) RemoveImageProvider(
 	ctx context.Context,
-	request *peal.RemoveImageProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[any], error) {
 	options := core.NewRequestOptions(opts...)
@@ -274,10 +256,7 @@ func (r *RawClient) RemoveImageProvider(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/image-provider",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/image-provider"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -308,7 +287,6 @@ func (r *RawClient) RemoveImageProvider(
 
 func (r *RawClient) TextProvider(
 	ctx context.Context,
-	request *peal.TextProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.TextProviderSetting], error) {
 	options := core.NewRequestOptions(opts...)
@@ -317,10 +295,7 @@ func (r *RawClient) TextProvider(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/text-provider",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/text-provider"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -362,10 +337,7 @@ func (r *RawClient) SetTextProvider(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/text-provider",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/text-provider"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -400,7 +372,6 @@ func (r *RawClient) SetTextProvider(
 
 func (r *RawClient) RemoveTextProvider(
 	ctx context.Context,
-	request *peal.RemoveTextProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[any], error) {
 	options := core.NewRequestOptions(opts...)
@@ -409,10 +380,7 @@ func (r *RawClient) RemoveTextProvider(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/text-provider",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/text-provider"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -443,7 +411,6 @@ func (r *RawClient) RemoveTextProvider(
 
 func (r *RawClient) TestTextProvider(
 	ctx context.Context,
-	request *peal.TestTextProviderAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[any], error) {
 	options := core.NewRequestOptions(opts...)
@@ -452,10 +419,7 @@ func (r *RawClient) TestTextProvider(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/text-provider/test",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/text-provider/test"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -486,7 +450,6 @@ func (r *RawClient) TestTextProvider(
 
 func (r *RawClient) Providers(
 	ctx context.Context,
-	request *peal.ProvidersAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.AiProviderConnections], error) {
 	options := core.NewRequestOptions(opts...)
@@ -495,10 +458,7 @@ func (r *RawClient) Providers(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/providers",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/providers"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -541,8 +501,7 @@ func (r *RawClient) ConnectProvider(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/providers/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/assistant/providers/%v",
 		request.Provider,
 	)
 	headers := internal.MergeHeaders(
@@ -589,8 +548,7 @@ func (r *RawClient) DisconnectProvider(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/providers/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/assistant/providers/%v",
 		request.Provider,
 	)
 	headers := internal.MergeHeaders(
@@ -633,8 +591,7 @@ func (r *RawClient) TestProvider(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/providers/%v/test",
-		request.WorkspaceID,
+		baseURL+"/api/v1/assistant/providers/%v/test",
 		request.Provider,
 	)
 	headers := internal.MergeHeaders(
@@ -669,7 +626,6 @@ func (r *RawClient) TestProvider(
 
 func (r *RawClient) Models(
 	ctx context.Context,
-	request *peal.ModelsAssistantRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.AiCapabilityModels], error) {
 	options := core.NewRequestOptions(opts...)
@@ -678,10 +634,7 @@ func (r *RawClient) Models(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/models",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/assistant/models"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -724,8 +677,7 @@ func (r *RawClient) SetModel(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/models/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/assistant/models/%v",
 		request.Capability,
 	)
 	headers := internal.MergeHeaders(
@@ -772,8 +724,7 @@ func (r *RawClient) UnsetModel(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/assistant/models/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/assistant/models/%v",
 		request.Capability,
 	)
 	headers := internal.MergeHeaders(

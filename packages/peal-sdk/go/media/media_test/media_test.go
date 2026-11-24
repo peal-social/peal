@@ -88,9 +88,7 @@ func TestMediaListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListMediaRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListMediaRequest{}
 	_, invocationErr := client.Media.List(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestMediaListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaListWithWireMock", "GET", "/api/workspaces/workspaceId/media", nil, 1)
+	VerifyRequestCount(t, "TestMediaListWithWireMock", "GET", "/api/v1/media", nil, 1)
 }
 
 func TestMediaCreateWithWireMock(
@@ -115,7 +113,6 @@ func TestMediaCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewUpload{
-		WorkspaceID: "workspaceId",
 		ByteSize:    int64(1000000),
 		ContentType: "contentType",
 	}
@@ -128,7 +125,7 @@ func TestMediaCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaCreateWithWireMock", "POST", "/api/workspaces/workspaceId/media", nil, 1)
+	VerifyRequestCount(t, "TestMediaCreateWithWireMock", "POST", "/api/v1/media", nil, 1)
 }
 
 func TestMediaImportFromURLWithWireMock(
@@ -143,8 +140,7 @@ func TestMediaImportFromURLWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.MediaImport{
-		WorkspaceID: "workspaceId",
-		URL:         "url",
+		URL: "url",
 	}
 	_, invocationErr := client.Media.ImportFromURL(
 		context.TODO(),
@@ -155,7 +151,7 @@ func TestMediaImportFromURLWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaImportFromURLWithWireMock", "POST", "/api/workspaces/workspaceId/media/import", nil, 1)
+	VerifyRequestCount(t, "TestMediaImportFromURLWithWireMock", "POST", "/api/v1/media/import", nil, 1)
 }
 
 func TestMediaGetWithWireMock(
@@ -170,8 +166,7 @@ func TestMediaGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetMediaRequest{
-		WorkspaceID: "workspaceId",
-		MediaID:     "mediaId",
+		MediaID: "mediaId",
 	}
 	_, invocationErr := client.Media.Get(
 		context.TODO(),
@@ -182,7 +177,7 @@ func TestMediaGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaGetWithWireMock", "GET", "/api/workspaces/workspaceId/media/mediaId", nil, 1)
+	VerifyRequestCount(t, "TestMediaGetWithWireMock", "GET", "/api/v1/media/mediaId", nil, 1)
 }
 
 func TestMediaDeleteWithWireMock(
@@ -197,8 +192,7 @@ func TestMediaDeleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.DeleteMediaRequest{
-		WorkspaceID: "workspaceId",
-		MediaID:     "mediaId",
+		MediaID: "mediaId",
 	}
 	invocationErr := client.Media.Delete(
 		context.TODO(),
@@ -209,7 +203,7 @@ func TestMediaDeleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaDeleteWithWireMock", "DELETE", "/api/workspaces/workspaceId/media/mediaId", nil, 1)
+	VerifyRequestCount(t, "TestMediaDeleteWithWireMock", "DELETE", "/api/v1/media/mediaId", nil, 1)
 }
 
 func TestMediaDescribeWithWireMock(
@@ -224,8 +218,7 @@ func TestMediaDescribeWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.MediaDescription{
-		WorkspaceID: "workspaceId",
-		MediaID:     "mediaId",
+		MediaID: "mediaId",
 	}
 	_, invocationErr := client.Media.Describe(
 		context.TODO(),
@@ -236,7 +229,7 @@ func TestMediaDescribeWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaDescribeWithWireMock", "PATCH", "/api/workspaces/workspaceId/media/mediaId", nil, 1)
+	VerifyRequestCount(t, "TestMediaDescribeWithWireMock", "PATCH", "/api/v1/media/mediaId", nil, 1)
 }
 
 func TestMediaCompleteWithWireMock(
@@ -251,8 +244,7 @@ func TestMediaCompleteWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.CompleteMediaRequest{
-		WorkspaceID: "workspaceId",
-		MediaID:     "mediaId",
+		MediaID: "mediaId",
 	}
 	_, invocationErr := client.Media.Complete(
 		context.TODO(),
@@ -263,7 +255,7 @@ func TestMediaCompleteWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaCompleteWithWireMock", "POST", "/api/workspaces/workspaceId/media/mediaId/complete", nil, 1)
+	VerifyRequestCount(t, "TestMediaCompleteWithWireMock", "POST", "/api/v1/media/mediaId/complete", nil, 1)
 }
 
 func TestMediaUsageWithWireMock(
@@ -278,8 +270,7 @@ func TestMediaUsageWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.UsageMediaRequest{
-		WorkspaceID: "workspaceId",
-		MediaID:     "mediaId",
+		MediaID: "mediaId",
 	}
 	_, invocationErr := client.Media.Usage(
 		context.TODO(),
@@ -290,5 +281,5 @@ func TestMediaUsageWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestMediaUsageWithWireMock", "GET", "/api/workspaces/workspaceId/media/mediaId/usage", nil, 1)
+	VerifyRequestCount(t, "TestMediaUsageWithWireMock", "GET", "/api/v1/media/mediaId/usage", nil, 1)
 }

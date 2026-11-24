@@ -4,6 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useLocale, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
 import { Skeleton } from "peal-ui/components/skeleton";
@@ -133,7 +134,7 @@ const LoadedBilling = ({
     locale,
   });
 
-  const params = { workspaceId };
+  const headers = forWorkspace(workspaceId);
 
   // Runs a request, then says why it failed, if it did.
   const run = (
@@ -200,7 +201,7 @@ const LoadedBilling = ({
 
   const confirmCancel = () => {
     run({ _tag: "cancel" }, async () => {
-      const done = await cancel({ params, payload: {} });
+      const done = await cancel({ headers, payload: {} });
 
       if (Exit.isSuccess(done)) {
         setStep({ _tag: "cancelled", endsAt: done.value.endsAt });
@@ -213,7 +214,7 @@ const LoadedBilling = ({
 
   const openWithdrawal = () => {
     run({ _tag: "withdraw" }, async () => {
-      const found = await preview({ params });
+      const found = await preview({ headers });
 
       if (Exit.isSuccess(found)) {
         setStep({ _tag: "confirmWithdrawal", preview: found.value });
@@ -225,7 +226,7 @@ const LoadedBilling = ({
 
   const confirmWithdrawalNow = () => {
     run({ _tag: "withdraw" }, async () => {
-      const done = await confirmWithdrawal({ params });
+      const done = await confirmWithdrawal({ headers });
 
       if (Exit.isSuccess(done)) {
         setStep({ _tag: "withdrawn", refunded: done.value.refunded });
@@ -257,18 +258,18 @@ const LoadedBilling = ({
             workspaceId={workspaceId}
             linkTo={billingLink}
             onAccept={() => {
-              runOnAccount("accept", async () => await accept({ params }));
+              runOnAccount("accept", async () => await accept({ headers }));
             }}
             onOffer={(toUserId) => {
               runOnAccount(
                 "offer",
-                async () => await offer({ params, payload: { toUserId } })
+                async () => await offer({ headers, payload: { toUserId } })
               );
             }}
             onWithdraw={() => {
               runOnAccount(
                 "withdraw",
-                async () => await withdrawOffer({ params })
+                async () => await withdrawOffer({ headers })
               );
             }}
           />

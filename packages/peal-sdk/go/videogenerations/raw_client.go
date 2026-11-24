@@ -43,10 +43,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/videos/generations",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media/videos/generations"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/videos/generations",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media/videos/generations"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -143,8 +137,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/videos/generations/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/videos/generations/%v",
 		request.GenerationID,
 	)
 	headers := internal.MergeHeaders(

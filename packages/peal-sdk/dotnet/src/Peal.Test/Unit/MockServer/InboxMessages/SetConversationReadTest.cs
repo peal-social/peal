@@ -47,9 +47,7 @@ public class SetConversationReadTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId/read"
-                    )
+                    .WithPath("/api/v1/inbox/messages/conversations/conversationId/read")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -64,7 +62,6 @@ public class SetConversationReadTest : BaseMockServerTest
         var response = await Client.InboxMessages.SetConversationReadAsync(
             new SetConversationReadInboxMessagesRequest
             {
-                WorkspaceId = "workspaceId",
                 ConversationId = "conversationId",
                 Read = true,
             }
@@ -105,9 +102,7 @@ public class SetConversationReadTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/conversations/conversationId/read"
-                    )
+                    .WithPath("/api/v1/inbox/messages/conversations/conversationId/read")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -122,7 +117,6 @@ public class SetConversationReadTest : BaseMockServerTest
         var response = await Client.InboxMessages.SetConversationReadAsync(
             new SetConversationReadInboxMessagesRequest
             {
-                WorkspaceId = "workspaceId",
                 ConversationId = "conversationId",
                 Read = true,
             }

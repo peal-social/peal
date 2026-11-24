@@ -56,34 +56,31 @@ public class RawArticlesClient {
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public PealClientHttpResponse<ArticlePage> list(String workspaceId) {
-        return list(workspaceId, ListArticlesRequest.builder().build());
+    public PealClientHttpResponse<ArticlePage> list() {
+        return list(ListArticlesRequest.builder().build());
     }
 
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public PealClientHttpResponse<ArticlePage> list(String workspaceId, RequestOptions requestOptions) {
-        return list(workspaceId, ListArticlesRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<ArticlePage> list(RequestOptions requestOptions) {
+        return list(ListArticlesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public PealClientHttpResponse<ArticlePage> list(String workspaceId, ListArticlesRequest request) {
-        return list(workspaceId, request, null);
+    public PealClientHttpResponse<ArticlePage> list(ListArticlesRequest request) {
+        return list(request, null);
     }
 
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public PealClientHttpResponse<ArticlePage> list(
-            String workspaceId, ListArticlesRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<ArticlePage> list(ListArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles");
+                .addPathSegments("api/v1/articles");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -162,20 +159,17 @@ public class RawArticlesClient {
     /**
      * Writes an article for one of the workspace's websites (a channel connected with connectSite): a draft, or scheduled at once with <code>schedule</code>. A scheduled article is checked as the site would take it (ArticleRejected lists every violation); its images are files of the workspace's library, ready (UnknownMedia otherwise), the cover an image. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:create, and post:schedule with <code>schedule</code>.
      */
-    public PealClientHttpResponse<Article> create(String workspaceId, NewArticle request) {
-        return create(workspaceId, request, null);
+    public PealClientHttpResponse<Article> create(NewArticle request) {
+        return create(request, null);
     }
 
     /**
      * Writes an article for one of the workspace's websites (a channel connected with connectSite): a draft, or scheduled at once with <code>schedule</code>. A scheduled article is checked as the site would take it (ArticleRejected lists every violation); its images are files of the workspace's library, ready (UnknownMedia otherwise), the cover an image. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:create, and post:schedule with <code>schedule</code>.
      */
-    public PealClientHttpResponse<Article> create(
-            String workspaceId, NewArticle request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Article> create(NewArticle request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles");
+                .addPathSegments("api/v1/articles");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -214,6 +208,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -253,34 +250,32 @@ public class RawArticlesClient {
     /**
      * Reads an article. Needs post:read.
      */
-    public PealClientHttpResponse<Article> get(String workspaceId, String articleId) {
-        return get(workspaceId, articleId, GetArticlesRequest.builder().build());
+    public PealClientHttpResponse<Article> get(String articleId) {
+        return get(articleId, GetArticlesRequest.builder().build());
     }
 
     /**
      * Reads an article. Needs post:read.
      */
-    public PealClientHttpResponse<Article> get(String workspaceId, String articleId, RequestOptions requestOptions) {
-        return get(workspaceId, articleId, GetArticlesRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Article> get(String articleId, RequestOptions requestOptions) {
+        return get(articleId, GetArticlesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Reads an article. Needs post:read.
      */
-    public PealClientHttpResponse<Article> get(String workspaceId, String articleId, GetArticlesRequest request) {
-        return get(workspaceId, articleId, request, null);
+    public PealClientHttpResponse<Article> get(String articleId, GetArticlesRequest request) {
+        return get(articleId, request, null);
     }
 
     /**
      * Reads an article. Needs post:read.
      */
     public PealClientHttpResponse<Article> get(
-            String workspaceId, String articleId, GetArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, GetArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -315,6 +310,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -345,34 +343,32 @@ public class RawArticlesClient {
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String articleId) {
-        return delete(workspaceId, articleId, DeleteArticlesRequest.builder().build());
+    public PealClientHttpResponse<Void> delete(String articleId) {
+        return delete(articleId, DeleteArticlesRequest.builder().build());
     }
 
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String articleId, RequestOptions requestOptions) {
-        return delete(workspaceId, articleId, DeleteArticlesRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Void> delete(String articleId, RequestOptions requestOptions) {
+        return delete(articleId, DeleteArticlesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public PealClientHttpResponse<Void> delete(String workspaceId, String articleId, DeleteArticlesRequest request) {
-        return delete(workspaceId, articleId, request, null);
+    public PealClientHttpResponse<Void> delete(String articleId, DeleteArticlesRequest request) {
+        return delete(articleId, request, null);
     }
 
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
     public PealClientHttpResponse<Void> delete(
-            String workspaceId, String articleId, DeleteArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, DeleteArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -409,6 +405,9 @@ public class RawArticlesClient {
             String responseBodyString = responseBody != null ? responseBody.string() : "{}";
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -442,20 +441,18 @@ public class RawArticlesClient {
     /**
      * Replaces what a draft, a scheduled article or one that failed says. A scheduled article is checked again and keeps its time; it is refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval. Once on the site, use updateOnSite. Needs post:update.
      */
-    public PealClientHttpResponse<Article> update(String workspaceId, String articleId, UpdateArticlesRequest request) {
-        return update(workspaceId, articleId, request, null);
+    public PealClientHttpResponse<Article> update(String articleId, UpdateArticlesRequest request) {
+        return update(articleId, request, null);
     }
 
     /**
      * Replaces what a draft, a scheduled article or one that failed says. A scheduled article is checked again and keeps its time; it is refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval. Once on the site, use updateOnSite. Needs post:update.
      */
     public PealClientHttpResponse<Article> update(
-            String workspaceId, String articleId, UpdateArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, UpdateArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -495,6 +492,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -534,21 +534,18 @@ public class RawArticlesClient {
     /**
      * Schedules a draft, moves a scheduled article, or schedules one that failed again: Peal sends it at <code>at</code>, or now without it, and the site makes it what <code>siteStatus</code> says. With <code>future</code>, the site publishes it at <code>at</code>, which must be ahead, and Peal sends it at once. Everything is checked as the site would take it. What goes out is public, and cannot be taken back from Peal but by unpublishing it. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public PealClientHttpResponse<Article> schedule(
-            String workspaceId, String articleId, ScheduleArticlesRequest request) {
-        return schedule(workspaceId, articleId, request, null);
+    public PealClientHttpResponse<Article> schedule(String articleId, ScheduleArticlesRequest request) {
+        return schedule(articleId, request, null);
     }
 
     /**
      * Schedules a draft, moves a scheduled article, or schedules one that failed again: Peal sends it at <code>at</code>, or now without it, and the site makes it what <code>siteStatus</code> says. With <code>future</code>, the site publishes it at <code>at</code>, which must be ahead, and Peal sends it at once. Everything is checked as the site would take it. What goes out is public, and cannot be taken back from Peal but by unpublishing it. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
     public PealClientHttpResponse<Article> schedule(
-            String workspaceId, String articleId, ScheduleArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, ScheduleArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId))
                 .addPathSegments("schedule");
         if (requestOptions != null) {
@@ -589,6 +586,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -628,38 +628,32 @@ public class RawArticlesClient {
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public PealClientHttpResponse<Article> unschedule(String workspaceId, String articleId) {
-        return unschedule(
-                workspaceId, articleId, UnscheduleArticlesRequest.builder().build());
+    public PealClientHttpResponse<Article> unschedule(String articleId) {
+        return unschedule(articleId, UnscheduleArticlesRequest.builder().build());
+    }
+
+    /**
+     * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
+     */
+    public PealClientHttpResponse<Article> unschedule(String articleId, RequestOptions requestOptions) {
+        return unschedule(articleId, UnscheduleArticlesRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
+     */
+    public PealClientHttpResponse<Article> unschedule(String articleId, UnscheduleArticlesRequest request) {
+        return unschedule(articleId, request, null);
     }
 
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
     public PealClientHttpResponse<Article> unschedule(
-            String workspaceId, String articleId, RequestOptions requestOptions) {
-        return unschedule(
-                workspaceId, articleId, UnscheduleArticlesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
-     */
-    public PealClientHttpResponse<Article> unschedule(
-            String workspaceId, String articleId, UnscheduleArticlesRequest request) {
-        return unschedule(workspaceId, articleId, request, null);
-    }
-
-    /**
-     * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
-     */
-    public PealClientHttpResponse<Article> unschedule(
-            String workspaceId, String articleId, UnscheduleArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, UnscheduleArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId))
                 .addPathSegments("unschedule");
         if (requestOptions != null) {
@@ -694,6 +688,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -727,34 +724,32 @@ public class RawArticlesClient {
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public PealClientHttpResponse<Article> retry(String workspaceId, String articleId) {
-        return retry(workspaceId, articleId, RetryArticlesRequest.builder().build());
+    public PealClientHttpResponse<Article> retry(String articleId) {
+        return retry(articleId, RetryArticlesRequest.builder().build());
     }
 
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public PealClientHttpResponse<Article> retry(String workspaceId, String articleId, RequestOptions requestOptions) {
-        return retry(workspaceId, articleId, RetryArticlesRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Article> retry(String articleId, RequestOptions requestOptions) {
+        return retry(articleId, RetryArticlesRequest.builder().build(), requestOptions);
     }
 
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public PealClientHttpResponse<Article> retry(String workspaceId, String articleId, RetryArticlesRequest request) {
-        return retry(workspaceId, articleId, request, null);
+    public PealClientHttpResponse<Article> retry(String articleId, RetryArticlesRequest request) {
+        return retry(articleId, request, null);
     }
 
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
     public PealClientHttpResponse<Article> retry(
-            String workspaceId, String articleId, RetryArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, RetryArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId))
                 .addPathSegments("retry");
         if (requestOptions != null) {
@@ -789,6 +784,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -828,38 +826,32 @@ public class RawArticlesClient {
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public PealClientHttpResponse<Article> unpublish(String workspaceId, String articleId) {
-        return unpublish(
-                workspaceId, articleId, UnpublishArticlesRequest.builder().build());
+    public PealClientHttpResponse<Article> unpublish(String articleId) {
+        return unpublish(articleId, UnpublishArticlesRequest.builder().build());
+    }
+
+    /**
+     * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
+     */
+    public PealClientHttpResponse<Article> unpublish(String articleId, RequestOptions requestOptions) {
+        return unpublish(articleId, UnpublishArticlesRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
+     */
+    public PealClientHttpResponse<Article> unpublish(String articleId, UnpublishArticlesRequest request) {
+        return unpublish(articleId, request, null);
     }
 
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public PealClientHttpResponse<Article> unpublish(
-            String workspaceId, String articleId, RequestOptions requestOptions) {
-        return unpublish(
-                workspaceId, articleId, UnpublishArticlesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
-     */
-    public PealClientHttpResponse<Article> unpublish(
-            String workspaceId, String articleId, UnpublishArticlesRequest request) {
-        return unpublish(workspaceId, articleId, request, null);
-    }
-
-    /**
-     * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
-     */
-    public PealClientHttpResponse<Article> unpublish(
-            String workspaceId, String articleId, UnpublishArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, UnpublishArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId))
                 .addPathSegments("unpublish");
         if (requestOptions != null) {
@@ -894,6 +886,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -936,21 +931,18 @@ public class RawArticlesClient {
     /**
      * Replaces what the article's post says on the site (title, body, excerpt, tags, categories, cover), at once: the site keeps its status and its date, and files it has already are not sent again; a cover or an excerpt removed is removed there. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public PealClientHttpResponse<Article> updateOnSite(
-            String workspaceId, String articleId, UpdateOnSiteArticlesRequest request) {
-        return updateOnSite(workspaceId, articleId, request, null);
+    public PealClientHttpResponse<Article> updateOnSite(String articleId, UpdateOnSiteArticlesRequest request) {
+        return updateOnSite(articleId, request, null);
     }
 
     /**
      * Replaces what the article's post says on the site (title, body, excerpt, tags, categories, cover), at once: the site keeps its status and its date, and files it has already are not sent again; a cover or an excerpt removed is removed there. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public PealClientHttpResponse<Article> updateOnSite(
-            String workspaceId, String articleId, UpdateOnSiteArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, UpdateOnSiteArticlesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("articles")
+                .addPathSegments("api/v1/articles")
                 .addPathSegment(PathSegments.validate(articleId))
                 .addPathSegments("site");
         if (requestOptions != null) {
@@ -991,6 +983,9 @@ public class RawArticlesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

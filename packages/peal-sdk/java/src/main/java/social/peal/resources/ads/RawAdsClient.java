@@ -43,19 +43,15 @@ import social.peal.resources.ads.requests.CreateBoostAdsRequest;
 import social.peal.resources.ads.requests.DisconnectAdsRequest;
 import social.peal.resources.ads.requests.GetAccountAdsRequest;
 import social.peal.resources.ads.requests.GetBoostAdsRequest;
-import social.peal.resources.ads.requests.ListAccountsAdsRequest;
 import social.peal.resources.ads.requests.ListAdsAdsRequest;
 import social.peal.resources.ads.requests.ListBoostsAdsRequest;
 import social.peal.resources.ads.requests.ListCampaignsAdsRequest;
-import social.peal.resources.ads.requests.ListConnectionsAdsRequest;
 import social.peal.resources.ads.requests.ListInsightsAdsRequest;
 import social.peal.resources.ads.requests.PauseBoostAdsRequest;
 import social.peal.resources.ads.requests.PostPerformanceAdsRequest;
-import social.peal.resources.ads.requests.QuoteBoostAdsRequest;
 import social.peal.resources.ads.requests.ReachableAccountsAdsRequest;
 import social.peal.resources.ads.requests.RemoveAccountAdsRequest;
 import social.peal.resources.ads.requests.ResumeBoostAdsRequest;
-import social.peal.resources.ads.requests.StatusAdsRequest;
 import social.peal.resources.ads.requests.StopBoostAdsRequest;
 import social.peal.types.AdAccount;
 import social.peal.types.AdAuditPage;
@@ -72,6 +68,7 @@ import social.peal.types.Boost;
 import social.peal.types.BoostDetail;
 import social.peal.types.BoostPage;
 import social.peal.types.BoostQuote;
+import social.peal.types.NewBoost;
 import social.peal.types.PostAdPerformance;
 import social.peal.types.ReachableAdAccount;
 import social.peal.types.UnauthenticatedEncoded;
@@ -86,45 +83,28 @@ public class RawAdsClient {
     /**
      * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
      */
-    public PealClientHttpResponse<AdsStatus> status(String workspaceId) {
-        return status(workspaceId, StatusAdsRequest.builder().build());
+    public PealClientHttpResponse<AdsStatus> status() {
+        return status(null);
     }
 
     /**
      * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
      */
-    public PealClientHttpResponse<AdsStatus> status(String workspaceId, RequestOptions requestOptions) {
-        return status(workspaceId, StatusAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdsStatus> status(String workspaceId, StatusAdsRequest request) {
-        return status(workspaceId, request, null);
-    }
-
-    /**
-     * Says what this server offers of ads (<code>off</code>, <code>read</code> or <code>spend</code>) and on which networks. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdsStatus> status(
-            String workspaceId, StatusAdsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<AdsStatus> status(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads");
+                .addPathSegments("api/v1/ads");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -147,6 +127,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -177,48 +160,28 @@ public class RawAdsClient {
     /**
      * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
      */
-    public PealClientHttpResponse<List<AdConnection>> listConnections(String workspaceId) {
-        return listConnections(workspaceId, ListConnectionsAdsRequest.builder().build());
+    public PealClientHttpResponse<List<AdConnection>> listConnections() {
+        return listConnections(null);
     }
 
     /**
      * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
      */
-    public PealClientHttpResponse<List<AdConnection>> listConnections(
-            String workspaceId, RequestOptions requestOptions) {
-        return listConnections(workspaceId, ListConnectionsAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
-     */
-    public PealClientHttpResponse<List<AdConnection>> listConnections(
-            String workspaceId, ListConnectionsAdsRequest request) {
-        return listConnections(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whether the network still takes the sign-in, and whether it may run ads. Never a token. Needs ads:read.
-     */
-    public PealClientHttpResponse<List<AdConnection>> listConnections(
-            String workspaceId, ListConnectionsAdsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<List<AdConnection>> listConnections(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads")
-                .addPathSegments("connections");
+                .addPathSegments("api/v1/ads/connections");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -243,6 +206,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -273,35 +239,32 @@ public class RawAdsClient {
     /**
      * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
      */
-    public PealClientHttpResponse<AdSignIn> connect(String workspaceId, AdNetwork network) {
-        return connect(workspaceId, network, ConnectAdsRequest.builder().build());
+    public PealClientHttpResponse<AdSignIn> connect(AdNetwork network) {
+        return connect(network, ConnectAdsRequest.builder().build());
+    }
+
+    /**
+     * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
+     */
+    public PealClientHttpResponse<AdSignIn> connect(AdNetwork network, RequestOptions requestOptions) {
+        return connect(network, ConnectAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
+     */
+    public PealClientHttpResponse<AdSignIn> connect(AdNetwork network, ConnectAdsRequest request) {
+        return connect(network, request, null);
     }
 
     /**
      * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
      */
     public PealClientHttpResponse<AdSignIn> connect(
-            String workspaceId, AdNetwork network, RequestOptions requestOptions) {
-        return connect(workspaceId, network, ConnectAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
-     */
-    public PealClientHttpResponse<AdSignIn> connect(String workspaceId, AdNetwork network, ConnectAdsRequest request) {
-        return connect(workspaceId, network, request, null);
-    }
-
-    /**
-     * Starts a sign-in to an ad network and answers the page to send the member's browser to. The sign-in asks for reading only on a server that offers no spending. Only a person does this, signed in to Peal in their own session, who manages ad accounts (ads:manage): never an API key, an application or staff acting as them.
-     */
-    public PealClientHttpResponse<AdSignIn> connect(
-            String workspaceId, AdNetwork network, ConnectAdsRequest request, RequestOptions requestOptions) {
+            AdNetwork network, ConnectAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/connections")
+                .addPathSegments("api/v1/ads/connections")
                 .addPathSegment(PathSegments.validate(network.toString()));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -335,6 +298,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -365,21 +331,18 @@ public class RawAdsClient {
     /**
      * Completes a sign-in with what the network's page sent back, and answers the ad accounts it reaches. Nothing is connected yet: <code>connectAccounts</code> connects those chosen. A sign-in is completed once, within 15 minutes, by who started it. Needs ads:manage, in person.
      */
-    public PealClientHttpResponse<AdSignInResult> completeConnect(
-            String workspaceId, AdNetwork network, AdSignInCallback request) {
-        return completeConnect(workspaceId, network, request, null);
+    public PealClientHttpResponse<AdSignInResult> completeConnect(AdNetwork network, AdSignInCallback request) {
+        return completeConnect(network, request, null);
     }
 
     /**
      * Completes a sign-in with what the network's page sent back, and answers the ad accounts it reaches. Nothing is connected yet: <code>connectAccounts</code> connects those chosen. A sign-in is completed once, within 15 minutes, by who started it. Needs ads:manage, in person.
      */
     public PealClientHttpResponse<AdSignInResult> completeConnect(
-            String workspaceId, AdNetwork network, AdSignInCallback request, RequestOptions requestOptions) {
+            AdNetwork network, AdSignInCallback request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/connections")
+                .addPathSegments("api/v1/ads/connections")
                 .addPathSegment(PathSegments.validate(network.toString()))
                 .addPathSegments("callback");
         if (requestOptions != null) {
@@ -420,6 +383,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -456,41 +422,36 @@ public class RawAdsClient {
     /**
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
-    public PealClientHttpResponse<List<ReachableAdAccount>> reachableAccounts(String workspaceId, String connectionId) {
+    public PealClientHttpResponse<List<ReachableAdAccount>> reachableAccounts(String connectionId) {
         return reachableAccounts(
-                workspaceId, connectionId, ReachableAccountsAdsRequest.builder().build());
+                connectionId, ReachableAccountsAdsRequest.builder().build());
     }
 
     /**
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
     public PealClientHttpResponse<List<ReachableAdAccount>> reachableAccounts(
-            String workspaceId, String connectionId, RequestOptions requestOptions) {
+            String connectionId, RequestOptions requestOptions) {
         return reachableAccounts(
-                workspaceId, connectionId, ReachableAccountsAdsRequest.builder().build(), requestOptions);
+                connectionId, ReachableAccountsAdsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
     public PealClientHttpResponse<List<ReachableAdAccount>> reachableAccounts(
-            String workspaceId, String connectionId, ReachableAccountsAdsRequest request) {
-        return reachableAccounts(workspaceId, connectionId, request, null);
+            String connectionId, ReachableAccountsAdsRequest request) {
+        return reachableAccounts(connectionId, request, null);
     }
 
     /**
      * Lists the ad accounts a sign-in reaches now, as the network gives them: currency, time zone, status and spend cap, and whether the workspace already connects each. Only who signed in reads it (ads:manage, in person).
      */
     public PealClientHttpResponse<List<ReachableAdAccount>> reachableAccounts(
-            String workspaceId,
-            String connectionId,
-            ReachableAccountsAdsRequest request,
-            RequestOptions requestOptions) {
+            String connectionId, ReachableAccountsAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/connections")
+                .addPathSegments("api/v1/ads/connections")
                 .addPathSegment(PathSegments.validate(connectionId))
                 .addPathSegments("accounts");
         if (requestOptions != null) {
@@ -528,6 +489,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -561,21 +525,18 @@ public class RawAdsClient {
     /**
      * Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the network gives them. The network is asked again which accounts the sign-in reaches: one it does not reach is <code>AdAccountNotFound</code>, and nothing is connected. An account connected before stays as it is. Spending is off on every new account until an owner turns it on. Only who signed in does this (ads:manage, in person).
      */
-    public PealClientHttpResponse<List<AdAccount>> connectAccounts(
-            String workspaceId, String connectionId, AdAccountsToConnect request) {
-        return connectAccounts(workspaceId, connectionId, request, null);
+    public PealClientHttpResponse<List<AdAccount>> connectAccounts(String connectionId, AdAccountsToConnect request) {
+        return connectAccounts(connectionId, request, null);
     }
 
     /**
      * Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the network gives them. The network is asked again which accounts the sign-in reaches: one it does not reach is <code>AdAccountNotFound</code>, and nothing is connected. An account connected before stays as it is. Spending is off on every new account until an owner turns it on. Only who signed in does this (ads:manage, in person).
      */
     public PealClientHttpResponse<List<AdAccount>> connectAccounts(
-            String workspaceId, String connectionId, AdAccountsToConnect request, RequestOptions requestOptions) {
+            String connectionId, AdAccountsToConnect request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/connections")
+                .addPathSegments("api/v1/ads/connections")
                 .addPathSegment(PathSegments.validate(connectionId))
                 .addPathSegments("accounts");
         if (requestOptions != null) {
@@ -618,6 +579,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -651,38 +615,32 @@ public class RawAdsClient {
     /**
      * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
      */
-    public PealClientHttpResponse<Void> disconnect(String workspaceId, String connectionId) {
-        return disconnect(
-                workspaceId, connectionId, DisconnectAdsRequest.builder().build());
+    public PealClientHttpResponse<Void> disconnect(String connectionId) {
+        return disconnect(connectionId, DisconnectAdsRequest.builder().build());
+    }
+
+    /**
+     * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
+     */
+    public PealClientHttpResponse<Void> disconnect(String connectionId, RequestOptions requestOptions) {
+        return disconnect(connectionId, DisconnectAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
+     */
+    public PealClientHttpResponse<Void> disconnect(String connectionId, DisconnectAdsRequest request) {
+        return disconnect(connectionId, request, null);
     }
 
     /**
      * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
      */
     public PealClientHttpResponse<Void> disconnect(
-            String workspaceId, String connectionId, RequestOptions requestOptions) {
-        return disconnect(
-                workspaceId, connectionId, DisconnectAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
-     */
-    public PealClientHttpResponse<Void> disconnect(
-            String workspaceId, String connectionId, DisconnectAdsRequest request) {
-        return disconnect(workspaceId, connectionId, request, null);
-    }
-
-    /**
-     * Removes a sign-in, its token, the ad accounts it connects and what was read of them; their boosts' records stay with the workspace, and what they committed still counts once the same account is connected again. Refused while one of their boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>): stop them first. What runs at the network that Peal did not make is left as it is. Needs ads:manage.
-     */
-    public PealClientHttpResponse<Void> disconnect(
-            String workspaceId, String connectionId, DisconnectAdsRequest request, RequestOptions requestOptions) {
+            String connectionId, DisconnectAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/connections")
+                .addPathSegments("api/v1/ads/connections")
                 .addPathSegment(PathSegments.validate(connectionId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -719,6 +677,9 @@ public class RawAdsClient {
             String responseBodyString = responseBody != null ? responseBody.string() : "{}";
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -752,46 +713,28 @@ public class RawAdsClient {
     /**
      * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
      */
-    public PealClientHttpResponse<List<AdAccount>> listAccounts(String workspaceId) {
-        return listAccounts(workspaceId, ListAccountsAdsRequest.builder().build());
+    public PealClientHttpResponse<List<AdAccount>> listAccounts() {
+        return listAccounts(null);
     }
 
     /**
      * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
      */
-    public PealClientHttpResponse<List<AdAccount>> listAccounts(String workspaceId, RequestOptions requestOptions) {
-        return listAccounts(workspaceId, ListAccountsAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
-     */
-    public PealClientHttpResponse<List<AdAccount>> listAccounts(String workspaceId, ListAccountsAdsRequest request) {
-        return listAccounts(workspaceId, request, null);
-    }
-
-    /**
-     * Lists the workspace's connected ad accounts, oldest first, with whether each may spend through Peal and its monthly ceiling. Needs ads:read.
-     */
-    public PealClientHttpResponse<List<AdAccount>> listAccounts(
-            String workspaceId, ListAccountsAdsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<List<AdAccount>> listAccounts(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads")
-                .addPathSegments("accounts");
+                .addPathSegments("api/v1/ads/accounts");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -816,6 +759,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -846,36 +792,32 @@ public class RawAdsClient {
     /**
      * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
      */
-    public PealClientHttpResponse<AdSpending> getAccount(String workspaceId, String accountId) {
-        return getAccount(workspaceId, accountId, GetAccountAdsRequest.builder().build());
+    public PealClientHttpResponse<AdSpending> getAccount(String accountId) {
+        return getAccount(accountId, GetAccountAdsRequest.builder().build());
+    }
+
+    /**
+     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdSpending> getAccount(String accountId, RequestOptions requestOptions) {
+        return getAccount(accountId, GetAccountAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdSpending> getAccount(String accountId, GetAccountAdsRequest request) {
+        return getAccount(accountId, request, null);
     }
 
     /**
      * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
      */
     public PealClientHttpResponse<AdSpending> getAccount(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
-        return getAccount(workspaceId, accountId, GetAccountAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdSpending> getAccount(
-            String workspaceId, String accountId, GetAccountAdsRequest request) {
-        return getAccount(workspaceId, accountId, request, null);
-    }
-
-    /**
-     * Shows an ad account with what its boosts made through Peal commit in the current calendar month of its time zone. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdSpending> getAccount(
-            String workspaceId, String accountId, GetAccountAdsRequest request, RequestOptions requestOptions) {
+            String accountId, GetAccountAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/accounts")
+                .addPathSegments("api/v1/ads/accounts")
                 .addPathSegment(PathSegments.validate(accountId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -910,6 +852,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -940,38 +885,32 @@ public class RawAdsClient {
     /**
      * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
      */
-    public PealClientHttpResponse<Void> removeAccount(String workspaceId, String accountId) {
-        return removeAccount(
-                workspaceId, accountId, RemoveAccountAdsRequest.builder().build());
+    public PealClientHttpResponse<Void> removeAccount(String accountId) {
+        return removeAccount(accountId, RemoveAccountAdsRequest.builder().build());
+    }
+
+    /**
+     * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
+     */
+    public PealClientHttpResponse<Void> removeAccount(String accountId, RequestOptions requestOptions) {
+        return removeAccount(accountId, RemoveAccountAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
+     */
+    public PealClientHttpResponse<Void> removeAccount(String accountId, RemoveAccountAdsRequest request) {
+        return removeAccount(accountId, request, null);
     }
 
     /**
      * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
      */
     public PealClientHttpResponse<Void> removeAccount(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
-        return removeAccount(
-                workspaceId, accountId, RemoveAccountAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
-     */
-    public PealClientHttpResponse<Void> removeAccount(
-            String workspaceId, String accountId, RemoveAccountAdsRequest request) {
-        return removeAccount(workspaceId, accountId, request, null);
-    }
-
-    /**
-     * Disconnects an ad account: what was read of it goes with it, and its boosts' records stay with the workspace, so what they committed still counts against the ceiling once the same account is connected again. Refused while one of its boosts runs, may run, is paused or is being made (<code>AdAccountBusy</code>), as a paused campaign may run again. Needs ads:manage.
-     */
-    public PealClientHttpResponse<Void> removeAccount(
-            String workspaceId, String accountId, RemoveAccountAdsRequest request, RequestOptions requestOptions) {
+            String accountId, RemoveAccountAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/accounts")
+                .addPathSegments("api/v1/ads/accounts")
                 .addPathSegment(PathSegments.validate(accountId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1008,6 +947,9 @@ public class RawAdsClient {
             String responseBodyString = responseBody != null ? responseBody.string() : "{}";
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -1041,21 +983,18 @@ public class RawAdsClient {
     /**
      * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Turning it on is refused (<code>AdSpendingUnavailable</code>) on a server that offers no spending, and on an account whose <code>capabilities.boosts</code> is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
      */
-    public PealClientHttpResponse<AdSpending> setSpending(
-            String workspaceId, String accountId, AdSpendingDecision request) {
-        return setSpending(workspaceId, accountId, request, null);
+    public PealClientHttpResponse<AdSpending> setSpending(String accountId, AdSpendingDecision request) {
+        return setSpending(accountId, request, null);
     }
 
     /**
      * Decides whether an ad account may spend through Peal, and how much: <code>enabled</code> with a <code>monthlyCeiling</code> in the account's currency, the most its boosts may commit in one calendar month of its time zone. A ceiling may always be lowered, under running boosts too: they run on, and nothing new starts or resumes until there is room. Turning spending off is refused while a boost runs or may run (<code>AdAccountBusy</code>). Turning it on is refused (<code>AdSpendingUnavailable</code>) on a server that offers no spending, and on an account whose <code>capabilities.boosts</code> is false (Google Ads, which Peal only reads). Only an owner does this, signed in to Peal in their own session (ads:authorize): never an admin, an API key, an application or staff acting as an owner. Peal never turns spending on or raises a ceiling on its own.
      */
     public PealClientHttpResponse<AdSpending> setSpending(
-            String workspaceId, String accountId, AdSpendingDecision request, RequestOptions requestOptions) {
+            String accountId, AdSpendingDecision request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/accounts")
+                .addPathSegments("api/v1/ads/accounts")
                 .addPathSegment(PathSegments.validate(accountId))
                 .addPathSegments("spending");
         if (requestOptions != null) {
@@ -1101,6 +1040,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -1137,38 +1079,32 @@ public class RawAdsClient {
     /**
      * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
-    public PealClientHttpResponse<AdCampaignReport> listCampaigns(String workspaceId, String accountId) {
-        return listCampaigns(
-                workspaceId, accountId, ListCampaignsAdsRequest.builder().build());
+    public PealClientHttpResponse<AdCampaignReport> listCampaigns(String accountId) {
+        return listCampaigns(accountId, ListCampaignsAdsRequest.builder().build());
+    }
+
+    /**
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdCampaignReport> listCampaigns(String accountId, RequestOptions requestOptions) {
+        return listCampaigns(accountId, ListCampaignsAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdCampaignReport> listCampaigns(String accountId, ListCampaignsAdsRequest request) {
+        return listCampaigns(accountId, request, null);
     }
 
     /**
      * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
      */
     public PealClientHttpResponse<AdCampaignReport> listCampaigns(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
-        return listCampaigns(
-                workspaceId, accountId, ListCampaignsAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdCampaignReport> listCampaigns(
-            String workspaceId, String accountId, ListCampaignsAdsRequest request) {
-        return listCampaigns(workspaceId, accountId, request, null);
-    }
-
-    /**
-     * Lists an ad account's campaigns as last read from its network (every hour on Meta, every six hours on Google Ads), those made outside Peal included, with what they did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out: their ads' days, or their own on Google Ads, whose <code>reach</code> reads 0 and <code>results</code> null. A thousand at most. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdCampaignReport> listCampaigns(
-            String workspaceId, String accountId, ListCampaignsAdsRequest request, RequestOptions requestOptions) {
+            String accountId, ListCampaignsAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/accounts")
+                .addPathSegments("api/v1/ads/accounts")
                 .addPathSegment(PathSegments.validate(accountId))
                 .addPathSegments("campaigns");
         if (request.getFrom().isPresent()) {
@@ -1244,35 +1180,32 @@ public class RawAdsClient {
     /**
      * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
-    public PealClientHttpResponse<AdReport> listAds(String workspaceId, String accountId) {
-        return listAds(workspaceId, accountId, ListAdsAdsRequest.builder().build());
+    public PealClientHttpResponse<AdReport> listAds(String accountId) {
+        return listAds(accountId, ListAdsAdsRequest.builder().build());
+    }
+
+    /**
+     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdReport> listAds(String accountId, RequestOptions requestOptions) {
+        return listAds(accountId, ListAdsAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdReport> listAds(String accountId, ListAdsAdsRequest request) {
+        return listAds(accountId, request, null);
     }
 
     /**
      * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
      */
     public PealClientHttpResponse<AdReport> listAds(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
-        return listAds(workspaceId, accountId, ListAdsAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdReport> listAds(String workspaceId, String accountId, ListAdsAdsRequest request) {
-        return listAds(workspaceId, accountId, request, null);
-    }
-
-    /**
-     * Lists an ad account's ads as last read, those of one campaign with <code>campaignId</code> (the network's id), each with the workspace's own post it promotes when it is one, and what it did over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A thousand at most. An account whose <code>capabilities.ads</code> is false (Google Ads, read by campaign) answers none. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdReport> listAds(
-            String workspaceId, String accountId, ListAdsAdsRequest request, RequestOptions requestOptions) {
+            String accountId, ListAdsAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/accounts")
+                .addPathSegments("api/v1/ads/accounts")
                 .addPathSegment(PathSegments.validate(accountId))
                 .addPathSegments("ads");
         if (request.getFrom().isPresent()) {
@@ -1352,38 +1285,32 @@ public class RawAdsClient {
     /**
      * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
-    public PealClientHttpResponse<AdInsightReport> listInsights(String workspaceId, String accountId) {
-        return listInsights(
-                workspaceId, accountId, ListInsightsAdsRequest.builder().build());
+    public PealClientHttpResponse<AdInsightReport> listInsights(String accountId) {
+        return listInsights(accountId, ListInsightsAdsRequest.builder().build());
+    }
+
+    /**
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdInsightReport> listInsights(String accountId, RequestOptions requestOptions) {
+        return listInsights(accountId, ListInsightsAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
+     */
+    public PealClientHttpResponse<AdInsightReport> listInsights(String accountId, ListInsightsAdsRequest request) {
+        return listInsights(accountId, request, null);
     }
 
     /**
      * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
      */
     public PealClientHttpResponse<AdInsightReport> listInsights(
-            String workspaceId, String accountId, RequestOptions requestOptions) {
-        return listInsights(
-                workspaceId, accountId, ListInsightsAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdInsightReport> listInsights(
-            String workspaceId, String accountId, ListInsightsAdsRequest request) {
-        return listInsights(workspaceId, accountId, request, null);
-    }
-
-    /**
-     * Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spend, impressions, reach, clicks and results, over the days <code>from</code> to <code>to</code> of the account's calendar, both included and at most 366 days: the last 30 when left out. A day is kept 396 days. Where <code>capabilities.reach</code> or <code>capabilities.results</code> is false, <code>reach</code> reads 0 and <code>results</code> null. Needs ads:read.
-     */
-    public PealClientHttpResponse<AdInsightReport> listInsights(
-            String workspaceId, String accountId, ListInsightsAdsRequest request, RequestOptions requestOptions) {
+            String accountId, ListInsightsAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/accounts")
+                .addPathSegments("api/v1/ads/accounts")
                 .addPathSegment(PathSegments.validate(accountId))
                 .addPathSegments("insights");
         if (request.getFrom().isPresent()) {
@@ -1459,38 +1386,32 @@ public class RawAdsClient {
     /**
      * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
      */
-    public PealClientHttpResponse<PostAdPerformance> postPerformance(String workspaceId, String postId) {
-        return postPerformance(
-                workspaceId, postId, PostPerformanceAdsRequest.builder().build());
+    public PealClientHttpResponse<PostAdPerformance> postPerformance(String postId) {
+        return postPerformance(postId, PostPerformanceAdsRequest.builder().build());
+    }
+
+    /**
+     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
+     */
+    public PealClientHttpResponse<PostAdPerformance> postPerformance(String postId, RequestOptions requestOptions) {
+        return postPerformance(postId, PostPerformanceAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
+     */
+    public PealClientHttpResponse<PostAdPerformance> postPerformance(String postId, PostPerformanceAdsRequest request) {
+        return postPerformance(postId, request, null);
     }
 
     /**
      * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
      */
     public PealClientHttpResponse<PostAdPerformance> postPerformance(
-            String workspaceId, String postId, RequestOptions requestOptions) {
-        return postPerformance(
-                workspaceId, postId, PostPerformanceAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
-     */
-    public PealClientHttpResponse<PostAdPerformance> postPerformance(
-            String workspaceId, String postId, PostPerformanceAdsRequest request) {
-        return postPerformance(workspaceId, postId, request, null);
-    }
-
-    /**
-     * Shows a published post's organic counts on each channel beside what the ads that promote it did, by ad account, and its boosts. Paid numbers are part of what a platform counts on the post: the two are shown side by side, never summed. The organic side is empty for someone who may not read analytics. Needs ads:read.
-     */
-    public PealClientHttpResponse<PostAdPerformance> postPerformance(
-            String workspaceId, String postId, PostPerformanceAdsRequest request, RequestOptions requestOptions) {
+            String postId, PostPerformanceAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/posts")
+                .addPathSegments("api/v1/ads/posts")
                 .addPathSegment(PathSegments.validate(postId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1525,6 +1446,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -1555,21 +1479,17 @@ public class RawAdsClient {
     /**
      * Checks a boost as <code>createBoost</code> would, and says what it would commit and the room it has, without reserving or sending anything: show it before the last step. A total budget commits its amount; a daily budget commits, for each calendar week of the account's zone (Sunday to Saturday) the run touches, its amount and 75% more for each day of the run in that week, which the network may spend on any day, and never more than 7 times its amount, the most the network spends in a week. Needs ads:spend.
      */
-    public PealClientHttpResponse<BoostQuote> quoteBoost(String workspaceId, QuoteBoostAdsRequest request) {
-        return quoteBoost(workspaceId, request, null);
+    public PealClientHttpResponse<BoostQuote> quoteBoost(NewBoost request) {
+        return quoteBoost(request, null);
     }
 
     /**
      * Checks a boost as <code>createBoost</code> would, and says what it would commit and the room it has, without reserving or sending anything: show it before the last step. A total budget commits its amount; a daily budget commits, for each calendar week of the account's zone (Sunday to Saturday) the run touches, its amount and 75% more for each day of the run in that week, which the network may spend on any day, and never more than 7 times its amount, the most the network spends in a week. Needs ads:spend.
      */
-    public PealClientHttpResponse<BoostQuote> quoteBoost(
-            String workspaceId, QuoteBoostAdsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<BoostQuote> quoteBoost(NewBoost request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/boosts")
-                .addPathSegments("quote");
+                .addPathSegments("api/v1/ads/boosts/quote");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -1579,7 +1499,7 @@ public class RawAdsClient {
         try {
             body = RequestBody.create(
                     ObjectMappers.JSON_MAPPER.writeValueAsBytes(BodyProperties.merge(
-                            request.getBody(), requestOptions != null ? requestOptions.getBodyProperties() : null)),
+                            request, requestOptions != null ? requestOptions.getBodyProperties() : null)),
                     MediaTypes.APPLICATION_JSON);
         } catch (JsonProcessingException e) {
             throw new PealClientException("Failed to serialize request", e);
@@ -1608,6 +1528,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -1644,35 +1567,31 @@ public class RawAdsClient {
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public PealClientHttpResponse<BoostPage> listBoosts(String workspaceId) {
-        return listBoosts(workspaceId, ListBoostsAdsRequest.builder().build());
+    public PealClientHttpResponse<BoostPage> listBoosts() {
+        return listBoosts(ListBoostsAdsRequest.builder().build());
     }
 
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public PealClientHttpResponse<BoostPage> listBoosts(String workspaceId, RequestOptions requestOptions) {
-        return listBoosts(workspaceId, ListBoostsAdsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<BoostPage> listBoosts(RequestOptions requestOptions) {
+        return listBoosts(ListBoostsAdsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public PealClientHttpResponse<BoostPage> listBoosts(String workspaceId, ListBoostsAdsRequest request) {
-        return listBoosts(workspaceId, request, null);
+    public PealClientHttpResponse<BoostPage> listBoosts(ListBoostsAdsRequest request) {
+        return listBoosts(request, null);
     }
 
     /**
      * Lists the workspace's boosts, newest first, 50 a page, those of one post with <code>postId</code>. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs ads:read.
      */
-    public PealClientHttpResponse<BoostPage> listBoosts(
-            String workspaceId, ListBoostsAdsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<BoostPage> listBoosts(ListBoostsAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads")
-                .addPathSegments("boosts");
+                .addPathSegments("api/v1/ads/boosts");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -1714,6 +1633,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -1744,21 +1666,17 @@ public class RawAdsClient {
     /**
      * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose <code>capabilities.boosts</code> is false, Google Ads: <code>AdAccountUnusable</code>), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
      */
-    public PealClientHttpResponse<Boost> createBoost(String workspaceId, CreateBoostAdsRequest request) {
-        return createBoost(workspaceId, request, null);
+    public PealClientHttpResponse<Boost> createBoost(CreateBoostAdsRequest request) {
+        return createBoost(request, null);
     }
 
     /**
      * <strong>Spends money.</strong> Boosts a post the workspace published on a Facebook Page, or on an Instagram account connected through its Page, as an ad on Meta: it spends up to the budget, from the ad account's payment method, until <code>endsAt</code>. The <code>Idempotency-Key</code> header is required: the same key with the same request answers the boost it made, and never makes another. The boost is accepted as <code>requested</code>, its budget counted against the ceiling, and made in the background, paused, then run; read it to see how that ended. It is refused, with nothing reserved or sent, when the server offers no spending, no owner allowed the account to spend, the account or its sign-in cannot run ads (as on an account whose <code>capabilities.boosts</code> is false, Google Ads: <code>AdAccountUnusable</code>), the post cannot be boosted, the boost breaks Peal's rules (an end date within 90 days is required), or the monthly ceiling or the account's own spend cap has no room. On a server that bills, it is refused the same way while the billing account, without a payment method, used the managed ads its month includes (UsageAllowanceReached <code>paymentMethodRequired</code>); running boosts are never touched. Needs ads:spend; never staff acting as a member.
      */
-    public PealClientHttpResponse<Boost> createBoost(
-            String workspaceId, CreateBoostAdsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<Boost> createBoost(CreateBoostAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads")
-                .addPathSegments("boosts");
+                .addPathSegments("api/v1/ads/boosts");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
@@ -1798,6 +1716,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -1837,36 +1758,32 @@ public class RawAdsClient {
     /**
      * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
      */
-    public PealClientHttpResponse<BoostDetail> getBoost(String workspaceId, String boostId) {
-        return getBoost(workspaceId, boostId, GetBoostAdsRequest.builder().build());
+    public PealClientHttpResponse<BoostDetail> getBoost(String boostId) {
+        return getBoost(boostId, GetBoostAdsRequest.builder().build());
+    }
+
+    /**
+     * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
+     */
+    public PealClientHttpResponse<BoostDetail> getBoost(String boostId, RequestOptions requestOptions) {
+        return getBoost(boostId, GetBoostAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
+     */
+    public PealClientHttpResponse<BoostDetail> getBoost(String boostId, GetBoostAdsRequest request) {
+        return getBoost(boostId, request, null);
     }
 
     /**
      * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
      */
     public PealClientHttpResponse<BoostDetail> getBoost(
-            String workspaceId, String boostId, RequestOptions requestOptions) {
-        return getBoost(workspaceId, boostId, GetBoostAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
-     */
-    public PealClientHttpResponse<BoostDetail> getBoost(
-            String workspaceId, String boostId, GetBoostAdsRequest request) {
-        return getBoost(workspaceId, boostId, request, null);
-    }
-
-    /**
-     * Shows a boost and the journal of the requests Peal sent the network for it, each with how it ended. Needs ads:read.
-     */
-    public PealClientHttpResponse<BoostDetail> getBoost(
-            String workspaceId, String boostId, GetBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, GetBoostAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/boosts")
+                .addPathSegments("api/v1/ads/boosts")
                 .addPathSegment(PathSegments.validate(boostId));
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
@@ -1901,6 +1818,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -1931,34 +1851,32 @@ public class RawAdsClient {
     /**
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
-    public PealClientHttpResponse<Boost> pauseBoost(String workspaceId, String boostId) {
-        return pauseBoost(workspaceId, boostId, PauseBoostAdsRequest.builder().build());
+    public PealClientHttpResponse<Boost> pauseBoost(String boostId) {
+        return pauseBoost(boostId, PauseBoostAdsRequest.builder().build());
     }
 
     /**
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
-    public PealClientHttpResponse<Boost> pauseBoost(String workspaceId, String boostId, RequestOptions requestOptions) {
-        return pauseBoost(workspaceId, boostId, PauseBoostAdsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Boost> pauseBoost(String boostId, RequestOptions requestOptions) {
+        return pauseBoost(boostId, PauseBoostAdsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
-    public PealClientHttpResponse<Boost> pauseBoost(String workspaceId, String boostId, PauseBoostAdsRequest request) {
-        return pauseBoost(workspaceId, boostId, request, null);
+    public PealClientHttpResponse<Boost> pauseBoost(String boostId, PauseBoostAdsRequest request) {
+        return pauseBoost(boostId, request, null);
     }
 
     /**
      * Pauses a boost that runs or may run: its campaign is told to pause, and the boost is <code>paused</code> once the network confirms. Asked twice, it is done once. Its budget stays counted against the ceiling. Needs ads:spend or ads:manage.
      */
     public PealClientHttpResponse<Boost> pauseBoost(
-            String workspaceId, String boostId, PauseBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, PauseBoostAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/boosts")
+                .addPathSegments("api/v1/ads/boosts")
                 .addPathSegment(PathSegments.validate(boostId))
                 .addPathSegments("pause");
         if (requestOptions != null) {
@@ -1993,6 +1911,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -2029,36 +1950,32 @@ public class RawAdsClient {
     /**
      * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
      */
-    public PealClientHttpResponse<Boost> resumeBoost(String workspaceId, String boostId) {
-        return resumeBoost(workspaceId, boostId, ResumeBoostAdsRequest.builder().build());
+    public PealClientHttpResponse<Boost> resumeBoost(String boostId) {
+        return resumeBoost(boostId, ResumeBoostAdsRequest.builder().build());
+    }
+
+    /**
+     * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
+     */
+    public PealClientHttpResponse<Boost> resumeBoost(String boostId, RequestOptions requestOptions) {
+        return resumeBoost(boostId, ResumeBoostAdsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
+     */
+    public PealClientHttpResponse<Boost> resumeBoost(String boostId, ResumeBoostAdsRequest request) {
+        return resumeBoost(boostId, request, null);
     }
 
     /**
      * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
      */
     public PealClientHttpResponse<Boost> resumeBoost(
-            String workspaceId, String boostId, RequestOptions requestOptions) {
-        return resumeBoost(workspaceId, boostId, ResumeBoostAdsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
-     */
-    public PealClientHttpResponse<Boost> resumeBoost(
-            String workspaceId, String boostId, ResumeBoostAdsRequest request) {
-        return resumeBoost(workspaceId, boostId, request, null);
-    }
-
-    /**
-     * <strong>Spends money.</strong> Runs a paused boost again, until its end. Resuming spends, so it is checked as a new boost is: spending still allowed, the account usable, and the ceiling, as it now is, not passed by what the account's boosts commit. Needs ads:spend.
-     */
-    public PealClientHttpResponse<Boost> resumeBoost(
-            String workspaceId, String boostId, ResumeBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, ResumeBoostAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/boosts")
+                .addPathSegments("api/v1/ads/boosts")
                 .addPathSegment(PathSegments.validate(boostId))
                 .addPathSegments("resume");
         if (requestOptions != null) {
@@ -2093,6 +2010,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -2129,34 +2049,32 @@ public class RawAdsClient {
     /**
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
-    public PealClientHttpResponse<Boost> stopBoost(String workspaceId, String boostId) {
-        return stopBoost(workspaceId, boostId, StopBoostAdsRequest.builder().build());
+    public PealClientHttpResponse<Boost> stopBoost(String boostId) {
+        return stopBoost(boostId, StopBoostAdsRequest.builder().build());
     }
 
     /**
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
-    public PealClientHttpResponse<Boost> stopBoost(String workspaceId, String boostId, RequestOptions requestOptions) {
-        return stopBoost(workspaceId, boostId, StopBoostAdsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<Boost> stopBoost(String boostId, RequestOptions requestOptions) {
+        return stopBoost(boostId, StopBoostAdsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
-    public PealClientHttpResponse<Boost> stopBoost(String workspaceId, String boostId, StopBoostAdsRequest request) {
-        return stopBoost(workspaceId, boostId, request, null);
+    public PealClientHttpResponse<Boost> stopBoost(String boostId, StopBoostAdsRequest request) {
+        return stopBoost(boostId, request, null);
     }
 
     /**
      * Stops a boost for good: its campaign is told to pause, and the boost is <code>stopped</code> once the network confirms; one not yet made is never made. Asked twice, it is done once. A stopped boost does not run again. What it committed is counted down to what it can have cost: nothing if it never ran, the days it ran for a daily budget, its whole budget for a total one. Needs ads:spend or ads:manage.
      */
     public PealClientHttpResponse<Boost> stopBoost(
-            String workspaceId, String boostId, StopBoostAdsRequest request, RequestOptions requestOptions) {
+            String boostId, StopBoostAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads/boosts")
+                .addPathSegments("api/v1/ads/boosts")
                 .addPathSegment(PathSegments.validate(boostId))
                 .addPathSegments("stop");
         if (requestOptions != null) {
@@ -2191,6 +2109,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -2227,35 +2148,31 @@ public class RawAdsClient {
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public PealClientHttpResponse<AdAuditPage> auditTrail(String workspaceId) {
-        return auditTrail(workspaceId, AuditTrailAdsRequest.builder().build());
+    public PealClientHttpResponse<AdAuditPage> auditTrail() {
+        return auditTrail(AuditTrailAdsRequest.builder().build());
     }
 
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public PealClientHttpResponse<AdAuditPage> auditTrail(String workspaceId, RequestOptions requestOptions) {
-        return auditTrail(workspaceId, AuditTrailAdsRequest.builder().build(), requestOptions);
+    public PealClientHttpResponse<AdAuditPage> auditTrail(RequestOptions requestOptions) {
+        return auditTrail(AuditTrailAdsRequest.builder().build(), requestOptions);
     }
 
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public PealClientHttpResponse<AdAuditPage> auditTrail(String workspaceId, AuditTrailAdsRequest request) {
-        return auditTrail(workspaceId, request, null);
+    public PealClientHttpResponse<AdAuditPage> auditTrail(AuditTrailAdsRequest request) {
+        return auditTrail(request, null);
     }
 
     /**
      * Lists the ads audit trail, newest first, 100 a page: every decision about spending and every change to a boost, with who made it and the amounts. Kept 13 months. Answers to owners alone (ads:authorize).
      */
-    public PealClientHttpResponse<AdAuditPage> auditTrail(
-            String workspaceId, AuditTrailAdsRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<AdAuditPage> auditTrail(AuditTrailAdsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("ads")
-                .addPathSegments("audit");
+                .addPathSegments("api/v1/ads/audit");
         if (request.getCursor().isPresent()) {
             QueryStringMapper.addQueryParameter(
                     httpUrl, "cursor", request.getCursor().get(), false);
@@ -2293,6 +2210,9 @@ public class RawAdsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

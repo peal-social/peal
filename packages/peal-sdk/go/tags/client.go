@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListTagsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Tags.List(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) List(
 	ctx context.Context,
-	request *peal.ListTagsRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.Tag, error) {
 	response, err := c.WithRawResponse.List(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,12 +59,9 @@ func (c *Client) List(
 //
 // Example:
 //
-//	request := &peal.CreateTagsRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.TagDetails{
-//	        Colour: peal.TagColourGray,
-//	        Name: "name",
-//	    },
+//	request := &peal.TagDetails{
+//	    Colour: peal.TagColourGray,
+//	    Name: "name",
 //	}
 //	_, err := client.Tags.Create(
 //	    context.TODO(),
@@ -78,7 +69,7 @@ func (c *Client) List(
 //	)
 func (c *Client) Create(
 	ctx context.Context,
-	request *peal.CreateTagsRequest,
+	request *peal.TagDetails,
 	opts ...option.RequestOption,
 ) (*peal.Tag, error) {
 	response, err := c.WithRawResponse.Create(
@@ -97,7 +88,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.DeleteTagsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    TagID: "tagId",
 //	}
 //	err := client.Tags.Delete(
@@ -125,7 +115,6 @@ func (c *Client) Delete(
 // Example:
 //
 //	request := &peal.UpdateTagsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    TagID: "tagId",
 //	    Body: &peal.TagDetails{
 //	        Colour: peal.TagColourGray,

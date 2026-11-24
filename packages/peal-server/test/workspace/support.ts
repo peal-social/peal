@@ -7,6 +7,7 @@ import { createOTP } from "@better-auth/utils/otp";
 import { assert } from "@effect/vitest";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Effect, Option, Redacted, Schema } from "effect";
+import { forWorkspace } from "peal-contract";
 
 import {
   catalogueKeysOf,
@@ -320,9 +321,9 @@ export const joined = Effect.fn("joined")(function* joined(
 
   const sent = yield* bodyOf(
     SentInvitationSchema,
-    yield* app.request(`/api/workspaces/${workspaceId}/invitations`, {
+    yield* app.request(`/api/v1/invitations`, {
       body: { email: person.email, role },
-      headers: { cookie: owner.cookies },
+      headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
     })
   );
 

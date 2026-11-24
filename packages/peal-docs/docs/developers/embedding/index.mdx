@@ -71,7 +71,7 @@ Then set it up in the web app, under **Settings**, then **Partner**:
 
 ### Accent colour [#accent]
 
-The accent colour is six hexadecimal digits, such as `#415EEE`. You can also set it with `accentColor` in `PATCH /api/workspaces/{workspaceId}/partner`, and remove it with `null`.
+The accent colour is six hexadecimal digits, such as `#415EEE`. You can also set it with `accentColor` in `PATCH /api/v1/partner-account`, and remove it with `null`.
 
 Peal's pages are light, and the line has to be visible. So the colour needs a contrast of at least 3:1 with white and with the page's background (`#FAFAF9`), which is the bar WCAG sets for such a line. A lighter colour, or anything other than `#RRGGBB`, answers 422 `PartnerDetailsInvalid` with `field` `accentColor`, and nothing is saved.
 
@@ -81,7 +81,7 @@ Buttons and text keep Peal's colours, so they stay readable whatever colour you 
 
 A partner key starts with `peal_partner_`, and you send it as `Authorization: Bearer peal_partner_…`. Only a signed-in owner or admin can create one, in the web app. No key and no application can create keys.
 
-You can revoke a key in the same place, or with `DELETE /api/workspaces/{workspaceId}/partner/keys/{partnerKeyId}`. It stops working at once.
+You can revoke a key in the same place, or with `DELETE /api/v1/partner-account/keys/{partnerKeyId}`. It stops working at once.
 
 The list shows who made each key (`createdBy`). A key follows its maker: it stops working once they leave your home workspace, are removed from it or close their account, and once their role there is one that can't manage the partner account (anything below admin). Before a removal or such a role change, the web app says how many of their keys stop working. So that your backend keeps running when someone leaves, have it use a key made by an owner who stays.
 
@@ -97,7 +97,7 @@ Inside each workspace the account owns, the key holds the [permissions](/guides/
 
 - `channel:*`, `media:*`, `post:*`, `analytics:read`, `assistant:use`, `webhook:*` and `billing:read`.
 - `engagement:read` and `engagement:reply`, for the [comments](/guides/engage/inbox) under a customer's posts and for answering them in public as its account. Other people wrote those comments, so only give a key these if your product shows or answers them.
-- `assistant:configure`, to set each customer's own [image provider](/guides/workspace#providers) with `PUT /api/workspaces/{workspaceId}/assistant/image-provider`, one workspace at a time, with the customer's key.
+- `assistant:configure`, to set each customer's own [image provider](/guides/workspace#providers) with `PUT /api/v1/assistant/image-provider`, one workspace at a time, with the customer's key.
 - `activity:read`, which reads the workspace's [activity log](/guides/workspace#activity): what your key asked to change there, and the accounts connected through connect links.
 
 A partner key never gets the [direct messages](/guides/engage/inbox#direct-messages) permissions (`engagement:readMessages`, `engagement:message`). Only a workspace's owner, in person, can let an application into them, and a customer's workspace has no owner.
@@ -106,7 +106,7 @@ It never holds what belongs to people either: members, invitations, API keys and
 
 ### What a partner key reaches [#isolation]
 
-Here's what a partner key gets, depending on where it calls:
+A partner key belongs to no workspace, so each request it sends inside one names it, with the workspace's id in the `Peal-Workspace` header. Without it, the API answers 400 `workspace_required` ([The workspace of a request](/developers/conventions#workspace)). Here's what a partner key gets, depending on the workspace it names:
 
 | With a partner key                                         | Answer                     |
 | ---------------------------------------------------------- | -------------------------- |
@@ -115,7 +115,7 @@ Here's what a partner key gets, depending on where it calls:
 | Any other workspace, your home workspace included          | 404                        |
 | `/api/me`, members, invitations, API keys of any workspace | 403                        |
 
-It works the other way round too. An API key of a workspace, a member's session or an OAuth token never calls `/api/partner`, and gets 403 if it tries.
+It works the other way round too. An API key of a workspace, a member's session or an OAuth token never calls `/api/v1/partner`, and gets 403 if it tries.
 
 [Two-step verification](/guides/workspace#require-two-step) applies to people. It doesn't affect partner keys, or your customers' workspaces, which have no members. Your home workspace's owners can still require it of its members, as in any workspace.
 
@@ -138,7 +138,13 @@ const workspace = await peal.partner.createWorkspace({
   externalId: "cus_42",
   "idempotency-key": "signup-cus_42",
 });
-// Every other call takes workspace.id as its workspaceId.
+
+// A client that acts in the new workspace: the calls inside it go through it.
+const customer = new PealClient({
+  token: process.env.PEAL_PARTNER_KEY,
+  baseUrl: "https://api.example.com",
+  workspace: workspace.id,
+});
 ```
 
 ```python Python
@@ -153,7 +159,13 @@ workspace = peal.partner.create_workspace(
     external_id="cus_42",
     idempotency_key="signup-cus_42",
 )
-# Every other call takes workspace.id as its workspace_id.
+
+# A client that acts in the new workspace: the calls inside it go through it.
+customer = Peal(
+    token=os.environ["PEAL_PARTNER_KEY"],
+    base_url="https://api.example.com",
+    workspace=workspace.id,
+)
 ```
 
 ```go Go
@@ -177,7 +189,13 @@ workspace, err := client.Partner.CreateWorkspace(ctx, &peal.NewCustomerWorkspace
 	ExternalID:     peal.String("cus_42"),
 	IdempotencyKey: peal.String("signup-cus_42"),
 })
-// Every other call takes workspace.ID as its WorkspaceID.
+
+// A client that acts in the new workspace: the calls inside it go through it.
+customer := pealclient.NewClient(
+	option.WithToken(os.Getenv("PEAL_PARTNER_KEY")),
+	option.WithBaseURL("https://api.example.com"),
+	option.WithWorkspace(peal.String(workspace.ID)),
+)
 ```
 
 ```ruby Ruby
@@ -190,7 +208,13 @@ workspace = peal.partner.create_workspace(
   external_id: "cus_42",
   idempotency_key: "signup-cus_42"
 )
-# Every other call takes workspace.id as its workspace_id.
+
+# A client that acts in the new workspace: the calls inside it go through it.
+customer = Peal::Client.new(
+  token: ENV.fetch("PEAL_PARTNER_KEY"),
+  base_url: "https://api.example.com",
+  workspace: workspace.id
+)
 ```
 
 ```java Java
@@ -209,7 +233,13 @@ CustomerWorkspace workspace = peal.partner().createWorkspace(
         .externalId("cus_42")
         .idempotencyKey("signup-cus_42")
         .build());
-// Every other call takes workspace.getId() as its workspaceId.
+
+// A client that acts in the new workspace: the calls inside it go through it.
+PealClient customer = PealClient.builder()
+    .token(System.getenv("PEAL_PARTNER_KEY"))
+    .url("https://api.example.com")
+    .workspace(workspace.getId())
+    .build();
 ```
 
 ```php PHP
@@ -227,7 +257,13 @@ $workspace = $peal->partner->createWorkspace(new NewCustomerWorkspace([
     'externalId' => 'cus_42',
     'idempotencyKey' => 'signup-cus_42',
 ]));
-// Every other call takes $workspace->id as its workspaceId.
+
+// A client that acts in the new workspace: the calls inside it go through it.
+$customer = new PealClient(
+    token: getenv('PEAL_PARTNER_KEY'),
+    workspace: $workspace->id,
+    options: ['baseUrl' => 'https://api.example.com'],
+);
 ```
 
 ```csharp .NET
@@ -235,7 +271,7 @@ using Peal;
 
 var peal = new PealClient(
     Environment.GetEnvironmentVariable("PEAL_PARTNER_KEY")!,
-    new ClientOptions { BaseUrl = "https://api.example.com" }
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
 );
 
 var workspace = await peal.Partner.CreateWorkspaceAsync(new NewCustomerWorkspace
@@ -244,7 +280,13 @@ var workspace = await peal.Partner.CreateWorkspaceAsync(new NewCustomerWorkspace
     ExternalId = "cus_42",
     IdempotencyKey = "signup-cus_42",
 });
-// Every other call takes workspace.Id as its WorkspaceId.
+
+// A client that acts in the new workspace: the calls inside it go through it.
+var customer = new PealClient(
+    Environment.GetEnvironmentVariable("PEAL_PARTNER_KEY")!,
+    workspace: workspace.Id,
+    clientOptions: new ClientOptions { BaseUrl = "https://api.example.com" }
+);
 ```
 
 ```rust Rust
@@ -267,11 +309,18 @@ let workspace = peal
         Some(RequestOptions::new().additional_header("Idempotency-Key", "signup-cus_42")),
     )
     .await?;
-// Every other call takes workspace.id as its workspace_id.
+
+// A client that acts in the new workspace: the calls inside it go through it.
+let customer = PealClient::new(ClientConfig {
+    token: std::env::var("PEAL_PARTNER_KEY").ok(),
+    base_url: "https://api.example.com".to_string(),
+    custom_headers: HashMap::from([("Peal-Workspace".to_string(), workspace.id.clone())]),
+    ..Default::default()
+})?;
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/partner/workspaces \
+curl -X POST https://api.example.com/api/v1/partner/workspaces \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
   -H "Content-Type: application/json" \
   -H "Idempotency-Key: signup-cus_42" \
@@ -295,14 +344,14 @@ A signup can time out, and your code will try again. Two things keep that from m
 
 The partner API has these requests:
 
-| Request                                        | What it does                                                                                                                                |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET /api/partner`                             | The partner account, and what it holds: workspaces and channels, now and at the end of each of the last 35 days                             |
-| `GET /api/partner/workspaces`                  | Your workspaces, newest first, each with its number of channels: `externalId` finds one exactly, `name` searches, `limit` and `before` page |
-| `POST /api/partner/workspaces`                 | Creates one                                                                                                                                 |
-| `GET /api/partner/workspaces/{workspaceId}`    | Reads one                                                                                                                                   |
-| `PATCH /api/partner/workspaces/{workspaceId}`  | Changes its name or its external id (`null` removes it)                                                                                     |
-| `DELETE /api/partner/workspaces/{workspaceId}` | Deletes it, with everything in it ([Offboard a customer](/developers/embedding/operate#offboard))                                           |
+| Request                                           | What it does                                                                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/partner`                             | The partner account, and what it holds: workspaces and channels, now and at the end of each of the last 35 days                             |
+| `GET /api/v1/partner/workspaces`                  | Your workspaces, newest first, each with its number of channels: `externalId` finds one exactly, `name` searches, `limit` and `before` page |
+| `POST /api/v1/partner/workspaces`                 | Creates one                                                                                                                                 |
+| `GET /api/v1/partner/workspaces/{workspaceId}`    | Reads one                                                                                                                                   |
+| `PATCH /api/v1/partner/workspaces/{workspaceId}`  | Changes its name or its external id (`null` removes it)                                                                                     |
+| `DELETE /api/v1/partner/workspaces/{workspaceId}` | Deletes it, with everything in it ([Offboard a customer](/developers/embedding/operate#offboard))                                           |
 
 To find a customer's workspace by your own id:
 
@@ -367,7 +416,7 @@ let page = peal
 ```
 
 ```bash curl
-curl "https://api.example.com/api/partner/workspaces?externalId=cus_42" \
+curl "https://api.example.com/api/v1/partner/workspaces?externalId=cus_42" \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY"
 ```
 
@@ -394,8 +443,7 @@ They never type a password into your product. Peal never sees their password eit
 <CodeGroup>
 
 ```ts Node.js
-const { link, url } = await peal.connectLinks.create({
-  workspaceId: workspace.id,
+const { link, url } = await customer.connectLinks.create({
   platform: "linkedin",
   returnUrl: "https://app.example.com/settings/social",
   expiresInHours: 24,
@@ -405,8 +453,7 @@ const { link, url } = await peal.connectLinks.create({
 ```
 
 ```python Python
-created = peal.connect_links.create(
-    workspace.id,
+created = customer.connect_links.create(
     platform="linkedin",
     return_url="https://app.example.com/settings/social",
     expires_in_hours=24,
@@ -416,8 +463,7 @@ created = peal.connect_links.create(
 ```
 
 ```go Go
-created, err := client.ConnectLinks.Create(ctx, &peal.NewConnectLink{
-	WorkspaceID:    workspace.ID,
+created, err := customer.ConnectLinks.Create(ctx, &peal.NewConnectLink{
 	Platform:       peal.PlatformLinkedin.Ptr(),
 	ReturnURL:      peal.String("https://app.example.com/settings/social"),
 	ExpiresInHours: peal.Int(24),
@@ -427,8 +473,7 @@ created, err := client.ConnectLinks.Create(ctx, &peal.NewConnectLink{
 ```
 
 ```ruby Ruby
-created = peal.connect_links.create(
-  workspace_id: workspace.id,
+created = customer.connect_links.create(
   platform: "linkedin",
   return_url: "https://app.example.com/settings/social",
   expires_in_hours: 24,
@@ -443,8 +488,7 @@ import social.peal.types.ConnectLinkLocale;
 import social.peal.types.CreatedConnectLink;
 import social.peal.types.Platform;
 
-CreatedConnectLink created = peal.connectLinks().create(
-    workspace.getId(),
+CreatedConnectLink created = customer.connectLinks().create(
     NewConnectLink.builder()
         .platform(Platform.LINKEDIN)
         .returnUrl("https://app.example.com/settings/social")
@@ -457,7 +501,7 @@ CreatedConnectLink created = peal.connectLinks().create(
 ```php PHP
 use Peal\ConnectLinks\Requests\NewConnectLink;
 
-$created = $peal->connectLinks->create($workspace->id, new NewConnectLink([
+$created = $customer->connectLinks->create(new NewConnectLink([
     'platform' => 'linkedin',
     'returnUrl' => 'https://app.example.com/settings/social',
     'expiresInHours' => 24,
@@ -467,9 +511,8 @@ $created = $peal->connectLinks->create($workspace->id, new NewConnectLink([
 ```
 
 ```csharp .NET
-var created = await peal.ConnectLinks.CreateAsync(new NewConnectLink
+var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
 {
-    WorkspaceId = workspace.Id,
     Platform = Platform.Linkedin,
     ReturnUrl = "https://app.example.com/settings/social",
     ExpiresInHours = 24,
@@ -479,10 +522,9 @@ var created = await peal.ConnectLinks.CreateAsync(new NewConnectLink
 ```
 
 ```rust Rust
-let created = peal
+let created = customer
     .connect_links
     .create(
-        &workspace.id,
         &NewConnectLink {
             platform: Some(Platform::Linkedin),
             return_url: Some("https://app.example.com/settings/social".to_string()),
@@ -497,8 +539,9 @@ let created = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/connect-links \
+curl -X POST https://api.example.com/api/v1/connect-links \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
   -d '{"platform": "linkedin", "returnUrl": "https://app.example.com/settings/social", "expiresInHours": 24, "locale": "fr"}'
 ```
@@ -526,32 +569,28 @@ With `platforms`, your customer can connect an account on each of them from one 
 <CodeGroup>
 
 ```ts Node.js
-const { link, url } = await peal.connectLinks.create({
-  workspaceId: workspace.id,
+const { link, url } = await customer.connectLinks.create({
   platforms: ["instagram", "linkedin", "mastodon"],
   returnUrl: "https://app.example.com/settings/social",
 });
 ```
 
 ```python Python
-created = peal.connect_links.create(
-    workspace.id,
+created = customer.connect_links.create(
     platforms=["instagram", "linkedin", "mastodon"],
     return_url="https://app.example.com/settings/social",
 )
 ```
 
 ```go Go
-created, err := client.ConnectLinks.Create(ctx, &peal.NewConnectLink{
-	WorkspaceID: workspace.ID,
-	Platforms:   []peal.Platform{peal.PlatformInstagram, peal.PlatformLinkedin, peal.PlatformMastodon},
-	ReturnURL:   peal.String("https://app.example.com/settings/social"),
+created, err := customer.ConnectLinks.Create(ctx, &peal.NewConnectLink{
+	Platforms: []peal.Platform{peal.PlatformInstagram, peal.PlatformLinkedin, peal.PlatformMastodon},
+	ReturnURL: peal.String("https://app.example.com/settings/social"),
 })
 ```
 
 ```ruby Ruby
-created = peal.connect_links.create(
-  workspace_id: workspace.id,
+created = customer.connect_links.create(
   platforms: %w[instagram linkedin mastodon],
   return_url: "https://app.example.com/settings/social"
 )
@@ -560,8 +599,7 @@ created = peal.connect_links.create(
 ```java Java
 import java.util.List;
 
-CreatedConnectLink created = peal.connectLinks().create(
-    workspace.getId(),
+CreatedConnectLink created = customer.connectLinks().create(
     NewConnectLink.builder()
         .platforms(List.of(Platform.INSTAGRAM, Platform.LINKEDIN, Platform.MASTODON))
         .returnUrl("https://app.example.com/settings/social")
@@ -569,26 +607,24 @@ CreatedConnectLink created = peal.connectLinks().create(
 ```
 
 ```php PHP
-$created = $peal->connectLinks->create($workspace->id, new NewConnectLink([
+$created = $customer->connectLinks->create(new NewConnectLink([
     'platforms' => ['instagram', 'linkedin', 'mastodon'],
     'returnUrl' => 'https://app.example.com/settings/social',
 ]));
 ```
 
 ```csharp .NET
-var created = await peal.ConnectLinks.CreateAsync(new NewConnectLink
+var created = await customer.ConnectLinks.CreateAsync(new NewConnectLink
 {
-    WorkspaceId = workspace.Id,
     Platforms = new[] { Platform.Instagram, Platform.Linkedin, Platform.Mastodon },
     ReturnUrl = "https://app.example.com/settings/social",
 });
 ```
 
 ```rust Rust
-let created = peal
+let created = customer
     .connect_links
     .create(
-        &workspace.id,
         &NewConnectLink {
             platforms: Some(vec![Platform::Instagram, Platform::Linkedin, Platform::Mastodon]),
             return_url: Some("https://app.example.com/settings/social".to_string()),
@@ -600,8 +636,9 @@ let created = peal
 ```
 
 ```bash curl
-curl -X POST https://api.example.com/api/workspaces/$WORKSPACE_ID/connect-links \
+curl -X POST https://api.example.com/api/v1/connect-links \
   -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: $WORKSPACE_ID" \
   -H "Content-Type: application/json" \
   -d '{"platforms": ["instagram", "linkedin", "mastodon"], "returnUrl": "https://app.example.com/settings/social"}'
 ```
@@ -664,7 +701,7 @@ Read the link with your key to find out what really happened:
 <CodeGroup>
 
 ```ts Node.js
-const link = await peal.connectLinks.get({ workspaceId, linkId });
+const link = await customer.connectLinks.get({ linkId });
 
 if (link.status === "completed") {
   // link.channelIds holds the channels it connected.
@@ -672,7 +709,7 @@ if (link.status === "completed") {
 ```
 
 ```python Python
-link = peal.connect_links.get(workspace_id, link_id)
+link = customer.connect_links.get(link_id)
 
 if link.status == "completed":
     # link.channel_ids holds the channels it connected.
@@ -680,9 +717,8 @@ if link.status == "completed":
 ```
 
 ```go Go
-link, err := client.ConnectLinks.Get(ctx, &peal.GetConnectLinksRequest{
-	WorkspaceID: workspaceID,
-	LinkID:      linkID,
+link, err := customer.ConnectLinks.Get(ctx, &peal.GetConnectLinksRequest{
+	LinkID: linkID,
 })
 
 if link.Status == peal.ConnectLinkStatusCompleted {
@@ -691,7 +727,7 @@ if link.Status == peal.ConnectLinkStatusCompleted {
 ```
 
 ```ruby Ruby
-link = peal.connect_links.get(workspace_id: workspace_id, link_id: link_id)
+link = customer.connect_links.get(link_id: link_id)
 
 if link.status == "completed"
   # link.channel_ids holds the channels it connected.
@@ -702,7 +738,7 @@ end
 import social.peal.types.ConnectLink;
 import social.peal.types.ConnectLinkStatus;
 
-ConnectLink link = peal.connectLinks().get(workspaceId, linkId);
+ConnectLink link = customer.connectLinks().get(linkId);
 
 if (link.getStatus().equals(ConnectLinkStatus.COMPLETED)) {
     // link.getChannelIds() holds the channels it connected.
@@ -710,7 +746,7 @@ if (link.getStatus().equals(ConnectLinkStatus.COMPLETED)) {
 ```
 
 ```php PHP
-$link = $peal->connectLinks->get($workspaceId, $linkId);
+$link = $customer->connectLinks->get($linkId);
 
 if ($link->status === 'completed') {
     // $link->channelIds holds the channels it connected.
@@ -718,9 +754,8 @@ if ($link->status === 'completed') {
 ```
 
 ```csharp .NET
-var link = await peal.ConnectLinks.GetAsync(new GetConnectLinksRequest
+var link = await customer.ConnectLinks.GetAsync(new GetConnectLinksRequest
 {
-    WorkspaceId = workspaceId,
     LinkId = linkId,
 });
 
@@ -731,7 +766,7 @@ if (link.Status == ConnectLinkStatus.Completed)
 ```
 
 ```rust Rust
-let link = peal.connect_links.get(&workspace_id, &link_id, None).await?;
+let link = customer.connect_links.get(&link_id, None).await?;
 
 if link.status == ConnectLinkStatus::Completed {
     // link.channel_ids holds the channels it connected.
@@ -739,8 +774,9 @@ if link.status == ConnectLinkStatus::Completed {
 ```
 
 ```bash curl
-curl https://api.example.com/api/workspaces/$WORKSPACE_ID/connect-links/$LINK_ID \
-  -H "Authorization: Bearer $PEAL_PARTNER_KEY"
+curl https://api.example.com/api/v1/connect-links/$LINK_ID \
+  -H "Authorization: Bearer $PEAL_PARTNER_KEY" \
+  -H "Peal-Workspace: $WORKSPACE_ID"
 ```
 
 </CodeGroup>
@@ -756,7 +792,7 @@ A link's `status` is one of these:
 
 Don't rely on the browser alone, because your customer may close the tab before they come back. Subscribe to [`channel.connected`](/developers/webhooks/events/channels#channel-connected) as well. Peal sends it when the account is connected, with the workspace's `workspaceExternalId`.
 
-To revoke a link, send `DELETE /api/workspaces/{workspaceId}/connect-links/{linkId}`. `GET …/connect-links` lists a workspace's links: those waiting, and those that ended in the last 30 days.
+To revoke a link, send `DELETE /api/v1/connect-links/{linkId}`. `GET …/connect-links` lists a workspace's links: those waiting, and those that ended in the last 30 days.
 
 ### Reconnect [#reconnect]
 

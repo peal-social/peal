@@ -52,7 +52,7 @@ public class UnpublishTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/unpublish")
+                    .WithPath("/api/v1/articles/articleId/unpublish")
                     .UsingPost()
             )
             .RespondWith(
@@ -63,7 +63,7 @@ public class UnpublishTest : BaseMockServerTest
             );
 
         var response = await Client.Articles.UnpublishAsync(
-            new UnpublishArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
+            new UnpublishArticlesRequest { ArticleId = "articleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -106,7 +106,7 @@ public class UnpublishTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/unpublish")
+                    .WithPath("/api/v1/articles/articleId/unpublish")
                     .UsingPost()
             )
             .RespondWith(
@@ -117,7 +117,7 @@ public class UnpublishTest : BaseMockServerTest
             );
 
         var response = await Client.Articles.UnpublishAsync(
-            new UnpublishArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
+            new UnpublishArticlesRequest { ArticleId = "articleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

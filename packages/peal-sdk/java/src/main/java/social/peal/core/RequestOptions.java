@@ -15,6 +15,8 @@ public final class RequestOptions {
 
     private final String pealVersion;
 
+    private final String workspace;
+
     private final Optional<Integer> timeout;
 
     private final TimeUnit timeoutTimeUnit;
@@ -34,6 +36,7 @@ public final class RequestOptions {
     private RequestOptions(
             String token,
             String pealVersion,
+            String workspace,
             Optional<Integer> timeout,
             TimeUnit timeoutTimeUnit,
             Optional<Integer> maxRetries,
@@ -44,6 +47,7 @@ public final class RequestOptions {
             Map<String, Object> bodyProperties) {
         this.token = token;
         this.pealVersion = pealVersion;
+        this.workspace = workspace;
         this.timeout = timeout;
         this.timeoutTimeUnit = timeoutTimeUnit;
         this.maxRetries = maxRetries;
@@ -73,6 +77,9 @@ public final class RequestOptions {
         }
         if (this.pealVersion != null) {
             headers.put("Peal-Version", this.pealVersion);
+        }
+        if (this.workspace != null) {
+            headers.put("Peal-Workspace", this.workspace);
         }
         headers.putAll(this.headers);
         this.headerSuppliers.forEach((key, supplier) -> {
@@ -105,6 +112,8 @@ public final class RequestOptions {
 
         private String pealVersion = null;
 
+        private String workspace = null;
+
         private Optional<Integer> timeout = Optional.empty();
 
         private TimeUnit timeoutTimeUnit = TimeUnit.SECONDS;
@@ -128,6 +137,11 @@ public final class RequestOptions {
 
         public Builder pealVersion(String pealVersion) {
             this.pealVersion = pealVersion;
+            return this;
+        }
+
+        public Builder workspace(String workspace) {
+            this.workspace = workspace;
             return this;
         }
 
@@ -187,6 +201,7 @@ public final class RequestOptions {
             return new RequestOptions(
                     token,
                     pealVersion,
+                    workspace,
                     timeout,
                     timeoutTimeUnit,
                     maxRetries,

@@ -20,7 +20,7 @@ import {
 } from "peal-ui/components/empty-state";
 import { Skeleton } from "peal-ui/components/skeleton";
 import { toast } from "peal-ui/components/toast";
-import { useRef, useState } from "react";
+import { useRef, useState, useTransition } from "react";
 import type { ComponentProps, KeyboardEvent, JSX, PointerEvent } from "react";
 import { flushSync } from "react-dom";
 
@@ -32,6 +32,8 @@ import {
 } from "#analytics/api.ts";
 import type { SummaryRange } from "#analytics/api.ts";
 import { useBoard } from "#analytics/board-store.ts";
+import { downloadExport } from "#analytics/export-download.ts";
+import type { ExportOutcome } from "#analytics/export-download.ts";
 import { notFollowed } from "#analytics/not-followed.ts";
 import { todayIn } from "#analytics/report.ts";
 import {
@@ -481,18 +483,50 @@ const BestTimesData = ({
   });
 };
 
+// Saves an export of the range, and says so when the server refused it.
+const ExportWidget = ({
+  range,
+  workspaceId,
+}: {
+  readonly range: SummaryRange;
+  readonly workspaceId: string;
+}) => {
+  const t = useTranslations("Analytics.export");
+  const [busy, startDownload] = useTransition();
+
+  return (
+    <ExportBody
+      busy={busy}
+      onDownload={(kind) => {
+        startDownload(async () => {
+          const outcome = await downloadExport(
+            workspaceId,
+            exportUrl(kind, range),
+            `peal-analytics-${kind}.csv`
+          ).catch((): ExportOutcome => "Failed");
+
+          // A workspace that now requires two-step verification shows its
+          // notice in place of the page, as for every call.
+          if (outcome === "SignedOut") {
+            toast.error(t("signedOut"));
+          } else if (outcome === "Refused") {
+            toast.error(t("refused"));
+          } else if (outcome === "Failed") {
+            toast.error(t("failed"));
+          }
+        });
+      }}
+    />
+  );
+};
+
 const WidgetBody = (
   props: BodyProps & { readonly period: Period; readonly timeZone: string }
 ) => {
   const t = useTranslations("Analytics.widgets");
 
   if (props.kind === "export") {
-    return (
-      <ExportBody
-        accounts={exportUrl(props.workspaceId, "accounts", props.range)}
-        posts={exportUrl(props.workspaceId, "posts", props.range)}
-      />
-    );
+    return <ExportWidget range={props.range} workspaceId={props.workspaceId} />;
   }
 
   if (props.kind === "bestTimes") {

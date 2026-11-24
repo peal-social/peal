@@ -25,6 +25,7 @@ import { WebhookHeadersRefused } from "./webhook-headers-refused.ts";
 import { WebhookUrlRefused } from "./webhook-url-refused.ts";
 import { WebhooksNotConfigured } from "./webhooks-not-configured.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /** How many webhook endpoints a workspace may have, whatever its plan. */
 export const maxWebhookEndpoints = 10;
@@ -468,9 +469,7 @@ export const defaultWebhookDeliveryPageSize = 30;
 /** The most deliveries a page holds. */
 export const maxWebhookDeliveryPageSize = 100;
 
-const workspace = { workspaceId: Schema.String };
-
-const endpoint = { ...workspace, endpointId: Schema.String };
+const endpoint = { endpointId: Schema.String };
 
 const pageQuery = {
   cursor: Schema.optionalKey(Schema.String),
@@ -499,7 +498,8 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(WebhookEndpointSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -517,7 +517,8 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
         PartnerNotFound,
         WebhookFilterRefused,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewWebhookEndpointSchema,
       success: WebhookEndpointSecretSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -529,7 +530,8 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
     // Declared before the routes of one endpoint, which `deliveries` is not.
     HttpApiEndpoint.get("searchDeliveries", "/deliveries", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         ...logQuery,
         endpointId: Schema.optionalKey(Schema.String),
@@ -545,7 +547,8 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
     ),
     HttpApiEndpoint.post("redeliverMany", "/deliveries/redeliver", {
       error: [Forbidden, WebhookEndpointNotFound, TooManyWebhookSends],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: WebhookRedeliveryRequestSchema,
       success: WebhookBulkRedeliverySchema.pipe(HttpApiSchema.status(202)),
     }).annotateMerge(
@@ -556,6 +559,7 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
     ),
     HttpApiEndpoint.get("get", "/:endpointId", {
       error: [Forbidden, WebhookEndpointNotFound],
+      headers: workspaceHeaders,
       params: endpoint,
       success: WebhookEndpointSchema,
     }).annotateMerge(
@@ -575,6 +579,7 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
         WebhookHeadersRefused,
         WebhookHeaderValuesRequired,
       ],
+      headers: workspaceHeaders,
       params: endpoint,
       payload: WebhookEndpointChangeSchema,
       success: WebhookEndpointSchema,
@@ -587,6 +592,7 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
     ),
     HttpApiEndpoint.delete("delete", "/:endpointId", {
       error: [Forbidden, WebhookEndpointNotFound],
+      headers: workspaceHeaders,
       params: endpoint,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -598,6 +604,7 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
     ),
     HttpApiEndpoint.post("rotateSecret", "/:endpointId/secret", {
       error: [Forbidden, WebhookEndpointNotFound, WebhooksNotConfigured],
+      headers: workspaceHeaders,
       params: endpoint,
       success: WebhookEndpointSecretSchema,
     }).annotateMerge(
@@ -613,6 +620,7 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
         WebhookEndpointDisabled,
         TooManyWebhookSends,
       ],
+      headers: workspaceHeaders,
       params: endpoint,
       query: {
         // A sample of this type instead of `webhook.test`.
@@ -627,6 +635,7 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
     ),
     HttpApiEndpoint.get("listDeliveries", "/:endpointId/deliveries", {
       error: [Forbidden, WebhookEndpointNotFound, HttpApiError.BadRequest],
+      headers: workspaceHeaders,
       params: endpoint,
       query: logQuery,
       success: WebhookDeliveryPageSchema,
@@ -647,6 +656,7 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
           WebhookEndpointDisabled,
           TooManyWebhookSends,
         ],
+        headers: workspaceHeaders,
         params: { ...endpoint, deliveryId: Schema.String },
         success: WebhookDeliverySchema.pipe(HttpApiSchema.status(202)),
       }
@@ -659,4 +669,4 @@ export class WebhooksApi extends HttpApiGroup.make("webhooks")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/webhooks") {}
+  .prefix("/api/v1/webhooks") {}

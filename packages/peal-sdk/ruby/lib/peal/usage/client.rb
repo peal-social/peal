@@ -27,12 +27,11 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :from
       # @option params [String, nil] :to
       #
       # @example
-      #   client.usage.get(workspace_id: "workspaceId")
+      #   client.usage.get
       #
       # @return [Peal::Types::WorkspaceUsageReport]
       def get(request_options: {}, **params)
@@ -44,7 +43,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/usage",
+          path: "api/v1/usage",
           query: query_params,
           request_options: request_options
         )
@@ -82,7 +81,7 @@ module Peal
       # were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400
       # days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and
       # `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account
-      # answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+      # answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
       #
       # @param request_options [Hash]
       # @param params [Hash]
@@ -91,14 +90,13 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :before
       # @option params [String, nil] :from
       # @option params [String, nil] :limit
       # @option params [String, nil] :to
       #
       # @example
-      #   client.usage.partner(workspace_id: "workspaceId")
+      #   client.usage.partner
       #
       # @return [Peal::Types::PartnerUsageReport]
       def partner(request_options: {}, **params)
@@ -112,7 +110,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/usage/partner",
+          path: "api/v1/usage/partner",
           query: query_params,
           request_options: request_options
         )

@@ -107,19 +107,19 @@ Moving to another host needs `headers` in the same request, with every header's 
 
 The `webhooks` group has these endpoints:
 
-| Endpoint                                                                                     | What it does                                                                                        |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `GET /api/workspaces/{workspaceId}/webhooks`                                                 | Lists the endpoints, oldest first                                                                   |
-| `POST /api/workspaces/{workspaceId}/webhooks`                                                | Adds an endpoint, and answers its `secret` once                                                     |
-| `GET /api/workspaces/{workspaceId}/webhooks/{endpointId}`                                    | Shows one                                                                                           |
-| `PATCH /api/workspaces/{workspaceId}/webhooks/{endpointId}`                                  | Changes its address, description, events, filters or headers, or turns it on or off                 |
-| `DELETE /api/workspaces/{workspaceId}/webhooks/{endpointId}`                                 | Deletes it, with its secret and its log                                                             |
-| `POST /api/workspaces/{workspaceId}/webhooks/{endpointId}/secret`                            | Rotates its secret, and answers the new one once                                                    |
-| `POST /api/workspaces/{workspaceId}/webhooks/{endpointId}/test`                              | Sends it a test event, or a sample of `eventType`                                                   |
-| `GET /api/workspaces/{workspaceId}/webhooks/{endpointId}/deliveries`                         | Lists its deliveries, newest first, 30 a page, by `status` and `eventType`                          |
-| `POST /api/workspaces/{workspaceId}/webhooks/{endpointId}/deliveries/{deliveryId}/redeliver` | Sends a delivery's event again                                                                      |
-| `GET /api/workspaces/{workspaceId}/webhooks/deliveries`                                      | Lists the deliveries of every endpoint, by `status`, `endpointId`, `eventType`, `since` and `until` |
-| `POST /api/workspaces/{workspaceId}/webhooks/deliveries/redeliver`                           | Sends many deliveries again: `deliveryIds`, or `endpointId` with `since`, `until` and `eventType`   |
+| Endpoint                                                               | What it does                                                                                        |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `GET /api/v1/webhooks`                                                 | Lists the endpoints, oldest first                                                                   |
+| `POST /api/v1/webhooks`                                                | Adds an endpoint, and answers its `secret` once                                                     |
+| `GET /api/v1/webhooks/{endpointId}`                                    | Shows one                                                                                           |
+| `PATCH /api/v1/webhooks/{endpointId}`                                  | Changes its address, description, events, filters or headers, or turns it on or off                 |
+| `DELETE /api/v1/webhooks/{endpointId}`                                 | Deletes it, with its secret and its log                                                             |
+| `POST /api/v1/webhooks/{endpointId}/secret`                            | Rotates its secret, and answers the new one once                                                    |
+| `POST /api/v1/webhooks/{endpointId}/test`                              | Sends it a test event, or a sample of `eventType`                                                   |
+| `GET /api/v1/webhooks/{endpointId}/deliveries`                         | Lists its deliveries, newest first, 30 a page, by `status` and `eventType`                          |
+| `POST /api/v1/webhooks/{endpointId}/deliveries/{deliveryId}/redeliver` | Sends a delivery's event again                                                                      |
+| `GET /api/v1/webhooks/deliveries`                                      | Lists the deliveries of every endpoint, by `status`, `endpointId`, `eventType`, `since` and `until` |
+| `POST /api/v1/webhooks/deliveries/redeliver`                           | Sends many deliveries again: `deliveryIds`, or `endpointId` with `since`, `until` and `eventType`   |
 
 The `GET` requests need `webhook:read`. Everything else needs `webhook:manage`.
 
@@ -133,10 +133,8 @@ This endpoint hears when posts go out, fail or stay unconfirmed, and sends a tok
 import { PealClient } from "peal-sdk";
 
 const peal = new PealClient({ token: process.env.PEAL_API_KEY });
-const workspaceId = process.env.PEAL_WORKSPACE_ID ?? "";
 
 const { endpoint, secret } = await peal.webhooks.create({
-  workspaceId,
   url: "https://hooks.example.com/peal",
   description: "Order system",
   eventTypes: ["post.published", "post.failed", "post.unconfirmed"],
@@ -150,10 +148,8 @@ import os
 from peal import Peal, WebhookHeader
 
 peal = Peal(token=os.environ["PEAL_API_KEY"])
-workspace_id = os.environ["PEAL_WORKSPACE_ID"]
 
 created = peal.webhooks.create(
-    workspace_id=workspace_id,
     url="https://hooks.example.com/peal",
     description="Order system",
     event_types=["post.published", "post.failed", "post.unconfirmed"],
@@ -172,10 +168,8 @@ import (
 )
 
 client := client.NewClient(option.WithToken(os.Getenv("PEAL_API_KEY")))
-workspaceID := os.Getenv("PEAL_WORKSPACE_ID")
 
 created, err := client.Webhooks.Create(context.TODO(), &peal.NewWebhookEndpoint{
-	WorkspaceID: workspaceID,
 	URL:         "https://hooks.example.com/peal",
 	Description: peal.String("Order system"),
 	EventTypes: []peal.SubscribableWebhookEventType{
@@ -193,10 +187,8 @@ created, err := client.Webhooks.Create(context.TODO(), &peal.NewWebhookEndpoint{
 require "peal"
 
 peal = Peal::Client.new(token: ENV.fetch("PEAL_API_KEY"))
-workspace_id = ENV.fetch("PEAL_WORKSPACE_ID")
 
 created = peal.webhooks.create(
-  workspace_id: workspace_id,
   url: "https://hooks.example.com/peal",
   description: "Order system",
   event_types: ["post.published", "post.failed", "post.unconfirmed"],
@@ -213,10 +205,8 @@ import social.peal.types.*;
 PealClient peal = PealClient.builder()
     .token(System.getenv("PEAL_API_KEY"))
     .build();
-String workspaceId = System.getenv("PEAL_WORKSPACE_ID");
 
 WebhookEndpointSecret created = peal.webhooks().create(
-    workspaceId,
     NewWebhookEndpoint.builder()
         .url("https://hooks.example.com/peal")
         .description("Order system")
@@ -239,9 +229,8 @@ use Peal\Types\WebhookHeader;
 use Peal\Webhooks\Requests\NewWebhookEndpoint;
 
 $peal = new PealClient(token: getenv('PEAL_API_KEY'));
-$workspaceId = getenv('PEAL_WORKSPACE_ID');
 
-$created = $peal->webhooks->create($workspaceId, new NewWebhookEndpoint([
+$created = $peal->webhooks->create(new NewWebhookEndpoint([
     'url' => 'https://hooks.example.com/peal',
     'description' => 'Order system',
     'eventTypes' => [
@@ -262,11 +251,9 @@ $created = $peal->webhooks->create($workspaceId, new NewWebhookEndpoint([
 using Peal;
 
 var peal = new PealClient(Environment.GetEnvironmentVariable("PEAL_API_KEY")!);
-var workspaceId = Environment.GetEnvironmentVariable("PEAL_WORKSPACE_ID")!;
 
 var created = await peal.Webhooks.CreateAsync(new NewWebhookEndpoint
 {
-    WorkspaceId = workspaceId,
     Url = "https://hooks.example.com/peal",
     Description = "Order system",
     EventTypes = new List<SubscribableWebhookEventType>
@@ -289,12 +276,10 @@ let peal = PealClient::new(ClientConfig {
     token: std::env::var("PEAL_API_KEY").ok(),
     ..Default::default()
 })?;
-let workspace_id = std::env::var("PEAL_WORKSPACE_ID")?;
 
 let created = peal
     .webhooks
     .create(
-        &workspace_id,
         &NewWebhookEndpoint::builder()
             .url("https://hooks.example.com/peal")
             .description("Order system")
@@ -314,7 +299,7 @@ let created = peal
 ```
 
 ```bash curl
-curl https://api.example.com/api/workspaces/$WORKSPACE_ID/webhooks \
+curl https://api.example.com/api/v1/webhooks \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -344,11 +329,8 @@ After an outage, you can send an endpoint's failed deliveries again since an ins
 
 ```ts Node.js
 const result = await peal.webhooks.redeliverMany({
-  workspaceId,
-  body: {
-    endpointId: "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f",
-    since: "2026-11-10T00:00:00Z",
-  },
+  endpointId: "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f",
+  since: "2026-11-10T00:00:00Z",
 });
 ```
 
@@ -356,7 +338,6 @@ const result = await peal.webhooks.redeliverMany({
 from peal import WebhookRedeliveryOfFailed
 
 result = peal.webhooks.redeliver_many(
-    workspace_id=workspace_id,
     request=WebhookRedeliveryOfFailed(
         endpoint_id="019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f",
         since="2026-11-10T00:00:00Z",
@@ -365,13 +346,10 @@ result = peal.webhooks.redeliver_many(
 ```
 
 ```go Go
-result, err := client.Webhooks.RedeliverMany(context.TODO(), &peal.RedeliverManyWebhooksRequest{
-	WorkspaceID: workspaceID,
-	Body: &peal.WebhookRedeliveryRequest{
-		WebhookRedeliveryOfFailed: &peal.WebhookRedeliveryOfFailed{
-			EndpointID: "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f",
-			Since:      peal.String("2026-11-10T00:00:00Z"),
-		},
+result, err := client.Webhooks.RedeliverMany(context.TODO(), &peal.WebhookRedeliveryRequest{
+	WebhookRedeliveryOfFailed: &peal.WebhookRedeliveryOfFailed{
+		EndpointID: "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f",
+		Since:      peal.String("2026-11-10T00:00:00Z"),
 	},
 })
 ```
@@ -380,7 +358,6 @@ result, err := client.Webhooks.RedeliverMany(context.TODO(), &peal.RedeliverMany
 # The SDK would send `endpoint_id` here, a key the API doesn't read, so
 # the endpoint's id goes in under the API's own name.
 result = peal.webhooks.redeliver_many(
-  workspace_id: workspace_id,
   since: "2026-11-10T00:00:00Z",
   request_options: {
     additional_body_parameters: { endpointId: "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f" }
@@ -390,36 +367,26 @@ result = peal.webhooks.redeliver_many(
 
 ```java Java
 WebhookBulkRedelivery result = peal.webhooks().redeliverMany(
-    workspaceId,
-    RedeliverManyWebhooksRequest.builder()
-        .body(WebhookRedeliveryRequest.of(WebhookRedeliveryOfFailed.builder()
-            .endpointId("019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f")
-            .since("2026-11-10T00:00:00Z")
-            .build()))
-        .build());
+    WebhookRedeliveryRequest.of(WebhookRedeliveryOfFailed.builder()
+        .endpointId("019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f")
+        .since("2026-11-10T00:00:00Z")
+        .build()));
 ```
 
 ```php PHP
 use Peal\Types\WebhookRedeliveryOfFailed;
-use Peal\Webhooks\Requests\RedeliverManyWebhooksRequest;
 
-$result = $peal->webhooks->redeliverMany($workspaceId, new RedeliverManyWebhooksRequest([
-    'body' => new WebhookRedeliveryOfFailed([
-        'endpointId' => '019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f',
-        'since' => '2026-11-10T00:00:00Z',
-    ]),
+$result = $peal->webhooks->redeliverMany(new WebhookRedeliveryOfFailed([
+    'endpointId' => '019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f',
+    'since' => '2026-11-10T00:00:00Z',
 ]));
 ```
 
 ```csharp .NET
-var result = await peal.Webhooks.RedeliverManyAsync(new RedeliverManyWebhooksRequest
+var result = await peal.Webhooks.RedeliverManyAsync(new WebhookRedeliveryOfFailed
 {
-    WorkspaceId = workspaceId,
-    Body = new WebhookRedeliveryOfFailed
-    {
-        EndpointId = "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f",
-        Since = "2026-11-10T00:00:00Z",
-    },
+    EndpointId = "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f",
+    Since = "2026-11-10T00:00:00Z",
 });
 ```
 
@@ -427,7 +394,6 @@ var result = await peal.Webhooks.RedeliverManyAsync(new RedeliverManyWebhooksReq
 let result = peal
     .webhooks
     .redeliver_many(
-        &workspace_id,
         &WebhookRedeliveryRequest::WebhookRedeliveryOfFailed(
             WebhookRedeliveryOfFailed::builder()
                 .endpoint_id("019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f")
@@ -440,7 +406,7 @@ let result = peal
 ```
 
 ```bash curl
-curl https://api.example.com/api/workspaces/$WORKSPACE_ID/webhooks/deliveries/redeliver \
+curl https://api.example.com/api/v1/webhooks/deliveries/redeliver \
   -H "Authorization: Bearer $PEAL_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{ "endpointId": "019a6e00-77aa-7f12-b0c4-1a2b3c4d5e6f", "since": "2026-11-10T00:00:00Z" }'

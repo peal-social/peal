@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         privateReplyId: "privateReplyId"
  *     }
  */
 export interface GetPrivateReplyInboxMessagesRequest {
-    workspaceId: string;
     privateReplyId: string;
 }

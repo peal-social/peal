@@ -157,7 +157,7 @@ const list = Command.make(
     };
 
     const page = yield* client.followUps
-      .list({ params: { workspaceId: workspace.id }, query })
+      .list({ headers: {}, query })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -202,10 +202,10 @@ const show = Command.make(
   "show",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("followUps.show")(function* show(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.followUps
-      .get({ params: { ruleId: input.rule, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* printRule(rule, input.json, `Rule on ${scopeOf(rule)}`);
@@ -253,7 +253,7 @@ const start = Command.make(
     }
 
     const likes = yield* checkedLikes(input.likes);
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const payload = {
       likes,
@@ -273,7 +273,7 @@ const start = Command.make(
     };
 
     const rule = yield* client.followUps
-      .create({ params: { workspaceId: workspace.id }, payload })
+      .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
     return yield* printRule(rule, input.json, `Following up ${scopeOf(rule)}`);
@@ -333,11 +333,12 @@ const update = Command.make(
       });
     }
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.followUps
       .update({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -356,11 +357,12 @@ const pausing = (paused: boolean) =>
     readonly rule: string;
     readonly workspace: Option.Option<string>;
   }) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.followUps
       .update({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
         payload: { paused },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -392,10 +394,10 @@ const approve = Command.make(
   "approve",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("followUps.approve")(function* approve(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.followUps
-      .approve({ params: { ruleId: input.rule, workspaceId: workspace.id } })
+      .approve({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* printRule(rule, input.json, `Approved rule ${rule.id}`);
@@ -410,10 +412,10 @@ const stop = Command.make(
   "stop",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("followUps.stop")(function* stop(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     yield* client.followUps
-      .delete({ params: { ruleId: input.rule, workspaceId: workspace.id } })
+      .delete({ headers: {}, params: { ruleId: input.rule } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* input.json

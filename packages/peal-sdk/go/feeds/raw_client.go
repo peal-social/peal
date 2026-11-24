@@ -43,10 +43,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/feeds",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/feeds"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/feeds",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/feeds"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -142,10 +136,7 @@ func (r *RawClient) Preview(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/feeds/preview",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/feeds/preview"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -190,8 +181,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/feeds/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/feeds/%v",
 		request.FeedID,
 	)
 	headers := internal.MergeHeaders(
@@ -236,8 +226,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/feeds/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/feeds/%v",
 		request.FeedID,
 	)
 	headers := internal.MergeHeaders(
@@ -280,8 +269,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/feeds/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/feeds/%v",
 		request.FeedID,
 	)
 	headers := internal.MergeHeaders(
@@ -328,8 +316,7 @@ func (r *RawClient) Items(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/feeds/%v/items",
-		request.WorkspaceID,
+		baseURL+"/api/v1/feeds/%v/items",
 		request.FeedID,
 	)
 	headers := internal.MergeHeaders(

@@ -7,9 +7,6 @@ namespace Peal;
 public record DeleteTagsRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string TagId { get; set; }
 
     /// <inheritdoc />

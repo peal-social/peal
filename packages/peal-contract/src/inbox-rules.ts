@@ -25,10 +25,9 @@ import {
 import { Forbidden } from "./forbidden.ts";
 import { TooManyCommentRules } from "./too-many-comment-rules.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
-const workspace = { workspaceId: Schema.String };
-
-const rule = { ...workspace, ruleId: Schema.String };
+const rule = { ruleId: Schema.String };
 
 const answers = `A rule answers, by itself and in public, as the channel's account, a comment written after it started or was last set going again, under a post it answers on (a post's rule acts on the channels the post is for, scheduled or out), that holds one of its keywords as a word (whatever its case and accents): with its \`reply\`, once a comment and once a person, ${String(maxRuleRepliesPerDay)} replies a day at most, and ${String(maxChannelRepliesPerDay)} a day for every rule of a channel together, through the inbox's own replies (their journal, one reply a comment, each one of the billing account's outbound messages). It answers on Mastodon, and on Facebook Pages and Instagram where the server reads their comments; Bluesky's, X's, LinkedIn's and YouTube's rules forbid an app to answer by itself, and \`channels\` says so. It never likes or follows anyone. With a \`privateReply\`, it also sends the author of each comment it answered that one private message, once its public reply is out: only on Instagram and Facebook Pages, whose platforms let an account send a commenter one message within 7 days of the comment, only where the channel's messages are on (a channel that cannot carry it answers in public only, and the match's \`privateCode\` says why), never twice to a comment, whoever sent the first, and never to anyone who did not comment. It acts as whoever started it, with what they may do then: it ends when they can no longer answer comments, and when its channel is disconnected.`;
 
@@ -37,7 +36,8 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
   .add(
     HttpApiEndpoint.get("listCommentRules", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         limit: Schema.optionalKey(
@@ -59,7 +59,8 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
         HttpApiError.BadRequest,
         TooManyCommentRules,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewCommentRuleSchema,
       success: CommentRuleSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -70,6 +71,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
     ),
     HttpApiEndpoint.get("getCommentRule", "/:ruleId", {
       error: [Forbidden, CommentRuleNotFound],
+      headers: workspaceHeaders,
       params: rule,
       success: CommentRuleSchema,
     }).annotateMerge(
@@ -86,6 +88,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
         CommentRuleNotFound,
         CommentRuleNotPossible,
       ],
+      headers: workspaceHeaders,
       params: rule,
       payload: CommentRuleChangeSchema,
       success: CommentRuleSchema,
@@ -98,6 +101,7 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
     ),
     HttpApiEndpoint.delete("deleteCommentRule", "/:ruleId", {
       error: [Forbidden, CommentRuleNotFound],
+      headers: workspaceHeaders,
       params: rule,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -110,4 +114,4 @@ export class InboxRulesApi extends HttpApiGroup.make("inboxRules")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/inbox/rules") {}
+  .prefix("/api/v1/inbox/rules") {}

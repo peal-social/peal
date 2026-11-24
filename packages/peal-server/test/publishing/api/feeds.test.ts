@@ -4,7 +4,7 @@ import type { Scope } from "effect";
 import { HttpServer } from "effect/http";
 import { HttpApiTest } from "effect/http-api";
 import { SqlClient } from "effect/sql";
-import { Api } from "peal-contract";
+import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
 import { FeedsHandlers } from "#publishing/api/feeds/feeds.ts";
@@ -107,7 +107,7 @@ const studio = Effect.gen(function* studio() {
     workspaceId,
   });
 
-  return { application, editor, params: { workspaceId }, viewer };
+  return { application, editor, headers: forWorkspace(workspaceId), viewer };
 });
 
 describe("feeds", () => {
@@ -116,12 +116,12 @@ describe("feeds", () => {
     () =>
       onServer(
         Effect.gen(function* lifecycle() {
-          const { editor, params, viewer } = yield* studio;
+          const { editor, headers, viewer } = yield* studio;
 
           yield* serveItems(blog, [{ n: 1, title: "Already there" }]);
 
           const added = yield* editor.feeds.create({
-            params,
+            headers,
             payload: { template: "{title}", url: blog },
           });
 
@@ -130,7 +130,7 @@ describe("feeds", () => {
             [1, "draft", "active", "A synthetic blog"]
           );
 
-          const page = yield* viewer.feeds.list({ params, query: {} });
+          const page = yield* viewer.feeds.list({ headers, query: {} });
 
           assert.deepStrictEqual(
             page.items.map(({ id }) => id),
@@ -138,7 +138,8 @@ describe("feeds", () => {
           );
 
           const items = yield* viewer.feeds.items({
-            params: { ...params, feedId: added.feed.id },
+            headers,
+            params: { feedId: added.feed.id },
           });
 
           assert.deepStrictEqual(
@@ -149,7 +150,8 @@ describe("feeds", () => {
           assert.match(items.items[0]?.digest ?? "", /^[0-9a-f]{64}$/u);
 
           const paused = yield* editor.feeds.update({
-            params: { ...params, feedId: added.feed.id },
+            headers,
+            params: { feedId: added.feed.id },
             payload: { status: "paused", template: "{title}\n{link}" },
           });
 
@@ -159,17 +161,18 @@ describe("feeds", () => {
           );
 
           const refused = yield* viewer.feeds
-            .create({ params, payload: { url: blog } })
+            .create({ headers, payload: { url: blog } })
             .pipe(Effect.flip);
 
           assert.strictEqual(refused._tag, "Forbidden");
 
           yield* editor.feeds.delete({
-            params: { ...params, feedId: added.feed.id },
+            headers,
+            params: { feedId: added.feed.id },
           });
 
           const gone = yield* viewer.feeds
-            .get({ params: { ...params, feedId: added.feed.id } })
+            .get({ headers, params: { feedId: added.feed.id } })
             .pipe(Effect.flip);
 
           assert.strictEqual(gone._tag, "FeedNotFound");
@@ -183,7 +186,7 @@ describe("feeds", () => {
     () =>
       onServer(
         Effect.gen(function* previews() {
-          const { editor, params, viewer } = yield* studio;
+          const { editor, headers, viewer } = yield* studio;
 
           yield* serveItems(blog, [
             { link: "https://blog.example/3", n: 3, title: "Three" },
@@ -193,7 +196,7 @@ describe("feeds", () => {
           ]);
 
           const preview = yield* editor.feeds.preview({
-            params,
+            headers,
             payload: { template: "New: {title}", url: blog },
           });
 
@@ -202,18 +205,18 @@ describe("feeds", () => {
             ["New: Three", "New: Two", "New: One"]
           );
 
-          const page = yield* viewer.feeds.list({ params, query: {} });
+          const page = yield* viewer.feeds.list({ headers, query: {} });
 
           assert.lengthOf(page.items, 0);
 
           const refused = yield* editor.feeds
-            .preview({ params, payload: { url: "https://10.0.0.1/feed" } })
+            .preview({ headers, payload: { url: "https://10.0.0.1/feed" } })
             .pipe(Effect.flip);
 
           assert.strictEqual(refused._tag, "FeedUnreadable");
 
           const template = yield* editor.feeds
-            .preview({ params, payload: { template: "{nope}", url: blog } })
+            .preview({ headers, payload: { template: "{nope}", url: blog } })
             .pipe(Effect.flip);
 
           assert.strictEqual(template._tag, "FeedTemplateInvalid");
@@ -227,18 +230,18 @@ describe("feeds", () => {
     () =>
       onServer(
         Effect.gen(function* queueNeedsSchedule() {
-          const { application, editor, params } = yield* studio;
+          const { application, editor, headers } = yield* studio;
 
           yield* serveItems(blog, []);
 
           const refused = yield* application.feeds
-            .create({ params, payload: { mode: "queue", url: blog } })
+            .create({ headers, payload: { mode: "queue", url: blog } })
             .pipe(Effect.flip);
 
           assert.strictEqual(refused._tag, "Forbidden");
 
           const drafts = yield* application.feeds.create({
-            params,
+            headers,
             payload: { url: blog },
           });
 
@@ -246,7 +249,8 @@ describe("feeds", () => {
 
           const toQueue = yield* application.feeds
             .update({
-              params: { ...params, feedId: drafts.feed.id },
+              headers,
+              params: { feedId: drafts.feed.id },
               payload: { mode: "queue" },
             })
             .pipe(Effect.flip);
@@ -256,7 +260,8 @@ describe("feeds", () => {
           // No queue in the workspace yet.
           const noQueue = yield* editor.feeds
             .update({
-              params: { ...params, feedId: drafts.feed.id },
+              headers,
+              params: { feedId: drafts.feed.id },
               payload: { mode: "queue" },
             })
             .pipe(Effect.flip);
@@ -272,16 +277,16 @@ describe("feeds", () => {
     () =>
       onServer(
         Effect.gen(function* readBudget() {
-          const { editor, params } = yield* studio;
+          const { editor, headers } = yield* studio;
 
           yield* serveItems(blog, []);
 
           for (let read = 0; read < 30; read += 1) {
-            yield* editor.feeds.preview({ params, payload: { url: blog } });
+            yield* editor.feeds.preview({ headers, payload: { url: blog } });
           }
 
           const limited = yield* editor.feeds
-            .preview({ params, payload: { url: blog } })
+            .preview({ headers, payload: { url: blog } })
             .pipe(Effect.flip);
 
           assert.strictEqual(limited._tag, "FeedReadsLimited");
@@ -300,19 +305,16 @@ describe("feeds", () => {
     () =>
       onServer(
         Effect.gen(function* permissionFirst() {
-          const { params, viewer } = yield* studio;
+          const { headers, viewer } = yield* studio;
 
-          const missing = {
-            ...params,
-            feedId: "0190f3a0-0000-7000-8000-00000000dead",
-          };
+          const missing = { feedId: "0190f3a0-0000-7000-8000-00000000dead" };
 
           const changed = yield* viewer.feeds
-            .update({ params: missing, payload: { status: "paused" } })
+            .update({ headers, params: missing, payload: { status: "paused" } })
             .pipe(Effect.flip);
 
           const removed = yield* viewer.feeds
-            .delete({ params: missing })
+            .delete({ headers, params: missing })
             .pipe(Effect.flip);
 
           assert.deepStrictEqual(
@@ -329,20 +331,20 @@ describe("feeds", () => {
     () =>
       onServer(
         Effect.gen(function* longInputs() {
-          const { editor, params } = yield* studio;
+          const { editor, headers } = yield* studio;
 
           yield* serveItems(blog, []);
 
           const template = yield* editor.feeds
             .create({
-              params,
+              headers,
               payload: { template: "a".repeat(1001), url: blog },
             })
             .pipe(Effect.flip);
 
           const address = yield* editor.feeds
             .create({
-              params,
+              headers,
               payload: { url: `https://blog.example/${"a".repeat(3000)}` },
             })
             .pipe(Effect.flip);

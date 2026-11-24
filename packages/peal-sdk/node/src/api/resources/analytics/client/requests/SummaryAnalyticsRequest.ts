@@ -5,14 +5,12 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         from: "from",
  *         timeZone: "timeZone",
  *         to: "to"
  *     }
  */
 export interface SummaryAnalyticsRequest {
-    workspaceId: string;
     from: Peal.CalendarDay;
     timeZone: string;
     to: Peal.CalendarDay;

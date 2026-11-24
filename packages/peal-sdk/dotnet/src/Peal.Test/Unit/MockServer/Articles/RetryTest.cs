@@ -52,7 +52,7 @@ public class RetryTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/retry")
+                    .WithPath("/api/v1/articles/articleId/retry")
                     .UsingPost()
             )
             .RespondWith(
@@ -63,7 +63,7 @@ public class RetryTest : BaseMockServerTest
             );
 
         var response = await Client.Articles.RetryAsync(
-            new RetryArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
+            new RetryArticlesRequest { ArticleId = "articleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -106,7 +106,7 @@ public class RetryTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/articles/articleId/retry")
+                    .WithPath("/api/v1/articles/articleId/retry")
                     .UsingPost()
             )
             .RespondWith(
@@ -117,7 +117,7 @@ public class RetryTest : BaseMockServerTest
             );
 
         var response = await Client.Articles.RetryAsync(
-            new RetryArticlesRequest { WorkspaceId = "workspaceId", ArticleId = "articleId" }
+            new RetryArticlesRequest { ArticleId = "articleId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

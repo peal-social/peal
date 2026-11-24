@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListReviewThreadsInboxReviewsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListReviewThreadsInboxReviewsRequest{}
 //	_, err := client.InboxReviews.ListReviewThreads(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) ListReviewThreads(
 // Example:
 //
 //	request := &peal.GetReviewThreadInboxReviewsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ThreadID: "threadId",
 //	}
 //	_, err := client.InboxReviews.GetReviewThread(
@@ -94,7 +91,6 @@ func (c *Client) GetReviewThread(
 // Example:
 //
 //	request := &peal.NewInboxReviewReply{
-//	    WorkspaceID: "workspaceId",
 //	    ReviewID: "reviewId",
 //	    Text: "text",
 //	}
@@ -123,7 +119,6 @@ func (c *Client) ReplyToReview(
 // Example:
 //
 //	request := &peal.WithdrawReviewReplyInboxReviewsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ReviewID: "reviewId",
 //	}
 //	_, err := client.InboxReviews.WithdrawReviewReply(
@@ -151,7 +146,6 @@ func (c *Client) WithdrawReviewReply(
 // Example:
 //
 //	request := &peal.SetReviewAnsweredInboxReviewsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ReviewID: "reviewId",
 //	    Answered: true,
 //	}

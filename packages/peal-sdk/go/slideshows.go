@@ -10,16 +10,14 @@ import (
 )
 
 var (
-	slideshowRequestFieldWorkspaceID      = big.NewInt(1 << 0)
-	slideshowRequestFieldAspect           = big.NewInt(1 << 1)
-	slideshowRequestFieldSecondsPerSlide  = big.NewInt(1 << 2)
-	slideshowRequestFieldSlides           = big.NewInt(1 << 3)
-	slideshowRequestFieldTransition       = big.NewInt(1 << 4)
-	slideshowRequestFieldVoiceoverMediaID = big.NewInt(1 << 5)
+	slideshowRequestFieldAspect           = big.NewInt(1 << 0)
+	slideshowRequestFieldSecondsPerSlide  = big.NewInt(1 << 1)
+	slideshowRequestFieldSlides           = big.NewInt(1 << 2)
+	slideshowRequestFieldTransition       = big.NewInt(1 << 3)
+	slideshowRequestFieldVoiceoverMediaID = big.NewInt(1 << 4)
 )
 
 type SlideshowRequest struct {
-	WorkspaceID      string           `json:"-" url:"-"`
 	Aspect           ImageAspect      `json:"aspect" url:"-"`
 	SecondsPerSlide  *int             `json:"secondsPerSlide,omitempty" url:"-"`
 	Slides           []*Slide         `json:"slides" url:"-"`
@@ -37,13 +35,6 @@ func (s *SlideshowRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SlideshowRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(slideshowRequestFieldWorkspaceID)
 }
 
 // SetAspect sets the Aspect field and marks it as non-optional;
@@ -103,13 +94,11 @@ func (s *SlideshowRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	editRenderRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	editRenderRequestFieldEdit        = big.NewInt(1 << 1)
+	editRenderRequestFieldEdit = big.NewInt(1 << 0)
 )
 
 type EditRenderRequest struct {
-	WorkspaceID string         `json:"-" url:"-"`
-	Edit        map[string]any `json:"edit" url:"-"`
+	Edit map[string]any `json:"edit" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -122,13 +111,6 @@ func (e *EditRenderRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	e.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (e *EditRenderRequest) SetWorkspaceID(workspaceID string) {
-	e.WorkspaceID = workspaceID
-	e.require(editRenderRequestFieldWorkspaceID)
 }
 
 // SetEdit sets the Edit field and marks it as non-optional;
@@ -160,12 +142,10 @@ func (e *EditRenderRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	getSlideshowsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getSlideshowsRequestFieldSlideshowID = big.NewInt(1 << 1)
+	getSlideshowsRequestFieldSlideshowID = big.NewInt(1 << 0)
 )
 
 type GetSlideshowsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
 	SlideshowID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -181,13 +161,6 @@ func (g *GetSlideshowsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetSlideshowsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getSlideshowsRequestFieldWorkspaceID)
-}
-
 // SetSlideshowID sets the SlideshowID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetSlideshowsRequest) SetSlideshowID(slideshowID string) {
@@ -196,13 +169,11 @@ func (g *GetSlideshowsRequest) SetSlideshowID(slideshowID string) {
 }
 
 var (
-	listSlideshowsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listSlideshowsRequestFieldStatus      = big.NewInt(1 << 1)
+	listSlideshowsRequestFieldStatus = big.NewInt(1 << 0)
 )
 
 type ListSlideshowsRequest struct {
-	WorkspaceID string           `json:"-" url:"-"`
-	Status      *SlideshowStatus `json:"-" url:"status,omitempty"`
+	Status *SlideshowStatus `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -215,13 +186,6 @@ func (l *ListSlideshowsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListSlideshowsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listSlideshowsRequestFieldWorkspaceID)
 }
 
 // SetStatus sets the Status field and marks it as non-optional;

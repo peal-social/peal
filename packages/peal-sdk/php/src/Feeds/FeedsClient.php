@@ -63,12 +63,10 @@ class FeedsClient
      * Example:
      * ```php
      * $client->feeds->list(
-     *     'workspaceId',
      *     new ListFeedsRequest([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param ListFeedsRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -82,7 +80,7 @@ class FeedsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ListFeedsRequest $request = new ListFeedsRequest(), ?array $options = null): ?FeedPage
+    public function list(ListFeedsRequest $request = new ListFeedsRequest(), ?array $options = null): ?FeedPage
     {
         $options = array_merge($this->options, $options ?? []);
         $query = [];
@@ -96,7 +94,7 @@ class FeedsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/feeds",
+                    path: "api/v1/feeds",
                     method: HttpMethod::GET,
                     query: $query,
                 ),
@@ -128,14 +126,12 @@ class FeedsClient
      * Example:
      * ```php
      * $client->feeds->create(
-     *     'workspaceId',
      *     new NewFeed([
      *         'url' => 'url',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewFeed $request
      * @param ?array{
      *   baseUrl?: string,
@@ -149,7 +145,7 @@ class FeedsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewFeed $request, ?array $options = null): ?CreatedFeed
+    public function create(NewFeed $request, ?array $options = null): ?CreatedFeed
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -157,7 +153,7 @@ class FeedsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/feeds",
+                    path: "api/v1/feeds",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -189,14 +185,12 @@ class FeedsClient
      * Example:
      * ```php
      * $client->feeds->preview(
-     *     'workspaceId',
      *     new FeedPreviewRequest([
      *         'url' => 'url',
      *     ]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param FeedPreviewRequest $request
      * @param ?array{
      *   baseUrl?: string,
@@ -210,7 +204,7 @@ class FeedsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function preview(string $workspaceId, FeedPreviewRequest $request, ?array $options = null): ?FeedPreview
+    public function preview(FeedPreviewRequest $request, ?array $options = null): ?FeedPreview
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -218,7 +212,7 @@ class FeedsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/feeds/preview",
+                    path: "api/v1/feeds/preview",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -250,12 +244,10 @@ class FeedsClient
      * Example:
      * ```php
      * $client->feeds->get(
-     *     'workspaceId',
      *     'feedId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $feedId
      * @param ?array{
      *   baseUrl?: string,
@@ -269,14 +261,14 @@ class FeedsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function get(string $workspaceId, string $feedId, ?array $options = null): ?Feed
+    public function get(string $feedId, ?array $options = null): ?Feed
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/feeds/{$feedId}",
+                    path: "api/v1/feeds/{$feedId}",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -307,12 +299,10 @@ class FeedsClient
      * Example:
      * ```php
      * $client->feeds->delete(
-     *     'workspaceId',
      *     'feedId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $feedId
      * @param ?array{
      *   baseUrl?: string,
@@ -325,14 +315,14 @@ class FeedsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function delete(string $workspaceId, string $feedId, ?array $options = null): void
+    public function delete(string $feedId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/feeds/{$feedId}",
+                    path: "api/v1/feeds/{$feedId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,
@@ -357,13 +347,11 @@ class FeedsClient
      * Example:
      * ```php
      * $client->feeds->update(
-     *     'workspaceId',
      *     'feedId',
      *     new FeedChange([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $feedId
      * @param FeedChange $request
      * @param ?array{
@@ -378,7 +366,7 @@ class FeedsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function update(string $workspaceId, string $feedId, FeedChange $request = new FeedChange(), ?array $options = null): ?Feed
+    public function update(string $feedId, FeedChange $request = new FeedChange(), ?array $options = null): ?Feed
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -386,7 +374,7 @@ class FeedsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/feeds/{$feedId}",
+                    path: "api/v1/feeds/{$feedId}",
                     method: HttpMethod::PATCH,
                     body: $request,
                 ),
@@ -418,12 +406,10 @@ class FeedsClient
      * Example:
      * ```php
      * $client->feeds->items(
-     *     'workspaceId',
      *     'feedId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $feedId
      * @param ?array{
      *   baseUrl?: string,
@@ -437,14 +423,14 @@ class FeedsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function items(string $workspaceId, string $feedId, ?array $options = null): ?FeedItems
+    public function items(string $feedId, ?array $options = null): ?FeedItems
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/feeds/{$feedId}/items",
+                    path: "api/v1/feeds/{$feedId}/items",
                     method: HttpMethod::GET,
                 ),
                 $options,

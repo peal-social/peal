@@ -43,10 +43,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/slideshows",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media/slideshows"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/slideshows",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media/slideshows"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -142,10 +136,7 @@ func (r *RawClient) CreateFromEdit(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/slideshows/edits",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media/slideshows/edits"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -190,8 +181,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/slideshows/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/slideshows/%v",
 		request.SlideshowID,
 	)
 	headers := internal.MergeHeaders(

@@ -315,7 +315,7 @@ public class UnscheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/unschedule")
+                    .WithPath("/api/v1/posts/postId/unschedule")
                     .UsingPost()
             )
             .RespondWith(
@@ -326,7 +326,7 @@ public class UnscheduleTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.UnscheduleAsync(
-            new UnschedulePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new UnschedulePostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -449,7 +449,7 @@ public class UnscheduleTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/unschedule")
+                    .WithPath("/api/v1/posts/postId/unschedule")
                     .UsingPost()
             )
             .RespondWith(
@@ -460,7 +460,7 @@ public class UnscheduleTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.UnscheduleAsync(
-            new UnschedulePostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new UnschedulePostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

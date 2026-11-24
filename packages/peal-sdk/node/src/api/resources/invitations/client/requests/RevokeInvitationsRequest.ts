@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         invitationId: "invitationId"
  *     }
  */
 export interface RevokeInvitationsRequest {
-    workspaceId: string;
     invitationId: string;
 }

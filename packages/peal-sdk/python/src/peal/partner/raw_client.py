@@ -51,7 +51,7 @@ class RawPartnerClient:
             PartnerOverview
         """
         _response = self._client_wrapper.httpx_client.request(
-            "api/partner",
+            "api/v1/partner",
             method="GET",
             request_options=request_options,
         )
@@ -132,7 +132,7 @@ class RawPartnerClient:
             PartnerHealth
         """
         _response = self._client_wrapper.httpx_client.request(
-            "api/partner/overview",
+            "api/v1/partner/overview",
             method="GET",
             params={
                 "before": before,
@@ -234,7 +234,7 @@ class RawPartnerClient:
             CustomerWorkspacePage
         """
         _response = self._client_wrapper.httpx_client.request(
-            "api/partner/workspaces",
+            "api/v1/partner/workspaces",
             method="GET",
             params={
                 "before": before,
@@ -338,7 +338,7 @@ class RawPartnerClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            "api/partner/workspaces",
+            "api/v1/partner/workspaces",
             method="POST",
             json={
                 "externalId": external_id,
@@ -455,7 +455,7 @@ class RawPartnerClient:
             CustomerWorkspace
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -540,7 +540,7 @@ class RawPartnerClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -664,7 +664,7 @@ class RawPartnerClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}",
             method="PATCH",
             json={
                 "externalId": external_id,
@@ -795,7 +795,7 @@ class RawPartnerClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/move",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/move",
             method="POST",
             json={
                 "toWorkspaceId": to_workspace_id,
@@ -903,7 +903,7 @@ class AsyncRawPartnerClient:
             PartnerOverview
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "api/partner",
+            "api/v1/partner",
             method="GET",
             request_options=request_options,
         )
@@ -984,7 +984,7 @@ class AsyncRawPartnerClient:
             PartnerHealth
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "api/partner/overview",
+            "api/v1/partner/overview",
             method="GET",
             params={
                 "before": before,
@@ -1086,7 +1086,7 @@ class AsyncRawPartnerClient:
             CustomerWorkspacePage
         """
         _response = await self._client_wrapper.httpx_client.request(
-            "api/partner/workspaces",
+            "api/v1/partner/workspaces",
             method="GET",
             params={
                 "before": before,
@@ -1190,7 +1190,7 @@ class AsyncRawPartnerClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            "api/partner/workspaces",
+            "api/v1/partner/workspaces",
             method="POST",
             json={
                 "externalId": external_id,
@@ -1307,7 +1307,7 @@ class AsyncRawPartnerClient:
             CustomerWorkspace
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1392,7 +1392,7 @@ class AsyncRawPartnerClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}",
             method="DELETE",
             request_options=request_options,
         )
@@ -1516,7 +1516,7 @@ class AsyncRawPartnerClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}",
             method="PATCH",
             json={
                 "externalId": external_id,
@@ -1647,7 +1647,7 @@ class AsyncRawPartnerClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/partner/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/move",
+            f"api/v1/partner/workspaces/{encode_path_param(workspace_id)}/channels/{encode_path_param(channel_id)}/move",
             method="POST",
             json={
                 "toWorkspaceId": to_workspace_id,

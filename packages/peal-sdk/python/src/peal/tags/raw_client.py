@@ -10,6 +10,7 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.bad_request_error import BadRequestError
 from ..errors.conflict_error import ConflictError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.not_found_error import NotFoundError
@@ -28,16 +29,12 @@ class RawTagsClient:
     def __init__(self, *, client_wrapper: SyncClientWrapper):
         self._client_wrapper = client_wrapper
 
-    def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[typing.List[Tag]]:
+    def list(self, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[typing.List[Tag]]:
         """
         Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -47,7 +44,7 @@ class RawTagsClient:
             Success
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags",
+            "api/v1/tags",
             method="GET",
             request_options=request_options,
         )
@@ -61,6 +58,17 @@ class RawTagsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -115,20 +123,13 @@ class RawTagsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def create(
-        self,
-        workspace_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Tag]:
         """
         Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         colour : TagColour
 
         name : str
@@ -145,14 +146,11 @@ class RawTagsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags",
+            "api/v1/tags",
             method="POST",
             json={
                 "colour": colour,
                 "name": name,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -167,6 +165,17 @@ class RawTagsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -231,16 +240,12 @@ class RawTagsClient:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
-    def delete(
-        self, workspace_id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[None]:
+    def delete(self, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -251,13 +256,24 @@ class RawTagsClient:
         HttpResponse[None]
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags/{encode_path_param(tag_id)}",
+            f"api/v1/tags/{encode_path_param(tag_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -312,21 +328,13 @@ class RawTagsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def update(
-        self,
-        workspace_id: str,
-        tag_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, tag_id: str, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[Tag]:
         """
         Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         colour : TagColour
@@ -345,7 +353,7 @@ class RawTagsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags/{encode_path_param(tag_id)}",
+            f"api/v1/tags/{encode_path_param(tag_id)}",
             method="PATCH",
             json={
                 "colour": colour,
@@ -367,6 +375,17 @@ class RawTagsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -437,15 +456,13 @@ class AsyncRawTagsClient:
         self._client_wrapper = client_wrapper
 
     async def list(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[typing.List[Tag]]:
         """
         Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`). Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -455,7 +472,7 @@ class AsyncRawTagsClient:
             Success
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags",
+            "api/v1/tags",
             method="GET",
             request_options=request_options,
         )
@@ -469,6 +486,17 @@ class AsyncRawTagsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -523,20 +551,13 @@ class AsyncRawTagsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def create(
-        self,
-        workspace_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Tag]:
         """
         Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         colour : TagColour
 
         name : str
@@ -553,14 +574,11 @@ class AsyncRawTagsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags",
+            "api/v1/tags",
             method="POST",
             json={
                 "colour": colour,
                 "name": name,
-            },
-            headers={
-                "content-type": "application/json",
             },
             request_options=_request_options_with_retries_disabled,
             omit=OMIT,
@@ -575,6 +593,17 @@ class AsyncRawTagsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -640,15 +669,13 @@ class AsyncRawTagsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def delete(
-        self, workspace_id: str, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, tag_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
         """
         Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -659,13 +686,24 @@ class AsyncRawTagsClient:
         AsyncHttpResponse[None]
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags/{encode_path_param(tag_id)}",
+            f"api/v1/tags/{encode_path_param(tag_id)}",
             method="DELETE",
             request_options=request_options,
         )
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -720,21 +758,13 @@ class AsyncRawTagsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def update(
-        self,
-        workspace_id: str,
-        tag_id: str,
-        *,
-        colour: TagColour,
-        name: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, tag_id: str, *, colour: TagColour, name: str, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[Tag]:
         """
         Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         tag_id : str
 
         colour : TagColour
@@ -753,7 +783,7 @@ class AsyncRawTagsClient:
             {**request_options, "max_retries": 0} if request_options is not None else {"max_retries": 0}
         )
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/tags/{encode_path_param(tag_id)}",
+            f"api/v1/tags/{encode_path_param(tag_id)}",
             method="PATCH",
             json={
                 "colour": colour,
@@ -775,6 +805,17 @@ class AsyncRawTagsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

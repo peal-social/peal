@@ -88,9 +88,7 @@ func TestVideoGenerationsListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListVideoGenerationsRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListVideoGenerationsRequest{}
 	_, invocationErr := client.VideoGenerations.List(
 		context.TODO(),
 		request,
@@ -100,7 +98,7 @@ func TestVideoGenerationsListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestVideoGenerationsListWithWireMock", "GET", "/api/workspaces/workspaceId/media/videos/generations", nil, 1)
+	VerifyRequestCount(t, "TestVideoGenerationsListWithWireMock", "GET", "/api/v1/media/videos/generations", nil, 1)
 }
 
 func TestVideoGenerationsCreateWithWireMock(
@@ -115,9 +113,8 @@ func TestVideoGenerationsCreateWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.VideoGenerationRequest{
-		WorkspaceID: "workspaceId",
-		Aspect:      peal.ImageAspectSquare,
-		Prompt:      "prompt",
+		Aspect: peal.ImageAspectSquare,
+		Prompt: "prompt",
 	}
 	_, invocationErr := client.VideoGenerations.Create(
 		context.TODO(),
@@ -128,7 +125,7 @@ func TestVideoGenerationsCreateWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestVideoGenerationsCreateWithWireMock", "POST", "/api/workspaces/workspaceId/media/videos/generations", nil, 1)
+	VerifyRequestCount(t, "TestVideoGenerationsCreateWithWireMock", "POST", "/api/v1/media/videos/generations", nil, 1)
 }
 
 func TestVideoGenerationsGetWithWireMock(
@@ -143,7 +140,6 @@ func TestVideoGenerationsGetWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.GetVideoGenerationsRequest{
-		WorkspaceID:  "workspaceId",
 		GenerationID: "generationId",
 	}
 	_, invocationErr := client.VideoGenerations.Get(
@@ -155,5 +151,5 @@ func TestVideoGenerationsGetWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestVideoGenerationsGetWithWireMock", "GET", "/api/workspaces/workspaceId/media/videos/generations/generationId", nil, 1)
+	VerifyRequestCount(t, "TestVideoGenerationsGetWithWireMock", "GET", "/api/v1/media/videos/generations/generationId", nil, 1)
 }

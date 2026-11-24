@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	getReviewThreadInboxReviewsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getReviewThreadInboxReviewsRequestFieldThreadID    = big.NewInt(1 << 1)
+	getReviewThreadInboxReviewsRequestFieldThreadID = big.NewInt(1 << 0)
 )
 
 type GetReviewThreadInboxReviewsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ThreadID    string `json:"-" url:"-"`
+	ThreadID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (g *GetReviewThreadInboxReviewsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetReviewThreadInboxReviewsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getReviewThreadInboxReviewsRequestFieldWorkspaceID)
-}
-
 // SetThreadID sets the ThreadID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetReviewThreadInboxReviewsRequest) SetThreadID(threadID string) {
@@ -46,19 +37,17 @@ func (g *GetReviewThreadInboxReviewsRequest) SetThreadID(threadID string) {
 }
 
 var (
-	listReviewThreadsInboxReviewsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listReviewThreadsInboxReviewsRequestFieldChannelID   = big.NewInt(1 << 1)
-	listReviewThreadsInboxReviewsRequestFieldCursor      = big.NewInt(1 << 2)
-	listReviewThreadsInboxReviewsRequestFieldLimit       = big.NewInt(1 << 3)
-	listReviewThreadsInboxReviewsRequestFieldUnanswered  = big.NewInt(1 << 4)
+	listReviewThreadsInboxReviewsRequestFieldChannelID  = big.NewInt(1 << 0)
+	listReviewThreadsInboxReviewsRequestFieldCursor     = big.NewInt(1 << 1)
+	listReviewThreadsInboxReviewsRequestFieldLimit      = big.NewInt(1 << 2)
+	listReviewThreadsInboxReviewsRequestFieldUnanswered = big.NewInt(1 << 3)
 )
 
 type ListReviewThreadsInboxReviewsRequest struct {
-	WorkspaceID string                                          `json:"-" url:"-"`
-	ChannelID   *string                                         `json:"-" url:"channelId,omitempty"`
-	Cursor      *string                                         `json:"-" url:"cursor,omitempty"`
-	Limit       *string                                         `json:"-" url:"limit,omitempty"`
-	Unanswered  *ListReviewThreadsInboxReviewsRequestUnanswered `json:"-" url:"unanswered,omitempty"`
+	ChannelID  *string                                         `json:"-" url:"channelId,omitempty"`
+	Cursor     *string                                         `json:"-" url:"cursor,omitempty"`
+	Limit      *string                                         `json:"-" url:"limit,omitempty"`
+	Unanswered *ListReviewThreadsInboxReviewsRequestUnanswered `json:"-" url:"unanswered,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -71,13 +60,6 @@ func (l *ListReviewThreadsInboxReviewsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListReviewThreadsInboxReviewsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listReviewThreadsInboxReviewsRequestFieldWorkspaceID)
 }
 
 // SetChannelID sets the ChannelID field and marks it as non-optional;
@@ -110,14 +92,12 @@ func (l *ListReviewThreadsInboxReviewsRequest) SetUnanswered(unanswered *ListRev
 
 var (
 	newInboxReviewReplyFieldIdempotencyKey = big.NewInt(1 << 0)
-	newInboxReviewReplyFieldWorkspaceID    = big.NewInt(1 << 1)
-	newInboxReviewReplyFieldReviewID       = big.NewInt(1 << 2)
-	newInboxReviewReplyFieldText           = big.NewInt(1 << 3)
+	newInboxReviewReplyFieldReviewID       = big.NewInt(1 << 1)
+	newInboxReviewReplyFieldText           = big.NewInt(1 << 2)
 )
 
 type NewInboxReviewReply struct {
 	IdempotencyKey *string `json:"-" url:"-"`
-	WorkspaceID    string  `json:"-" url:"-"`
 	ReviewID       string  `json:"-" url:"-"`
 	Text           string  `json:"text" url:"-"`
 
@@ -139,13 +119,6 @@ func (n *NewInboxReviewReply) require(field *big.Int) {
 func (n *NewInboxReviewReply) SetIdempotencyKey(idempotencyKey *string) {
 	n.IdempotencyKey = idempotencyKey
 	n.require(newInboxReviewReplyFieldIdempotencyKey)
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewInboxReviewReply) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newInboxReviewReplyFieldWorkspaceID)
 }
 
 // SetReviewID sets the ReviewID field and marks it as non-optional;
@@ -184,15 +157,13 @@ func (n *NewInboxReviewReply) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	setReviewAnsweredInboxReviewsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	setReviewAnsweredInboxReviewsRequestFieldReviewID    = big.NewInt(1 << 1)
-	setReviewAnsweredInboxReviewsRequestFieldAnswered    = big.NewInt(1 << 2)
+	setReviewAnsweredInboxReviewsRequestFieldReviewID = big.NewInt(1 << 0)
+	setReviewAnsweredInboxReviewsRequestFieldAnswered = big.NewInt(1 << 1)
 )
 
 type SetReviewAnsweredInboxReviewsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ReviewID    string `json:"-" url:"-"`
-	Answered    bool   `json:"answered" url:"-"`
+	ReviewID string `json:"-" url:"-"`
+	Answered bool   `json:"answered" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -205,13 +176,6 @@ func (s *SetReviewAnsweredInboxReviewsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *SetReviewAnsweredInboxReviewsRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(setReviewAnsweredInboxReviewsRequestFieldWorkspaceID)
 }
 
 // SetReviewID sets the ReviewID field and marks it as non-optional;
@@ -1702,13 +1666,11 @@ func (l ListReviewThreadsInboxReviewsRequestUnanswered) Ptr() *ListReviewThreads
 }
 
 var (
-	withdrawReviewReplyInboxReviewsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	withdrawReviewReplyInboxReviewsRequestFieldReviewID    = big.NewInt(1 << 1)
+	withdrawReviewReplyInboxReviewsRequestFieldReviewID = big.NewInt(1 << 0)
 )
 
 type WithdrawReviewReplyInboxReviewsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ReviewID    string `json:"-" url:"-"`
+	ReviewID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1721,13 +1683,6 @@ func (w *WithdrawReviewReplyInboxReviewsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	w.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (w *WithdrawReviewReplyInboxReviewsRequest) SetWorkspaceID(workspaceID string) {
-	w.WorkspaceID = workspaceID
-	w.require(withdrawReviewReplyInboxReviewsRequestFieldWorkspaceID)
 }
 
 // SetReviewID sets the ReviewID field and marks it as non-optional;

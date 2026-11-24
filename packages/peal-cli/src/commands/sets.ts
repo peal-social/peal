@@ -91,7 +91,7 @@ const list = Command.make(
       return;
     }
 
-    const names = yield* channelNames(client, workspace.id);
+    const names = yield* channelNames(client);
 
     yield* Console.log(`Channel sets of ${workspace.name}:`);
 
@@ -136,7 +136,7 @@ const create = Command.make(
     const { client, url, workspace } = yield* inWorkspace(input.workspace);
 
     const made = yield* client.channelSets
-      .create({ params: { workspaceId: workspace.id }, payload })
+      .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
     if (input.json) {
@@ -222,7 +222,8 @@ const update = Command.make(
 
     const changed = yield* client.channelSets
       .update({
-        params: { channelSetId: set.id, workspaceId: workspace.id },
+        headers: {},
+        params: { channelSetId: set.id },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -268,7 +269,7 @@ const remove = Command.make(
     const set = yield* findSet(session, given);
 
     yield* client.channelSets
-      .delete({ params: { channelSetId: set.id, workspaceId: workspace.id } })
+      .delete({ headers: {}, params: { channelSetId: set.id } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json

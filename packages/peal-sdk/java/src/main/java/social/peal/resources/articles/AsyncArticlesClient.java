@@ -40,8 +40,8 @@ public class AsyncArticlesClient {
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public CompletableFuture<ArticlePage> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<ArticlePage> list() {
+        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list();
         CompletableFuture<ArticlePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -54,9 +54,8 @@ public class AsyncArticlesClient {
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public CompletableFuture<ArticlePage> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
+    public CompletableFuture<ArticlePage> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<ArticlePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -69,8 +68,8 @@ public class AsyncArticlesClient {
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public CompletableFuture<ArticlePage> list(String workspaceId, ListArticlesRequest request) {
-        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(workspaceId, request);
+    public CompletableFuture<ArticlePage> list(ListArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(request);
         CompletableFuture<ArticlePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -83,10 +82,8 @@ public class AsyncArticlesClient {
     /**
      * Lists the workspace's articles, newest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those in one <code>status</code> when it is given. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next. Needs post:read.
      */
-    public CompletableFuture<ArticlePage> list(
-            String workspaceId, ListArticlesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<ArticlePage> list(ListArticlesRequest request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<ArticlePage>> rawFuture = this.rawClient.list(request, requestOptions);
         CompletableFuture<ArticlePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -99,8 +96,8 @@ public class AsyncArticlesClient {
     /**
      * Writes an article for one of the workspace's websites (a channel connected with connectSite): a draft, or scheduled at once with <code>schedule</code>. A scheduled article is checked as the site would take it (ArticleRejected lists every violation); its images are files of the workspace's library, ready (UnknownMedia otherwise), the cover an image. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:create, and post:schedule with <code>schedule</code>.
      */
-    public CompletableFuture<Article> create(String workspaceId, NewArticle request) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<Article> create(NewArticle request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.create(request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -113,9 +110,8 @@ public class AsyncArticlesClient {
     /**
      * Writes an article for one of the workspace's websites (a channel connected with connectSite): a draft, or scheduled at once with <code>schedule</code>. A scheduled article is checked as the site would take it (ArticleRejected lists every violation); its images are files of the workspace's library, ready (UnknownMedia otherwise), the cover an image. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:create, and post:schedule with <code>schedule</code>.
      */
-    public CompletableFuture<Article> create(String workspaceId, NewArticle request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+    public CompletableFuture<Article> create(NewArticle request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.create(request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -128,8 +124,8 @@ public class AsyncArticlesClient {
     /**
      * Reads an article. Needs post:read.
      */
-    public CompletableFuture<Article> get(String workspaceId, String articleId) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.get(workspaceId, articleId);
+    public CompletableFuture<Article> get(String articleId) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.get(articleId);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -142,9 +138,8 @@ public class AsyncArticlesClient {
     /**
      * Reads an article. Needs post:read.
      */
-    public CompletableFuture<Article> get(String workspaceId, String articleId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.get(workspaceId, articleId, requestOptions);
+    public CompletableFuture<Article> get(String articleId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.get(articleId, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -157,9 +152,8 @@ public class AsyncArticlesClient {
     /**
      * Reads an article. Needs post:read.
      */
-    public CompletableFuture<Article> get(String workspaceId, String articleId, GetArticlesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.get(workspaceId, articleId, request);
+    public CompletableFuture<Article> get(String articleId, GetArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.get(articleId, request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -172,10 +166,9 @@ public class AsyncArticlesClient {
     /**
      * Reads an article. Needs post:read.
      */
-    public CompletableFuture<Article> get(
-            String workspaceId, String articleId, GetArticlesRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Article> get(String articleId, GetArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.get(workspaceId, articleId, request, requestOptions);
+                this.rawClient.get(articleId, request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -188,8 +181,8 @@ public class AsyncArticlesClient {
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String articleId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, articleId);
+    public CompletableFuture<Void> delete(String articleId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(articleId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -202,9 +195,8 @@ public class AsyncArticlesClient {
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String articleId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, articleId, requestOptions);
+    public CompletableFuture<Void> delete(String articleId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(articleId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -217,9 +209,8 @@ public class AsyncArticlesClient {
     /**
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String articleId, DeleteArticlesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, articleId, request);
+    public CompletableFuture<Void> delete(String articleId, DeleteArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(articleId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -233,9 +224,9 @@ public class AsyncArticlesClient {
      * Deletes the article from Peal, and its job when it waits to go out; never while it is being sent. A post already on the site stays there: unpublish it first. Needs post:delete.
      */
     public CompletableFuture<Void> delete(
-            String workspaceId, String articleId, DeleteArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, DeleteArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, articleId, request, requestOptions);
+                this.rawClient.delete(articleId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -248,9 +239,8 @@ public class AsyncArticlesClient {
     /**
      * Replaces what a draft, a scheduled article or one that failed says. A scheduled article is checked again and keeps its time; it is refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval. Once on the site, use updateOnSite. Needs post:update.
      */
-    public CompletableFuture<Article> update(String workspaceId, String articleId, UpdateArticlesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.update(workspaceId, articleId, request);
+    public CompletableFuture<Article> update(String articleId, UpdateArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.update(articleId, request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -264,9 +254,9 @@ public class AsyncArticlesClient {
      * Replaces what a draft, a scheduled article or one that failed says. A scheduled article is checked again and keeps its time; it is refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval. Once on the site, use updateOnSite. Needs post:update.
      */
     public CompletableFuture<Article> update(
-            String workspaceId, String articleId, UpdateArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, UpdateArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.update(workspaceId, articleId, request, requestOptions);
+                this.rawClient.update(articleId, request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -279,9 +269,8 @@ public class AsyncArticlesClient {
     /**
      * Schedules a draft, moves a scheduled article, or schedules one that failed again: Peal sends it at <code>at</code>, or now without it, and the site makes it what <code>siteStatus</code> says. With <code>future</code>, the site publishes it at <code>at</code>, which must be ahead, and Peal sends it at once. Everything is checked as the site would take it. What goes out is public, and cannot be taken back from Peal but by unpublishing it. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public CompletableFuture<Article> schedule(String workspaceId, String articleId, ScheduleArticlesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.schedule(workspaceId, articleId, request);
+    public CompletableFuture<Article> schedule(String articleId, ScheduleArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.schedule(articleId, request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -295,9 +284,9 @@ public class AsyncArticlesClient {
      * Schedules a draft, moves a scheduled article, or schedules one that failed again: Peal sends it at <code>at</code>, or now without it, and the site makes it what <code>siteStatus</code> says. With <code>future</code>, the site publishes it at <code>at</code>, which must be ahead, and Peal sends it at once. Everything is checked as the site would take it. What goes out is public, and cannot be taken back from Peal but by unpublishing it. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
     public CompletableFuture<Article> schedule(
-            String workspaceId, String articleId, ScheduleArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, ScheduleArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.schedule(workspaceId, articleId, request, requestOptions);
+                this.rawClient.schedule(articleId, request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -310,9 +299,8 @@ public class AsyncArticlesClient {
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public CompletableFuture<Article> unschedule(String workspaceId, String articleId) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.unschedule(workspaceId, articleId);
+    public CompletableFuture<Article> unschedule(String articleId) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.unschedule(articleId);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -325,9 +313,9 @@ public class AsyncArticlesClient {
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public CompletableFuture<Article> unschedule(String workspaceId, String articleId, RequestOptions requestOptions) {
+    public CompletableFuture<Article> unschedule(String articleId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.unschedule(workspaceId, articleId, requestOptions);
+                this.rawClient.unschedule(articleId, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -340,10 +328,8 @@ public class AsyncArticlesClient {
     /**
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
-    public CompletableFuture<Article> unschedule(
-            String workspaceId, String articleId, UnscheduleArticlesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.unschedule(workspaceId, articleId, request);
+    public CompletableFuture<Article> unschedule(String articleId, UnscheduleArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.unschedule(articleId, request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -357,9 +343,9 @@ public class AsyncArticlesClient {
      * Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
      */
     public CompletableFuture<Article> unschedule(
-            String workspaceId, String articleId, UnscheduleArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, UnscheduleArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.unschedule(workspaceId, articleId, request, requestOptions);
+                this.rawClient.unschedule(articleId, request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -372,8 +358,8 @@ public class AsyncArticlesClient {
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public CompletableFuture<Article> retry(String workspaceId, String articleId) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.retry(workspaceId, articleId);
+    public CompletableFuture<Article> retry(String articleId) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.retry(articleId);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -386,9 +372,8 @@ public class AsyncArticlesClient {
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public CompletableFuture<Article> retry(String workspaceId, String articleId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.retry(workspaceId, articleId, requestOptions);
+    public CompletableFuture<Article> retry(String articleId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.retry(articleId, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -401,9 +386,8 @@ public class AsyncArticlesClient {
     /**
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
-    public CompletableFuture<Article> retry(String workspaceId, String articleId, RetryArticlesRequest request) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.retry(workspaceId, articleId, request);
+    public CompletableFuture<Article> retry(String articleId, RetryArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.retry(articleId, request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -417,9 +401,9 @@ public class AsyncArticlesClient {
      * Sends a failed article again now, or one that was unconfirmed once a member checked it is not on the site: Peal never sends an unconfirmed article again on its own. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:schedule.
      */
     public CompletableFuture<Article> retry(
-            String workspaceId, String articleId, RetryArticlesRequest request, RequestOptions requestOptions) {
+            String articleId, RetryArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.retry(workspaceId, articleId, request, requestOptions);
+                this.rawClient.retry(articleId, request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -432,8 +416,8 @@ public class AsyncArticlesClient {
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<Article> unpublish(String workspaceId, String articleId) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.unpublish(workspaceId, articleId);
+    public CompletableFuture<Article> unpublish(String articleId) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.unpublish(articleId);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -446,9 +430,23 @@ public class AsyncArticlesClient {
     /**
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<Article> unpublish(String workspaceId, String articleId, RequestOptions requestOptions) {
+    public CompletableFuture<Article> unpublish(String articleId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.unpublish(workspaceId, articleId, requestOptions);
+                this.rawClient.unpublish(articleId, requestOptions);
+        CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
+     */
+    public CompletableFuture<Article> unpublish(String articleId, UnpublishArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.unpublish(articleId, request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -462,9 +460,9 @@ public class AsyncArticlesClient {
      * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<Article> unpublish(
-            String workspaceId, String articleId, UnpublishArticlesRequest request) {
+            String articleId, UnpublishArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.unpublish(workspaceId, articleId, request);
+                this.rawClient.unpublish(articleId, request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -475,12 +473,10 @@ public class AsyncArticlesClient {
     }
 
     /**
-     * Moves the article's post to the site's trash, where the site keeps it for a while (30 days by default on WordPress) before deleting it; it stays published in Peal, with <code>removedAt</code>. Needs post:publish; an OAuth client needs the scope workspace:publish.
+     * Replaces what the article's post says on the site (title, body, excerpt, tags, categories, cover), at once: the site keeps its status and its date, and files it has already are not sent again; a cover or an excerpt removed is removed there. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
-    public CompletableFuture<Article> unpublish(
-            String workspaceId, String articleId, UnpublishArticlesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.unpublish(workspaceId, articleId, request, requestOptions);
+    public CompletableFuture<Article> updateOnSite(String articleId, UpdateOnSiteArticlesRequest request) {
+        CompletableFuture<PealClientHttpResponse<Article>> rawFuture = this.rawClient.updateOnSite(articleId, request);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -494,25 +490,9 @@ public class AsyncArticlesClient {
      * Replaces what the article's post says on the site (title, body, excerpt, tags, categories, cover), at once: the site keeps its status and its date, and files it has already are not sent again; a cover or an excerpt removed is removed there. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:publish; an OAuth client needs the scope workspace:publish.
      */
     public CompletableFuture<Article> updateOnSite(
-            String workspaceId, String articleId, UpdateOnSiteArticlesRequest request) {
+            String articleId, UpdateOnSiteArticlesRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.updateOnSite(workspaceId, articleId, request);
-        CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Replaces what the article's post says on the site (title, body, excerpt, tags, categories, cover), at once: the site keeps its status and its date, and files it has already are not sent again; a cover or an excerpt removed is removed there. Refused (ArticleRejected <code>approvalRequired</code>) while your posts need an approval, which articles cannot have yet, and (PlanLimitReached) while the workspace holds more channels or members than its plan allows. Needs post:publish; an OAuth client needs the scope workspace:publish.
-     */
-    public CompletableFuture<Article> updateOnSite(
-            String workspaceId, String articleId, UpdateOnSiteArticlesRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Article>> rawFuture =
-                this.rawClient.updateOnSite(workspaceId, articleId, request, requestOptions);
+                this.rawClient.updateOnSite(articleId, request, requestOptions);
         CompletableFuture<Article> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

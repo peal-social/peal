@@ -41,7 +41,7 @@ public class ItemsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/feedId/items")
+                    .WithPath("/api/v1/feeds/feedId/items")
                     .UsingGet()
             )
             .RespondWith(
@@ -51,9 +51,7 @@ public class ItemsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Feeds.ItemsAsync(
-            new ItemsFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-        );
+        var response = await Client.Feeds.ItemsAsync(new ItemsFeedsRequest { FeedId = "feedId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -80,7 +78,7 @@ public class ItemsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/feeds/feedId/items")
+                    .WithPath("/api/v1/feeds/feedId/items")
                     .UsingGet()
             )
             .RespondWith(
@@ -90,9 +88,7 @@ public class ItemsTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Feeds.ItemsAsync(
-            new ItemsFeedsRequest { WorkspaceId = "workspaceId", FeedId = "feedId" }
-        );
+        var response = await Client.Feeds.ItemsAsync(new ItemsFeedsRequest { FeedId = "feedId" });
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

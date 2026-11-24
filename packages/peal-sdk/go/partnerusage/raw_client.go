@@ -43,7 +43,7 @@ func (r *RawClient) Get(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := baseURL + "/api/partner/usage"
+	endpointURL := baseURL + "/api/v1/partner/usage"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err

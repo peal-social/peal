@@ -38,7 +38,6 @@ impl InboxReviewsClient {
     ///     client
     ///         .inbox_reviews
     ///         .list_review_threads(
-    ///             &"workspaceId".to_string(),
     ///             &ListReviewThreadsQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -49,7 +48,6 @@ impl InboxReviewsClient {
     /// ```
     pub async fn list_review_threads(
         &self,
-        workspace_id: &str,
         request: &ListReviewThreadsQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<InboxReviewThreadPage, ApiError> {
@@ -63,7 +61,7 @@ impl InboxReviewsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/inbox/reviews/threads", workspace_id),
+                "api/v1/inbox/reviews/threads",
                 None,
                 QueryBuilder::new()
                     .string("channelId", request.channel_id.clone())
@@ -100,13 +98,12 @@ impl InboxReviewsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .inbox_reviews
-    ///         .get_review_thread(&"workspaceId".to_string(), &"threadId".to_string(), None)
+    ///         .get_review_thread(&"threadId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn get_review_thread(
         &self,
-        workspace_id: &str,
         thread_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxReviewThreadDetail, ApiError> {
@@ -120,10 +117,7 @@ impl InboxReviewsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/inbox/reviews/threads/{}",
-                    workspace_id, thread_id
-                ),
+                &format!("api/v1/inbox/reviews/threads/{}", thread_id),
                 None,
                 None,
                 options,
@@ -156,7 +150,6 @@ impl InboxReviewsClient {
     ///     client
     ///         .inbox_reviews
     ///         .reply_to_review(
-    ///             &"workspaceId".to_string(),
     ///             &"reviewId".to_string(),
     ///             &NewInboxReviewReply {
     ///                 text: "text".to_string(),
@@ -168,7 +161,6 @@ impl InboxReviewsClient {
     /// ```
     pub async fn reply_to_review(
         &self,
-        workspace_id: &str,
         review_id: &str,
         request: &NewInboxReviewReply,
         options: Option<RequestOptions>,
@@ -183,10 +175,7 @@ impl InboxReviewsClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/inbox/reviews/{}/reply",
-                    workspace_id, review_id
-                ),
+                &format!("api/v1/inbox/reviews/{}/reply", review_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -218,13 +207,12 @@ impl InboxReviewsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .inbox_reviews
-    ///         .withdraw_review_reply(&"workspaceId".to_string(), &"reviewId".to_string(), None)
+    ///         .withdraw_review_reply(&"reviewId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn withdraw_review_reply(
         &self,
-        workspace_id: &str,
         review_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<InboxReview, ApiError> {
@@ -238,10 +226,7 @@ impl InboxReviewsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/inbox/reviews/{}/reply",
-                    workspace_id, review_id
-                ),
+                &format!("api/v1/inbox/reviews/{}/reply", review_id),
                 None,
                 None,
                 options,
@@ -274,7 +259,6 @@ impl InboxReviewsClient {
     ///     client
     ///         .inbox_reviews
     ///         .set_review_answered(
-    ///             &"workspaceId".to_string(),
     ///             &"reviewId".to_string(),
     ///             &SetReviewAnsweredInboxReviewsRequest { answered: true },
     ///             None,
@@ -284,7 +268,6 @@ impl InboxReviewsClient {
     /// ```
     pub async fn set_review_answered(
         &self,
-        workspace_id: &str,
         review_id: &str,
         request: &SetReviewAnsweredInboxReviewsRequest,
         options: Option<RequestOptions>,
@@ -300,10 +283,7 @@ impl InboxReviewsClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/inbox/reviews/{}/answered",
-                    workspace_id, review_id
-                ),
+                &format!("api/v1/inbox/reviews/{}/answered", review_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

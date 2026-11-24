@@ -35,14 +35,10 @@ impl ApiKeysClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.api_keys.list(&"workspaceId".to_string(), None).await;
+    ///     client.api_keys.list(None).await;
     /// }
     /// ```
-    pub async fn list(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Vec<ApiKey>, ApiError> {
+    pub async fn list(&self, options: Option<RequestOptions>) -> Result<Vec<ApiKey>, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -51,13 +47,7 @@ impl ApiKeysClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/api-keys", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/api-keys", None, None, options)
             .await
     }
 
@@ -86,7 +76,6 @@ impl ApiKeysClient {
     ///     client
     ///         .api_keys
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewApiKey {
     ///                 name: "name".to_string(),
     ///                 permissions: vec![Permission::ActivityRead],
@@ -99,7 +88,6 @@ impl ApiKeysClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewApiKey,
         options: Option<RequestOptions>,
     ) -> Result<CreatedApiKey, ApiError> {
@@ -114,7 +102,7 @@ impl ApiKeysClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/api-keys", workspace_id),
+                "api/v1/api-keys",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -144,15 +132,11 @@ impl ApiKeysClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .api_keys
-    ///         .revoke(&"workspaceId".to_string(), &"apiKeyId".to_string(), None)
-    ///         .await;
+    ///     client.api_keys.revoke(&"apiKeyId".to_string(), None).await;
     /// }
     /// ```
     pub async fn revoke(
         &self,
-        workspace_id: &str,
         api_key_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -166,7 +150,7 @@ impl ApiKeysClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/api-keys/{}", workspace_id, api_key_id),
+                &format!("api/v1/api-keys/{}", api_key_id),
                 None,
                 None,
                 options,

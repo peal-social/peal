@@ -32,7 +32,7 @@ public class EnableTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/enable")
+                    .WithPath("/api/v1/channels/channelId/enable")
                     .UsingPost()
             )
             .RespondWith(
@@ -43,7 +43,7 @@ public class EnableTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.EnableAsync(
-            new EnableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new EnableChannelsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -71,7 +71,7 @@ public class EnableTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/enable")
+                    .WithPath("/api/v1/channels/channelId/enable")
                     .UsingPost()
             )
             .RespondWith(
@@ -82,7 +82,7 @@ public class EnableTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.EnableAsync(
-            new EnableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new EnableChannelsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

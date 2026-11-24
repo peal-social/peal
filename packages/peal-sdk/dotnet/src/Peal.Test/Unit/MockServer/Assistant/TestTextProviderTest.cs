@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Peal;
 using Peal.Test.Unit.MockServer;
 
 namespace Peal.Test.Unit.MockServer.Assistant;
@@ -15,16 +14,12 @@ public class TestTextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider/test")
+                    .WithPath("/api/v1/assistant/text-provider/test")
                     .UsingPost()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
-        Assert.DoesNotThrowAsync(async () =>
-            await Client.Assistant.TestTextProviderAsync(
-                new TestTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-            )
-        );
+        Assert.DoesNotThrowAsync(async () => await Client.Assistant.TestTextProviderAsync());
     }
 
     [NUnit.Framework.Test]
@@ -34,15 +29,11 @@ public class TestTextProviderTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/text-provider/test")
+                    .WithPath("/api/v1/assistant/text-provider/test")
                     .UsingPost()
             )
             .RespondWith(WireMock.ResponseBuilders.Response.Create().WithStatusCode(200));
 
-        Assert.DoesNotThrowAsync(async () =>
-            await Client.Assistant.TestTextProviderAsync(
-                new TestTextProviderAssistantRequest { WorkspaceId = "workspaceId" }
-            )
-        );
+        Assert.DoesNotThrowAsync(async () => await Client.Assistant.TestTextProviderAsync());
     }
 }

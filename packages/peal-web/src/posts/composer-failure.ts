@@ -16,6 +16,7 @@ import type {
   UnknownMedia,
   UnknownTags,
   WorkspaceNotFound,
+  WorkspaceRequired,
 } from "peal-contract";
 
 /** Why a request of the composer failed, as the API declares it. */
@@ -39,6 +40,7 @@ export type ComposerFailure =
   | UnknownMedia
   | UnknownTags
   | WorkspaceNotFound
+  | WorkspaceRequired
   // The date and time picked name no instant.
   | { readonly _tag: "InvalidTime" }
   // The request failed in a way the API does not declare: the network, or

@@ -88,19 +88,15 @@ func TestCapabilitiesPlatformsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.PlatformsCapabilitiesRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Capabilities.Platforms(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestCapabilitiesPlatformsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestCapabilitiesPlatformsWithWireMock", "GET", "/api/workspaces/workspaceId/platforms/capabilities", nil, 1)
+	VerifyRequestCount(t, "TestCapabilitiesPlatformsWithWireMock", "GET", "/api/v1/platforms/capabilities", nil, 1)
 }
 
 func TestCapabilitiesChannelWithWireMock(
@@ -115,8 +111,7 @@ func TestCapabilitiesChannelWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ChannelCapabilitiesRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.Capabilities.Channel(
 		context.TODO(),
@@ -127,5 +122,5 @@ func TestCapabilitiesChannelWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestCapabilitiesChannelWithWireMock", "GET", "/api/workspaces/workspaceId/channels/channelId/capabilities", nil, 1)
+	VerifyRequestCount(t, "TestCapabilitiesChannelWithWireMock", "GET", "/api/v1/channels/channelId/capabilities", nil, 1)
 }

@@ -61,7 +61,7 @@ Payloads are thin. They carry enough to tell you what happened, and no content:
 | A boost's budget, as amounts                | What a comment or a reply says, nor who wrote a comment         |
 |                                             | Who a boost is shown to                                         |
 
-The endpoint is a third party to the people who wrote the post: an address someone chose, which Peal can't check beyond its being public. Thin payloads keep a workspace's content behind API credentials and their permissions, where every read is checked. When your server needs the post, it reads it through the API with a key of its own: `GET /api/workspaces/{workspaceId}/posts/{postId}`.
+The endpoint is a third party to the people who wrote the post: an address someone chose, which Peal can't check beyond its being public. Thin payloads keep a workspace's content behind API credentials and their permissions, where every read is checked. When your server needs the post, it reads it through the API with a key of its own: `GET /api/v1/posts/{postId}`.
 
 ### Versions [#versions]
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest";
-import { Duration } from "effect";
+import { Duration, Option, Schema } from "effect";
 import { HttpApi } from "effect/http-api";
 import {
   Api,
@@ -26,6 +26,7 @@ import {
   RoleSchema,
   usageRetentionDays,
   WorkspaceAccess,
+  workspaceHeader,
 } from "peal-contract";
 
 import { PlatformSchema as DomainPlatformSchema } from "#channels/domain/platform.ts";
@@ -134,8 +135,16 @@ describe("the contract", () => {
     );
   });
 
-  // WorkspaceAccess reads the workspace from the path.
-  it("puts every endpoint behind WorkspaceAccess under a :workspaceId", () => {
+  // The names of an endpoint's headers, as their schema's AST lists them.
+  const decodeHeaderNames = Schema.decodeUnknownOption(
+    Schema.Struct({
+      propertySignatures: Schema.Array(Schema.Struct({ name: Schema.Unknown })),
+    })
+  );
+
+  // WorkspaceAccess reads the workspace from the Peal-Workspace header, or
+  // the credential: no path names it.
+  it("puts every endpoint behind WorkspaceAccess under /api/v1, with the workspace's header", () => {
     const scoped: string[] = [];
     const unscoped: string[] = [];
 
@@ -146,7 +155,17 @@ describe("the contract", () => {
         if (keys.includes(WorkspaceAccess.key)) {
           const name = `${group.identifier}.${endpoint.identifier}`;
 
-          (/\/:workspaceId(?:\/|$)/u.test(endpoint.path)
+          const takesHeader = Option.exists(
+            decodeHeaderNames(endpoint.headers?.ast),
+            ({ propertySignatures }) =>
+              propertySignatures.some(
+                (header) => header.name === workspaceHeader
+              )
+          );
+
+          (endpoint.path.startsWith("/api/v1/") &&
+          !endpoint.path.includes(":workspaceId") &&
+          takesHeader
             ? scoped
             : unscoped
           ).push(name);

@@ -3,7 +3,7 @@
 // its owners read them.
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
-import { ActivityPageSchema } from "peal-contract";
+import { ActivityPageSchema, forWorkspace } from "peal-contract";
 
 import {
   MigratedSqlLive,
@@ -65,10 +65,9 @@ const logOf = Effect.fn("logOf")(function* logOf(
 ) {
   const app = yield* TestApp;
 
-  const reply = yield* app.request(
-    `/api/workspaces/${workspaceId}/activity${query}`,
-    { headers: { cookie: owner.cookies } }
-  );
+  const reply = yield* app.request(`/api/v1/activity${query}`, {
+    headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
+  });
 
   assert.strictEqual(reply.status, 200);
 
@@ -92,7 +91,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const app = yield* TestApp;
           const owner = yield* signedUp("activity-owner");
           const workspaceId = yield* workspaceOf(owner, "Activity");
-          const posts = `/api/workspaces/${workspaceId}/posts`;
+          const posts = `/api/v1/posts`;
 
           // The owner, in their session, creates two keys.
           const writer = yield* apiKeyOf(owner, workspaceId, [
@@ -108,7 +107,11 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // A write with a key, which succeeds.
           const created = yield* app.request(posts, {
             body: draft,
-            headers: { ...withKey, "x-request-id": "activity-test-0001" },
+            headers: {
+              ...withKey,
+              "x-request-id": "activity-test-0001",
+              ...forWorkspace(workspaceId),
+            },
           });
 
           assert.strictEqual(created.status, 201);
@@ -119,6 +122,7 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
             headers: {
               authorization: `Bearer ${reader.key}`,
               "x-request-id": "activity-test-0002",
+              ...forWorkspace(workspaceId),
             },
           });
 
@@ -126,7 +130,11 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
 
           // One that fails: no such post.
           const failed = yield* app.request(`${posts}/${unknownPost}`, {
-            headers: { ...withKey, "x-request-id": "activity-test-0003" },
+            headers: {
+              ...withKey,
+              "x-request-id": "activity-test-0003",
+              ...forWorkspace(workspaceId),
+            },
             method: "DELETE",
           });
 
@@ -135,14 +143,22 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           // One the API cannot read.
           const invalid = yield* app.request(posts, {
             body: { channelIds: "none" },
-            headers: { ...withKey, "x-request-id": "activity-test-0004" },
+            headers: {
+              ...withKey,
+              "x-request-id": "activity-test-0004",
+              ...forWorkspace(workspaceId),
+            },
           });
 
           assert.strictEqual(invalid.status, 400);
 
           // Reads leave nothing.
           const read = yield* app.request(`${posts}/drafts`, {
-            headers: { ...withKey, "x-request-id": "activity-test-0005" },
+            headers: {
+              ...withKey,
+              "x-request-id": "activity-test-0005",
+              ...forWorkspace(workspaceId),
+            },
           });
 
           assert.strictEqual(read.status, 200);
@@ -251,12 +267,12 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           const owner = yield* signedUp("activity-owner");
           const admin = yield* signedUp("activity-admin");
           const workspaceId = yield* workspaceOf(owner, "Readers");
-          const path = `/api/workspaces/${workspaceId}/activity`;
+          const path = `/api/v1/activity`;
 
           yield* join(owner, workspaceId, admin, "admin");
 
           const asAdmin = yield* app.request(path, {
-            headers: { cookie: admin.cookies },
+            headers: { cookie: admin.cookies, ...forWorkspace(workspaceId) },
           });
 
           assert.strictEqual(asAdmin.status, 403);
@@ -274,19 +290,19 @@ layer(Test, { excludeTestServices: true, timeout: "180 seconds" })(
           ]);
 
           const withKey = yield* app.request(path, {
-            headers: { authorization: `Bearer ${auditor.key}` },
+            headers: {
+              authorization: `Bearer ${auditor.key}`,
+              ...forWorkspace(workspaceId),
+            },
           });
 
           assert.strictEqual(withKey.status, 200);
 
           // An admin cannot give a key what they do not hold.
-          const overreach = yield* app.request(
-            `/api/workspaces/${workspaceId}/api-keys`,
-            {
-              body: { name: "ci", permissions: ["activity:read"] },
-              headers: { cookie: admin.cookies },
-            }
-          );
+          const overreach = yield* app.request(`/api/v1/api-keys`, {
+            body: { name: "ci", permissions: ["activity:read"] },
+            headers: { cookie: admin.cookies, ...forWorkspace(workspaceId) },
+          });
 
           assert.isAtLeast(overreach.status, 400);
 

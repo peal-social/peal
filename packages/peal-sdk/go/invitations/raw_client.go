@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListInvitationsRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.Invitation], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/invitations",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/invitations"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -88,10 +84,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/invitations",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/invitations"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -136,8 +129,7 @@ func (r *RawClient) Revoke(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/invitations/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/invitations/%v",
 		request.InvitationID,
 	)
 	headers := internal.MergeHeaders(

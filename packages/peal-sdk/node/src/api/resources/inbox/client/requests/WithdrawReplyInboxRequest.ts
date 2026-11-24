@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         replyId: "replyId"
  *     }
  */
 export interface WithdrawReplyInboxRequest {
-    workspaceId: string;
     replyId: string;
 }

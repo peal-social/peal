@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         ruleId: "ruleId"
  *     }
  */
 export interface CommentRuleChange {
-    workspaceId: string;
     ruleId: string;
     keywords?: string[];
     paused?: boolean;

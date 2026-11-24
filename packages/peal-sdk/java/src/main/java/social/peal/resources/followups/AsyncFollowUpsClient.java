@@ -36,8 +36,8 @@ public class AsyncFollowUpsClient {
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FollowUpRulePage> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRulePage>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<FollowUpRulePage> list() {
+        CompletableFuture<PealClientHttpResponse<FollowUpRulePage>> rawFuture = this.rawClient.list();
         CompletableFuture<FollowUpRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -50,9 +50,8 @@ public class AsyncFollowUpsClient {
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FollowUpRulePage> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRulePage>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
+    public CompletableFuture<FollowUpRulePage> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRulePage>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<FollowUpRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -65,9 +64,8 @@ public class AsyncFollowUpsClient {
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FollowUpRulePage> list(String workspaceId, ListFollowUpsRequest request) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRulePage>> rawFuture =
-                this.rawClient.list(workspaceId, request);
+    public CompletableFuture<FollowUpRulePage> list(ListFollowUpsRequest request) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRulePage>> rawFuture = this.rawClient.list(request);
         CompletableFuture<FollowUpRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -80,10 +78,9 @@ public class AsyncFollowUpsClient {
     /**
      * Lists the workspace's follow-up rules, oldest first, 50 a page unless <code>limit</code> (at most 100) says otherwise, those of the post <code>postId</code> or with <code>status</code> alone when given, each with what its channels can carry and its latest 20 follow-ups. Pass the page's <code>nextCursor</code> as <code>cursor</code> for the next one. Needs post:read.
      */
-    public CompletableFuture<FollowUpRulePage> list(
-            String workspaceId, ListFollowUpsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<FollowUpRulePage> list(ListFollowUpsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FollowUpRulePage>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+                this.rawClient.list(request, requestOptions);
         CompletableFuture<FollowUpRulePage> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -96,8 +93,8 @@ public class AsyncFollowUpsClient {
     /**
      * Starts a rule on a post (<code>postId</code>) or on every post a channel publishes from now on (<code>channelId</code>), exactly one of them, that waits for <code>likes</code> likes (1 to 1,000,000) and then publishes <code>comment</code>, reposts (<code>repost</code>), or both. A rule acts on the workspace's own posts only, from the channel's own account: once a post it acts on has <code>likes</code> likes on a channel, as analytics last counted them (hourly for two days, then daily: a rule never asks a platform for more, nor makes a paid read happen), it publishes its <code>comment</code> under the post, as the account's own reply after the post's last part, and reposts it when <code>repost</code> is set, once each, within 7 days of the post going live there. A post is followed up once of each kind whatever rules act on it, and a channel carries 10 follow-ups a UTC day at most: those past it wait for the next day, within their window. Comments go out on Bluesky, Mastodon and X (a post X bills, and only where the server sends X threads), reposts on Bluesky (a channel connected before Peal asked for it must be connected again) and Mastodon; LinkedIn's terms forbid both, and elsewhere <code>channels</code> says why not. Nothing likes, follows or messages anyone. It acts as whoever started it, with what they may do then: where the approval policy holds their posts it waits for a member who approves posts to approve it, and it ends when they can no longer publish. What each did is in <code>followUps</code>. A post that already went out is armed at once, while its window lasts. It is refused when no channel it acts on can carry what it asks, or when its comment is longer than a channel that could carry it takes (FollowUpNotPossible, with each channel's reasons). A post or a channel has one rule going on at a time (FollowUpRuleTaken), and a workspace 100 active or paused. It publishes again, in public, without anyone being asked each time. Needs post:schedule, or post:create where posts wait for an approval; never staff acting as a member.
      */
-    public CompletableFuture<FollowUpRule> create(String workspaceId, NewFollowUpRule request) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<FollowUpRule> create(NewFollowUpRule request) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.create(request);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -110,10 +107,9 @@ public class AsyncFollowUpsClient {
     /**
      * Starts a rule on a post (<code>postId</code>) or on every post a channel publishes from now on (<code>channelId</code>), exactly one of them, that waits for <code>likes</code> likes (1 to 1,000,000) and then publishes <code>comment</code>, reposts (<code>repost</code>), or both. A rule acts on the workspace's own posts only, from the channel's own account: once a post it acts on has <code>likes</code> likes on a channel, as analytics last counted them (hourly for two days, then daily: a rule never asks a platform for more, nor makes a paid read happen), it publishes its <code>comment</code> under the post, as the account's own reply after the post's last part, and reposts it when <code>repost</code> is set, once each, within 7 days of the post going live there. A post is followed up once of each kind whatever rules act on it, and a channel carries 10 follow-ups a UTC day at most: those past it wait for the next day, within their window. Comments go out on Bluesky, Mastodon and X (a post X bills, and only where the server sends X threads), reposts on Bluesky (a channel connected before Peal asked for it must be connected again) and Mastodon; LinkedIn's terms forbid both, and elsewhere <code>channels</code> says why not. Nothing likes, follows or messages anyone. It acts as whoever started it, with what they may do then: where the approval policy holds their posts it waits for a member who approves posts to approve it, and it ends when they can no longer publish. What each did is in <code>followUps</code>. A post that already went out is armed at once, while its window lasts. It is refused when no channel it acts on can carry what it asks, or when its comment is longer than a channel that could carry it takes (FollowUpNotPossible, with each channel's reasons). A post or a channel has one rule going on at a time (FollowUpRuleTaken), and a workspace 100 active or paused. It publishes again, in public, without anyone being asked each time. Needs post:schedule, or post:create where posts wait for an approval; never staff acting as a member.
      */
-    public CompletableFuture<FollowUpRule> create(
-            String workspaceId, NewFollowUpRule request, RequestOptions requestOptions) {
+    public CompletableFuture<FollowUpRule> create(NewFollowUpRule request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+                this.rawClient.create(request, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -126,8 +122,8 @@ public class AsyncFollowUpsClient {
     /**
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
-    public CompletableFuture<FollowUpRule> get(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.get(workspaceId, ruleId);
+    public CompletableFuture<FollowUpRule> get(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.get(ruleId);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -140,9 +136,8 @@ public class AsyncFollowUpsClient {
     /**
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
-    public CompletableFuture<FollowUpRule> get(String workspaceId, String ruleId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.get(workspaceId, ruleId, requestOptions);
+    public CompletableFuture<FollowUpRule> get(String ruleId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.get(ruleId, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -155,9 +150,8 @@ public class AsyncFollowUpsClient {
     /**
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
-    public CompletableFuture<FollowUpRule> get(String workspaceId, String ruleId, GetFollowUpsRequest request) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.get(workspaceId, ruleId, request);
+    public CompletableFuture<FollowUpRule> get(String ruleId, GetFollowUpsRequest request) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.get(ruleId, request);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -171,9 +165,9 @@ public class AsyncFollowUpsClient {
      * Answers with a rule of the workspace, what its channels can carry and its latest 20 follow-ups. Needs post:read.
      */
     public CompletableFuture<FollowUpRule> get(
-            String workspaceId, String ruleId, GetFollowUpsRequest request, RequestOptions requestOptions) {
+            String ruleId, GetFollowUpsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.get(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.get(ruleId, request, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -186,8 +180,8 @@ public class AsyncFollowUpsClient {
     /**
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, ruleId);
+    public CompletableFuture<Void> delete(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(ruleId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -200,9 +194,8 @@ public class AsyncFollowUpsClient {
     /**
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String ruleId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, ruleId, requestOptions);
+    public CompletableFuture<Void> delete(String ruleId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(ruleId, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -215,8 +208,8 @@ public class AsyncFollowUpsClient {
     /**
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String ruleId, DeleteFollowUpsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, ruleId, request);
+    public CompletableFuture<Void> delete(String ruleId, DeleteFollowUpsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(ruleId, request);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -230,9 +223,9 @@ public class AsyncFollowUpsClient {
      * Stops a rule: it ends <code>stopped</code>, what it armed and did not send is given up, and what it sent stays on the platforms. Stopping an ended rule changes nothing. Needs post:schedule, or to be the rule's starter acting as they started it.
      */
     public CompletableFuture<Void> delete(
-            String workspaceId, String ruleId, DeleteFollowUpsRequest request, RequestOptions requestOptions) {
+            String ruleId, DeleteFollowUpsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.delete(ruleId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -245,8 +238,8 @@ public class AsyncFollowUpsClient {
     /**
      * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<FollowUpRule> update(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.update(workspaceId, ruleId);
+    public CompletableFuture<FollowUpRule> update(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.update(ruleId);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -259,9 +252,9 @@ public class AsyncFollowUpsClient {
     /**
      * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<FollowUpRule> update(String workspaceId, String ruleId, RequestOptions requestOptions) {
+    public CompletableFuture<FollowUpRule> update(String ruleId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.update(workspaceId, ruleId, requestOptions);
+                this.rawClient.update(ruleId, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -274,9 +267,8 @@ public class AsyncFollowUpsClient {
     /**
      * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
-    public CompletableFuture<FollowUpRule> update(String workspaceId, String ruleId, FollowUpRuleChange request) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.update(workspaceId, ruleId, request);
+    public CompletableFuture<FollowUpRule> update(String ruleId, FollowUpRuleChange request) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.update(ruleId, request);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -290,9 +282,9 @@ public class AsyncFollowUpsClient {
      * Changes a rule's <code>likes</code>, its <code>comment</code> (null takes it away) or whether it reposts, or pauses it (<code>paused</code> true) or sets it going again (false); what it leaves out stays. A follow-up that went out stays as it is; one armed sends what the rule says when it goes. Where the approval policy holds the posts of whoever changes what the rule sends, it waits for an approval again. A paused rule sends nothing, and what it armed expires with its window. An ended rule changes no more (FollowUpRuleEnded). Needs post:schedule, or to be the rule's starter acting as they started it: in the web app, through the same application or with the same API key.
      */
     public CompletableFuture<FollowUpRule> update(
-            String workspaceId, String ruleId, FollowUpRuleChange request, RequestOptions requestOptions) {
+            String ruleId, FollowUpRuleChange request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.update(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.update(ruleId, request, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -305,8 +297,8 @@ public class AsyncFollowUpsClient {
     /**
      * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
      */
-    public CompletableFuture<FollowUpRule> approve(String workspaceId, String ruleId) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.approve(workspaceId, ruleId);
+    public CompletableFuture<FollowUpRule> approve(String ruleId) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.approve(ruleId);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -319,9 +311,9 @@ public class AsyncFollowUpsClient {
     /**
      * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
      */
-    public CompletableFuture<FollowUpRule> approve(String workspaceId, String ruleId, RequestOptions requestOptions) {
+    public CompletableFuture<FollowUpRule> approve(String ruleId, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.approve(workspaceId, ruleId, requestOptions);
+                this.rawClient.approve(ruleId, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -334,9 +326,8 @@ public class AsyncFollowUpsClient {
     /**
      * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
      */
-    public CompletableFuture<FollowUpRule> approve(String workspaceId, String ruleId, ApproveFollowUpsRequest request) {
-        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.approve(workspaceId, ruleId, request);
+    public CompletableFuture<FollowUpRule> approve(String ruleId, ApproveFollowUpsRequest request) {
+        CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture = this.rawClient.approve(ruleId, request);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -350,9 +341,9 @@ public class AsyncFollowUpsClient {
      * Approves what a rule sends, for a rule whose starter's posts wait for an approval: it then acts as it is. A rule approved, or that needs no approval, is answered as it is. Needs post:approve, in person: an API key or an application never approves.
      */
     public CompletableFuture<FollowUpRule> approve(
-            String workspaceId, String ruleId, ApproveFollowUpsRequest request, RequestOptions requestOptions) {
+            String ruleId, ApproveFollowUpsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<FollowUpRule>> rawFuture =
-                this.rawClient.approve(workspaceId, ruleId, request, requestOptions);
+                this.rawClient.approve(ruleId, request, requestOptions);
         CompletableFuture<FollowUpRule> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

@@ -8,11 +8,10 @@ import java.util.concurrent.CompletableFuture;
 import social.peal.core.ClientOptions;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
-import social.peal.resources.tags.requests.CreateTagsRequest;
 import social.peal.resources.tags.requests.DeleteTagsRequest;
-import social.peal.resources.tags.requests.ListTagsRequest;
 import social.peal.resources.tags.requests.UpdateTagsRequest;
 import social.peal.types.Tag;
+import social.peal.types.TagDetails;
 
 public class AsyncTagsClient {
     protected final ClientOptions clientOptions;
@@ -34,8 +33,8 @@ public class AsyncTagsClient {
     /**
      * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
      */
-    public CompletableFuture<List<Tag>> list(String workspaceId) {
-        CompletableFuture<PealClientHttpResponse<List<Tag>>> rawFuture = this.rawClient.list(workspaceId);
+    public CompletableFuture<List<Tag>> list() {
+        CompletableFuture<PealClientHttpResponse<List<Tag>>> rawFuture = this.rawClient.list();
         CompletableFuture<List<Tag>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -48,39 +47,8 @@ public class AsyncTagsClient {
     /**
      * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
      */
-    public CompletableFuture<List<Tag>> list(String workspaceId, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Tag>>> rawFuture =
-                this.rawClient.list(workspaceId, requestOptions);
-        CompletableFuture<List<Tag>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
-     */
-    public CompletableFuture<List<Tag>> list(String workspaceId, ListTagsRequest request) {
-        CompletableFuture<PealClientHttpResponse<List<Tag>>> rawFuture = this.rawClient.list(workspaceId, request);
-        CompletableFuture<List<Tag>> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Lists the workspace's tags, oldest first. A post names its tags by id (<code>tagIds</code>). Needs post:read.
-     */
-    public CompletableFuture<List<Tag>> list(
-            String workspaceId, ListTagsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<List<Tag>>> rawFuture =
-                this.rawClient.list(workspaceId, request, requestOptions);
+    public CompletableFuture<List<Tag>> list(RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<List<Tag>>> rawFuture = this.rawClient.list(requestOptions);
         CompletableFuture<List<Tag>> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -93,8 +61,8 @@ public class AsyncTagsClient {
     /**
      * Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
      */
-    public CompletableFuture<Tag> create(String workspaceId, CreateTagsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Tag>> rawFuture = this.rawClient.create(workspaceId, request);
+    public CompletableFuture<Tag> create(TagDetails request) {
+        CompletableFuture<PealClientHttpResponse<Tag>> rawFuture = this.rawClient.create(request);
         CompletableFuture<Tag> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -107,9 +75,8 @@ public class AsyncTagsClient {
     /**
      * Adds a tag to the workspace: a name of 40 characters at most, on one line, which no other tag of the workspace has whatever its case, and a colour of the palette. A workspace keeps 100 tags at most. Needs post:update.
      */
-    public CompletableFuture<Tag> create(String workspaceId, CreateTagsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Tag>> rawFuture =
-                this.rawClient.create(workspaceId, request, requestOptions);
+    public CompletableFuture<Tag> create(TagDetails request, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Tag>> rawFuture = this.rawClient.create(request, requestOptions);
         CompletableFuture<Tag> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -122,8 +89,8 @@ public class AsyncTagsClient {
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String tagId) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, tagId);
+    public CompletableFuture<Void> delete(String tagId) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(tagId);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -136,39 +103,37 @@ public class AsyncTagsClient {
     /**
      * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
      */
-    public CompletableFuture<Void> delete(String workspaceId, String tagId, RequestOptions requestOptions) {
+    public CompletableFuture<Void> delete(String tagId, RequestOptions requestOptions) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(tagId, requestOptions);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
+     */
+    public CompletableFuture<Void> delete(String tagId, DeleteTagsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(tagId, request);
+        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
+        future.whenComplete((result_, throwable_) -> {
+            if (future.isCancelled()) {
+                rawFuture.cancel(true);
+            }
+        });
+        return future;
+    }
+
+    /**
+     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
+     */
+    public CompletableFuture<Void> delete(String tagId, DeleteTagsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, tagId, requestOptions);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
-     */
-    public CompletableFuture<Void> delete(String workspaceId, String tagId, DeleteTagsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture = this.rawClient.delete(workspaceId, tagId, request);
-        CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
-        future.whenComplete((result_, throwable_) -> {
-            if (future.isCancelled()) {
-                rawFuture.cancel(true);
-            }
-        });
-        return future;
-    }
-
-    /**
-     * Deletes a tag, and takes it off every post that had it; the posts stay. Needs post:update.
-     */
-    public CompletableFuture<Void> delete(
-            String workspaceId, String tagId, DeleteTagsRequest request, RequestOptions requestOptions) {
-        CompletableFuture<PealClientHttpResponse<Void>> rawFuture =
-                this.rawClient.delete(workspaceId, tagId, request, requestOptions);
+                this.rawClient.delete(tagId, request, requestOptions);
         CompletableFuture<Void> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -181,8 +146,8 @@ public class AsyncTagsClient {
     /**
      * Gives a tag another name or colour. Its posts keep it. Needs post:update.
      */
-    public CompletableFuture<Tag> update(String workspaceId, String tagId, UpdateTagsRequest request) {
-        CompletableFuture<PealClientHttpResponse<Tag>> rawFuture = this.rawClient.update(workspaceId, tagId, request);
+    public CompletableFuture<Tag> update(String tagId, UpdateTagsRequest request) {
+        CompletableFuture<PealClientHttpResponse<Tag>> rawFuture = this.rawClient.update(tagId, request);
         CompletableFuture<Tag> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {
@@ -195,10 +160,9 @@ public class AsyncTagsClient {
     /**
      * Gives a tag another name or colour. Its posts keep it. Needs post:update.
      */
-    public CompletableFuture<Tag> update(
-            String workspaceId, String tagId, UpdateTagsRequest request, RequestOptions requestOptions) {
+    public CompletableFuture<Tag> update(String tagId, UpdateTagsRequest request, RequestOptions requestOptions) {
         CompletableFuture<PealClientHttpResponse<Tag>> rawFuture =
-                this.rawClient.update(workspaceId, tagId, request, requestOptions);
+                this.rawClient.update(tagId, request, requestOptions);
         CompletableFuture<Tag> future = rawFuture.thenApply(response -> response.body());
         future.whenComplete((result_, throwable_) -> {
             if (future.isCancelled()) {

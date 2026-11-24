@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         accountId: "accountId"
  *     }
  */
 export interface GetAccountAdsRequest {
-    workspaceId: string;
     accountId: string;
 }

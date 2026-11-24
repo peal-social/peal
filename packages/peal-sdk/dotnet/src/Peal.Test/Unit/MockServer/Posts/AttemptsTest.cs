@@ -43,7 +43,7 @@ public class AttemptsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/attempts")
+                    .WithPath("/api/v1/posts/postId/attempts")
                     .UsingGet()
             )
             .RespondWith(
@@ -54,7 +54,7 @@ public class AttemptsTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.AttemptsAsync(
-            new AttemptsPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new AttemptsPostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -82,7 +82,7 @@ public class AttemptsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/posts/postId/attempts")
+                    .WithPath("/api/v1/posts/postId/attempts")
                     .UsingGet()
             )
             .RespondWith(
@@ -93,7 +93,7 @@ public class AttemptsTest : BaseMockServerTest
             );
 
         var response = await Client.Posts.AttemptsAsync(
-            new AttemptsPostsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new AttemptsPostsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

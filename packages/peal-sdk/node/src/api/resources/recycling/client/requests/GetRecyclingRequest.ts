@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         ruleId: "ruleId"
  *     }
  */
 export interface GetRecyclingRequest {
-    workspaceId: string;
     ruleId: string;
 }

@@ -28,9 +28,9 @@ export class ShortLinksClient {
     /**
      * Answers whether this server shortens links (`available`), what a short address starts with (`base`) and how long it is (`shortLength`), and whether the workspace's new posts ask for short links by default (`byDefault`). A post that leaves `shortenLinks` out takes `byDefault` when it is made (the web app, the API, MCP, the command line and feeds alike), and `false` always wins; on a server without short links, nothing is shortened whatever the default. A post that asks goes out with each link written with `http://` or `https://` and longer than a short address replaced by one, one per channel and link, which redirects to it and counts the visit; the text kept stays as written, and Pinterest, Instagram and TikTok always get links as written, as does a link to a channel's own platform. Needs post:read.
      *
-     * @param {Peal.StatusShortLinksRequest} request
      * @param {ShortLinksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class ShortLinksClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.shortLinks.status({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.shortLinks.status()
      */
-    public status(request: Peal.StatusShortLinksRequest, requestOptions?: ShortLinksClient.RequestOptions): core.HttpResponsePromise<Peal.ShortLinkStatus> {
-        return core.HttpResponsePromise.fromPromise(this.__status(request, requestOptions));
+    public status(requestOptions?: ShortLinksClient.RequestOptions): core.HttpResponsePromise<Peal.ShortLinkStatus> {
+        return core.HttpResponsePromise.fromPromise(this.__status(requestOptions));
     }
 
-    private async __status(request: Peal.StatusShortLinksRequest, requestOptions?: ShortLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ShortLinkStatus>> {
-        const { workspaceId } = request;
+    private async __status(requestOptions?: ShortLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ShortLinkStatus>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/short-links/status`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/short-links/status"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class ShortLinksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,7 +78,7 @@ export class ShortLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/short-links/status");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/short-links/status");
     }
 
     /**
@@ -89,6 +87,7 @@ export class ShortLinksClient {
      * @param {Peal.ShortLinkSettings} request
      * @param {ShortLinksClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -98,7 +97,6 @@ export class ShortLinksClient {
      *
      * @example
      *     await client.shortLinks.setDefault({
-     *         workspaceId: "workspaceId",
      *         byDefault: true
      *     })
      */
@@ -107,17 +105,16 @@ export class ShortLinksClient {
     }
 
     private async __setDefault(request: Peal.ShortLinkSettings, requestOptions?: ShortLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ShortLinkStatus>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/short-links/settings`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/short-links/settings"),
             method: "PUT",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: requestOptions?.maxRetries ?? this._options?.maxRetries,
             abortSignal: requestOptions?.abortSignal,
@@ -130,6 +127,7 @@ export class ShortLinksClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -142,7 +140,7 @@ export class ShortLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/workspaces/{workspaceId}/short-links/settings");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PUT", "/api/v1/short-links/settings");
     }
 
     /**
@@ -160,16 +158,14 @@ export class ShortLinksClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.shortLinks.list({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.shortLinks.list()
      */
-    public list(request: Peal.ListShortLinksRequest, requestOptions?: ShortLinksClient.RequestOptions): core.HttpResponsePromise<Peal.ShortLinkPage> {
+    public list(request: Peal.ListShortLinksRequest = {}, requestOptions?: ShortLinksClient.RequestOptions): core.HttpResponsePromise<Peal.ShortLinkPage> {
         return core.HttpResponsePromise.fromPromise(this.__list(request, requestOptions));
     }
 
-    private async __list(request: Peal.ListShortLinksRequest, requestOptions?: ShortLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ShortLinkPage>> {
-        const { workspaceId, channelId, cursor, "from": from_, limit, postId, to } = request;
+    private async __list(request: Peal.ListShortLinksRequest = {}, requestOptions?: ShortLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ShortLinkPage>> {
+        const { channelId, cursor, "from": from_, limit, postId, to } = request;
         const _queryParams: Record<string, unknown> = {
             channelId,
             cursor,
@@ -179,9 +175,9 @@ export class ShortLinksClient {
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/short-links`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/short-links"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -210,7 +206,7 @@ export class ShortLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/short-links");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/short-links");
     }
 
     /**
@@ -229,7 +225,6 @@ export class ShortLinksClient {
      *
      * @example
      *     await client.shortLinks.get({
-     *         workspaceId: "workspaceId",
      *         linkId: "linkId"
      *     })
      */
@@ -238,15 +233,15 @@ export class ShortLinksClient {
     }
 
     private async __get(request: Peal.GetShortLinksRequest, requestOptions?: ShortLinksClient.RequestOptions): Promise<core.WithRawResponse<Peal.ShortLinkReport>> {
-        const { workspaceId, linkId, "from": from_, to } = request;
+        const { linkId, "from": from_, to } = request;
         const _queryParams: Record<string, unknown> = {
             from: from_,
             to
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/short-links/${core.url.encodePathParam(linkId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/short-links/${core.url.encodePathParam(linkId, errors.PealError)}`),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -275,6 +270,6 @@ export class ShortLinksClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/short-links/{linkId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/short-links/{linkId}");
     }
 }

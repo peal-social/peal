@@ -4,8 +4,6 @@ module Peal
   module Assistant
     module Types
       class ImageProviderChange < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :api_key, -> { String }, optional: true, nullable: false, api_name: "apiKey"
 
         field :base_url, -> { String }, optional: true, nullable: false, api_name: "baseUrl"

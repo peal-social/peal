@@ -8,6 +8,7 @@ import { randomUUID } from "node:crypto";
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import { BillingAccounts } from "#billing/application/billing-accounts.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
@@ -1171,9 +1172,9 @@ layer(RetainingLive, {
           assert.isAbove(rows, 0, `${table} holds a row of the workspace`);
         }
 
-        const deleted = yield* app.request(`/api/workspaces/${own}`, {
+        const deleted = yield* app.request(`/api/v1/workspace`, {
           body: { name: "Alone" },
-          headers: { cookie: ana.cookies },
+          headers: { cookie: ana.cookies, ...forWorkspace(own) },
           method: "DELETE",
         });
 
@@ -1327,9 +1328,9 @@ layer(RetainingLive, {
         );
 
         // Together goes too, to leave the shared database as it was.
-        const together = yield* app.request(`/api/workspaces/${shared}`, {
+        const together = yield* app.request(`/api/v1/workspace`, {
           body: { name: "Together" },
-          headers: { cookie: ben.cookies },
+          headers: { cookie: ben.cookies, ...forWorkspace(shared) },
           method: "DELETE",
         });
 
@@ -1458,9 +1459,9 @@ layer(RetainingLive, {
           [lee, own, "Studio"],
           [kim, shared, "Agency"],
         ] as const) {
-          const deleted = yield* app.request(`/api/workspaces/${workspaceId}`, {
+          const deleted = yield* app.request(`/api/v1/workspace`, {
             body: { name },
-            headers: { cookie: person.cookies },
+            headers: { cookie: person.cookies, ...forWorkspace(workspaceId) },
             method: "DELETE",
           });
 

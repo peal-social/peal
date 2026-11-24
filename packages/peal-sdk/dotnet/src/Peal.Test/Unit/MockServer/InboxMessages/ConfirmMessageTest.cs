@@ -36,9 +36,7 @@ public class ConfirmMessageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/outgoing/messageId/confirmation"
-                    )
+                    .WithPath("/api/v1/inbox/messages/outgoing/messageId/confirmation")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -51,12 +49,7 @@ public class ConfirmMessageTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.ConfirmMessageAsync(
-            new ConfirmMessageInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                MessageId = "messageId",
-                Sent = true,
-            }
+            new ConfirmMessageInboxMessagesRequest { MessageId = "messageId", Sent = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -88,9 +81,7 @@ public class ConfirmMessageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath(
-                        "/api/workspaces/workspaceId/inbox/messages/outgoing/messageId/confirmation"
-                    )
+                    .WithPath("/api/v1/inbox/messages/outgoing/messageId/confirmation")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -103,12 +94,7 @@ public class ConfirmMessageTest : BaseMockServerTest
             );
 
         var response = await Client.InboxMessages.ConfirmMessageAsync(
-            new ConfirmMessageInboxMessagesRequest
-            {
-                WorkspaceId = "workspaceId",
-                MessageId = "messageId",
-                Sent = true,
-            }
+            new ConfirmMessageInboxMessagesRequest { MessageId = "messageId", Sent = true }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

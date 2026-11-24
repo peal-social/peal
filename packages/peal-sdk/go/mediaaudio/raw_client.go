@@ -43,10 +43,7 @@ func (r *RawClient) CreateVoiceover(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/voiceovers",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/media/voiceovers"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -91,8 +88,7 @@ func (r *RawClient) Transcribe(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/media/%v/transcription",
-		request.WorkspaceID,
+		baseURL+"/api/v1/media/%v/transcription",
 		request.MediaID,
 	)
 	headers := internal.MergeHeaders(

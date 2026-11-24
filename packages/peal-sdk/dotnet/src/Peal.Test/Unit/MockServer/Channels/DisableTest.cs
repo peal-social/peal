@@ -32,7 +32,7 @@ public class DisableTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/disable")
+                    .WithPath("/api/v1/channels/channelId/disable")
                     .UsingPost()
             )
             .RespondWith(
@@ -43,7 +43,7 @@ public class DisableTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.DisableAsync(
-            new DisableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new DisableChannelsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -71,7 +71,7 @@ public class DisableTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/disable")
+                    .WithPath("/api/v1/channels/channelId/disable")
                     .UsingPost()
             )
             .RespondWith(
@@ -82,7 +82,7 @@ public class DisableTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.DisableAsync(
-            new DisableChannelsRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new DisableChannelsRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

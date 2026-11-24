@@ -35,15 +35,11 @@ impl ReviewClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .review
-    ///         .settings(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.review.settings(None).await;
     /// }
     /// ```
     pub async fn settings(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ReviewSettings, ApiError> {
         let options = {
@@ -54,13 +50,7 @@ impl ReviewClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/review/settings", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/review/settings", None, None, options)
             .await
     }
 
@@ -89,7 +79,6 @@ impl ReviewClient {
     ///     client
     ///         .review
     ///         .update_settings(
-    ///             &"workspaceId".to_string(),
     ///             &ReviewSettings {
     ///                 approval_policy: ApprovalPolicy::Never,
     ///             },
@@ -100,7 +89,6 @@ impl ReviewClient {
     /// ```
     pub async fn update_settings(
         &self,
-        workspace_id: &str,
         request: &ReviewSettings,
         options: Option<RequestOptions>,
     ) -> Result<ReviewSettings, ApiError> {
@@ -114,7 +102,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!("api/workspaces/{}/review/settings", workspace_id),
+                "api/v1/review/settings",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -144,15 +132,11 @@ impl ReviewClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .review
-    ///         .pending(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.review.pending(None).await;
     /// }
     /// ```
     pub async fn pending(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<ApprovalRequest>, ApiError> {
         let options = {
@@ -163,13 +147,7 @@ impl ReviewClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/approvals", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/approvals", None, None, options)
             .await
     }
 
@@ -195,15 +173,11 @@ impl ReviewClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .review
-    ///         .thread(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.review.thread(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn thread(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<PostReview, ApiError> {
@@ -217,7 +191,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/posts/{}/review", workspace_id, post_id),
+                &format!("api/v1/posts/{}/review", post_id),
                 None,
                 None,
                 options,
@@ -250,7 +224,6 @@ impl ReviewClient {
     ///     client
     ///         .review
     ///         .comment(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &NewComment {
     ///                 text: "text".to_string(),
@@ -264,7 +237,6 @@ impl ReviewClient {
     /// ```
     pub async fn comment(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &NewComment,
         options: Option<RequestOptions>,
@@ -280,7 +252,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/{}/comments", workspace_id, post_id),
+                &format!("api/v1/posts/{}/comments", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -313,7 +285,6 @@ impl ReviewClient {
     ///     client
     ///         .review
     ///         .resolve(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &"commentId".to_string(),
     ///             &ResolveReviewRequest { resolved: true },
@@ -324,7 +295,6 @@ impl ReviewClient {
     /// ```
     pub async fn resolve(
         &self,
-        workspace_id: &str,
         post_id: &str,
         comment_id: &str,
         request: &ResolveReviewRequest,
@@ -341,10 +311,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!(
-                    "api/workspaces/{}/posts/{}/comments/{}",
-                    workspace_id, post_id, comment_id
-                ),
+                &format!("api/v1/posts/{}/comments/{}", post_id, comment_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -377,7 +344,6 @@ impl ReviewClient {
     ///     client
     ///         .review
     ///         .approve(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &ApprovalDecision {
     ///                 approval_id: "approvalId".to_string(),
@@ -390,7 +356,6 @@ impl ReviewClient {
     /// ```
     pub async fn approve(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &ApprovalDecision,
         options: Option<RequestOptions>,
@@ -406,7 +371,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/posts/{}/approve", workspace_id, post_id),
+                &format!("api/v1/posts/{}/approve", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -439,7 +404,6 @@ impl ReviewClient {
     ///     client
     ///         .review
     ///         .request_changes(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &ChangesRequest {
     ///                 approval_id: "approvalId".to_string(),
@@ -453,7 +417,6 @@ impl ReviewClient {
     /// ```
     pub async fn request_changes(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &ChangesRequest,
         options: Option<RequestOptions>,
@@ -469,10 +432,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/request-changes",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/posts/{}/request-changes", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -502,15 +462,11 @@ impl ReviewClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .review
-    ///         .links(&"workspaceId".to_string(), &"postId".to_string(), None)
-    ///         .await;
+    ///     client.review.links(&"postId".to_string(), None).await;
     /// }
     /// ```
     pub async fn links(
         &self,
-        workspace_id: &str,
         post_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<ReviewLink>, ApiError> {
@@ -524,10 +480,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/posts/{}/review-links",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/posts/{}/review-links", post_id),
                 None,
                 None,
                 options,
@@ -560,7 +513,6 @@ impl ReviewClient {
     ///     client
     ///         .review
     ///         .create_link(
-    ///             &"workspaceId".to_string(),
     ///             &"postId".to_string(),
     ///             &NewReviewLink {
     ///                 access: ReviewLinkAccess::View,
@@ -573,7 +525,6 @@ impl ReviewClient {
     /// ```
     pub async fn create_link(
         &self,
-        workspace_id: &str,
         post_id: &str,
         request: &NewReviewLink,
         options: Option<RequestOptions>,
@@ -589,10 +540,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/posts/{}/review-links",
-                    workspace_id, post_id
-                ),
+                &format!("api/v1/posts/{}/review-links", post_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -622,15 +570,11 @@ impl ReviewClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .review
-    ///         .revoke_link(&"workspaceId".to_string(), &"linkId".to_string(), None)
-    ///         .await;
+    ///     client.review.revoke_link(&"linkId".to_string(), None).await;
     /// }
     /// ```
     pub async fn revoke_link(
         &self,
-        workspace_id: &str,
         link_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ReviewLink, ApiError> {
@@ -644,7 +588,7 @@ impl ReviewClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/review-links/{}", workspace_id, link_id),
+                &format!("api/v1/review-links/{}", link_id),
                 None,
                 None,
                 options,

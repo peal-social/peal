@@ -47,7 +47,7 @@ impl CredentialClient {
             Some(o)
         };
         self.http_client
-            .execute_request(Method::GET, "api/credential", None, None, options)
+            .execute_request(Method::GET, "api/v1/credential", None, None, options)
             .await
     }
 }

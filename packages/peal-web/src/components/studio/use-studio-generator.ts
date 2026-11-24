@@ -3,6 +3,7 @@
 import { useAtomRefresh, useAtomSet } from "@effect/atom-react";
 import { DateTime, Duration, Effect, Exit, Option } from "effect";
 import { useFormatter, useTranslations } from "next-intl";
+import { forWorkspace } from "peal-contract";
 import type { AssistantStatus, ImageAspect, Media } from "peal-contract";
 import { useRef } from "react";
 
@@ -71,7 +72,7 @@ export const useStudioGenerator = (
     const exit = await inTurn.current(
       async () =>
         await sendImage({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
           payload: { aspect, prompt },
           reactivityKeys: [mediaKey(workspaceId)],
         })
@@ -99,7 +100,7 @@ export const useStudioGenerator = (
     const exit = await inTurn.current(
       async () =>
         await sendVoice({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
           payload: voiceoverRequestOf(words, ""),
           reactivityKeys: [mediaKey(workspaceId)],
         })
@@ -179,7 +180,7 @@ export const useStudioGenerator = (
     const exit = await inTurn.current(
       async () =>
         await sendVideo({
-          params: { workspaceId },
+          headers: forWorkspace(workspaceId),
           payload: videoRequestOf({
             // The provider's own, where it has none of the video's shape.
             aspect: aspects.includes(aspect) ? aspect : (aspects[0] ?? aspect),

@@ -8,6 +8,7 @@ import { Forbidden } from "./forbidden.ts";
 import { PlatformUnreachable } from "./platform-unreachable.ts";
 import { TikTokPrivacyLevelSchema } from "./target-options.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 /**
  * A TikTok creator's posting settings, fresh from TikTok, which a client
@@ -69,7 +70,8 @@ export class TikTokApi extends HttpApiGroup.make("tiktok")
         ChannelCannotPost,
         PlatformUnreachable,
       ],
-      params: { channelId: Schema.String, workspaceId: Schema.String },
+      headers: workspaceHeaders,
+      params: { channelId: Schema.String },
       success: TikTokAccountSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -81,4 +83,4 @@ export class TikTokApi extends HttpApiGroup.make("tiktok")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/channels") {}
+  .prefix("/api/v1/channels") {}

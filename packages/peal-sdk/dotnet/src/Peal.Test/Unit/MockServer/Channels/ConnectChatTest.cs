@@ -39,8 +39,7 @@ public class ConnectChatTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/chats")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/channels/chats")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -52,15 +51,11 @@ public class ConnectChatTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.ConnectChatAsync(
-            new ConnectChatChannelsRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new ConnectChat(
-                    new ConnectChat.Discord(
-                        new ConnectDiscordChat { ChannelId = null, WebhookUrl = "x" }
-                    )
-                ),
-            }
+            new ConnectChat(
+                new ConnectChat.Discord(
+                    new ConnectDiscordChat { ChannelId = null, WebhookUrl = "x" }
+                )
+            )
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -95,8 +90,7 @@ public class ConnectChatTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/chats")
-                    .WithHeader("Content-Type", "application/json")
+                    .WithPath("/api/v1/channels/chats")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
             )
@@ -108,13 +102,9 @@ public class ConnectChatTest : BaseMockServerTest
             );
 
         var response = await Client.Channels.ConnectChatAsync(
-            new ConnectChatChannelsRequest
-            {
-                WorkspaceId = "workspaceId",
-                Body = new ConnectChat(
-                    new ConnectChat.Discord(new ConnectDiscordChat { WebhookUrl = "webhookUrl" })
-                ),
-            }
+            new ConnectChat(
+                new ConnectChat.Discord(new ConnectDiscordChat { WebhookUrl = "webhookUrl" })
+            )
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

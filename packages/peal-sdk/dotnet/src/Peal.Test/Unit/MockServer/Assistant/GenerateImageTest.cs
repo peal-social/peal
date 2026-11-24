@@ -48,7 +48,7 @@ public class GenerateImageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/images")
+                    .WithPath("/api/v1/assistant/images")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -61,12 +61,7 @@ public class GenerateImageTest : BaseMockServerTest
             );
 
         var response = await Client.Assistant.GenerateImageAsync(
-            new ImageRequest
-            {
-                WorkspaceId = "workspaceId",
-                Aspect = ImageAspect.Square,
-                Prompt = "prompt",
-            }
+            new ImageRequest { Aspect = ImageAspect.Square, Prompt = "prompt" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -110,7 +105,7 @@ public class GenerateImageTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/images")
+                    .WithPath("/api/v1/assistant/images")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -123,12 +118,7 @@ public class GenerateImageTest : BaseMockServerTest
             );
 
         var response = await Client.Assistant.GenerateImageAsync(
-            new ImageRequest
-            {
-                WorkspaceId = "workspaceId",
-                Aspect = ImageAspect.Square,
-                Prompt = "prompt",
-            }
+            new ImageRequest { Aspect = ImageAspect.Square, Prompt = "prompt" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

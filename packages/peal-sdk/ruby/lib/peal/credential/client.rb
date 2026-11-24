@@ -35,7 +35,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/credential",
+          path: "api/v1/credential",
           request_options: request_options
         )
         begin

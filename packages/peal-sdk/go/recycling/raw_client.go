@@ -43,10 +43,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/recycling",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/recycling"
 	queryParams, err := internal.QueryValues(request)
 	if err != nil {
 		return nil, err
@@ -95,10 +92,7 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/recycling",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/recycling"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -143,8 +137,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/recycling/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/recycling/%v",
 		request.RuleID,
 	)
 	headers := internal.MergeHeaders(
@@ -189,8 +182,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/recycling/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/recycling/%v",
 		request.RuleID,
 	)
 	headers := internal.MergeHeaders(
@@ -233,8 +225,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/recycling/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/recycling/%v",
 		request.RuleID,
 	)
 	headers := internal.MergeHeaders(
@@ -281,8 +272,7 @@ func (r *RawClient) Resume(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/recycling/%v/resume",
-		request.WorkspaceID,
+		baseURL+"/api/v1/recycling/%v/resume",
 		request.RuleID,
 	)
 	headers := internal.MergeHeaders(

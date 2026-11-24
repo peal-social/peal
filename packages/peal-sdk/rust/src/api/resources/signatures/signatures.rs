@@ -35,17 +35,10 @@ impl SignaturesClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .signatures
-    ///         .list(&"workspaceId".to_string(), None)
-    ///         .await;
+    ///     client.signatures.list(None).await;
     /// }
     /// ```
-    pub async fn list(
-        &self,
-        workspace_id: &str,
-        options: Option<RequestOptions>,
-    ) -> Result<Vec<Signature>, ApiError> {
+    pub async fn list(&self, options: Option<RequestOptions>) -> Result<Vec<Signature>, ApiError> {
         let options = {
             let mut o = options.unwrap_or_default();
             o.additional_headers
@@ -54,13 +47,7 @@ impl SignaturesClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/signatures", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/signatures", None, None, options)
             .await
     }
 
@@ -89,7 +76,6 @@ impl SignaturesClient {
     ///     client
     ///         .signatures
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &SignatureDetails {
     ///                 name: "name".to_string(),
     ///                 text: "text".to_string(),
@@ -102,7 +88,6 @@ impl SignaturesClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &SignatureDetails,
         options: Option<RequestOptions>,
     ) -> Result<Signature, ApiError> {
@@ -117,7 +102,7 @@ impl SignaturesClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/signatures", workspace_id),
+                "api/v1/signatures",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -150,7 +135,6 @@ impl SignaturesClient {
     ///     client
     ///         .signatures
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"signatureId".to_string(),
     ///             &SignatureDetails {
     ///                 name: "name".to_string(),
@@ -164,7 +148,6 @@ impl SignaturesClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         signature_id: &str,
         request: &SignatureDetails,
         options: Option<RequestOptions>,
@@ -179,10 +162,7 @@ impl SignaturesClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/signatures/{}",
-                    workspace_id, signature_id
-                ),
+                &format!("api/v1/signatures/{}", signature_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -214,13 +194,12 @@ impl SignaturesClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .signatures
-    ///         .delete(&"workspaceId".to_string(), &"signatureId".to_string(), None)
+    ///         .delete(&"signatureId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         signature_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -234,10 +213,7 @@ impl SignaturesClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/signatures/{}",
-                    workspace_id, signature_id
-                ),
+                &format!("api/v1/signatures/{}", signature_id),
                 None,
                 None,
                 options,

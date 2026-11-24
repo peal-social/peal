@@ -4,11 +4,8 @@ import * as Peal from "../../../../index.js";
 
 /**
  * @example
- *     {
- *         workspaceId: "workspaceId"
- *     }
+ *     {}
  */
 export interface ListVideoGenerationsRequest {
-    workspaceId: string;
     status?: Peal.VideoGenerationStatus;
 }

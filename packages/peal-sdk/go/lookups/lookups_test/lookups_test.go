@@ -89,8 +89,7 @@ func TestLookupsListWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ListLookupsRequest{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
+		ChannelID: "channelId",
 	}
 	_, invocationErr := client.Lookups.List(
 		context.TODO(),
@@ -101,7 +100,7 @@ func TestLookupsListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestLookupsListWithWireMock", "GET", "/api/workspaces/workspaceId/channels/channelId/lookups", nil, 1)
+	VerifyRequestCount(t, "TestLookupsListWithWireMock", "GET", "/api/v1/channels/channelId/lookups", nil, 1)
 }
 
 func TestLookupsRunWithWireMock(
@@ -116,9 +115,8 @@ func TestLookupsRunWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.LookupInput{
-		WorkspaceID: "workspaceId",
-		ChannelID:   "channelId",
-		Name:        "name",
+		ChannelID: "channelId",
+		Name:      "name",
 	}
 	_, invocationErr := client.Lookups.Run(
 		context.TODO(),
@@ -129,5 +127,5 @@ func TestLookupsRunWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestLookupsRunWithWireMock", "POST", "/api/workspaces/workspaceId/channels/channelId/lookups/name", nil, 1)
+	VerifyRequestCount(t, "TestLookupsRunWithWireMock", "POST", "/api/v1/channels/channelId/lookups/name", nil, 1)
 }

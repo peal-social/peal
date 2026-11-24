@@ -3,7 +3,7 @@
 import { useAtomSet } from "@effect/atom-react";
 import { DateTime, Exit, Option } from "effect";
 import { useLocale } from "next-intl";
-import { desiredDayHorizonDays } from "peal-contract";
+import { desiredDayHorizonDays, forWorkspace } from "peal-contract";
 import { useState, useTransition } from "react";
 
 import {
@@ -105,7 +105,7 @@ export const ContractFunction = ({
 
     // What withdrawing refunds, for the summary.
     startTransition(async () => {
-      const found = await preview({ params: { workspaceId: own_ } });
+      const found = await preview({ headers: forWorkspace(own_) });
 
       if (Exit.isSuccess(found)) {
         setStep({ _tag: "summary", refund: found.value.refund });
@@ -118,7 +118,7 @@ export const ContractFunction = ({
   const notifyInSession = async (own_: string) => {
     if (kind === "cancellation") {
       const done = await cancel({
-        params: { workspaceId: own_ },
+        headers: forWorkspace(own_),
         payload: {
           desiredOn: values.desiredOn === "" ? null : values.desiredOn,
         },
@@ -134,7 +134,7 @@ export const ContractFunction = ({
       return functionErrorOf(done);
     }
 
-    const done = await confirm({ params: { workspaceId: own_ } });
+    const done = await confirm({ headers: forWorkspace(own_) });
 
     if (Exit.isSuccess(done)) {
       setStep({ _tag: "withdrawn", refunded: done.value.refunded });

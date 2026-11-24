@@ -13,6 +13,7 @@ import { Forbidden } from "./forbidden.ts";
 import { ByteCountSchema, Int64Schema } from "./int64.ts";
 import { MeterSchema, RateCardSchema, UnitPriceSchema } from "./rate-card.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // Null for no limit.
 const allowance = Schema.NullOr(Int64Schema);
@@ -530,7 +531,8 @@ export class BillingApi extends HttpApiGroup.make("billing")
   .add(
     HttpApiEndpoint.get("get", "/", {
       error: Forbidden,
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       success: BillingSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -542,7 +544,8 @@ export class BillingApi extends HttpApiGroup.make("billing")
   )
   .add(
     HttpApiEndpoint.get("standing", "/standing", {
-      params: { workspaceId: Schema.String },
+      headers: workspaceHeaders,
+
       success: StandingSchema,
     }).annotateMerge(
       OpenApi.annotations({
@@ -554,4 +557,4 @@ export class BillingApi extends HttpApiGroup.make("billing")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/billing") {}
+  .prefix("/api/v1/billing") {}

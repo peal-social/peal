@@ -7,6 +7,7 @@ import {
   lastSignInCookie,
   MeSchema,
   PreparedUploadSchema,
+  forWorkspace,
 } from "peal-contract";
 
 import { MediaStorage } from "#media/application/ports/media-storage.ts";
@@ -107,9 +108,9 @@ const uploadedFile = Effect.fn("uploadedFile")(function* uploadedFile(
   const app = yield* TestApp;
   const bytes = syntheticBytes(128);
 
-  const created = yield* app.request(`/api/workspaces/${workspaceId}/media`, {
+  const created = yield* app.request(`/api/v1/media`, {
     body: { byteSize: bytes.length, contentType: "image/png" },
-    headers: { cookie: owner.cookies },
+    headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
   });
 
   const { media, upload } = yield* decodeUpload(created.body);
@@ -197,7 +198,7 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
         const owner = yield* signedUp("ana");
         const editor = yield* signedUp("ben");
         const workspaceId = yield* workspaceOf(owner, "Harbour");
-        const path = `/api/workspaces/${workspaceId}`;
+        const path = `/api/v1/workspace`;
 
         yield* join(owner, workspaceId, editor, "editor");
 
@@ -252,7 +253,7 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
         // An editor may not; the name must be typed again.
         const byEditor = yield* app.request(path, {
           body: { name: "Harbour" },
-          headers: { cookie: editor.cookies },
+          headers: { cookie: editor.cookies, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
@@ -260,7 +261,7 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
 
         const misnamed = yield* app.request(path, {
           body: { name: "Harbor" },
-          headers: { cookie: owner.cookies },
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
@@ -283,7 +284,7 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
 
         const busy = yield* app.request(path, {
           body: { name: "Harbour" },
-          headers: { cookie: owner.cookies },
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
@@ -304,7 +305,7 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
 
         const deleted = yield* app.request(path, {
           body: { name: " Harbour " },
-          headers: { cookie: owner.cookies },
+          headers: { cookie: owner.cookies, ...forWorkspace(workspaceId) },
           method: "DELETE",
         });
 
@@ -312,8 +313,11 @@ layer(Layer.mergeAll(IntegrationLive, StoreLive), {
         assert.deepStrictEqual(yield* rowsIn(workspaceId), nothing);
         assert.isTrue(Option.isNone(yield* store.head(file)));
 
-        const withKey = yield* app.request(`${path}/api-keys`, {
-          headers: { authorization: `Bearer ${key}` },
+        const withKey = yield* app.request("/api/v1/api-keys", {
+          headers: {
+            authorization: `Bearer ${key}`,
+            ...forWorkspace(workspaceId),
+          },
         });
 
         assert.strictEqual(withKey.status, 401);

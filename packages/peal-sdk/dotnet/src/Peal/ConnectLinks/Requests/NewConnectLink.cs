@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewConnectLink
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("channelId")]
     public string? ChannelId { get; set; }
 

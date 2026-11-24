@@ -56,12 +56,9 @@ class InvitationsClient
      *
      * Example:
      * ```php
-     * $client->invitations->list(
-     *     'workspaceId',
-     * );
+     * $client->invitations->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -74,14 +71,14 @@ class InvitationsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/invitations",
+                    path: "api/v1/invitations",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -112,7 +109,6 @@ class InvitationsClient
      * Example:
      * ```php
      * $client->invitations->create(
-     *     'workspaceId',
      *     new NewInvitation([
      *         'email' => 'email',
      *         'role' => Role::Owner->value,
@@ -120,7 +116,6 @@ class InvitationsClient
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param NewInvitation $request
      * @param ?array{
      *   baseUrl?: string,
@@ -134,7 +129,7 @@ class InvitationsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function create(string $workspaceId, NewInvitation $request, ?array $options = null): ?Invitation
+    public function create(NewInvitation $request, ?array $options = null): ?Invitation
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -142,7 +137,7 @@ class InvitationsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/invitations",
+                    path: "api/v1/invitations",
                     method: HttpMethod::POST,
                     body: $request,
                 ),
@@ -174,12 +169,10 @@ class InvitationsClient
      * Example:
      * ```php
      * $client->invitations->revoke(
-     *     'workspaceId',
      *     'invitationId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $invitationId
      * @param ?array{
      *   baseUrl?: string,
@@ -192,14 +185,14 @@ class InvitationsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function revoke(string $workspaceId, string $invitationId, ?array $options = null): void
+    public function revoke(string $invitationId, ?array $options = null): void
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/invitations/{$invitationId}",
+                    path: "api/v1/invitations/{$invitationId}",
                     method: HttpMethod::DELETE,
                 ),
                 $options,

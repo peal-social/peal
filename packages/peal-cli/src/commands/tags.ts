@@ -95,7 +95,7 @@ const create = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const made = yield* client.tags
-      .create({ params: { workspaceId: workspace.id }, payload })
+      .create({ headers: {}, payload })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -164,7 +164,7 @@ const update = Command.make(
     });
 
     const changed = yield* client.tags
-      .update({ params: { tagId: tag.id, workspaceId: workspace.id }, payload })
+      .update({ headers: {}, params: { tagId: tag.id }, payload })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -196,7 +196,7 @@ const remove = Command.make(
     const tag = yield* findTag(session, given);
 
     yield* client.tags
-      .delete({ params: { tagId: tag.id, workspaceId: workspace.id } })
+      .delete({ headers: {}, params: { tagId: tag.id } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* json

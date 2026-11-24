@@ -10,6 +10,7 @@ import {
   PostSchema,
   PostStatusConflict,
   TargetStatusConflict,
+  forWorkspace,
 } from "peal-contract";
 import type { Member, Permission, PostContent } from "peal-contract";
 
@@ -93,13 +94,13 @@ describe("the drafts endpoints", () => {
 
           const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
           const channelId = yield* connect(workspaceId, "mastodon");
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           const created = yield* Effect.forEach(
             ["One", "Two", "Three"],
             (body) =>
               author.posts.create({
-                params,
+                headers,
                 payload: { channelIds: [channelId], content: text(body) },
               })
           );
@@ -111,12 +112,13 @@ describe("the drafts endpoints", () => {
 
           // Scheduled, it is no longer a draft.
           yield* editor.posts.reschedule({
-            params: { postId: three.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: three.id },
             payload: { at: utc("2026-06-16T08:00:00Z"), timeZone: "UTC" },
           });
 
           const page = yield* author.posts.drafts({
-            params,
+            headers,
             query: { limit: 1 },
           });
 
@@ -127,7 +129,7 @@ describe("the drafts endpoints", () => {
           assert.strictEqual(page.nextCursor, two.id);
 
           const rest = yield* author.posts.drafts({
-            params,
+            headers,
             query: { cursor: two.id },
           });
 
@@ -138,7 +140,7 @@ describe("the drafts endpoints", () => {
           assert.isNull(rest.nextCursor);
 
           const malformed = yield* author.posts.drafts({
-            params,
+            headers,
             query: { cursor: "not-a-post" },
             responseMode: "response-only",
           });
@@ -147,13 +149,17 @@ describe("the drafts endpoints", () => {
 
           assert.deepStrictEqual(
             yield* colleague.posts
-              .discard({ params: { postId: one.id, workspaceId } })
+              .discard({
+                headers: forWorkspace(workspaceId),
+                params: { postId: one.id },
+              })
               .pipe(Effect.flip),
             forbiddenFor("missingPermission", "post:delete")
           );
 
           const discarded = yield* author.posts.discard({
-            params: { postId: one.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: one.id },
             responseMode: "response-only",
           });
 
@@ -161,29 +167,37 @@ describe("the drafts endpoints", () => {
 
           assert.deepStrictEqual(
             yield* editor.posts
-              .get({ params: { postId: one.id, workspaceId } })
+              .get({
+                headers: forWorkspace(workspaceId),
+                params: { postId: one.id },
+              })
               .pipe(Effect.flip),
             new PostNotFound()
           );
 
           yield* editor.posts.discard({
-            params: { postId: two.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: two.id },
           });
 
           assert.deepStrictEqual(
             yield* editor.posts
-              .discard({ params: { postId: three.id, workspaceId } })
+              .discard({
+                headers: forWorkspace(workspaceId),
+                params: { postId: three.id },
+              })
               .pipe(Effect.flip),
             new PostStatusConflict({ status: "scheduled" })
           );
 
           assert.lengthOf(
-            (yield* author.posts.drafts({ params, query: {} })).items,
+            (yield* author.posts.drafts({ headers, query: {} })).items,
             0
           );
 
           yield* editor.posts.cancel({
-            params: { postId: three.id, workspaceId },
+            headers: forWorkspace(workspaceId),
+            params: { postId: three.id },
           });
         })
       ),
@@ -210,13 +224,14 @@ describe("the unschedule endpoint", () => {
           const channelId = yield* connect(workspaceId, "mastodon");
 
           const draft = yield* editor.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [channelId], content: text("Soon") },
           });
 
-          const params = { postId: draft.id, workspaceId };
+          const params = { postId: draft.id };
 
           yield* editor.posts.schedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload: {
               at: utc("2026-06-16T08:00:00Z"),
@@ -226,21 +241,29 @@ describe("the unschedule endpoint", () => {
           });
 
           assert.deepStrictEqual(
-            yield* contributor.posts.unschedule({ params }).pipe(Effect.flip),
+            yield* contributor.posts
+              .unschedule({ headers: forWorkspace(workspaceId), params })
+              .pipe(Effect.flip),
             forbiddenFor("missingPermission", "post:schedule")
           );
 
-          const unscheduled = yield* editor.posts.unschedule({ params });
+          const unscheduled = yield* editor.posts.unschedule({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
 
           assert.strictEqual(unscheduled.status, "draft");
           assert.isNull(unscheduled.schedule);
 
           assert.deepStrictEqual(
-            yield* editor.posts.unschedule({ params }).pipe(Effect.flip),
+            yield* editor.posts
+              .unschedule({ headers: forWorkspace(workspaceId), params })
+              .pipe(Effect.flip),
             new PostStatusConflict({ status: "draft" })
           );
 
           const edited = yield* editor.posts.update({
+            headers: forWorkspace(workspaceId),
             params,
             payload: { channelIds: [channelId], content: text("Later") },
           });
@@ -248,13 +271,17 @@ describe("the unschedule endpoint", () => {
           assert.strictEqual(edited.content.text, "Later");
 
           const again = yield* editor.posts.reschedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload: { at: utc("2026-06-17T08:00:00Z"), timeZone: "UTC" },
           });
 
           assert.strictEqual(again.status, "scheduled");
 
-          yield* editor.posts.cancel({ params });
+          yield* editor.posts.cancel({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
         })
       ),
     timeout
@@ -287,13 +314,14 @@ describe("the outcome endpoints", () => {
           );
 
           const draft = yield* editor.posts.create({
-            params: { workspaceId },
+            headers: forWorkspace(workspaceId),
             payload: { channelIds: [refused, lost], content: text("Live") },
           });
 
-          const params = { postId: draft.id, workspaceId };
+          const params = { postId: draft.id };
 
           yield* editor.posts.schedule({
+            headers: forWorkspace(workspaceId),
             params,
             payload: {
               at: utc("2026-06-15T08:00:00Z"),
@@ -308,7 +336,11 @@ describe("the outcome endpoints", () => {
           yield* setTime("2026-06-15T08:00:00Z");
           yield* eventually("the post finishes", isFinished(postId));
 
-          const sent = yield* viewer.posts.get({ params });
+          const sent = yield* viewer.posts.get({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
+
           const onRefused = sent.targets.find((t) => t.channelId === refused);
           const onLost = sent.targets.find((t) => t.channelId === lost);
 
@@ -318,7 +350,10 @@ describe("the outcome endpoints", () => {
           assert.strictEqual(onLost.status, "unconfirmed");
           assert.strictEqual(onLost.unconfirmedReason, "noResponse");
 
-          const attempts = yield* viewer.posts.attempts({ params });
+          const attempts = yield* viewer.posts.attempts({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
 
           assert.deepStrictEqual(
             attempts.map(
@@ -340,7 +375,10 @@ describe("the outcome endpoints", () => {
 
           assert.deepStrictEqual(
             yield* viewer.posts
-              .repost({ params: { ...params, targetId: onRefused.id } })
+              .repost({
+                headers: forWorkspace(workspaceId),
+                params: { ...params, targetId: onRefused.id },
+              })
               .pipe(Effect.flip),
             forbiddenFor("missingPermission", "post:schedule")
           );
@@ -348,20 +386,25 @@ describe("the outcome endpoints", () => {
           // An editor of another workspace finds nothing of the post there.
           const elsewhere = yield* freshId;
           const stranger = yield* clientAs(yield* freshId, elsewhere, "editor");
-          const strangerParams = { postId: draft.id, workspaceId: elsewhere };
+          const strangerParams = { postId: draft.id };
 
           assert.deepStrictEqual(
             yield* Effect.all([
               stranger.posts
-                .attempts({ params: strangerParams })
+                .attempts({
+                  headers: forWorkspace(elsewhere),
+                  params: strangerParams,
+                })
                 .pipe(Effect.flip),
               stranger.posts
                 .repost({
+                  headers: forWorkspace(elsewhere),
                   params: { ...strangerParams, targetId: onRefused.id },
                 })
                 .pipe(Effect.flip),
               stranger.posts
                 .confirm({
+                  headers: forWorkspace(elsewhere),
                   params: { ...strangerParams, targetId: onLost.id },
                   payload: { _tag: "notPublished" },
                 })
@@ -371,6 +414,7 @@ describe("the outcome endpoints", () => {
           );
 
           const reposted = yield* editor.posts.repost({
+            headers: forWorkspace(workspaceId),
             params: { ...params, targetId: onRefused.id },
           });
 
@@ -385,6 +429,7 @@ describe("the outcome endpoints", () => {
           yield* eventually("the repost finishes", isFinished(postId));
 
           const confirmed = yield* editor.posts.confirm({
+            headers: forWorkspace(workspaceId),
             params: { ...params, targetId: onLost.id },
             payload: {
               _tag: "published",
@@ -403,6 +448,7 @@ describe("the outcome endpoints", () => {
           assert.deepStrictEqual(
             yield* editor.posts
               .confirm({
+                headers: forWorkspace(workspaceId),
                 params: { ...params, targetId: onLost.id },
                 payload: { _tag: "notPublished" },
               })
@@ -412,12 +458,18 @@ describe("the outcome endpoints", () => {
 
           assert.deepStrictEqual(
             yield* editor.posts
-              .repost({ params: { ...params, targetId: "not-a-target" } })
+              .repost({
+                headers: forWorkspace(workspaceId),
+                params: { ...params, targetId: "not-a-target" },
+              })
               .pipe(Effect.flip),
             new PostNotFound()
           );
 
-          const after = yield* viewer.posts.attempts({ params });
+          const after = yield* viewer.posts.attempts({
+            headers: forWorkspace(workspaceId),
+            params,
+          });
 
           assert.deepStrictEqual(
             after
@@ -461,7 +513,7 @@ describe("waiting for a post's outcome", () => {
           const workspaceId = yield* freshId;
           const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
           const slow = yield* connect(workspaceId, "mastodon");
-          const params = { workspaceId };
+          const headers = forWorkspace(workspaceId);
 
           yield* FakePlatform.use((platform) =>
             platform.script(slow, [{ _tag: "hang" }])
@@ -471,8 +523,10 @@ describe("waiting for a post's outcome", () => {
           // it again under its key: the same post, awaited each time.
           const request = (wait: number) =>
             editor.posts.send({
-              headers: { "idempotency-key": "synthetic-awaited-key" },
-              params,
+              headers: {
+                ...headers,
+                "idempotency-key": "synthetic-awaited-key",
+              },
               payload: {
                 channelIds: [slow],
                 content: text("A synthetic post that takes its time."),
@@ -510,7 +564,8 @@ describe("waiting for a post's outcome", () => {
           // The outcome endpoint waits for the rest.
           const rest = yield* editor.posts
             .outcome({
-              params: { ...params, postId: partial.id },
+              headers,
+              params: { postId: partial.id },
               query: { wait: 30 },
             })
             .pipe(Effect.forkChild);
@@ -537,7 +592,8 @@ describe("waiting for a post's outcome", () => {
           // More than a minute is not a wait the contract takes.
           const tooLong = yield* editor.posts
             .outcome({
-              params: { ...params, postId: partial.id },
+              headers,
+              params: { postId: partial.id },
               query: { wait: 61 },
             })
             .pipe(Effect.flip);
@@ -547,7 +603,8 @@ describe("waiting for a post's outcome", () => {
           const viewer = yield* clientAs(yield* freshId, workspaceId, "viewer");
 
           const seen = yield* viewer.posts.outcome({
-            params: { ...params, postId: partial.id },
+            headers,
+            params: { postId: partial.id },
             query: {},
           });
 
@@ -577,8 +634,11 @@ describe("a send asked to wait by someone who may not read posts", () => {
           );
 
           const made = yield* sender.posts.send({
-            headers: { "idempotency-key": "synthetic-blind-key" },
-            params: { workspaceId },
+            headers: {
+              ...forWorkspace(workspaceId),
+              "idempotency-key": "synthetic-blind-key",
+            },
+
             payload: {
               channelIds: [channel],
               content: text("A synthetic post from a key that only sends."),
@@ -611,8 +671,12 @@ describe("the send endpoint", () => {
           const editor = yield* clientAs(yield* freshId, workspaceId, "editor");
           const page = yield* connect(workspaceId, "linkedin");
           const location = yield* connect(workspaceId, "googleBusiness");
-          const params = { workspaceId };
-          const headers = { "idempotency-key": "synthetic-key-options" };
+          const headers = forWorkspace(workspaceId);
+
+          const withKey = {
+            ...headers,
+            "idempotency-key": "synthetic-key-options",
+          };
 
           const bakery = {
             name: "Example Bakery",
@@ -650,8 +714,7 @@ describe("the send endpoint", () => {
           } as const;
 
           const sent = yield* editor.posts.send({
-            headers,
-            params,
+            headers: withKey,
             payload,
             query: {},
           });
@@ -665,8 +728,7 @@ describe("the send endpoint", () => {
 
           // Sent again with the same options: the same request, the same post.
           const again = yield* editor.posts.send({
-            headers,
-            params,
+            headers: withKey,
             payload: {
               ...payload,
               options: [
@@ -689,8 +751,7 @@ describe("the send endpoint", () => {
           // Another page mentioned is another request.
           const reused = yield* editor.posts
             .send({
-              headers,
-              params,
+              headers: withKey,
               payload: {
                 ...payload,
                 options: [
@@ -734,8 +795,12 @@ describe("the send endpoint", () => {
           );
 
           const channelId = yield* connect(workspaceId, "mastodon");
-          const params = { workspaceId };
-          const headers = { "idempotency-key": "synthetic-key-api" };
+          const headers = forWorkspace(workspaceId);
+
+          const withKey = {
+            ...headers,
+            "idempotency-key": "synthetic-key-api",
+          };
 
           const payload = {
             channelIds: [channelId],
@@ -748,8 +813,7 @@ describe("the send endpoint", () => {
           } as const;
 
           const sent = yield* editor.posts.send({
-            headers,
-            params,
+            headers: withKey,
             payload,
             query: {},
           });
@@ -761,8 +825,7 @@ describe("the send endpoint", () => {
 
           // Sent again, written another way: the same request, the same post.
           const again = yield* editor.posts.send({
-            headers,
-            params,
+            headers: withKey,
             payload: {
               ...payload,
               when: {
@@ -778,8 +841,7 @@ describe("the send endpoint", () => {
 
           const reused = yield* editor.posts
             .send({
-              headers,
-              params,
+              headers: withKey,
               payload: { ...payload, content: text("Something else.") },
               query: {},
             })
@@ -790,8 +852,7 @@ describe("the send endpoint", () => {
           // Every violation comes at once, and nothing is made.
           const refused = yield* editor.posts
             .send({
-              headers: {},
-              params,
+              headers,
               payload: {
                 channelIds: [channelId],
                 content: text("a".repeat(600)),
@@ -805,8 +866,7 @@ describe("the send endpoint", () => {
 
           const zone = yield* editor.posts
             .send({
-              headers: {},
-              params,
+              headers,
               payload: {
                 ...payload,
                 when: { _tag: "now", timeZone: "+01:00" },
@@ -820,7 +880,11 @@ describe("the send endpoint", () => {
           // The same post under no key, as a client that kept none sends
           // it again: refused, naming the post that has its content.
           const twice = yield* editor.posts
-            .send({ headers: {}, params, payload, query: {} })
+            .send({
+              headers,
+              payload,
+              query: {},
+            })
             .pipe(Effect.flip);
 
           assert.instanceOf(twice, DuplicatePost);
@@ -830,8 +894,7 @@ describe("the send endpoint", () => {
 
           // Unless it is meant.
           const meant = yield* editor.posts.send({
-            headers: {},
-            params,
+            headers,
             payload: { ...payload, allowDuplicate: true },
             query: {},
           });
@@ -839,18 +902,24 @@ describe("the send endpoint", () => {
           assert.notStrictEqual(meant.id, sent.id);
 
           yield* editor.posts.cancel({
-            params: { ...params, postId: meant.id },
+            headers,
+            params: { postId: meant.id },
           });
 
           const denied = yield* contributor.posts
-            .send({ headers: {}, params, payload, query: {} })
+            .send({
+              headers,
+              payload,
+              query: {},
+            })
             .pipe(Effect.flip);
 
           assert.strictEqual(denied._tag, "Forbidden");
 
           // Nothing goes out from this test.
           const cancelled = yield* editor.posts.cancel({
-            params: { ...params, postId: sent.id },
+            headers,
+            params: { postId: sent.id },
           });
 
           assert.strictEqual(cancelled.status, "cancelled");

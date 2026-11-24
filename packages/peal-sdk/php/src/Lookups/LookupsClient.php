@@ -58,12 +58,10 @@ class LookupsClient
      * Example:
      * ```php
      * $client->lookups->list(
-     *     'workspaceId',
      *     'channelId',
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param ?array{
      *   baseUrl?: string,
@@ -77,14 +75,14 @@ class LookupsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, string $channelId, ?array $options = null): ?array
+    public function list(string $channelId, ?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/lookups",
+                    path: "api/v1/channels/{$channelId}/lookups",
                     method: HttpMethod::GET,
                 ),
                 $options,
@@ -115,14 +113,12 @@ class LookupsClient
      * Example:
      * ```php
      * $client->lookups->run(
-     *     'workspaceId',
      *     'channelId',
      *     'name',
      *     new LookupInput([]),
      * );
      * ```
      *
-     * @param string $workspaceId
      * @param string $channelId
      * @param string $name
      * @param LookupInput $request
@@ -138,7 +134,7 @@ class LookupsClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function run(string $workspaceId, string $channelId, string $name, LookupInput $request = new LookupInput(), ?array $options = null): ?LookupResult
+    public function run(string $channelId, string $name, LookupInput $request = new LookupInput(), ?array $options = null): ?LookupResult
     {
         $options = array_merge($this->options, $options ?? []);
         $options['maxRetries'] = 0;
@@ -146,7 +142,7 @@ class LookupsClient
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/channels/{$channelId}/lookups/{$name}",
+                    path: "api/v1/channels/{$channelId}/lookups/{$name}",
                     method: HttpMethod::POST,
                     body: $request,
                 ),

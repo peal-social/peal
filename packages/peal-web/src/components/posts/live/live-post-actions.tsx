@@ -4,7 +4,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { DateTime, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useNow, useTranslations } from "next-intl";
-import { LivePostRefusalSchema } from "peal-contract";
+import { LivePostRefusalSchema, forWorkspace } from "peal-contract";
 import type {
   SocialChannel,
   LivePostChange,
@@ -162,7 +162,8 @@ export const LivePostActions = ({
     setBusy(true);
     startTransition(async () => {
       const exit = await unpublish({
-        params: { postId, targetId: target.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { postId, targetId: target.id },
         query: {},
         reactivityKeys: postsKeys,
       });
@@ -184,7 +185,8 @@ export const LivePostActions = ({
     setBusy(true);
     startTransition(async () => {
       const exit = await edit({
-        params: { postId, targetId: target.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { postId, targetId: target.id },
         payload: { part, text },
         query: {},
         reactivityKeys: postsKeys,

@@ -129,7 +129,7 @@ const list = Command.make(
 
     const page = yield* client.inboxReviews
       .listReviewThreads({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: {
           ...Option.match(flags.channel, {
             onNone: () => ({}),
@@ -190,11 +190,12 @@ const show = Command.make(
   "show",
   { json: jsonFlag, threadId: threadArgument, workspace: workspaceFlag },
   Effect.fn("inbox.reviews.show")(function* showing(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const detail = yield* client.inboxReviews
       .getReviewThread({
-        params: { threadId: flags.threadId, workspaceId: workspace.id },
+        headers: {},
+        params: { threadId: flags.threadId },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -259,11 +260,12 @@ const answered = Command.make(
     workspace: workspaceFlag,
   },
   Effect.fn("inbox.reviews.answered")(function* marking(flags) {
-    const { client, url, workspace } = yield* inWorkspace(flags.workspace);
+    const { client, url } = yield* inWorkspace(flags.workspace);
 
     const review = yield* client.inboxReviews
       .setReviewAnswered({
-        params: { reviewId: flags.reviewId, workspaceId: workspace.id },
+        headers: {},
+        params: { reviewId: flags.reviewId },
         payload: { answered: !flags.undo },
       })
       .pipe(Effect.mapError(explain(url)));

@@ -247,14 +247,15 @@ const fits = (asked: NewBoost) =>
 // The boost the flags ask for, in the ad account's own units: the account
 // is read first, as its currency says how an amount is counted.
 const planned = (
-  { client, url, workspace }: InWorkspace,
+  { client, url }: InWorkspace,
   input: BoostInput,
   { countries, endsAt, startsAt }: Effect.Success<ReturnType<typeof checked>>
 ) =>
   Effect.gen(function* planning() {
     const spending = yield* client.ads
       .getAccount({
-        params: { accountId: input.account, workspaceId: workspace.id },
+        headers: {},
+        params: { accountId: input.account },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -308,12 +309,12 @@ const planned = (
   });
 
 const quoted = (
-  { client, url, workspace }: InWorkspace,
+  { client, url }: InWorkspace,
   account: AdAccount,
   asked: NewBoost
 ) =>
   client.ads
-    .quoteBoost({ params: { workspaceId: workspace.id }, payload: asked })
+    .quoteBoost({ headers: {}, payload: asked })
     .pipe(Effect.mapError(explain(url, account.minorUnitDigits)));
 
 // What a boost will spend and for how long, as the person who pays reads
@@ -380,7 +381,7 @@ const quote = Command.make(
       return;
     }
 
-    const names = yield* channelNames(session.client, session.workspace.id);
+    const names = yield* channelNames(session.client);
 
     yield* Console.log(
       "Checked, and made nothing: this boost would go through. Nothing is reserved."
@@ -458,7 +459,7 @@ const create = Command.make(
     const found = yield* quoted(session, account, asked);
 
     if (!input.json) {
-      const names = yield* channelNames(client, workspace.id);
+      const names = yield* channelNames(client);
 
       yield* Console.log(
         `This boost SPENDS MONEY: up to ${money(found.commitment, found.currency, found.minorUnitDigits)}, until ${instant(found.endsAt)}.`
@@ -490,7 +491,7 @@ const create = Command.make(
     const made = yield* client.ads
       .createBoost({
         headers: { "idempotency-key": key },
-        params: { workspaceId: workspace.id },
+
         payload: asked,
       })
       .pipe(
@@ -526,10 +527,10 @@ const show = Command.make(
     json,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const detail = yield* client.ads
-      .getBoost({ params: { boostId, workspaceId: workspace.id } })
+      .getBoost({ headers: {}, params: { boostId } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -538,7 +539,7 @@ const show = Command.make(
       return;
     }
 
-    const amounts = yield* amountsIn(client, workspace.id);
+    const amounts = yield* amountsIn(client);
 
     yield* Console.log(standingOf(detail.boost));
 
@@ -585,10 +586,10 @@ const pause = Command.make(
     json,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const paused = yield* client.ads
-      .pauseBoost({ params: { boostId, workspaceId: workspace.id } })
+      .pauseBoost({ headers: {}, params: { boostId } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* printChanged(
@@ -625,13 +626,13 @@ const resume = Command.make(
       yes,
     });
 
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const { boost: paused } = yield* client.ads
-      .getBoost({ params: { boostId, workspaceId: workspace.id } })
+      .getBoost({ headers: {}, params: { boostId } })
       .pipe(Effect.mapError(explain(url)));
 
-    const amounts = yield* amountsIn(client, workspace.id);
+    const amounts = yield* amountsIn(client);
 
     if (!json) {
       yield* Console.log(
@@ -643,7 +644,8 @@ const resume = Command.make(
 
     const digits = yield* client.ads
       .getAccount({
-        params: { accountId: paused.accountId, workspaceId: workspace.id },
+        headers: {},
+        params: { accountId: paused.accountId },
       })
       .pipe(
         Effect.map(({ account }) => account.minorUnitDigits),
@@ -652,7 +654,7 @@ const resume = Command.make(
       );
 
     const resumed = yield* client.ads
-      .resumeBoost({ params: { boostId, workspaceId: workspace.id } })
+      .resumeBoost({ headers: {}, params: { boostId } })
       .pipe(Effect.mapError(explain(url, digits)));
 
     yield* printChanged(
@@ -689,7 +691,7 @@ const stop = Command.make(
       yes,
     });
 
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     if (!json) {
       yield* Console.log(
@@ -700,7 +702,7 @@ const stop = Command.make(
     yield* confirmed({ question: "Stop this boost for good?", yes });
 
     const stopped = yield* client.ads
-      .stopBoost({ params: { boostId, workspaceId: workspace.id } })
+      .stopBoost({ headers: {}, params: { boostId } })
       .pipe(Effect.mapError(explain(url)));
 
     yield* printChanged(

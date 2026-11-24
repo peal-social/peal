@@ -7,9 +7,6 @@ namespace Peal;
 public record RevokeKeyPartnerAccountRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string PartnerKeyId { get; set; }
 
     /// <inheritdoc />

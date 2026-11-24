@@ -14,6 +14,7 @@ import {
   maxLookupPageSize as contractMaxPageSize,
   PlatformRateLimited,
   PlatformUnreachable,
+  forWorkspace,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -227,14 +228,17 @@ const viewer = memberOf(workspaceId, permissionsFor("viewer"));
 
 const stranger = memberOf(workspaceId, []);
 
-const youtube = { channelId: onYouTube, workspaceId };
+const youtube = { channelId: onYouTube };
 
 describe("a channel's lookups endpoint", () => {
   it.effect("lists the lookups its platform has, and what each takes", () =>
     Effect.gen(function* listed() {
       const { client } = yield* clientWith(viewer);
 
-      const described = yield* client.lookups.list({ params: youtube });
+      const described = yield* client.lookups.list({
+        headers: forWorkspace(workspaceId),
+        params: youtube,
+      });
 
       assert.deepStrictEqual(
         described.map(({ fills, input, name, paged, platform }) => ({
@@ -264,7 +268,8 @@ describe("a channel's lookups endpoint", () => {
 
       assert.deepStrictEqual(
         yield* client.lookups.list({
-          params: { channelId: onMastodon, workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { channelId: onMastodon },
         }),
         []
       );
@@ -279,11 +284,14 @@ describe("a channel's lookups endpoint", () => {
         const outside = yield* clientWith(stranger);
 
         const unknown = yield* client.lookups
-          .list({ params: { channelId: "not-an-id", workspaceId } })
+          .list({
+            headers: forWorkspace(workspaceId),
+            params: { channelId: "not-an-id" },
+          })
           .pipe(Effect.flip);
 
         const refused = yield* outside.client.lookups
-          .list({ params: youtube })
+          .list({ headers: forWorkspace(workspaceId), params: youtube })
           .pipe(Effect.flip);
 
         assert.instanceOf(unknown, ChannelNotFound);
@@ -298,11 +306,13 @@ describe("running a channel's lookup", () => {
       const { asked, client } = yield* clientWith(viewer);
 
       const categories = yield* client.lookups.run({
+        headers: forWorkspace(workspaceId),
         params: { ...youtube, name: "youtubeVideoCategories" },
         payload: { regionCode: "FR" },
       });
 
       const playlists = yield* client.lookups.run({
+        headers: forWorkspace(workspaceId),
         params: { ...youtube, name: "youtubePlaylists" },
         payload: {},
       });
@@ -338,7 +348,8 @@ describe("running a channel's lookup", () => {
         const { client } = yield* clientWith(viewer);
 
         const result = yield* client.lookups.run({
-          params: { channelId: onTikTok, name: "tiktokCreator", workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { channelId: onTikTok, name: "tiktokCreator" },
           payload: {},
         });
 
@@ -372,16 +383,21 @@ describe("running a channel's lookup", () => {
     () =>
       Effect.gen(function* pinterest() {
         const { asked, client } = yield* clientWith(viewer);
-        const params = { channelId: onPinterest, workspaceId };
+        const params = { channelId: onPinterest };
 
-        const described = yield* client.lookups.list({ params });
+        const described = yield* client.lookups.list({
+          headers: forWorkspace(workspaceId),
+          params,
+        });
 
         const boards = yield* client.lookups.run({
+          headers: forWorkspace(workspaceId),
           params: { ...params, name: "pinterestBoards" },
           payload: { limit: 2 },
         });
 
         const sections = yield* client.lookups.run({
+          headers: forWorkspace(workspaceId),
           params: { ...params, name: "pinterestBoardSections" },
           payload: { boardId: "549755885001" },
         });
@@ -446,10 +462,10 @@ describe("running a channel's lookup", () => {
         (payload) =>
           client.lookups
             .run({
+              headers: forWorkspace(workspaceId),
               params: {
                 channelId: onPinterest,
                 name: "pinterestBoardSections",
-                workspaceId,
               },
               payload,
             })
@@ -468,8 +484,12 @@ describe("running a channel's lookup", () => {
     () =>
       Effect.gen(function* page() {
         const { asked, client } = yield* clientWith(viewer);
-        const params = { channelId: onLinkedInPage, workspaceId };
-        const [described] = yield* client.lookups.list({ params });
+        const params = { channelId: onLinkedInPage };
+
+        const [described] = yield* client.lookups.list({
+          headers: forWorkspace(workspaceId),
+          params,
+        });
 
         assert.strictEqual(described?.name, "linkedinOrganizations");
         assert.deepStrictEqual(described?.fills, ["mentions"]);
@@ -479,6 +499,7 @@ describe("running a channel's lookup", () => {
         );
 
         const found = yield* client.lookups.run({
+          headers: forWorkspace(workspaceId),
           params: { ...params, name: "linkedinOrganizations" },
           payload: { vanityName: "example-bakery" },
         });
@@ -495,12 +516,19 @@ describe("running a channel's lookup", () => {
     () =>
       Effect.gen(function* profile() {
         const { asked, client } = yield* clientWith(viewer);
-        const params = { channelId: onLinkedInProfile, workspaceId };
+        const params = { channelId: onLinkedInProfile };
 
-        assert.deepStrictEqual(yield* client.lookups.list({ params }), []);
+        assert.deepStrictEqual(
+          yield* client.lookups.list({
+            headers: forWorkspace(workspaceId),
+            params,
+          }),
+          []
+        );
 
         const refused = yield* client.lookups
           .run({
+            headers: forWorkspace(workspaceId),
             params: { ...params, name: "linkedinOrganizations" },
             payload: { vanityName: "example-bakery" },
           })
@@ -523,7 +551,11 @@ describe("running a channel's lookup", () => {
         ],
         (params) =>
           client.lookups
-            .run({ params: { ...params, workspaceId }, payload: {} })
+            .run({
+              headers: forWorkspace(workspaceId),
+              params: { ...params },
+              payload: {},
+            })
             .pipe(Effect.flip)
       );
 
@@ -541,6 +573,7 @@ describe("running a channel's lookup", () => {
 
       const stray = yield* client.lookups
         .run({
+          headers: forWorkspace(workspaceId),
           params: { ...youtube, name: "youtubePlaylists" },
           payload: { regionCode: "FR" },
         })
@@ -548,7 +581,8 @@ describe("running a channel's lookup", () => {
 
       const creatorPaged = yield* client.lookups
         .run({
-          params: { channelId: onTikTok, name: "tiktokCreator", workspaceId },
+          headers: forWorkspace(workspaceId),
+          params: { channelId: onTikTok, name: "tiktokCreator" },
           payload: { limit: 5 },
         })
         .pipe(Effect.flip);
@@ -575,6 +609,7 @@ describe("running a channel's lookup", () => {
           clientWith(viewer, failure).pipe(
             Effect.flatMap(({ client }) =>
               client.lookups.run({
+                headers: forWorkspace(workspaceId),
                 params: { ...youtube, name: "youtubePlaylists" },
                 payload: {},
               })
@@ -601,6 +636,7 @@ describe("running a channel's lookup", () => {
 
       const error = yield* client.lookups
         .run({
+          headers: forWorkspace(workspaceId),
           params: { ...youtube, name: "youtubePlaylists" },
           payload: {},
         })

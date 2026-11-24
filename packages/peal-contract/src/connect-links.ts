@@ -16,6 +16,7 @@ import { ChannelConnectionSchema, PlatformSchema } from "./platform.ts";
 import { ReturnUrlNotAllowed } from "./return-url-not-allowed.ts";
 import { TooManyConnectLinks } from "./too-many-connect-links.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // A connect link lets whoever owns a social account connect it to a
 // workspace on a hosted page, without a Peal account. The server's rules
@@ -161,9 +162,7 @@ export const CreatedConnectLinkSchema = Schema.Struct({
 
 export type CreatedConnectLink = typeof CreatedConnectLinkSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const link = { ...workspace, linkId: Schema.String };
+const link = { linkId: Schema.String };
 
 /** A workspace's connect links. */
 export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
@@ -176,7 +175,8 @@ export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
         ReturnUrlNotAllowed,
         TooManyConnectLinks,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewConnectLinkSchema,
       success: CreatedConnectLinkSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -187,7 +187,8 @@ export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
     ),
     HttpApiEndpoint.get("list", "/", {
       error: Forbidden,
-      params: workspace,
+      headers: workspaceHeaders,
+
       success: Schema.Array(ConnectLinkSchema),
     }).annotateMerge(
       OpenApi.annotations({
@@ -197,6 +198,7 @@ export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
     ),
     HttpApiEndpoint.get("get", "/:linkId", {
       error: [Forbidden, ConnectLinkNotFound],
+      headers: workspaceHeaders,
       params: link,
       success: ConnectLinkSchema,
     }).annotateMerge(
@@ -208,6 +210,7 @@ export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
     ),
     HttpApiEndpoint.delete("revoke", "/:linkId", {
       error: [Forbidden, ConnectLinkNotFound],
+      headers: workspaceHeaders,
       params: link,
       success: ConnectLinkSchema,
     }).annotateMerge(
@@ -220,4 +223,4 @@ export class ConnectLinksApi extends HttpApiGroup.make("connectLinks")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/connect-links") {}
+  .prefix("/api/v1/connect-links") {}

@@ -22,14 +22,13 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :cursor
       # @option params [Peal::Types::MediaKind, nil] :kind
       # @option params [String, nil] :limit
       # @option params [String, nil] :q
       #
       # @example
-      #   client.media.list(workspace_id: "workspaceId")
+      #   client.media.list
       #
       # @return [Peal::Types::MediaPage]
       def list(request_options: {}, **params)
@@ -43,7 +42,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media",
+          path: "api/v1/media",
           query: query_params,
           request_options: request_options
         )
@@ -78,11 +77,9 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
       #   client.media.create(
-      #     workspace_id: "workspaceId",
       #     byte_size: 1000000,
       #     content_type: "contentType"
       #   )
@@ -90,15 +87,11 @@ module Peal
       # @return [Peal::Types::PreparedUpload]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Media::Types::NewUpload.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media",
-          body: body,
+          path: "api/v1/media",
+          body: Peal::Media::Types::NewUpload.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -139,26 +132,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.media.import_from_url(
-      #     workspace_id: "workspaceId",
-      #     url: "url"
-      #   )
+      #   client.media.import_from_url(url: "url")
       #
       # @return [Peal::Types::Media]
       def import_from_url(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::Media::Types::MediaImport.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/import",
-          body: body,
+          path: "api/v1/media/import",
+          body: Peal::Media::Types::MediaImport.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -189,14 +174,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :media_id
       #
       # @example
-      #   client.media.get(
-      #     workspace_id: "workspaceId",
-      #     media_id: "mediaId"
-      #   )
+      #   client.media.get(media_id: "mediaId")
       #
       # @return [Peal::Types::Media]
       def get(request_options: {}, **params)
@@ -204,7 +185,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/#{URI.encode_uri_component(params[:media_id].to_s)}",
+          path: "api/v1/media/#{URI.encode_uri_component(params[:media_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -236,14 +217,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :media_id
       #
       # @example
-      #   client.media.delete(
-      #     workspace_id: "workspaceId",
-      #     media_id: "mediaId"
-      #   )
+      #   client.media.delete(media_id: "mediaId")
       #
       # @return [untyped]
       def delete(request_options: {}, **params)
@@ -251,7 +228,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/#{URI.encode_uri_component(params[:media_id].to_s)}",
+          path: "api/v1/media/#{URI.encode_uri_component(params[:media_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -280,12 +257,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :media_id
       #
       # @example
       #   client.media.describe(
-      #     workspace_id: "workspaceId",
       #     media_id: "mediaId",
       #     alt_text: nil
       #   )
@@ -294,13 +269,13 @@ module Peal
       def describe(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
         request_data = Peal::Media::Types::MediaDescription.new(params).to_h
-        non_body_param_names = %w[workspaceId mediaId]
+        non_body_param_names = %w[mediaId]
         body = request_data.except(*non_body_param_names)
 
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "PATCH",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/#{URI.encode_uri_component(params[:media_id].to_s)}",
+          path: "api/v1/media/#{URI.encode_uri_component(params[:media_id].to_s)}",
           body: body,
           request_options: request_options,
           max_retries: 0
@@ -339,14 +314,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :media_id
       #
       # @example
-      #   client.media.complete(
-      #     workspace_id: "workspaceId",
-      #     media_id: "mediaId"
-      #   )
+      #   client.media.complete(media_id: "mediaId")
       #
       # @return [Peal::Types::Media]
       def complete(request_options: {}, **params)
@@ -354,7 +325,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/#{URI.encode_uri_component(params[:media_id].to_s)}/complete",
+          path: "api/v1/media/#{URI.encode_uri_component(params[:media_id].to_s)}/complete",
           request_options: request_options,
           max_retries: 0
         )
@@ -386,14 +357,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :media_id
       #
       # @example
-      #   client.media.usage(
-      #     workspace_id: "workspaceId",
-      #     media_id: "mediaId"
-      #   )
+      #   client.media.usage(media_id: "mediaId")
       #
       # @return [Peal::Types::MediaUsage]
       def usage(request_options: {}, **params)
@@ -401,7 +368,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/media/#{URI.encode_uri_component(params[:media_id].to_s)}/usage",
+          path: "api/v1/media/#{URI.encode_uri_component(params[:media_id].to_s)}/usage",
           request_options: request_options
         )
         begin

@@ -174,7 +174,7 @@ Cela dit ce qui s’est passé sur ce canal, jamais ce qui se passera. Ces règl
 
 Vous retrouvez les mêmes chiffres ailleurs :
 
-- L’API : `GET /api/workspaces/{workspaceId}/analytics/best-times?channelId=…&days=90&timeZone=Europe/Paris` répond avec `buckets`, `best`, `enough`, `counted` et `recent`.
+- L’API : `GET /api/v1/analytics/best-times?channelId=…&days=90&timeZone=Europe/Paris` répond avec `buckets`, `best`, `enough`, `counted` et `recent`.
 - La [ligne de commande](/developers/cli/workspace#analytics) : `peal analytics best-times`.
 - Les clients MCP : `best_times` ([MCP](/developers/mcp/tools#tools)).
 
@@ -197,18 +197,18 @@ La page de la publication liste ses liens et leurs clics des 30 derniers jours a
 
 Par l’API, les liens courts ont ces requêtes :
 
-| Requête                                         | Ce qu’elle fait                                                                                                                                                                                     | Permission            |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `GET /api/workspaces/{workspaceId}/short-links` | Liste les liens de l’espace de travail par curseur, du plus récent au plus ancien, ceux d’un `postId` ou d’un `channelId`, avec leurs clics de `from` à `to` (jours UTC, 30 par défaut, 92 au plus) | `analytics:read`      |
-| `GET …/short-links/{linkId}`                    | Donne un lien avec ses clics jour par jour                                                                                                                                                          | `analytics:read`      |
-| `GET …/short-links/status`                      | Indique si le serveur a des liens courts                                                                                                                                                            | `post:read`           |
-| `PUT …/short-links/settings`                    | Règle la valeur par défaut de l’espace de travail                                                                                                                                                   | `organization:update` |
+| Requête                      | Ce qu’elle fait                                                                                                                                                                                     | Permission            |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `GET /api/v1/short-links`    | Liste les liens de l’espace de travail par curseur, du plus récent au plus ancien, ceux d’un `postId` ou d’un `channelId`, avec leurs clics de `from` à `to` (jours UTC, 30 par défaut, 92 au plus) | `analytics:read`      |
+| `GET …/short-links/{linkId}` | Donne un lien avec ses clics jour par jour                                                                                                                                                          | `analytics:read`      |
+| `GET …/short-links/status`   | Indique si le serveur a des liens courts                                                                                                                                                            | `post:read`           |
+| `PUT …/short-links/settings` | Règle la valeur par défaut de l’espace de travail                                                                                                                                                   | `organization:update` |
 
 La [ligne de commande](/developers/cli/workspace#short-links) et les [outils MCP](/developers/mcp/tools#tools) lisent les mêmes.
 
 ## Par l’API [#api]
 
-Chaque point d’accès est sous `/api/workspaces/{workspaceId}/analytics` et demande la permission `analytics:read`. Une période est `days=7`, `30` ou `90`, jusqu’à aujourd’hui dans `timeZone`. Ou bien c’est `from` et `to`, 366 jours au plus, les jours suivant un fuseau IANA `timeZone`.
+Chaque point d’accès est sous `/api/v1/analytics` et demande la permission `analytics:read`. Une période est `days=7`, `30` ou `90`, jusqu’à aujourd’hui dans `timeZone`. Ou bien c’est `from` et `to`, 366 jours au plus, les jours suivant un fuseau IANA `timeZone`.
 
 Les points d’accès sont :
 

@@ -38,9 +38,7 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.ListVideoGenerationsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListVideoGenerationsRequest{}
 //	_, err := client.VideoGenerations.List(
 //	    context.TODO(),
 //	    request,
@@ -66,7 +64,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.VideoGenerationRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Aspect: peal.ImageAspectSquare,
 //	    Prompt: "prompt",
 //	}
@@ -95,7 +92,6 @@ func (c *Client) Create(
 // Example:
 //
 //	request := &peal.GetVideoGenerationsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    GenerationID: "generationId",
 //	}
 //	_, err := client.VideoGenerations.Get(

@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId",
  *         targetId: "targetId"
  *     }
  */
 export interface RepostPostsRequest {
-    workspaceId: string;
     postId: string;
     targetId: string;
 }

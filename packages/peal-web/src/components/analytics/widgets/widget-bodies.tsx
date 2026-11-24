@@ -5,6 +5,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import type {
   AnalyticsDashboard,
   DashboardTotals,
+  ExportKind,
   Platform,
   SocialChannel,
 } from "peal-contract";
@@ -52,6 +53,9 @@ import { useTrendWords } from "#components/analytics/use-trend-words.ts";
 import { PlatformMark } from "#components/channels/platform-mark.tsx";
 
 import { Headline } from "./widget-card.tsx";
+
+// The files the export widget offers, in its order.
+const exportKinds: readonly ExportKind[] = ["posts", "accounts"];
 
 /** The counts a widget draws day by day. */
 export type DayCount = "engagement" | "followers" | "reach" | "views";
@@ -1026,33 +1030,35 @@ export const PlatformsBody = ({
   );
 };
 
-/** The exports of the range, as files. */
+/**
+ * The exports of the range, as files: each button saves one
+ * (`downloadExport`), as a link could not name the workspace.
+ */
 export const ExportBody = ({
-  accounts,
-  posts,
+  busy = false,
+  onDownload,
 }: {
-  readonly accounts: string;
-  readonly posts: string;
+  readonly busy?: boolean;
+  readonly onDownload: (kind: ExportKind) => void;
 }) => {
   const t = useTranslations("Analytics.export");
 
   return (
-    <div className="mt-auto flex flex-col gap-2">
+    <div className="mt-auto flex flex-col items-start gap-2">
       <p className="text-muted-foreground text-sm">{t("description")}</p>
-      <a
-        href={posts}
-        download
-        className="text-sm font-medium underline-offset-4 hover:underline"
-      >
-        {t("posts")}
-      </a>
-      <a
-        href={accounts}
-        download
-        className="text-sm font-medium underline-offset-4 hover:underline"
-      >
-        {t("accounts")}
-      </a>
+      {exportKinds.map((kind) => (
+        <button
+          key={kind}
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            onDownload(kind);
+          }}
+          className="text-left text-sm font-medium underline-offset-4 hover:underline disabled:opacity-50"
+        >
+          {t(kind)}
+        </button>
+      ))}
     </div>
   );
 };

@@ -181,7 +181,7 @@ public class PostPerformanceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/posts/postId")
+                    .WithPath("/api/v1/ads/posts/postId")
                     .UsingGet()
             )
             .RespondWith(
@@ -192,7 +192,7 @@ public class PostPerformanceTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.PostPerformanceAsync(
-            new PostPerformanceAdsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new PostPerformanceAdsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -277,7 +277,7 @@ public class PostPerformanceTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/posts/postId")
+                    .WithPath("/api/v1/ads/posts/postId")
                     .UsingGet()
             )
             .RespondWith(
@@ -288,7 +288,7 @@ public class PostPerformanceTest : BaseMockServerTest
             );
 
         var response = await Client.Ads.PostPerformanceAsync(
-            new PostPerformanceAdsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
+            new PostPerformanceAdsRequest { PostId = "postId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

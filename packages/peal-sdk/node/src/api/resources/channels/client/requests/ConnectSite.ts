@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         address: "address",
  *         applicationPassword: "applicationPassword",
  *         platform: "wordpress",
@@ -13,7 +12,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface ConnectSite {
-    workspaceId: string;
     address: string;
     applicationPassword: string;
     platform: Peal.SitePlatform;

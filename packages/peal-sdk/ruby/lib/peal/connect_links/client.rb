@@ -14,24 +14,22 @@ module Peal
       # expired in the last 30 days. Needs channel:read.
       #
       # @param request_options [Hash]
-      # @param params [Hash]
+      # @param _params [Hash]
       # @option request_options [String] :base_url
       # @option request_options [Hash{String => Object}] :additional_headers
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.connect_links.list(workspace_id: "workspaceId")
+      #   client.connect_links.list
       #
       # @return [Array[Peal::Types::ConnectLink]]
-      def list(request_options: {}, **params)
-        params = Peal::Internal::Types::Utils.normalize_keys(params)
+      def list(request_options: {}, **_params)
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/connect-links",
+          path: "api/v1/connect-links",
           request_options: request_options
         )
         begin
@@ -74,23 +72,18 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       #
       # @example
-      #   client.connect_links.create(workspace_id: "workspaceId")
+      #   client.connect_links.create
       #
       # @return [Peal::Types::CreatedConnectLink]
       def create(request_options: {}, **params)
         params = Peal::Internal::Types::Utils.normalize_keys(params)
-        request_data = Peal::ConnectLinks::Types::NewConnectLink.new(params).to_h
-        non_body_param_names = %w[workspaceId]
-        body = request_data.except(*non_body_param_names)
-
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "POST",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/connect-links",
-          body: body,
+          path: "api/v1/connect-links",
+          body: Peal::ConnectLinks::Types::NewConnectLink.new(params).to_h,
           request_options: request_options,
           max_retries: 0
         )
@@ -123,14 +116,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :link_id
       #
       # @example
-      #   client.connect_links.get(
-      #     workspace_id: "workspaceId",
-      #     link_id: "linkId"
-      #   )
+      #   client.connect_links.get(link_id: "linkId")
       #
       # @return [Peal::Types::ConnectLink]
       def get(request_options: {}, **params)
@@ -138,7 +127,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/connect-links/#{URI.encode_uri_component(params[:link_id].to_s)}",
+          path: "api/v1/connect-links/#{URI.encode_uri_component(params[:link_id].to_s)}",
           request_options: request_options
         )
         begin
@@ -169,14 +158,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :link_id
       #
       # @example
-      #   client.connect_links.revoke(
-      #     workspace_id: "workspaceId",
-      #     link_id: "linkId"
-      #   )
+      #   client.connect_links.revoke(link_id: "linkId")
       #
       # @return [Peal::Types::ConnectLink]
       def revoke(request_options: {}, **params)
@@ -184,7 +169,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "DELETE",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/connect-links/#{URI.encode_uri_component(params[:link_id].to_s)}",
+          path: "api/v1/connect-links/#{URI.encode_uri_component(params[:link_id].to_s)}",
           request_options: request_options
         )
         begin

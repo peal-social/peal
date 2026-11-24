@@ -84,7 +84,7 @@ public class ConnectAccountsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/connectionId/accounts")
+                    .WithPath("/api/v1/ads/connections/connectionId/accounts")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -99,7 +99,6 @@ public class ConnectAccountsTest : BaseMockServerTest
         var response = await Client.Ads.ConnectAccountsAsync(
             new AdAccountsToConnect
             {
-                WorkspaceId = "workspaceId",
                 ConnectionId = "connectionId",
                 ExternalIds = new List<string>() { "externalIds", "externalIds" },
             }
@@ -154,7 +153,7 @@ public class ConnectAccountsTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/ads/connections/connectionId/accounts")
+                    .WithPath("/api/v1/ads/connections/connectionId/accounts")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -169,7 +168,6 @@ public class ConnectAccountsTest : BaseMockServerTest
         var response = await Client.Ads.ConnectAccountsAsync(
             new AdAccountsToConnect
             {
-                WorkspaceId = "workspaceId",
                 ConnectionId = "connectionId",
                 ExternalIds = new List<string>() { "externalIds" },
             }

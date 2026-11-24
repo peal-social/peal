@@ -48,7 +48,7 @@ public class SetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/default-options")
+                    .WithPath("/api/v1/channels/channelId/default-options")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -63,7 +63,6 @@ public class SetTest : BaseMockServerTest
         var response = await Client.ChannelDefaults.SetAsync(
             new NewChannelDefaults
             {
-                WorkspaceId = "workspaceId",
                 ChannelId = "channelId",
                 Options = new TargetOptions(
                     new TargetOptions.Youtube(
@@ -128,7 +127,7 @@ public class SetTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/channels/channelId/default-options")
+                    .WithPath("/api/v1/channels/channelId/default-options")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPut()
                     .WithBodyAsJson(requestJson)
@@ -143,7 +142,6 @@ public class SetTest : BaseMockServerTest
         var response = await Client.ChannelDefaults.SetAsync(
             new NewChannelDefaults
             {
-                WorkspaceId = "workspaceId",
                 ChannelId = "channelId",
                 Options = new TargetOptions(new TargetOptions.Youtube(new YouTubeOptions())),
             }

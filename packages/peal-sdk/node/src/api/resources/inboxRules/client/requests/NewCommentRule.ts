@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         keywords: ["keywords"],
  *         reply: "reply"
  *     }
  */
 export interface NewCommentRule {
-    workspaceId: string;
     channelId?: string;
     keywords: string[];
     postId?: string;

@@ -113,7 +113,7 @@ const list = Command.make(
 
     const page = yield* client.inboxRules
       .listCommentRules({
-        params: { workspaceId: workspace.id },
+        headers: {},
         query: Option.match(input.status, {
           onNone: () => ({}),
           onSome: (status) => ({ status }),
@@ -150,11 +150,12 @@ const show = Command.make(
   "show",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("inboxRules.show")(function* show(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.inboxRules
       .getCommentRule({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
       })
       .pipe(Effect.mapError(explain(url)));
 
@@ -203,11 +204,11 @@ const start = Command.make(
       });
     }
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.inboxRules
       .createCommentRule({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           keywords: input.keywords,
           reply: input.reply,
@@ -288,11 +289,12 @@ const update = Command.make(
       });
     }
 
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.inboxRules
       .updateCommentRule({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
         payload,
       })
       .pipe(Effect.mapError(explain(url)));
@@ -311,11 +313,12 @@ const pausing = (paused: boolean) =>
     readonly rule: string;
     readonly workspace: Option.Option<string>;
   }) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     const rule = yield* client.inboxRules
       .updateCommentRule({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
         payload: { paused },
       })
       .pipe(Effect.mapError(explain(url)));
@@ -347,11 +350,12 @@ const stop = Command.make(
   "stop",
   { json: jsonFlag, rule: ruleArgument, workspace: workspaceFlag },
   Effect.fn("inboxRules.stop")(function* stop(input) {
-    const { client, url, workspace } = yield* inWorkspace(input.workspace);
+    const { client, url } = yield* inWorkspace(input.workspace);
 
     yield* client.inboxRules
       .deleteCommentRule({
-        params: { ruleId: input.rule, workspaceId: workspace.id },
+        headers: {},
+        params: { ruleId: input.rule },
       })
       .pipe(Effect.mapError(explain(url)));
 

@@ -5,12 +5,10 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         endpointId: "endpointId"
  *     }
  */
 export interface WebhookEndpointChange {
-    workspaceId: string;
     endpointId: string;
     channelIds?: string[];
     description?: string;

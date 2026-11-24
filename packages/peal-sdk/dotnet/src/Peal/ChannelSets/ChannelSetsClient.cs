@@ -13,7 +13,6 @@ public partial class ChannelSetsClient : IChannelSetsClient
     }
 
     private async Task<WithRawResponse<IEnumerable<ChannelSet>>> ListAsyncCore(
-        ListChannelSetsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class ChannelSetsClient : IChannelSetsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channel-sets",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/channel-sets",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class ChannelSetsClient : IChannelSetsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -155,7 +163,7 @@ public partial class ChannelSetsClient : IChannelSetsClient
     }
 
     private async Task<WithRawResponse<ChannelSet>> CreateAsyncCore(
-        CreateChannelSetsRequest request,
+        ChannelSetDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -174,14 +182,10 @@ public partial class ChannelSetsClient : IChannelSetsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/channel-sets",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
-                    Body = request.Body,
+                    Path = "api/v1/channel-sets",
+                    Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
-                    ContentType = "application/json",
                     Options = options,
                     RetriesDisabled = true,
                 },
@@ -231,6 +235,18 @@ public partial class ChannelSetsClient : IChannelSetsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -344,8 +360,7 @@ public partial class ChannelSetsClient : IChannelSetsClient
                 {
                     Method = HttpMethod.Put,
                     Path = string.Format(
-                        "api/workspaces/{0}/channel-sets/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channel-sets/{0}",
                         ValueConvert.ToPathParameterString(request.ChannelSetId)
                     ),
                     Body = request.Body,
@@ -400,6 +415,18 @@ public partial class ChannelSetsClient : IChannelSetsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -513,8 +540,7 @@ public partial class ChannelSetsClient : IChannelSetsClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/channel-sets/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/channel-sets/{0}",
                         ValueConvert.ToPathParameterString(request.ChannelSetId)
                     ),
                     QueryString = _queryString,
@@ -541,6 +567,18 @@ public partial class ChannelSetsClient : IChannelSetsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -613,16 +651,15 @@ public partial class ChannelSetsClient : IChannelSetsClient
     /// Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (`unavailableChannelIds`). Needs post:read and channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.ChannelSets.ListAsync(new ListChannelSetsRequest { WorkspaceId = "workspaceId" });
+    /// await client.ChannelSets.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<ChannelSet>> ListAsync(
-        ListChannelSetsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<ChannelSet>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -631,19 +668,15 @@ public partial class ChannelSetsClient : IChannelSetsClient
     /// </summary>
     /// <example><code>
     /// await client.ChannelSets.CreateAsync(
-    ///     new CreateChannelSetsRequest
+    ///     new ChannelSetDetails
     ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         Body = new ChannelSetDetails
-    ///         {
-    ///             ChannelIds = new List&lt;string&gt;() { "channelIds" },
-    ///             Name = "name",
-    ///         },
+    ///         ChannelIds = new List&lt;string&gt;() { "channelIds" },
+    ///         Name = "name",
     ///     }
     /// );
     /// </code></example>
     public WithRawResponseTask<ChannelSet> CreateAsync(
-        CreateChannelSetsRequest request,
+        ChannelSetDetails request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -660,7 +693,6 @@ public partial class ChannelSetsClient : IChannelSetsClient
     /// await client.ChannelSets.UpdateAsync(
     ///     new UpdateChannelSetsRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         ChannelSetId = "channelSetId",
     ///         Body = new ChannelSetDetails
     ///         {
@@ -686,7 +718,7 @@ public partial class ChannelSetsClient : IChannelSetsClient
     /// </summary>
     /// <example><code>
     /// await client.ChannelSets.DeleteAsync(
-    ///     new DeleteChannelSetsRequest { WorkspaceId = "workspaceId", ChannelSetId = "channelSetId" }
+    ///     new DeleteChannelSetsRequest { ChannelSetId = "channelSetId" }
     /// );
     /// </code></example>
     public WithRawResponseTask DeleteAsync(

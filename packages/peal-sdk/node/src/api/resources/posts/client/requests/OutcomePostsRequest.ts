@@ -3,12 +3,10 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         postId: "postId"
  *     }
  */
 export interface OutcomePostsRequest {
-    workspaceId: string;
     postId: string;
     wait?: string;
 }

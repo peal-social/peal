@@ -10,15 +10,13 @@ import (
 )
 
 var (
-	newInvitationFieldWorkspaceID = big.NewInt(1 << 0)
-	newInvitationFieldEmail       = big.NewInt(1 << 1)
-	newInvitationFieldRole        = big.NewInt(1 << 2)
+	newInvitationFieldEmail = big.NewInt(1 << 0)
+	newInvitationFieldRole  = big.NewInt(1 << 1)
 )
 
 type NewInvitation struct {
-	WorkspaceID string `json:"-" url:"-"`
-	Email       string `json:"email" url:"-"`
-	Role        Role   `json:"role" url:"-"`
+	Email string `json:"email" url:"-"`
+	Role  Role   `json:"role" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (n *NewInvitation) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewInvitation) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newInvitationFieldWorkspaceID)
 }
 
 // SetEmail sets the Email field and marks it as non-optional;
@@ -76,39 +67,10 @@ func (n *NewInvitation) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	listInvitationsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListInvitationsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListInvitationsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListInvitationsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listInvitationsRequestFieldWorkspaceID)
-}
-
-var (
-	revokeInvitationsRequestFieldWorkspaceID  = big.NewInt(1 << 0)
-	revokeInvitationsRequestFieldInvitationID = big.NewInt(1 << 1)
+	revokeInvitationsRequestFieldInvitationID = big.NewInt(1 << 0)
 )
 
 type RevokeInvitationsRequest struct {
-	WorkspaceID  string `json:"-" url:"-"`
 	InvitationID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -122,13 +84,6 @@ func (r *RevokeInvitationsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	r.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RevokeInvitationsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(revokeInvitationsRequestFieldWorkspaceID)
 }
 
 // SetInvitationID sets the InvitationID field and marks it as non-optional;

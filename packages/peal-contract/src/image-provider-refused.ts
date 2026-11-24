@@ -29,7 +29,7 @@ export class ImageProviderRefused extends Schema.TaggedError<ImageProviderRefuse
   },
   {
     description:
-      "The workspace's own image provider refused its key, its account, its model or its address, answered with a redirect, which Peal never follows (the address is not the API's), or its key must be typed again (`reason`, and the provider's `status` when it answered). Nothing was spent of Peal's assistant requests. Fix the settings in the workspace's assistant settings (`PUT /api/workspaces/{workspaceId}/assistant/image-provider`, which needs assistant:configure), or remove them to make images with the server's model again.",
+      "The workspace's own image provider refused its key, its account, its model or its address, answered with a redirect, which Peal never follows (the address is not the API's), or its key must be typed again (`reason`, and the provider's `status` when it answered). Nothing was spent of Peal's assistant requests. Fix the settings in the workspace's assistant settings (`PUT /api/v1/assistant/image-provider`, which needs assistant:configure), or remove them to make images with the server's model again.",
     httpApiStatus: 502,
   }
 ) {}

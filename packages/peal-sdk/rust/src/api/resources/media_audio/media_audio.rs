@@ -38,7 +38,6 @@ impl MediaAudioClient {
     ///     client
     ///         .media_audio
     ///         .create_voiceover(
-    ///             &"workspaceId".to_string(),
     ///             &VoiceoverRequest {
     ///                 text: "text".to_string(),
     ///                 voice: None,
@@ -50,7 +49,6 @@ impl MediaAudioClient {
     /// ```
     pub async fn create_voiceover(
         &self,
-        workspace_id: &str,
         request: &VoiceoverRequest,
         options: Option<RequestOptions>,
     ) -> Result<Media, ApiError> {
@@ -65,7 +63,7 @@ impl MediaAudioClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/media/voiceovers", workspace_id),
+                "api/v1/media/voiceovers",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -98,7 +96,6 @@ impl MediaAudioClient {
     ///     client
     ///         .media_audio
     ///         .transcribe(
-    ///             &"workspaceId".to_string(),
     ///             &"mediaId".to_string(),
     ///             &TranscriptionRequest {
     ///                 ..Default::default()
@@ -110,7 +107,6 @@ impl MediaAudioClient {
     /// ```
     pub async fn transcribe(
         &self,
-        workspace_id: &str,
         media_id: &str,
         request: &TranscriptionRequest,
         options: Option<RequestOptions>,
@@ -126,10 +122,7 @@ impl MediaAudioClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/media/{}/transcription",
-                    workspace_id, media_id
-                ),
+                &format!("api/v1/media/{}/transcription", media_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,

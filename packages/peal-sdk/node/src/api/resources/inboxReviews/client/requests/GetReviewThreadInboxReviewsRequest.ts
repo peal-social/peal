@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         threadId: "threadId"
  *     }
  */
 export interface GetReviewThreadInboxReviewsRequest {
-    workspaceId: string;
     threadId: string;
 }

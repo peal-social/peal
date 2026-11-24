@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { assert, layer } from "@effect/vitest";
 import { Effect, Layer, Schema } from "effect";
 import { SqlClient } from "effect/sql";
+import { forWorkspace } from "peal-contract";
 
 import { SqlLive } from "#shared/infrastructure/database.ts";
 import {
@@ -131,36 +132,36 @@ layer(RetainingLive, { excludeTestServices: true, timeout: "120 seconds" })(
           const ana = yield* signedUp("legal-ana");
           const workspaceId = yield* workspaceOf(ana, "Legal");
 
-          const created = yield* app.request(
-            `/api/workspaces/${workspaceId}/posts`,
-            {
-              body: draftOf("A synthetic draft of the legal test."),
-              headers: {
-                cookie: ana.cookies,
-                "x-forwarded-for": clientAddress,
-              },
-            }
-          );
+          const created = yield* app.request(`/api/v1/posts`, {
+            body: draftOf("A synthetic draft of the legal test."),
+            headers: {
+              cookie: ana.cookies,
+              "x-forwarded-for": clientAddress,
+              ...forWorkspace(workspaceId),
+            },
+          });
 
           assert.strictEqual(created.status, 201);
 
           // Reading changes no content, and is not kept.
-          yield* app.request(`/api/workspaces/${workspaceId}/posts`, {
-            headers: { cookie: ana.cookies, "x-forwarded-for": clientAddress },
+          yield* app.request(`/api/v1/posts`, {
+            headers: {
+              cookie: ana.cookies,
+              "x-forwarded-for": clientAddress,
+              ...forWorkspace(workspaceId),
+            },
           });
 
           // Nor is checking a post, which makes none, though it is sent
           // as content is.
-          const checked = yield* app.request(
-            `/api/workspaces/${workspaceId}/posts/validate`,
-            {
-              body: draftOf("A synthetic post only checked."),
-              headers: {
-                cookie: ana.cookies,
-                "x-forwarded-for": clientAddress,
-              },
-            }
-          );
+          const checked = yield* app.request(`/api/v1/posts/validate`, {
+            body: draftOf("A synthetic post only checked."),
+            headers: {
+              cookie: ana.cookies,
+              "x-forwarded-for": clientAddress,
+              ...forWorkspace(workspaceId),
+            },
+          });
 
           assert.strictEqual(checked.status, 200);
 
@@ -472,16 +473,14 @@ layer(IntegrationLive, { excludeTestServices: true, timeout: "120 seconds" })(
           const ben = yield* signedUp("legal-off");
           const workspaceId = yield* workspaceOf(ben, "Elsewhere");
 
-          const created = yield* app.request(
-            `/api/workspaces/${workspaceId}/posts`,
-            {
-              body: draftOf("A synthetic draft kept for nobody."),
-              headers: {
-                cookie: ben.cookies,
-                "x-forwarded-for": clientAddress,
-              },
-            }
-          );
+          const created = yield* app.request(`/api/v1/posts`, {
+            body: draftOf("A synthetic draft kept for nobody."),
+            headers: {
+              cookie: ben.cookies,
+              "x-forwarded-for": clientAddress,
+              ...forWorkspace(workspaceId),
+            },
+          });
 
           assert.strictEqual(created.status, 201);
 
@@ -546,13 +545,14 @@ layer(
         yield* sql`INSERT INTO legal.connections (id, access, at, protocol, ip_address, user_id, workspace_id)
           VALUES (${uuid7()}, 'session', ${new Date()}, 'https', ${clientAddress}, ${cleo.id}, ${workspaceId})`;
 
-        const created = yield* app.request(
-          `/api/workspaces/${workspaceId}/posts`,
-          {
-            body: draftOf("A synthetic draft written once it was off."),
-            headers: { cookie: cleo.cookies, "x-forwarded-for": clientAddress },
-          }
-        );
+        const created = yield* app.request(`/api/v1/posts`, {
+          body: draftOf("A synthetic draft written once it was off."),
+          headers: {
+            cookie: cleo.cookies,
+            "x-forwarded-for": clientAddress,
+            ...forWorkspace(workspaceId),
+          },
+        });
 
         assert.strictEqual(created.status, 201);
 

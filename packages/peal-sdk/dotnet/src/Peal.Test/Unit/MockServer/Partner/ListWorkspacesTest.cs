@@ -39,7 +39,7 @@ public class ListWorkspacesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces")
+                    .WithPath("/api/v1/partner/workspaces")
                     .UsingGet()
             )
             .RespondWith(
@@ -76,7 +76,7 @@ public class ListWorkspacesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/partner/workspaces")
+                    .WithPath("/api/v1/partner/workspaces")
                     .UsingGet()
             )
             .RespondWith(

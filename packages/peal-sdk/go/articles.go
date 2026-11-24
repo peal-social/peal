@@ -10,20 +10,18 @@ import (
 )
 
 var (
-	newArticleFieldWorkspaceID  = big.NewInt(1 << 0)
-	newArticleFieldBody         = big.NewInt(1 << 1)
-	newArticleFieldCategories   = big.NewInt(1 << 2)
-	newArticleFieldCoverMediaID = big.NewInt(1 << 3)
-	newArticleFieldExcerpt      = big.NewInt(1 << 4)
-	newArticleFieldSiteStatus   = big.NewInt(1 << 5)
-	newArticleFieldTags         = big.NewInt(1 << 6)
-	newArticleFieldTitle        = big.NewInt(1 << 7)
-	newArticleFieldChannelID    = big.NewInt(1 << 8)
-	newArticleFieldSchedule     = big.NewInt(1 << 9)
+	newArticleFieldBody         = big.NewInt(1 << 0)
+	newArticleFieldCategories   = big.NewInt(1 << 1)
+	newArticleFieldCoverMediaID = big.NewInt(1 << 2)
+	newArticleFieldExcerpt      = big.NewInt(1 << 3)
+	newArticleFieldSiteStatus   = big.NewInt(1 << 4)
+	newArticleFieldTags         = big.NewInt(1 << 5)
+	newArticleFieldTitle        = big.NewInt(1 << 6)
+	newArticleFieldChannelID    = big.NewInt(1 << 7)
+	newArticleFieldSchedule     = big.NewInt(1 << 8)
 )
 
 type NewArticle struct {
-	WorkspaceID  string             `json:"-" url:"-"`
 	Body         *ArticleBody       `json:"body" url:"-"`
 	Categories   []string           `json:"categories,omitempty" url:"-"`
 	CoverMediaID *string            `json:"coverMediaId,omitempty" url:"-"`
@@ -45,13 +43,6 @@ func (n *NewArticle) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewArticle) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newArticleFieldWorkspaceID)
 }
 
 // SetBody sets the Body field and marks it as non-optional;
@@ -139,13 +130,11 @@ func (n *NewArticle) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	deleteArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	deleteArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type DeleteArticlesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ArticleID   string `json:"-" url:"-"`
+	ArticleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -160,13 +149,6 @@ func (d *DeleteArticlesRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteArticlesRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteArticlesRequestFieldWorkspaceID)
-}
-
 // SetArticleID sets the ArticleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteArticlesRequest) SetArticleID(articleID string) {
@@ -175,13 +157,11 @@ func (d *DeleteArticlesRequest) SetArticleID(articleID string) {
 }
 
 var (
-	getArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	getArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type GetArticlesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ArticleID   string `json:"-" url:"-"`
+	ArticleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -196,13 +176,6 @@ func (g *GetArticlesRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetArticlesRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getArticlesRequestFieldWorkspaceID)
-}
-
 // SetArticleID sets the ArticleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetArticlesRequest) SetArticleID(articleID string) {
@@ -211,17 +184,15 @@ func (g *GetArticlesRequest) SetArticleID(articleID string) {
 }
 
 var (
-	listArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listArticlesRequestFieldCursor      = big.NewInt(1 << 1)
-	listArticlesRequestFieldLimit       = big.NewInt(1 << 2)
-	listArticlesRequestFieldStatus      = big.NewInt(1 << 3)
+	listArticlesRequestFieldCursor = big.NewInt(1 << 0)
+	listArticlesRequestFieldLimit  = big.NewInt(1 << 1)
+	listArticlesRequestFieldStatus = big.NewInt(1 << 2)
 )
 
 type ListArticlesRequest struct {
-	WorkspaceID string            `json:"-" url:"-"`
-	Cursor      *string           `json:"-" url:"cursor,omitempty"`
-	Limit       *string           `json:"-" url:"limit,omitempty"`
-	Status      *ArticleStateName `json:"-" url:"status,omitempty"`
+	Cursor *string           `json:"-" url:"cursor,omitempty"`
+	Limit  *string           `json:"-" url:"limit,omitempty"`
+	Status *ArticleStateName `json:"-" url:"status,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -234,13 +205,6 @@ func (l *ListArticlesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListArticlesRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listArticlesRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -265,13 +229,11 @@ func (l *ListArticlesRequest) SetStatus(status *ArticleStateName) {
 }
 
 var (
-	retryArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	retryArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	retryArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type RetryArticlesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ArticleID   string `json:"-" url:"-"`
+	ArticleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -286,13 +248,6 @@ func (r *RetryArticlesRequest) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RetryArticlesRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(retryArticlesRequestFieldWorkspaceID)
-}
-
 // SetArticleID sets the ArticleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (r *RetryArticlesRequest) SetArticleID(articleID string) {
@@ -301,14 +256,12 @@ func (r *RetryArticlesRequest) SetArticleID(articleID string) {
 }
 
 var (
-	scheduleArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	scheduleArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	scheduleArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type ScheduleArticlesRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	ArticleID   string       `json:"-" url:"-"`
-	Body        *ArticleTime `json:"-" url:"-"`
+	ArticleID string       `json:"-" url:"-"`
+	Body      *ArticleTime `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -321,13 +274,6 @@ func (s *ScheduleArticlesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *ScheduleArticlesRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(scheduleArticlesRequestFieldWorkspaceID)
 }
 
 // SetArticleID sets the ArticleID field and marks it as non-optional;
@@ -2237,13 +2183,11 @@ func (a *ArticleTime) String() string {
 }
 
 var (
-	unpublishArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	unpublishArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	unpublishArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type UnpublishArticlesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ArticleID   string `json:"-" url:"-"`
+	ArticleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2258,13 +2202,6 @@ func (u *UnpublishArticlesRequest) require(field *big.Int) {
 	u.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UnpublishArticlesRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(unpublishArticlesRequestFieldWorkspaceID)
-}
-
 // SetArticleID sets the ArticleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (u *UnpublishArticlesRequest) SetArticleID(articleID string) {
@@ -2273,13 +2210,11 @@ func (u *UnpublishArticlesRequest) SetArticleID(articleID string) {
 }
 
 var (
-	unscheduleArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	unscheduleArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	unscheduleArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type UnscheduleArticlesRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	ArticleID   string `json:"-" url:"-"`
+	ArticleID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2294,13 +2229,6 @@ func (u *UnscheduleArticlesRequest) require(field *big.Int) {
 	u.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UnscheduleArticlesRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(unscheduleArticlesRequestFieldWorkspaceID)
-}
-
 // SetArticleID sets the ArticleID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (u *UnscheduleArticlesRequest) SetArticleID(articleID string) {
@@ -2309,14 +2237,12 @@ func (u *UnscheduleArticlesRequest) SetArticleID(articleID string) {
 }
 
 var (
-	updateArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	updateArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	updateArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type UpdateArticlesRequest struct {
-	WorkspaceID string        `json:"-" url:"-"`
-	ArticleID   string        `json:"-" url:"-"`
-	Body        *ArticleInput `json:"-" url:"-"`
+	ArticleID string        `json:"-" url:"-"`
+	Body      *ArticleInput `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2329,13 +2255,6 @@ func (u *UpdateArticlesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdateArticlesRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updateArticlesRequestFieldWorkspaceID)
 }
 
 // SetArticleID sets the ArticleID field and marks it as non-optional;
@@ -2359,14 +2278,12 @@ func (u *UpdateArticlesRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	updateOnSiteArticlesRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	updateOnSiteArticlesRequestFieldArticleID   = big.NewInt(1 << 1)
+	updateOnSiteArticlesRequestFieldArticleID = big.NewInt(1 << 0)
 )
 
 type UpdateOnSiteArticlesRequest struct {
-	WorkspaceID string        `json:"-" url:"-"`
-	ArticleID   string        `json:"-" url:"-"`
-	Body        *ArticleInput `json:"-" url:"-"`
+	ArticleID string        `json:"-" url:"-"`
+	Body      *ArticleInput `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -2379,13 +2296,6 @@ func (u *UpdateOnSiteArticlesRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UpdateOnSiteArticlesRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(updateOnSiteArticlesRequestFieldWorkspaceID)
 }
 
 // SetArticleID sets the ArticleID field and marks it as non-optional;

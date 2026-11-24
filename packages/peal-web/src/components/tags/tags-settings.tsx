@@ -4,7 +4,11 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Exit, Option } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { maxTagsPerPost, maxTagsPerWorkspace } from "peal-contract";
+import {
+  maxTagsPerPost,
+  maxTagsPerWorkspace,
+  forWorkspace,
+} from "peal-contract";
 import type { Tag } from "peal-contract";
 import { Button } from "peal-ui/components/button";
 import {
@@ -73,7 +77,8 @@ const EditForm = ({
 
     startTransition(async () => {
       const exit = await update({
-        params: { tagId: tag.id, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { tagId: tag.id },
         payload: details.value,
         reactivityKeys: tagsChanged(workspaceId),
       });
@@ -155,7 +160,8 @@ const TagRow = ({
                   deleted={t("deleted")}
                   remove={async () =>
                     await remove({
-                      params: { tagId: tag.id, workspaceId },
+                      headers: forWorkspace(workspaceId),
+                      params: { tagId: tag.id },
                       reactivityKeys: tagsChanged(workspaceId),
                     })
                   }
@@ -248,7 +254,7 @@ export const CreateTagForm = ({
 
     startTransition(async () => {
       const exit = await create({
-        params: { workspaceId },
+        headers: forWorkspace(workspaceId),
         payload: details.value,
         reactivityKeys: tagsChanged(workspaceId),
       });

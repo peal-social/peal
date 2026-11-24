@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) Settings(
 	ctx context.Context,
-	request *peal.SettingsReviewRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.ReviewSettings], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) Settings(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/review/settings",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/review/settings"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -79,7 +75,7 @@ func (r *RawClient) Settings(
 
 func (r *RawClient) UpdateSettings(
 	ctx context.Context,
-	request *peal.UpdateSettingsReviewRequest,
+	request *peal.ReviewSettings,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.ReviewSettings], error) {
 	options := core.NewRequestOptions(opts...)
@@ -88,15 +84,11 @@ func (r *RawClient) UpdateSettings(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/review/settings",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/review/settings"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.ReviewSettings
 	raw, err := r.caller.Call(
 		ctx,
@@ -126,7 +118,6 @@ func (r *RawClient) UpdateSettings(
 
 func (r *RawClient) Pending(
 	ctx context.Context,
-	request *peal.PendingReviewRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.ApprovalRequest], error) {
 	options := core.NewRequestOptions(opts...)
@@ -135,10 +126,7 @@ func (r *RawClient) Pending(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/approvals",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/approvals"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -181,8 +169,7 @@ func (r *RawClient) Thread(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/review",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/review",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -227,8 +214,7 @@ func (r *RawClient) Comment(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/comments",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/comments",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -275,8 +261,7 @@ func (r *RawClient) Resolve(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/comments/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/comments/%v",
 		request.PostID,
 		request.CommentID,
 	)
@@ -324,8 +309,7 @@ func (r *RawClient) Approve(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/approve",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/approve",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -372,8 +356,7 @@ func (r *RawClient) RequestChanges(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/request-changes",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/request-changes",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -420,8 +403,7 @@ func (r *RawClient) Links(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/review-links",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/review-links",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -466,8 +448,7 @@ func (r *RawClient) CreateLink(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/posts/%v/review-links",
-		request.WorkspaceID,
+		baseURL+"/api/v1/posts/%v/review-links",
 		request.PostID,
 	)
 	headers := internal.MergeHeaders(
@@ -514,8 +495,7 @@ func (r *RawClient) RevokeLink(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/review-links/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/review-links/%v",
 		request.LinkID,
 	)
 	headers := internal.MergeHeaders(

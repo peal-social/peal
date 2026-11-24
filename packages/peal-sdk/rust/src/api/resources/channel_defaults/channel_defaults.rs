@@ -37,13 +37,12 @@ impl ChannelDefaultsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .channel_defaults
-    ///         .get(&"workspaceId".to_string(), &"channelId".to_string(), None)
+    ///         .get(&"channelId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<ChannelDefaults, ApiError> {
@@ -57,10 +56,7 @@ impl ChannelDefaultsClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/channels/{}/default-options",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/default-options", channel_id),
                 None,
                 None,
                 options,
@@ -93,7 +89,6 @@ impl ChannelDefaultsClient {
     ///     client
     ///         .channel_defaults
     ///         .set(
-    ///             &"workspaceId".to_string(),
     ///             &"channelId".to_string(),
     ///             &NewChannelDefaults {
     ///                 options: TargetOptions::Youtube {
@@ -109,7 +104,6 @@ impl ChannelDefaultsClient {
     /// ```
     pub async fn set(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         request: &NewChannelDefaults,
         options: Option<RequestOptions>,
@@ -124,10 +118,7 @@ impl ChannelDefaultsClient {
         self.http_client
             .execute_request(
                 Method::PUT,
-                &format!(
-                    "api/workspaces/{}/channels/{}/default-options",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/default-options", channel_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -159,13 +150,12 @@ impl ChannelDefaultsClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .channel_defaults
-    ///         .clear(&"workspaceId".to_string(), &"channelId".to_string(), None)
+    ///         .clear(&"channelId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn clear(
         &self,
-        workspace_id: &str,
         channel_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -179,10 +169,7 @@ impl ChannelDefaultsClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!(
-                    "api/workspaces/{}/channels/{}/default-options",
-                    workspace_id, channel_id
-                ),
+                &format!("api/v1/channels/{}/default-options", channel_id),
                 None,
                 None,
                 options,

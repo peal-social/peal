@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	completeMediaRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	completeMediaRequestFieldMediaID     = big.NewInt(1 << 1)
+	completeMediaRequestFieldMediaID = big.NewInt(1 << 0)
 )
 
 type CompleteMediaRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	MediaID     string `json:"-" url:"-"`
+	MediaID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (c *CompleteMediaRequest) require(field *big.Int) {
 	c.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CompleteMediaRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(completeMediaRequestFieldWorkspaceID)
-}
-
 // SetMediaID sets the MediaID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (c *CompleteMediaRequest) SetMediaID(mediaID string) {
@@ -46,15 +37,13 @@ func (c *CompleteMediaRequest) SetMediaID(mediaID string) {
 }
 
 var (
-	newUploadFieldWorkspaceID = big.NewInt(1 << 0)
-	newUploadFieldAltText     = big.NewInt(1 << 1)
-	newUploadFieldByteSize    = big.NewInt(1 << 2)
-	newUploadFieldContentType = big.NewInt(1 << 3)
-	newUploadFieldFileName    = big.NewInt(1 << 4)
+	newUploadFieldAltText     = big.NewInt(1 << 0)
+	newUploadFieldByteSize    = big.NewInt(1 << 1)
+	newUploadFieldContentType = big.NewInt(1 << 2)
+	newUploadFieldFileName    = big.NewInt(1 << 3)
 )
 
 type NewUpload struct {
-	WorkspaceID string  `json:"-" url:"-"`
 	AltText     *string `json:"altText,omitempty" url:"-"`
 	ByteSize    int64   `json:"byteSize" url:"-"`
 	ContentType string  `json:"contentType" url:"-"`
@@ -71,13 +60,6 @@ func (n *NewUpload) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	n.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (n *NewUpload) SetWorkspaceID(workspaceID string) {
-	n.WorkspaceID = workspaceID
-	n.require(newUploadFieldWorkspaceID)
 }
 
 // SetAltText sets the AltText field and marks it as non-optional;
@@ -130,13 +112,11 @@ func (n *NewUpload) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	deleteMediaRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	deleteMediaRequestFieldMediaID     = big.NewInt(1 << 1)
+	deleteMediaRequestFieldMediaID = big.NewInt(1 << 0)
 )
 
 type DeleteMediaRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	MediaID     string `json:"-" url:"-"`
+	MediaID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -151,13 +131,6 @@ func (d *DeleteMediaRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DeleteMediaRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(deleteMediaRequestFieldWorkspaceID)
-}
-
 // SetMediaID sets the MediaID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DeleteMediaRequest) SetMediaID(mediaID string) {
@@ -166,15 +139,13 @@ func (d *DeleteMediaRequest) SetMediaID(mediaID string) {
 }
 
 var (
-	mediaDescriptionFieldWorkspaceID = big.NewInt(1 << 0)
-	mediaDescriptionFieldMediaID     = big.NewInt(1 << 1)
-	mediaDescriptionFieldAltText     = big.NewInt(1 << 2)
+	mediaDescriptionFieldMediaID = big.NewInt(1 << 0)
+	mediaDescriptionFieldAltText = big.NewInt(1 << 1)
 )
 
 type MediaDescription struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	MediaID     string  `json:"-" url:"-"`
-	AltText     *string `json:"altText,omitempty" url:"-"`
+	MediaID string  `json:"-" url:"-"`
+	AltText *string `json:"altText,omitempty" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -187,13 +158,6 @@ func (m *MediaDescription) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	m.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *MediaDescription) SetWorkspaceID(workspaceID string) {
-	m.WorkspaceID = workspaceID
-	m.require(mediaDescriptionFieldWorkspaceID)
 }
 
 // SetMediaID sets the MediaID field and marks it as non-optional;
@@ -232,13 +196,11 @@ func (m *MediaDescription) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	getMediaRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getMediaRequestFieldMediaID     = big.NewInt(1 << 1)
+	getMediaRequestFieldMediaID = big.NewInt(1 << 0)
 )
 
 type GetMediaRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	MediaID     string `json:"-" url:"-"`
+	MediaID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -253,13 +215,6 @@ func (g *GetMediaRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetMediaRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getMediaRequestFieldWorkspaceID)
-}
-
 // SetMediaID sets the MediaID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetMediaRequest) SetMediaID(mediaID string) {
@@ -268,15 +223,13 @@ func (g *GetMediaRequest) SetMediaID(mediaID string) {
 }
 
 var (
-	mediaImportFieldWorkspaceID = big.NewInt(1 << 0)
-	mediaImportFieldAltText     = big.NewInt(1 << 1)
-	mediaImportFieldURL         = big.NewInt(1 << 2)
+	mediaImportFieldAltText = big.NewInt(1 << 0)
+	mediaImportFieldURL     = big.NewInt(1 << 1)
 )
 
 type MediaImport struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	AltText     *string `json:"altText,omitempty" url:"-"`
-	URL         string  `json:"url" url:"-"`
+	AltText *string `json:"altText,omitempty" url:"-"`
+	URL     string  `json:"url" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -289,13 +242,6 @@ func (m *MediaImport) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	m.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (m *MediaImport) SetWorkspaceID(workspaceID string) {
-	m.WorkspaceID = workspaceID
-	m.require(mediaImportFieldWorkspaceID)
 }
 
 // SetAltText sets the AltText field and marks it as non-optional;
@@ -334,19 +280,17 @@ func (m *MediaImport) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	listMediaRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listMediaRequestFieldCursor      = big.NewInt(1 << 1)
-	listMediaRequestFieldKind        = big.NewInt(1 << 2)
-	listMediaRequestFieldLimit       = big.NewInt(1 << 3)
-	listMediaRequestFieldQ           = big.NewInt(1 << 4)
+	listMediaRequestFieldCursor = big.NewInt(1 << 0)
+	listMediaRequestFieldKind   = big.NewInt(1 << 1)
+	listMediaRequestFieldLimit  = big.NewInt(1 << 2)
+	listMediaRequestFieldQ      = big.NewInt(1 << 3)
 )
 
 type ListMediaRequest struct {
-	WorkspaceID string      `json:"-" url:"-"`
-	Cursor      *string     `json:"-" url:"cursor,omitempty"`
-	Kind        *MediaKind  `json:"-" url:"kind,omitempty"`
-	Limit       *string     `json:"-" url:"limit,omitempty"`
-	Q           *MediaQuery `json:"-" url:"q,omitempty"`
+	Cursor *string     `json:"-" url:"cursor,omitempty"`
+	Kind   *MediaKind  `json:"-" url:"kind,omitempty"`
+	Limit  *string     `json:"-" url:"limit,omitempty"`
+	Q      *MediaQuery `json:"-" url:"q,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -359,13 +303,6 @@ func (l *ListMediaRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListMediaRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listMediaRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -1350,13 +1287,11 @@ func (u *UploadTargetSingle) String() string {
 }
 
 var (
-	usageMediaRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	usageMediaRequestFieldMediaID     = big.NewInt(1 << 1)
+	usageMediaRequestFieldMediaID = big.NewInt(1 << 0)
 )
 
 type UsageMediaRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	MediaID     string `json:"-" url:"-"`
+	MediaID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1369,13 +1304,6 @@ func (u *UsageMediaRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	u.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (u *UsageMediaRequest) SetWorkspaceID(workspaceID string) {
-	u.WorkspaceID = workspaceID
-	u.require(usageMediaRequestFieldWorkspaceID)
 }
 
 // SetMediaID sets the MediaID field and marks it as non-optional;

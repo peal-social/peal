@@ -38,21 +38,15 @@ func NewClient(options *core.RequestOptions) *Client {
 //
 // Example:
 //
-//	request := &peal.StatusAdsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Ads.Status(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) Status(
 	ctx context.Context,
-	request *peal.StatusAdsRequest,
 	opts ...option.RequestOption,
 ) (*peal.AdsStatus, error) {
 	response, err := c.WithRawResponse.Status(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -65,21 +59,15 @@ func (c *Client) Status(
 //
 // Example:
 //
-//	request := &peal.ListConnectionsAdsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Ads.ListConnections(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) ListConnections(
 	ctx context.Context,
-	request *peal.ListConnectionsAdsRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.AdConnection, error) {
 	response, err := c.WithRawResponse.ListConnections(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -93,7 +81,6 @@ func (c *Client) ListConnections(
 // Example:
 //
 //	request := &peal.ConnectAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    Network: peal.AdNetworkMeta,
 //	}
 //	_, err := client.Ads.Connect(
@@ -121,7 +108,6 @@ func (c *Client) Connect(
 // Example:
 //
 //	request := &peal.AdSignInCallback{
-//	    WorkspaceID: "workspaceId",
 //	    Network: peal.AdNetworkMeta,
 //	    State: "state",
 //	}
@@ -150,7 +136,6 @@ func (c *Client) CompleteConnect(
 // Example:
 //
 //	request := &peal.ReachableAccountsAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ConnectionID: "connectionId",
 //	}
 //	_, err := client.Ads.ReachableAccounts(
@@ -178,7 +163,6 @@ func (c *Client) ReachableAccounts(
 // Example:
 //
 //	request := &peal.AdAccountsToConnect{
-//	    WorkspaceID: "workspaceId",
 //	    ConnectionID: "connectionId",
 //	    ExternalIDs: []string{
 //	        "externalIds",
@@ -209,7 +193,6 @@ func (c *Client) ConnectAccounts(
 // Example:
 //
 //	request := &peal.DisconnectAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ConnectionID: "connectionId",
 //	}
 //	err := client.Ads.Disconnect(
@@ -236,21 +219,15 @@ func (c *Client) Disconnect(
 //
 // Example:
 //
-//	request := &peal.ListAccountsAdsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
 //	_, err := client.Ads.ListAccounts(
 //	    context.TODO(),
-//	    request,
 //	)
 func (c *Client) ListAccounts(
 	ctx context.Context,
-	request *peal.ListAccountsAdsRequest,
 	opts ...option.RequestOption,
 ) ([]*peal.AdAccount, error) {
 	response, err := c.WithRawResponse.ListAccounts(
 		ctx,
-		request,
 		opts...,
 	)
 	if err != nil {
@@ -264,7 +241,6 @@ func (c *Client) ListAccounts(
 // Example:
 //
 //	request := &peal.GetAccountAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    AccountID: "accountId",
 //	}
 //	_, err := client.Ads.GetAccount(
@@ -292,7 +268,6 @@ func (c *Client) GetAccount(
 // Example:
 //
 //	request := &peal.RemoveAccountAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    AccountID: "accountId",
 //	}
 //	err := client.Ads.RemoveAccount(
@@ -320,7 +295,6 @@ func (c *Client) RemoveAccount(
 // Example:
 //
 //	request := &peal.AdSpendingDecision{
-//	    WorkspaceID: "workspaceId",
 //	    AccountID: "accountId",
 //	    Enabled: true,
 //	}
@@ -349,7 +323,6 @@ func (c *Client) SetSpending(
 // Example:
 //
 //	request := &peal.ListCampaignsAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    AccountID: "accountId",
 //	}
 //	_, err := client.Ads.ListCampaigns(
@@ -377,7 +350,6 @@ func (c *Client) ListCampaigns(
 // Example:
 //
 //	request := &peal.ListAdsAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    AccountID: "accountId",
 //	}
 //	_, err := client.Ads.ListAds(
@@ -405,7 +377,6 @@ func (c *Client) ListAds(
 // Example:
 //
 //	request := &peal.ListInsightsAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    AccountID: "accountId",
 //	}
 //	_, err := client.Ads.ListInsights(
@@ -433,7 +404,6 @@ func (c *Client) ListInsights(
 // Example:
 //
 //	request := &peal.PostPerformanceAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    PostID: "postId",
 //	}
 //	_, err := client.Ads.PostPerformance(
@@ -460,27 +430,24 @@ func (c *Client) PostPerformance(
 //
 // Example:
 //
-//	request := &peal.QuoteBoostAdsRequest{
-//	    WorkspaceID: "workspaceId",
-//	    Body: &peal.NewBoost{
-//	        AccountID: "accountId",
-//	        Audience: &peal.BoostAudience{
-//	            AgeMax: 1,
-//	            AgeMin: 1,
-//	            Countries: []string{
-//	                "countries",
-//	            },
+//	request := &peal.NewBoost{
+//	    AccountID: "accountId",
+//	    Audience: &peal.BoostAudience{
+//	        AgeMax: 1,
+//	        AgeMin: 1,
+//	        Countries: []string{
+//	            "countries",
 //	        },
-//	        Budget: &peal.BoostBudget{
-//	            Amount: int64(1000000),
-//	            Kind: peal.BoostBudgetKindTotal,
-//	        },
-//	        ChannelID: "channelId",
-//	        Currency: "currency",
-//	        EndsAt: "endsAt",
-//	        PostID: "postId",
-//	        SpecialAdCategory: peal.SpecialAdCategoryNone,
 //	    },
+//	    Budget: &peal.BoostBudget{
+//	        Amount: int64(1000000),
+//	        Kind: peal.BoostBudgetKindTotal,
+//	    },
+//	    ChannelID: "channelId",
+//	    Currency: "currency",
+//	    EndsAt: "endsAt",
+//	    PostID: "postId",
+//	    SpecialAdCategory: peal.SpecialAdCategoryNone,
 //	}
 //	_, err := client.Ads.QuoteBoost(
 //	    context.TODO(),
@@ -488,7 +455,7 @@ func (c *Client) PostPerformance(
 //	)
 func (c *Client) QuoteBoost(
 	ctx context.Context,
-	request *peal.QuoteBoostAdsRequest,
+	request *peal.NewBoost,
 	opts ...option.RequestOption,
 ) (*peal.BoostQuote, error) {
 	response, err := c.WithRawResponse.QuoteBoost(
@@ -506,9 +473,7 @@ func (c *Client) QuoteBoost(
 //
 // Example:
 //
-//	request := &peal.ListBoostsAdsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.ListBoostsAdsRequest{}
 //	_, err := client.Ads.ListBoosts(
 //	    context.TODO(),
 //	    request,
@@ -534,7 +499,6 @@ func (c *Client) ListBoosts(
 // Example:
 //
 //	request := &peal.CreateBoostAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    IdempotencyKey: "idempotency-key",
 //	    Body: &peal.NewBoost{
 //	        AccountID: "accountId",
@@ -581,7 +545,6 @@ func (c *Client) CreateBoost(
 // Example:
 //
 //	request := &peal.GetBoostAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    BoostID: "boostId",
 //	}
 //	_, err := client.Ads.GetBoost(
@@ -609,7 +572,6 @@ func (c *Client) GetBoost(
 // Example:
 //
 //	request := &peal.PauseBoostAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    BoostID: "boostId",
 //	}
 //	_, err := client.Ads.PauseBoost(
@@ -637,7 +599,6 @@ func (c *Client) PauseBoost(
 // Example:
 //
 //	request := &peal.ResumeBoostAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    BoostID: "boostId",
 //	}
 //	_, err := client.Ads.ResumeBoost(
@@ -665,7 +626,6 @@ func (c *Client) ResumeBoost(
 // Example:
 //
 //	request := &peal.StopBoostAdsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    BoostID: "boostId",
 //	}
 //	_, err := client.Ads.StopBoost(
@@ -692,9 +652,7 @@ func (c *Client) StopBoost(
 //
 // Example:
 //
-//	request := &peal.AuditTrailAdsRequest{
-//	    WorkspaceID: "workspaceId",
-//	}
+//	request := &peal.AuditTrailAdsRequest{}
 //	_, err := client.Ads.AuditTrail(
 //	    context.TODO(),
 //	    request,

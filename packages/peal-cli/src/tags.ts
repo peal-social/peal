@@ -18,10 +18,8 @@ export const tagsFlag = (description: string) =>
   );
 
 /** The workspace's tags, oldest first. */
-export const tagsOf = ({ client, url, workspace }: InWorkspace) =>
-  client.tags
-    .list({ params: { workspaceId: workspace.id } })
-    .pipe(Effect.mapError(explain(url)));
+export const tagsOf = ({ client, url }: InWorkspace) =>
+  client.tags.list({ headers: {} }).pipe(Effect.mapError(explain(url)));
 
 /**
  * The tag a command names: by its id, or by its exact name, whatever its

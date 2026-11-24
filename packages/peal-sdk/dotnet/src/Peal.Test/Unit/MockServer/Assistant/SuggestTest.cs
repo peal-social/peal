@@ -33,7 +33,7 @@ public class SuggestTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/suggestions")
+                    .WithPath("/api/v1/assistant/suggestions")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -48,7 +48,6 @@ public class SuggestTest : BaseMockServerTest
         var response = await Client.Assistant.SuggestAsync(
             new SuggestionRequest
             {
-                WorkspaceId = "workspaceId",
                 Action = new AssistantAction(
                     new AssistantAction.Rewrite(
                         new AssistantActionRewrite { Tone = AssistantTone.Professional }
@@ -84,7 +83,7 @@ public class SuggestTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/assistant/suggestions")
+                    .WithPath("/api/v1/assistant/suggestions")
                     .WithHeader("Content-Type", "application/json")
                     .UsingPost()
                     .WithBodyAsJson(requestJson)
@@ -99,7 +98,6 @@ public class SuggestTest : BaseMockServerTest
         var response = await Client.Assistant.SuggestAsync(
             new SuggestionRequest
             {
-                WorkspaceId = "workspaceId",
                 Action = new AssistantAction(
                     new AssistantAction.Rewrite(
                         new AssistantActionRewrite { Tone = AssistantTone.Professional }

@@ -55,12 +55,9 @@ class MembersClient
      *
      * Example:
      * ```php
-     * $client->members->list(
-     *     'workspaceId',
-     * );
+     * $client->members->list();
      * ```
      *
-     * @param string $workspaceId
      * @param ?array{
      *   baseUrl?: string,
      *   maxRetries?: int,
@@ -73,14 +70,14 @@ class MembersClient
      * @throws PealException
      * @throws PealApiException
      */
-    public function list(string $workspaceId, ?array $options = null): ?array
+    public function list(?array $options = null): ?array
     {
         $options = array_merge($this->options, $options ?? []);
         try {
             $response = $this->client->sendRequest(
                 new JsonApiRequest(
                     baseUrl: $options['baseUrl'] ?? $this->client->options['baseUrl'] ?? Environments::Default_->value,
-                    path: "api/workspaces/{$workspaceId}/members",
+                    path: "api/v1/members",
                     method: HttpMethod::GET,
                 ),
                 $options,

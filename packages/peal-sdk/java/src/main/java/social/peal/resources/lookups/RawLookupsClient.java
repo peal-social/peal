@@ -25,6 +25,7 @@ import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
 import social.peal.errors.BadGatewayError;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ConflictError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
@@ -47,36 +48,32 @@ public class RawLookupsClient {
     /**
      * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
      */
-    public PealClientHttpResponse<List<LookupDescription>> list(String workspaceId, String channelId) {
-        return list(workspaceId, channelId, ListLookupsRequest.builder().build());
+    public PealClientHttpResponse<List<LookupDescription>> list(String channelId) {
+        return list(channelId, ListLookupsRequest.builder().build());
+    }
+
+    /**
+     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
+     */
+    public PealClientHttpResponse<List<LookupDescription>> list(String channelId, RequestOptions requestOptions) {
+        return list(channelId, ListLookupsRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
+     */
+    public PealClientHttpResponse<List<LookupDescription>> list(String channelId, ListLookupsRequest request) {
+        return list(channelId, request, null);
     }
 
     /**
      * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
      */
     public PealClientHttpResponse<List<LookupDescription>> list(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return list(workspaceId, channelId, ListLookupsRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
-     */
-    public PealClientHttpResponse<List<LookupDescription>> list(
-            String workspaceId, String channelId, ListLookupsRequest request) {
-        return list(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Lists the lookups the channel has: what its platform tells about the account that a post's options refer to, such as the categories a YouTube video can be filed under or the boards a Pinterest Pin can be saved to. Each says the input it takes and the options it fills. Empty for a platform without lookups. Needs channel:read.
-     */
-    public PealClientHttpResponse<List<LookupDescription>> list(
-            String workspaceId, String channelId, ListLookupsRequest request, RequestOptions requestOptions) {
+            String channelId, ListLookupsRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("lookups");
         if (requestOptions != null) {
@@ -114,6 +111,9 @@ public class RawLookupsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -144,36 +144,32 @@ public class RawLookupsClient {
     /**
      * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
      */
-    public PealClientHttpResponse<LookupResult> run(String workspaceId, String channelId, String name) {
-        return run(workspaceId, channelId, name, LookupInput.builder().build());
+    public PealClientHttpResponse<LookupResult> run(String channelId, String name) {
+        return run(channelId, name, LookupInput.builder().build());
+    }
+
+    /**
+     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
+     */
+    public PealClientHttpResponse<LookupResult> run(String channelId, String name, RequestOptions requestOptions) {
+        return run(channelId, name, LookupInput.builder().build(), requestOptions);
+    }
+
+    /**
+     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
+     */
+    public PealClientHttpResponse<LookupResult> run(String channelId, String name, LookupInput request) {
+        return run(channelId, name, request, null);
     }
 
     /**
      * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
      */
     public PealClientHttpResponse<LookupResult> run(
-            String workspaceId, String channelId, String name, RequestOptions requestOptions) {
-        return run(workspaceId, channelId, name, LookupInput.builder().build(), requestOptions);
-    }
-
-    /**
-     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
-     */
-    public PealClientHttpResponse<LookupResult> run(
-            String workspaceId, String channelId, String name, LookupInput request) {
-        return run(workspaceId, channelId, name, request, null);
-    }
-
-    /**
-     * Runs one of the channel's lookups: asks the platform now, with the channel's token, and answers a page of items tagged by the lookup's name. It changes nothing, on Peal or on the platform. A paged lookup names the next page in <code>nextCursor</code>, to send back as <code>cursor</code>. A name the channel's platform does not have is LookupNotFound; an input the lookup does not take, LookupInputInvalid; a channel turned off or to reconnect, ChannelCannotPost; a platform that did not answer, PlatformUnreachable, and one that asked to slow down, PlatformRateLimited. Needs channel:read.
-     */
-    public PealClientHttpResponse<LookupResult> run(
-            String workspaceId, String channelId, String name, LookupInput request, RequestOptions requestOptions) {
+            String channelId, String name, LookupInput request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("lookups")
                 .addPathSegment(PathSegments.validate(name));
@@ -215,6 +211,9 @@ public class RawLookupsClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

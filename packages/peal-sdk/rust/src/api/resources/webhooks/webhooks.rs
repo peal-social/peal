@@ -35,12 +35,11 @@ impl WebhooksClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client.webhooks.list(&"workspaceId".to_string(), None).await;
+    ///     client.webhooks.list(None).await;
     /// }
     /// ```
     pub async fn list(
         &self,
-        workspace_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<Vec<WebhookEndpoint>, ApiError> {
         let options = {
@@ -51,13 +50,7 @@ impl WebhooksClient {
             Some(o)
         };
         self.http_client
-            .execute_request(
-                Method::GET,
-                &format!("api/workspaces/{}/webhooks", workspace_id),
-                None,
-                None,
-                options,
-            )
+            .execute_request(Method::GET, "api/v1/webhooks", None, None, options)
             .await
     }
 
@@ -86,7 +79,6 @@ impl WebhooksClient {
     ///     client
     ///         .webhooks
     ///         .create(
-    ///             &"workspaceId".to_string(),
     ///             &NewWebhookEndpoint {
     ///                 event_types: vec![SubscribableWebhookEventType::PostScheduled],
     ///                 url: "url".to_string(),
@@ -104,7 +96,6 @@ impl WebhooksClient {
     /// ```
     pub async fn create(
         &self,
-        workspace_id: &str,
         request: &NewWebhookEndpoint,
         options: Option<RequestOptions>,
     ) -> Result<WebhookEndpointSecret, ApiError> {
@@ -119,7 +110,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!("api/workspaces/{}/webhooks", workspace_id),
+                "api/v1/webhooks",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -152,7 +143,6 @@ impl WebhooksClient {
     ///     client
     ///         .webhooks
     ///         .search_deliveries(
-    ///             &"workspaceId".to_string(),
     ///             &SearchDeliveriesQueryRequest {
     ///                 ..Default::default()
     ///             },
@@ -163,7 +153,6 @@ impl WebhooksClient {
     /// ```
     pub async fn search_deliveries(
         &self,
-        workspace_id: &str,
         request: &SearchDeliveriesQueryRequest,
         options: Option<RequestOptions>,
     ) -> Result<WebhookDeliveryPage, ApiError> {
@@ -177,7 +166,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/webhooks/deliveries", workspace_id),
+                "api/v1/webhooks/deliveries",
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -218,7 +207,6 @@ impl WebhooksClient {
     ///     client
     ///         .webhooks
     ///         .redeliver_many(
-    ///             &"workspaceId".to_string(),
     ///             &WebhookRedeliveryRequest::WebhookRedeliveryByIds(WebhookRedeliveryByIds {
     ///                 delivery_ids: vec!["deliveryIds".to_string()],
     ///                 ..Default::default()
@@ -230,7 +218,6 @@ impl WebhooksClient {
     /// ```
     pub async fn redeliver_many(
         &self,
-        workspace_id: &str,
         request: &WebhookRedeliveryRequest,
         options: Option<RequestOptions>,
     ) -> Result<WebhookBulkRedelivery, ApiError> {
@@ -245,10 +232,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/webhooks/deliveries/redeliver",
-                    workspace_id
-                ),
+                "api/v1/webhooks/deliveries/redeliver",
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -278,15 +262,11 @@ impl WebhooksClient {
     ///         ..Default::default()
     ///     };
     ///     let client = PealClient::new(config).expect("Failed to build client");
-    ///     client
-    ///         .webhooks
-    ///         .get(&"workspaceId".to_string(), &"endpointId".to_string(), None)
-    ///         .await;
+    ///     client.webhooks.get(&"endpointId".to_string(), None).await;
     /// }
     /// ```
     pub async fn get(
         &self,
-        workspace_id: &str,
         endpoint_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<WebhookEndpoint, ApiError> {
@@ -300,7 +280,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!("api/workspaces/{}/webhooks/{}", workspace_id, endpoint_id),
+                &format!("api/v1/webhooks/{}", endpoint_id),
                 None,
                 None,
                 options,
@@ -332,13 +312,12 @@ impl WebhooksClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .webhooks
-    ///         .delete(&"workspaceId".to_string(), &"endpointId".to_string(), None)
+    ///         .delete(&"endpointId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn delete(
         &self,
-        workspace_id: &str,
         endpoint_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<(), ApiError> {
@@ -352,7 +331,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::DELETE,
-                &format!("api/workspaces/{}/webhooks/{}", workspace_id, endpoint_id),
+                &format!("api/v1/webhooks/{}", endpoint_id),
                 None,
                 None,
                 options,
@@ -385,7 +364,6 @@ impl WebhooksClient {
     ///     client
     ///         .webhooks
     ///         .update(
-    ///             &"workspaceId".to_string(),
     ///             &"endpointId".to_string(),
     ///             &WebhookEndpointChange {
     ///                 ..Default::default()
@@ -397,7 +375,6 @@ impl WebhooksClient {
     /// ```
     pub async fn update(
         &self,
-        workspace_id: &str,
         endpoint_id: &str,
         request: &WebhookEndpointChange,
         options: Option<RequestOptions>,
@@ -413,7 +390,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::PATCH,
-                &format!("api/workspaces/{}/webhooks/{}", workspace_id, endpoint_id),
+                &format!("api/v1/webhooks/{}", endpoint_id),
                 Some(serde_json::to_value(request).map_err(ApiError::Serialization)?),
                 None,
                 options,
@@ -445,13 +422,12 @@ impl WebhooksClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .webhooks
-    ///         .rotate_secret(&"workspaceId".to_string(), &"endpointId".to_string(), None)
+    ///         .rotate_secret(&"endpointId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn rotate_secret(
         &self,
-        workspace_id: &str,
         endpoint_id: &str,
         options: Option<RequestOptions>,
     ) -> Result<WebhookEndpointSecret, ApiError> {
@@ -466,10 +442,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/webhooks/{}/secret",
-                    workspace_id, endpoint_id
-                ),
+                &format!("api/v1/webhooks/{}/secret", endpoint_id),
                 None,
                 None,
                 options,
@@ -502,7 +475,6 @@ impl WebhooksClient {
     ///     client
     ///         .webhooks
     ///         .send_test(
-    ///             &"workspaceId".to_string(),
     ///             &"endpointId".to_string(),
     ///             &SendTestQueryRequest {
     ///                 ..Default::default()
@@ -514,7 +486,6 @@ impl WebhooksClient {
     /// ```
     pub async fn send_test(
         &self,
-        workspace_id: &str,
         endpoint_id: &str,
         request: &SendTestQueryRequest,
         options: Option<RequestOptions>,
@@ -530,10 +501,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::POST,
-                &format!(
-                    "api/workspaces/{}/webhooks/{}/test",
-                    workspace_id, endpoint_id
-                ),
+                &format!("api/v1/webhooks/{}/test", endpoint_id),
                 None,
                 QueryBuilder::new()
                     .serialize("eventType", request.event_type.clone())
@@ -568,7 +536,6 @@ impl WebhooksClient {
     ///     client
     ///         .webhooks
     ///         .list_deliveries(
-    ///             &"workspaceId".to_string(),
     ///             &"endpointId".to_string(),
     ///             &ListDeliveriesQueryRequest {
     ///                 ..Default::default()
@@ -580,7 +547,6 @@ impl WebhooksClient {
     /// ```
     pub async fn list_deliveries(
         &self,
-        workspace_id: &str,
         endpoint_id: &str,
         request: &ListDeliveriesQueryRequest,
         options: Option<RequestOptions>,
@@ -595,10 +561,7 @@ impl WebhooksClient {
         self.http_client
             .execute_request(
                 Method::GET,
-                &format!(
-                    "api/workspaces/{}/webhooks/{}/deliveries",
-                    workspace_id, endpoint_id
-                ),
+                &format!("api/v1/webhooks/{}/deliveries", endpoint_id),
                 None,
                 QueryBuilder::new()
                     .string("cursor", request.cursor.clone())
@@ -635,18 +598,12 @@ impl WebhooksClient {
     ///     let client = PealClient::new(config).expect("Failed to build client");
     ///     client
     ///         .webhooks
-    ///         .redeliver(
-    ///             &"workspaceId".to_string(),
-    ///             &"endpointId".to_string(),
-    ///             &"deliveryId".to_string(),
-    ///             None,
-    ///         )
+    ///         .redeliver(&"endpointId".to_string(), &"deliveryId".to_string(), None)
     ///         .await;
     /// }
     /// ```
     pub async fn redeliver(
         &self,
-        workspace_id: &str,
         endpoint_id: &str,
         delivery_id: &str,
         options: Option<RequestOptions>,
@@ -663,8 +620,8 @@ impl WebhooksClient {
             .execute_request(
                 Method::POST,
                 &format!(
-                    "api/workspaces/{}/webhooks/{}/deliveries/{}/redeliver",
-                    workspace_id, endpoint_id, delivery_id
+                    "api/v1/webhooks/{}/deliveries/{}/redeliver",
+                    endpoint_id, delivery_id
                 ),
                 None,
                 None,

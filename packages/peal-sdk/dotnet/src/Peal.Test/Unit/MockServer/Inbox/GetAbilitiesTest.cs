@@ -28,7 +28,7 @@ public class GetAbilitiesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/channels/channelId/abilities")
+                    .WithPath("/api/v1/inbox/channels/channelId/abilities")
                     .UsingGet()
             )
             .RespondWith(
@@ -39,7 +39,7 @@ public class GetAbilitiesTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.GetAbilitiesAsync(
-            new GetAbilitiesInboxRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new GetAbilitiesInboxRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }
@@ -63,7 +63,7 @@ public class GetAbilitiesTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/inbox/channels/channelId/abilities")
+                    .WithPath("/api/v1/inbox/channels/channelId/abilities")
                     .UsingGet()
             )
             .RespondWith(
@@ -74,7 +74,7 @@ public class GetAbilitiesTest : BaseMockServerTest
             );
 
         var response = await Client.Inbox.GetAbilitiesAsync(
-            new GetAbilitiesInboxRequest { WorkspaceId = "workspaceId", ChannelId = "channelId" }
+            new GetAbilitiesInboxRequest { ChannelId = "channelId" }
         );
         JsonAssert.AreEqual(response, mockResponse);
     }

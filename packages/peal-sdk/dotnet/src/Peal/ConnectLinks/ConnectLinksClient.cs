@@ -13,7 +13,6 @@ public partial class ConnectLinksClient : IConnectLinksClient
     }
 
     private async Task<WithRawResponse<IEnumerable<ConnectLink>>> ListAsyncCore(
-        ListConnectLinksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
@@ -32,10 +31,7 @@ public partial class ConnectLinksClient : IConnectLinksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/connect-links",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/connect-links",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -86,6 +82,18 @@ public partial class ConnectLinksClient : IConnectLinksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -174,10 +182,7 @@ public partial class ConnectLinksClient : IConnectLinksClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Post,
-                    Path = string.Format(
-                        "api/workspaces/{0}/connect-links",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/connect-links",
                     Body = request,
                     QueryString = _queryString,
                     Headers = _headers,
@@ -231,6 +236,18 @@ public partial class ConnectLinksClient : IConnectLinksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -332,8 +349,7 @@ public partial class ConnectLinksClient : IConnectLinksClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/connect-links/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/connect-links/{0}",
                         ValueConvert.ToPathParameterString(request.LinkId)
                     ),
                     QueryString = _queryString,
@@ -386,6 +402,18 @@ public partial class ConnectLinksClient : IConnectLinksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -475,8 +503,7 @@ public partial class ConnectLinksClient : IConnectLinksClient
                 {
                     Method = HttpMethod.Delete,
                     Path = string.Format(
-                        "api/workspaces/{0}/connect-links/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/connect-links/{0}",
                         ValueConvert.ToPathParameterString(request.LinkId)
                     ),
                     QueryString = _queryString,
@@ -529,6 +556,18 @@ public partial class ConnectLinksClient : IConnectLinksClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -601,16 +640,15 @@ public partial class ConnectLinksClient : IConnectLinksClient
     /// Lists the workspace's connect links, newest first, the last 100: those waiting, and those used, revoked or expired in the last 30 days. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.ConnectLinks.ListAsync(new ListConnectLinksRequest { WorkspaceId = "workspaceId" });
+    /// await client.ConnectLinks.ListAsync();
     /// </code></example>
     public WithRawResponseTask<IEnumerable<ConnectLink>> ListAsync(
-        ListConnectLinksRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     )
     {
         return new WithRawResponseTask<IEnumerable<ConnectLink>>(
-            ListAsyncCore(request, options, cancellationToken)
+            ListAsyncCore(options, cancellationToken)
         );
     }
 
@@ -618,7 +656,7 @@ public partial class ConnectLinksClient : IConnectLinksClient
     /// Creates a link to hand to whoever owns an account of `platform`, or accounts of each of `platforms`: it opens a hosted page where they sign in at the platform and, when the sign-in reaches several accounts, pick those to connect, without a Peal account. With `platforms`, the page offers each in turn, and the link waits until each one connected an account, or it is revoked or expires: `connectedPlatforms` and `channelIds` say what it connected so far. The answer holds the link's address, shown this once. The link works once, for 168 hours unless `expiresInHours` (1 to 720) says otherwise; with `channelId`, it reconnects that channel, and only a sign-in to the channel's own account goes through. `returnUrl` is where the page sends them once done, with `peal_link` (the link's id) and `peal_status` (`connected`, `cancelled` or `failed`) in its query: read the link by its id to know what was connected, as anyone can write those parameters. Its origin must be one the workspace's partner account registered, exactly (422 `ReturnUrlNotAllowed` otherwise, and for a workspace without a partner account). Whoever holds the address can connect an account of theirs to the workspace until it is used, revoked or expired: hand it over a channel you trust, and revoke it when it is no longer needed. A platform this server cannot connect answers 422 `ConnectFailed`. A workspace has 100 links waiting at most. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.ConnectLinks.CreateAsync(new NewConnectLink { WorkspaceId = "workspaceId" });
+    /// await client.ConnectLinks.CreateAsync(new NewConnectLink());
     /// </code></example>
     public WithRawResponseTask<CreatedConnectLink> CreateAsync(
         NewConnectLink request,
@@ -635,9 +673,7 @@ public partial class ConnectLinksClient : IConnectLinksClient
     /// One connect link of the workspace: where it stands, the channels it connected once `completed`, and how its last sign-in failed. Read it when a browser comes back to your return address, or on `channel.connected`. Needs channel:read.
     /// </summary>
     /// <example><code>
-    /// await client.ConnectLinks.GetAsync(
-    ///     new GetConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-    /// );
+    /// await client.ConnectLinks.GetAsync(new GetConnectLinksRequest { LinkId = "linkId" });
     /// </code></example>
     public WithRawResponseTask<ConnectLink> GetAsync(
         GetConnectLinksRequest request,
@@ -654,9 +690,7 @@ public partial class ConnectLinksClient : IConnectLinksClient
     /// Takes a connect link back: it opens nothing more, and a sign-in in progress through it does not complete. A link already used, revoked or expired stays as it is. Answers the link as it now stands. Needs channel:connect.
     /// </summary>
     /// <example><code>
-    /// await client.ConnectLinks.RevokeAsync(
-    ///     new RevokeConnectLinksRequest { WorkspaceId = "workspaceId", LinkId = "linkId" }
-    /// );
+    /// await client.ConnectLinks.RevokeAsync(new RevokeConnectLinksRequest { LinkId = "linkId" });
     /// </code></example>
     public WithRawResponseTask<ConnectLink> RevokeAsync(
         RevokeConnectLinksRequest request,

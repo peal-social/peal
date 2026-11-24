@@ -7,9 +7,6 @@ namespace Peal;
 public record SiteSignInCallback
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required OAuthSitePlatform Platform { get; set; }
 
     [JsonPropertyName("code")]

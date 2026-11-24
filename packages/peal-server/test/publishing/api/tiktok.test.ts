@@ -8,6 +8,7 @@ import {
   ChannelNotFound,
   Forbidden,
   PlatformUnreachable,
+  forWorkspace,
 } from "peal-contract";
 import type { Member } from "peal-contract";
 
@@ -103,7 +104,8 @@ describe("a TikTok channel's creator endpoint", () => {
       const client = yield* clientWith(contributor, ready);
 
       const account = yield* client.tiktok.creator({
-        params: { channelId: onTikTok, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: onTikTok },
       });
 
       assert.deepStrictEqual(account, {
@@ -133,7 +135,8 @@ describe("a TikTok channel's creator endpoint", () => {
       );
 
       const account = yield* client.tiktok.creator({
-        params: { channelId: onTikTok, workspaceId },
+        headers: forWorkspace(workspaceId),
+        params: { channelId: onTikTok },
       });
 
       assert.deepStrictEqual(account.posting, {
@@ -149,7 +152,10 @@ describe("a TikTok channel's creator endpoint", () => {
 
       for (const channelId of [onMastodon, "not-a-channel"]) {
         const refused = yield* client.tiktok
-          .creator({ params: { channelId, workspaceId } })
+          .creator({
+            headers: forWorkspace(workspaceId),
+            params: { channelId },
+          })
           .pipe(Effect.flip);
 
         assert.instanceOf(refused, ChannelNotFound);
@@ -172,7 +178,10 @@ describe("a TikTok channel's creator endpoint", () => {
         const client = yield* clientWith(contributor, Effect.fail(failure));
 
         const refused = yield* client.tiktok
-          .creator({ params: { channelId: onTikTok, workspaceId } })
+          .creator({
+            headers: forWorkspace(workspaceId),
+            params: { channelId: onTikTok },
+          })
           .pipe(Effect.flip);
 
         assert.deepStrictEqual(refused, answer);
@@ -188,7 +197,10 @@ describe("a TikTok channel's creator endpoint", () => {
       );
 
       const refused = yield* client.tiktok
-        .creator({ params: { channelId: onTikTok, workspaceId } })
+        .creator({
+          headers: forWorkspace(workspaceId),
+          params: { channelId: onTikTok },
+        })
         .pipe(Effect.flip);
 
       assert.instanceOf(refused, Forbidden);

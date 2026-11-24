@@ -4,7 +4,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react";
 import { Cause, Exit, Option, Schema } from "effect";
 import { AsyncResult } from "effect/reactivity";
 import { useTranslations } from "next-intl";
-import { ReductionRefused } from "peal-contract";
+import { ReductionRefused, forWorkspace } from "peal-contract";
 import type { Standing } from "peal-contract";
 import { Alert, AlertDescription } from "peal-ui/components/alert";
 import { Button } from "peal-ui/components/button";
@@ -111,7 +111,7 @@ export const OverPlanScreen = ({
 
     startApplying(async () => {
       const done = await reduce({
-        params: { workspaceId: workspace.id },
+        headers: forWorkspace(workspace.id),
         payload: { keepChannelIds: keptChannels, keepMemberIds: keptMembers },
       });
 

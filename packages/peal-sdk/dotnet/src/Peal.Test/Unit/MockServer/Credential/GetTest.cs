@@ -30,7 +30,9 @@ public class GetTest : BaseMockServerTest
             """;
 
         Server
-            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/credential").UsingGet())
+            .Given(
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/credential").UsingGet()
+            )
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()
@@ -63,7 +65,9 @@ public class GetTest : BaseMockServerTest
             """;
 
         Server
-            .Given(WireMock.RequestBuilders.Request.Create().WithPath("/api/credential").UsingGet())
+            .Given(
+                WireMock.RequestBuilders.Request.Create().WithPath("/api/v1/credential").UsingGet()
+            )
             .RespondWith(
                 WireMock
                     .ResponseBuilders.Response.Create()

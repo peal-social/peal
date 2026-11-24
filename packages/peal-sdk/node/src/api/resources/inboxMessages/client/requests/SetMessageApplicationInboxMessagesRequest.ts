@@ -3,13 +3,11 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         allowed: true,
  *         clientId: "clientId"
  *     }
  */
 export interface SetMessageApplicationInboxMessagesRequest {
-    workspaceId: string;
     allowed: boolean;
     clientId: string;
 }

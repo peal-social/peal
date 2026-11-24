@@ -21,6 +21,7 @@ import { RecyclingRuleNotFound } from "./recycling-rule-not-found.ts";
 import { RecyclingVariantsInvalid } from "./recycling-variants-invalid.ts";
 import { TooManyRecyclingRules } from "./too-many-recycling-rules.ts";
 import { WorkspaceAccess } from "./workspace-access.ts";
+import { workspaceHeaders } from "./workspace-header.ts";
 
 // The limits below are the server's
 // (src/publishing/domain/recycling/recycling-*.ts): a test keeps them equal.
@@ -246,9 +247,7 @@ export const RecyclingResumeSchema = Schema.Struct({
 
 export type RecyclingResume = typeof RecyclingResumeSchema.Type;
 
-const workspace = { workspaceId: Schema.String };
-
-const rule = { ...workspace, ruleId: Schema.String };
+const rule = { ruleId: Schema.String };
 
 const rules = `Each post a rule makes is a new post, copied from the source with what the workspace still has (its channels still connected, its media, the options on them, its tags; never a signature or a default added since), and sent as any post is: the same checks, the approval policy, the month's room in the plan, its own job, outcome and notices. It says the source's text, then each variant in turn, then the source's again. The next post is made once the latest one's time has passed, one interval after the one before at the same wall-clock time in the source's zone (a month shorter than the day takes its last day), or on the queue's first free slot from then; a time missed while nothing ran is skipped, never made up for. Each acts as whoever started the rule, with what they may do when it is made: a member removed, a key revoked or an application whose grant no longer publishes ends it.`;
 
@@ -260,7 +259,8 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
   .add(
     HttpApiEndpoint.get("list", "/", {
       error: [Forbidden, HttpApiError.BadRequest],
-      params: workspace,
+      headers: workspaceHeaders,
+
       query: {
         cursor: Schema.optionalKey(Schema.String),
         limit: Schema.optionalKey(
@@ -287,7 +287,8 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
         RecyclingVariantsInvalid,
         TooManyRecyclingRules,
       ],
-      params: workspace,
+      headers: workspaceHeaders,
+
       payload: NewRecyclingRuleSchema,
       success: RecyclingRuleSchema.pipe(HttpApiSchema.status(201)),
     }).annotateMerge(
@@ -298,6 +299,7 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
     ),
     HttpApiEndpoint.get("get", "/:ruleId", {
       error: [Forbidden, RecyclingRuleNotFound],
+      headers: workspaceHeaders,
       params: rule,
       success: RecyclingRuleSchema,
     }).annotateMerge(
@@ -315,6 +317,7 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
         RecyclingRuleNotFound,
         RecyclingVariantsInvalid,
       ],
+      headers: workspaceHeaders,
       params: rule,
       payload: RecyclingRuleChangeSchema,
       success: RecyclingRuleSchema,
@@ -336,6 +339,7 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
         RecyclingVariantsInvalid,
         TooManyRecyclingRules,
       ],
+      headers: workspaceHeaders,
       params: rule,
       payload: RecyclingResumeSchema,
       success: RecyclingRuleSchema,
@@ -348,6 +352,7 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
     ),
     HttpApiEndpoint.delete("delete", "/:ruleId", {
       error: [Forbidden, RecyclingRuleNotFound],
+      headers: workspaceHeaders,
       params: rule,
       success: HttpApiSchema.NoContent,
     }).annotateMerge(
@@ -360,4 +365,4 @@ export class RecyclingApi extends HttpApiGroup.make("recycling")
   )
   .middleware(WorkspaceAccess)
   .middleware(Authentication)
-  .prefix("/api/workspaces/:workspaceId/recycling") {}
+  .prefix("/api/v1/recycling") {}

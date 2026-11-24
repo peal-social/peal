@@ -5,7 +5,6 @@ import * as Peal from "../../../../index.js";
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         tagId: "tagId",
  *         body: {
  *             colour: "gray",
@@ -14,7 +13,6 @@ import * as Peal from "../../../../index.js";
  *     }
  */
 export interface UpdateTagsRequest {
-    workspaceId: string;
     tagId: string;
     body: Peal.TagDetails;
 }

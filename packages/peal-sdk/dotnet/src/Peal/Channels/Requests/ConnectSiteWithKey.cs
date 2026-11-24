@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record ConnectSiteWithKey
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("apiKey")]
     public required string ApiKey { get; set; }
 

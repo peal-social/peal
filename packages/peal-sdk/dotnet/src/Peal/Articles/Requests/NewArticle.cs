@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewArticle
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("body")]
     public required ArticleBody Body { get; set; }
 

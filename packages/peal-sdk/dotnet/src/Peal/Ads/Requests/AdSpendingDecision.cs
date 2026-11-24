@@ -7,9 +7,6 @@ namespace Peal;
 public record AdSpendingDecision
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string AccountId { get; set; }
 
     [JsonPropertyName("enabled")]

@@ -6,11 +6,10 @@ package social.peal.resources.channelsets;
 import java.util.List;
 import social.peal.core.ClientOptions;
 import social.peal.core.RequestOptions;
-import social.peal.resources.channelsets.requests.CreateChannelSetsRequest;
 import social.peal.resources.channelsets.requests.DeleteChannelSetsRequest;
-import social.peal.resources.channelsets.requests.ListChannelSetsRequest;
 import social.peal.resources.channelsets.requests.UpdateChannelSetsRequest;
 import social.peal.types.ChannelSet;
+import social.peal.types.ChannelSetDetails;
 
 public class ChannelSetsClient {
     protected final ClientOptions clientOptions;
@@ -32,90 +31,70 @@ public class ChannelSetsClient {
     /**
      * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public List<ChannelSet> list(String workspaceId) {
-        return this.rawClient.list(workspaceId).body();
+    public List<ChannelSet> list() {
+        return this.rawClient.list().body();
     }
 
     /**
      * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
      */
-    public List<ChannelSet> list(String workspaceId, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, requestOptions).body();
-    }
-
-    /**
-     * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public List<ChannelSet> list(String workspaceId, ListChannelSetsRequest request) {
-        return this.rawClient.list(workspaceId, request).body();
-    }
-
-    /**
-     * Lists the workspace's channel sets, oldest first, each with the channels it keeps and those of them disconnected since (<code>unavailableChannelIds</code>). Needs post:read and channel:read.
-     */
-    public List<ChannelSet> list(String workspaceId, ListChannelSetsRequest request, RequestOptions requestOptions) {
-        return this.rawClient.list(workspaceId, request, requestOptions).body();
+    public List<ChannelSet> list(RequestOptions requestOptions) {
+        return this.rawClient.list(requestOptions).body();
     }
 
     /**
      * Saves a selection of the workspace's channels under a name no other set of the workspace has whatever its case, 50 channels at most, with the options posts take on those whose platform has some (<code>TargetOptions</code>, of the channel's platform; unfinished options are kept, and checked when a post that takes them is scheduled). A post names a set by its id or its name (<code>channelSets</code>) instead of listing its channels. A workspace keeps 50 sets at most. Needs post:update and channel:read.
      */
-    public ChannelSet create(String workspaceId, CreateChannelSetsRequest request) {
-        return this.rawClient.create(workspaceId, request).body();
+    public ChannelSet create(ChannelSetDetails request) {
+        return this.rawClient.create(request).body();
     }
 
     /**
      * Saves a selection of the workspace's channels under a name no other set of the workspace has whatever its case, 50 channels at most, with the options posts take on those whose platform has some (<code>TargetOptions</code>, of the channel's platform; unfinished options are kept, and checked when a post that takes them is scheduled). A post names a set by its id or its name (<code>channelSets</code>) instead of listing its channels. A workspace keeps 50 sets at most. Needs post:update and channel:read.
      */
-    public ChannelSet create(String workspaceId, CreateChannelSetsRequest request, RequestOptions requestOptions) {
-        return this.rawClient.create(workspaceId, request, requestOptions).body();
+    public ChannelSet create(ChannelSetDetails request, RequestOptions requestOptions) {
+        return this.rawClient.create(request, requestOptions).body();
     }
 
     /**
      * Replaces a set's name, channels and options: every channel must be connected now, so this is also how a disconnected one is taken out. Posts made with the set before keep their channels. Needs post:update and channel:read.
      */
-    public ChannelSet update(String workspaceId, String channelSetId, UpdateChannelSetsRequest request) {
-        return this.rawClient.update(workspaceId, channelSetId, request).body();
+    public ChannelSet update(String channelSetId, UpdateChannelSetsRequest request) {
+        return this.rawClient.update(channelSetId, request).body();
     }
 
     /**
      * Replaces a set's name, channels and options: every channel must be connected now, so this is also how a disconnected one is taken out. Posts made with the set before keep their channels. Needs post:update and channel:read.
      */
-    public ChannelSet update(
-            String workspaceId, String channelSetId, UpdateChannelSetsRequest request, RequestOptions requestOptions) {
-        return this.rawClient
-                .update(workspaceId, channelSetId, request, requestOptions)
-                .body();
+    public ChannelSet update(String channelSetId, UpdateChannelSetsRequest request, RequestOptions requestOptions) {
+        return this.rawClient.update(channelSetId, request, requestOptions).body();
     }
 
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public void delete(String workspaceId, String channelSetId) {
-        this.rawClient.delete(workspaceId, channelSetId).body();
+    public void delete(String channelSetId) {
+        this.rawClient.delete(channelSetId).body();
     }
 
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public void delete(String workspaceId, String channelSetId, RequestOptions requestOptions) {
-        this.rawClient.delete(workspaceId, channelSetId, requestOptions).body();
+    public void delete(String channelSetId, RequestOptions requestOptions) {
+        this.rawClient.delete(channelSetId, requestOptions).body();
     }
 
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public void delete(String workspaceId, String channelSetId, DeleteChannelSetsRequest request) {
-        this.rawClient.delete(workspaceId, channelSetId, request).body();
+    public void delete(String channelSetId, DeleteChannelSetsRequest request) {
+        this.rawClient.delete(channelSetId, request).body();
     }
 
     /**
      * Deletes a channel set. Its channels, and the posts made with it, stay. Needs post:update.
      */
-    public void delete(
-            String workspaceId, String channelSetId, DeleteChannelSetsRequest request, RequestOptions requestOptions) {
-        this.rawClient
-                .delete(workspaceId, channelSetId, request, requestOptions)
-                .body();
+    public void delete(String channelSetId, DeleteChannelSetsRequest request, RequestOptions requestOptions) {
+        this.rawClient.delete(channelSetId, request, requestOptions).body();
     }
 }

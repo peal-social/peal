@@ -48,7 +48,7 @@ public class AsyncRawCredentialClient {
     public CompletableFuture<PealClientHttpResponse<Credential>> get(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/credential");
+                .addPathSegments("api/v1/credential");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);

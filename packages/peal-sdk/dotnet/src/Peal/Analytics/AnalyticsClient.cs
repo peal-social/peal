@@ -35,10 +35,7 @@ public partial class AnalyticsClient : IAnalyticsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/analytics/summary",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/analytics/summary",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -206,10 +203,7 @@ public partial class AnalyticsClient : IAnalyticsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/analytics/dashboard",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/analytics/dashboard",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -377,8 +371,7 @@ public partial class AnalyticsClient : IAnalyticsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/analytics/channels/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/analytics/channels/{0}",
                         ValueConvert.ToPathParameterString(request.ChannelId)
                     ),
                     QueryString = _queryString,
@@ -549,10 +542,7 @@ public partial class AnalyticsClient : IAnalyticsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/analytics/export",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/analytics/export",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -697,10 +687,7 @@ public partial class AnalyticsClient : IAnalyticsClient
                 new JsonRequest
                 {
                     Method = HttpMethod.Get,
-                    Path = string.Format(
-                        "api/workspaces/{0}/analytics/best-times",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId)
-                    ),
+                    Path = "api/v1/analytics/best-times",
                     QueryString = _queryString,
                     Headers = _headers,
                     Options = options,
@@ -751,6 +738,18 @@ public partial class AnalyticsClient : IAnalyticsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -852,8 +851,7 @@ public partial class AnalyticsClient : IAnalyticsClient
                 {
                     Method = HttpMethod.Get,
                     Path = string.Format(
-                        "api/workspaces/{0}/analytics/posts/{1}",
-                        ValueConvert.ToPathParameterString(request.WorkspaceId),
+                        "api/v1/analytics/posts/{0}",
                         ValueConvert.ToPathParameterString(request.PostId)
                     ),
                     QueryString = _queryString,
@@ -906,6 +904,18 @@ public partial class AnalyticsClient : IAnalyticsClient
             {
                 switch (response.StatusCode)
                 {
+                    case 400:
+                        throw new BadRequestError(
+                            JsonUtils.Deserialize<object>(responseBody),
+                            rawResponse: new Peal.RawResponse()
+                            {
+                                StatusCode = response.Raw.StatusCode,
+                                Url =
+                                    response.Raw.RequestMessage?.RequestUri
+                                    ?? new Uri("about:blank"),
+                                Headers = ResponseHeaders.FromHttpResponseMessage(response.Raw),
+                            }
+                        );
                     case 401:
                         throw new UnauthorizedError(
                             JsonUtils.Deserialize<UnauthenticatedEncoded>(responseBody),
@@ -981,7 +991,6 @@ public partial class AnalyticsClient : IAnalyticsClient
     /// await client.Analytics.SummaryAsync(
     ///     new SummaryAnalyticsRequest
     ///     {
-    ///         WorkspaceId = "workspaceId",
     ///         From = "from",
     ///         TimeZone = "timeZone",
     ///         To = "to",
@@ -1003,9 +1012,7 @@ public partial class AnalyticsClient : IAnalyticsClient
     /// Answers a workspace's analytics over a range in one call: the totals of the posts published in it and of those published in the range before, of the same length, so a client shows the trend; followers at the end of each and their change; the same by channel and by platform; each day's gains, followers and account views; and the `topPosts` (5 unless said, 25 at most) with the most engagement. The range is `days` (7, 30 or 90: that many days ending today in `timeZone`), or `from` and `to`, both included and at most 366 days; `timeZone` is an IANA zone such as Europe/Paris. Followers are kept from the day a channel is connected, read once a day; a number a platform does not give is null, never zero. Needs analytics:read.
     /// </summary>
     /// <example><code>
-    /// await client.Analytics.DashboardAsync(
-    ///     new DashboardAnalyticsRequest { WorkspaceId = "workspaceId", TimeZone = "timeZone" }
-    /// );
+    /// await client.Analytics.DashboardAsync(new DashboardAnalyticsRequest { TimeZone = "timeZone" });
     /// </code></example>
     public WithRawResponseTask<AnalyticsDashboard> DashboardAsync(
         DashboardAnalyticsRequest request,
@@ -1023,12 +1030,7 @@ public partial class AnalyticsClient : IAnalyticsClient
     /// </summary>
     /// <example><code>
     /// await client.Analytics.ChannelAsync(
-    ///     new ChannelAnalyticsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ChannelId = "channelId",
-    ///         TimeZone = "timeZone",
-    ///     }
+    ///     new ChannelAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
     /// );
     /// </code></example>
     public WithRawResponseTask<ChannelSeries> ChannelAsync(
@@ -1047,12 +1049,7 @@ public partial class AnalyticsClient : IAnalyticsClient
     /// </summary>
     /// <example><code>
     /// await client.Analytics.ExportAsync(
-    ///     new ExportAnalyticsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         TimeZone = "timeZone",
-    ///         Kind = AnalyticsExportKind.Posts,
-    ///     }
+    ///     new ExportAnalyticsRequest { TimeZone = "timeZone", Kind = AnalyticsExportKind.Posts }
     /// );
     /// </code></example>
     public WithRawResponseTask<global::System.IO.Stream> ExportAsync(
@@ -1071,12 +1068,7 @@ public partial class AnalyticsClient : IAnalyticsClient
     /// </summary>
     /// <example><code>
     /// await client.Analytics.BestTimesAsync(
-    ///     new BestTimesAnalyticsRequest
-    ///     {
-    ///         WorkspaceId = "workspaceId",
-    ///         ChannelId = "channelId",
-    ///         TimeZone = "timeZone",
-    ///     }
+    ///     new BestTimesAnalyticsRequest { ChannelId = "channelId", TimeZone = "timeZone" }
     /// );
     /// </code></example>
     public WithRawResponseTask<BestTimes> BestTimesAsync(
@@ -1094,9 +1086,7 @@ public partial class AnalyticsClient : IAnalyticsClient
     /// Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
     /// </summary>
     /// <example><code>
-    /// await client.Analytics.PostAsync(
-    ///     new PostAnalyticsRequest { WorkspaceId = "workspaceId", PostId = "postId" }
-    /// );
+    /// await client.Analytics.PostAsync(new PostAnalyticsRequest { PostId = "postId" });
     /// </code></example>
     public WithRawResponseTask<PostAnalytics> PostAsync(
         PostAnalyticsRequest request,

@@ -88,19 +88,15 @@ func TestReviewSettingsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.SettingsReviewRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Review.Settings(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestReviewSettingsWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewSettingsWithWireMock", "GET", "/api/workspaces/workspaceId/review/settings", nil, 1)
+	VerifyRequestCount(t, "TestReviewSettingsWithWireMock", "GET", "/api/v1/review/settings", nil, 1)
 }
 
 func TestReviewUpdateSettingsWithWireMock(
@@ -114,11 +110,8 @@ func TestReviewUpdateSettingsWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.UpdateSettingsReviewRequest{
-		WorkspaceID: "workspaceId",
-		Body: &peal.ReviewSettings{
-			ApprovalPolicy: peal.ApprovalPolicyNever,
-		},
+	request := &peal.ReviewSettings{
+		ApprovalPolicy: peal.ApprovalPolicyNever,
 	}
 	_, invocationErr := client.Review.UpdateSettings(
 		context.TODO(),
@@ -129,7 +122,7 @@ func TestReviewUpdateSettingsWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewUpdateSettingsWithWireMock", "PUT", "/api/workspaces/workspaceId/review/settings", nil, 1)
+	VerifyRequestCount(t, "TestReviewUpdateSettingsWithWireMock", "PUT", "/api/v1/review/settings", nil, 1)
 }
 
 func TestReviewPendingWithWireMock(
@@ -143,19 +136,15 @@ func TestReviewPendingWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.PendingReviewRequest{
-		WorkspaceID: "workspaceId",
-	}
 	_, invocationErr := client.Review.Pending(
 		context.TODO(),
-		request,
 		option.WithHTTPHeader(
 			http.Header{"X-Test-Id": []string{"TestReviewPendingWithWireMock"}},
 		),
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewPendingWithWireMock", "GET", "/api/workspaces/workspaceId/approvals", nil, 1)
+	VerifyRequestCount(t, "TestReviewPendingWithWireMock", "GET", "/api/v1/approvals", nil, 1)
 }
 
 func TestReviewThreadWithWireMock(
@@ -170,8 +159,7 @@ func TestReviewThreadWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ThreadReviewRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Review.Thread(
 		context.TODO(),
@@ -182,7 +170,7 @@ func TestReviewThreadWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewThreadWithWireMock", "GET", "/api/workspaces/workspaceId/posts/postId/review", nil, 1)
+	VerifyRequestCount(t, "TestReviewThreadWithWireMock", "GET", "/api/v1/posts/postId/review", nil, 1)
 }
 
 func TestReviewCommentWithWireMock(
@@ -197,9 +185,8 @@ func TestReviewCommentWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewComment{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		Text:        "text",
+		PostID: "postId",
+		Text:   "text",
 	}
 	_, invocationErr := client.Review.Comment(
 		context.TODO(),
@@ -210,7 +197,7 @@ func TestReviewCommentWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewCommentWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/comments", nil, 1)
+	VerifyRequestCount(t, "TestReviewCommentWithWireMock", "POST", "/api/v1/posts/postId/comments", nil, 1)
 }
 
 func TestReviewResolveWithWireMock(
@@ -225,10 +212,9 @@ func TestReviewResolveWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ResolveReviewRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		CommentID:   "commentId",
-		Resolved:    true,
+		PostID:    "postId",
+		CommentID: "commentId",
+		Resolved:  true,
 	}
 	_, invocationErr := client.Review.Resolve(
 		context.TODO(),
@@ -239,7 +225,7 @@ func TestReviewResolveWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewResolveWithWireMock", "PATCH", "/api/workspaces/workspaceId/posts/postId/comments/commentId", nil, 1)
+	VerifyRequestCount(t, "TestReviewResolveWithWireMock", "PATCH", "/api/v1/posts/postId/comments/commentId", nil, 1)
 }
 
 func TestReviewApproveWithWireMock(
@@ -254,7 +240,6 @@ func TestReviewApproveWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ApprovalDecision{
-		WorkspaceID: "workspaceId",
 		PostID:      "postId",
 		ApprovalID:  "approvalId",
 		SubjectHash: "subjectHash",
@@ -268,7 +253,7 @@ func TestReviewApproveWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewApproveWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/approve", nil, 1)
+	VerifyRequestCount(t, "TestReviewApproveWithWireMock", "POST", "/api/v1/posts/postId/approve", nil, 1)
 }
 
 func TestReviewRequestChangesWithWireMock(
@@ -283,7 +268,6 @@ func TestReviewRequestChangesWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.ChangesRequest{
-		WorkspaceID: "workspaceId",
 		PostID:      "postId",
 		ApprovalID:  "approvalId",
 		SubjectHash: "subjectHash",
@@ -298,7 +282,7 @@ func TestReviewRequestChangesWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewRequestChangesWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/request-changes", nil, 1)
+	VerifyRequestCount(t, "TestReviewRequestChangesWithWireMock", "POST", "/api/v1/posts/postId/request-changes", nil, 1)
 }
 
 func TestReviewLinksWithWireMock(
@@ -313,8 +297,7 @@ func TestReviewLinksWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.LinksReviewRequest{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
+		PostID: "postId",
 	}
 	_, invocationErr := client.Review.Links(
 		context.TODO(),
@@ -325,7 +308,7 @@ func TestReviewLinksWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewLinksWithWireMock", "GET", "/api/workspaces/workspaceId/posts/postId/review-links", nil, 1)
+	VerifyRequestCount(t, "TestReviewLinksWithWireMock", "GET", "/api/v1/posts/postId/review-links", nil, 1)
 }
 
 func TestReviewCreateLinkWithWireMock(
@@ -340,9 +323,8 @@ func TestReviewCreateLinkWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.NewReviewLink{
-		WorkspaceID: "workspaceId",
-		PostID:      "postId",
-		Access:      peal.ReviewLinkAccessView,
+		PostID: "postId",
+		Access: peal.ReviewLinkAccessView,
 	}
 	_, invocationErr := client.Review.CreateLink(
 		context.TODO(),
@@ -353,7 +335,7 @@ func TestReviewCreateLinkWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewCreateLinkWithWireMock", "POST", "/api/workspaces/workspaceId/posts/postId/review-links", nil, 1)
+	VerifyRequestCount(t, "TestReviewCreateLinkWithWireMock", "POST", "/api/v1/posts/postId/review-links", nil, 1)
 }
 
 func TestReviewRevokeLinkWithWireMock(
@@ -368,8 +350,7 @@ func TestReviewRevokeLinkWithWireMock(
 		option.WithToken("test-token"),
 	)
 	request := &peal.RevokeLinkReviewRequest{
-		WorkspaceID: "workspaceId",
-		LinkID:      "linkId",
+		LinkID: "linkId",
 	}
 	_, invocationErr := client.Review.RevokeLink(
 		context.TODO(),
@@ -380,5 +361,5 @@ func TestReviewRevokeLinkWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestReviewRevokeLinkWithWireMock", "DELETE", "/api/workspaces/workspaceId/review-links/linkId", nil, 1)
+	VerifyRequestCount(t, "TestReviewRevokeLinkWithWireMock", "DELETE", "/api/v1/review-links/linkId", nil, 1)
 }

@@ -3,11 +3,9 @@
 /**
  * @example
  *     {
- *         workspaceId: "workspaceId",
  *         feedId: "feedId"
  *     }
  */
 export interface DeleteFeedsRequest {
-    workspaceId: string;
     feedId: string;
 }

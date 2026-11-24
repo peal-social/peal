@@ -7,13 +7,9 @@ import {
   PostNotRecyclable,
   RecyclingRuleEnded,
   RecyclingRuleNotFound,
-} from "peal-contract";
-import type {
   CurrentMember,
-  Post,
-  RecyclingInterval,
-  RecyclingRule,
 } from "peal-contract";
+import type { Post, RecyclingInterval, RecyclingRule } from "peal-contract";
 
 import type { Studio } from "./studio.ts";
 
@@ -105,10 +101,10 @@ export const studioRecyclingOf = (world: RecyclingWorld) => {
   const groupLive = (studio: Studio) =>
     HttpApiBuilder.group(Api, "recycling", (handlers) =>
       handlers.handleAll({
-        create: ({ params, payload }) =>
+        create: ({ payload }) =>
           Effect.gen(function* create() {
             yield* world.allowed("post:schedule");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const { posts, recyclingRules } = yield* Ref.get(studio.state);
             const source = sourceOf(posts, payload.postId);
@@ -184,7 +180,7 @@ export const studioRecyclingOf = (world: RecyclingWorld) => {
         delete: ({ params }) =>
           Effect.gen(function* stop() {
             yield* world.allowed("post:schedule");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* ruleIn(studio, params.ruleId);
 
@@ -204,14 +200,14 @@ export const studioRecyclingOf = (world: RecyclingWorld) => {
         get: ({ params }) =>
           Effect.gen(function* get() {
             yield* world.allowed("post:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             return withComing(yield* ruleIn(studio, params.ruleId));
           }),
-        list: ({ params, query }) =>
+        list: ({ query }) =>
           Effect.gen(function* list() {
             yield* world.allowed("post:read");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const { recyclingRules } = yield* Ref.get(studio.state);
 
@@ -238,7 +234,7 @@ export const studioRecyclingOf = (world: RecyclingWorld) => {
         resume: ({ params, payload }) =>
           Effect.gen(function* resume() {
             yield* world.allowed("post:schedule");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* ruleIn(studio, params.ruleId);
 
@@ -267,7 +263,7 @@ export const studioRecyclingOf = (world: RecyclingWorld) => {
         update: ({ params, payload }) =>
           Effect.gen(function* update() {
             yield* world.allowed("post:schedule");
-            yield* inWorkspace(params.workspaceId);
+            yield* inWorkspace((yield* CurrentMember).workspaceId);
 
             const rule = yield* ruleIn(studio, params.ruleId);
 

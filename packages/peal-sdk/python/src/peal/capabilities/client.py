@@ -25,15 +25,13 @@ class CapabilitiesClient:
         return self._raw_client
 
     def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[PlatformCapabilities]:
         """
         Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -47,25 +45,22 @@ class CapabilitiesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.capabilities.platforms(
-            workspace_id="workspaceId",
-        )
+        client.capabilities.platforms()
         """
-        _response = self._raw_client.platforms(workspace_id, request_options=request_options)
+        _response = self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     def channel(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> ChannelCapabilities:
         """
         Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, `account` says why and the platform's capabilities are answered alone. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -81,14 +76,14 @@ class CapabilitiesClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.capabilities.channel(
-            workspace_id="workspaceId",
             channel_id="channelId",
         )
         """
-        _response = self._raw_client.channel(workspace_id, channel_id, request_options=request_options)
+        _response = self._raw_client.channel(channel_id, request_options=request_options)
         return _response.data
 
 
@@ -108,15 +103,13 @@ class AsyncCapabilitiesClient:
         return self._raw_client
 
     async def platforms(
-        self, workspace_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[PlatformCapabilities]:
         """
         Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
 
@@ -132,31 +125,28 @@ class AsyncCapabilitiesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.capabilities.platforms(
-                workspace_id="workspaceId",
-            )
+            await client.capabilities.platforms()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.platforms(workspace_id, request_options=request_options)
+        _response = await self._raw_client.platforms(request_options=request_options)
         return _response.data
 
     async def channel(
-        self, workspace_id: str, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, channel_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> ChannelCapabilities:
         """
         Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, `account` says why and the platform's capabilities are answered alone. Needs channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -174,18 +164,18 @@ class AsyncCapabilitiesClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.capabilities.channel(
-                workspace_id="workspaceId",
                 channel_id="channelId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.channel(workspace_id, channel_id, request_options=request_options)
+        _response = await self._raw_client.channel(channel_id, request_options=request_options)
         return _response.data

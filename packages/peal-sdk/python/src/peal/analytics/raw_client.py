@@ -35,7 +35,6 @@ class RawAnalyticsClient:
 
     def summary(
         self,
-        workspace_id: str,
         *,
         from_: CalendarDay,
         time_zone: str,
@@ -47,8 +46,6 @@ class RawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : CalendarDay
 
         time_zone : str
@@ -64,7 +61,7 @@ class RawAnalyticsClient:
             AnalyticsSummary
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/summary",
+            "api/v1/analytics/summary",
             method="GET",
             params={
                 "from": from_,
@@ -160,7 +157,6 @@ class RawAnalyticsClient:
 
     def dashboard(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         days: typing.Optional[str] = None,
@@ -174,8 +170,6 @@ class RawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         days : typing.Optional[str]
@@ -195,7 +189,7 @@ class RawAnalyticsClient:
             AnalyticsDashboard
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/dashboard",
+            "api/v1/analytics/dashboard",
             method="GET",
             params={
                 "days": days,
@@ -293,7 +287,6 @@ class RawAnalyticsClient:
 
     def channel(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         time_zone: str,
@@ -307,8 +300,6 @@ class RawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -328,7 +319,7 @@ class RawAnalyticsClient:
             ChannelSeries
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/channels/{encode_path_param(channel_id)}",
+            f"api/v1/analytics/channels/{encode_path_param(channel_id)}",
             method="GET",
             params={
                 "days": days,
@@ -426,7 +417,6 @@ class RawAnalyticsClient:
     @contextlib.contextmanager
     def export(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         kind: AnalyticsExportKind,
@@ -441,8 +431,6 @@ class RawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         kind : AnalyticsExportKind
@@ -464,7 +452,7 @@ class RawAnalyticsClient:
             Success
         """
         with self._client_wrapper.httpx_client.stream(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/export",
+            "api/v1/analytics/export",
             method="GET",
             params={
                 "days": days,
@@ -569,7 +557,6 @@ class RawAnalyticsClient:
 
     def best_times(
         self,
-        workspace_id: str,
         *,
         channel_id: str,
         time_zone: str,
@@ -581,8 +568,6 @@ class RawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -598,7 +583,7 @@ class RawAnalyticsClient:
             BestTimes
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/best-times",
+            "api/v1/analytics/best-times",
             method="GET",
             params={
                 "channelId": channel_id,
@@ -617,6 +602,17 @@ class RawAnalyticsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -682,15 +678,13 @@ class RawAnalyticsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def post(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[PostAnalytics]:
         """
         Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -702,7 +696,7 @@ class RawAnalyticsClient:
             PostAnalytics
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/posts/{encode_path_param(post_id)}",
+            f"api/v1/analytics/posts/{encode_path_param(post_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -716,6 +710,17 @@ class RawAnalyticsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -776,7 +781,6 @@ class AsyncRawAnalyticsClient:
 
     async def summary(
         self,
-        workspace_id: str,
         *,
         from_: CalendarDay,
         time_zone: str,
@@ -788,8 +792,6 @@ class AsyncRawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : CalendarDay
 
         time_zone : str
@@ -805,7 +807,7 @@ class AsyncRawAnalyticsClient:
             AnalyticsSummary
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/summary",
+            "api/v1/analytics/summary",
             method="GET",
             params={
                 "from": from_,
@@ -901,7 +903,6 @@ class AsyncRawAnalyticsClient:
 
     async def dashboard(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         days: typing.Optional[str] = None,
@@ -915,8 +916,6 @@ class AsyncRawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         days : typing.Optional[str]
@@ -936,7 +935,7 @@ class AsyncRawAnalyticsClient:
             AnalyticsDashboard
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/dashboard",
+            "api/v1/analytics/dashboard",
             method="GET",
             params={
                 "days": days,
@@ -1034,7 +1033,6 @@ class AsyncRawAnalyticsClient:
 
     async def channel(
         self,
-        workspace_id: str,
         channel_id: str,
         *,
         time_zone: str,
@@ -1048,8 +1046,6 @@ class AsyncRawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -1069,7 +1065,7 @@ class AsyncRawAnalyticsClient:
             ChannelSeries
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/channels/{encode_path_param(channel_id)}",
+            f"api/v1/analytics/channels/{encode_path_param(channel_id)}",
             method="GET",
             params={
                 "days": days,
@@ -1167,7 +1163,6 @@ class AsyncRawAnalyticsClient:
     @contextlib.asynccontextmanager
     async def export(
         self,
-        workspace_id: str,
         *,
         time_zone: str,
         kind: AnalyticsExportKind,
@@ -1182,8 +1177,6 @@ class AsyncRawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         time_zone : str
 
         kind : AnalyticsExportKind
@@ -1205,7 +1198,7 @@ class AsyncRawAnalyticsClient:
             Success
         """
         async with self._client_wrapper.httpx_client.stream(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/export",
+            "api/v1/analytics/export",
             method="GET",
             params={
                 "days": days,
@@ -1311,7 +1304,6 @@ class AsyncRawAnalyticsClient:
 
     async def best_times(
         self,
-        workspace_id: str,
         *,
         channel_id: str,
         time_zone: str,
@@ -1323,8 +1315,6 @@ class AsyncRawAnalyticsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_id : str
 
         time_zone : str
@@ -1340,7 +1330,7 @@ class AsyncRawAnalyticsClient:
             BestTimes
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/best-times",
+            "api/v1/analytics/best-times",
             method="GET",
             params={
                 "channelId": channel_id,
@@ -1359,6 +1349,17 @@ class AsyncRawAnalyticsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
@@ -1424,15 +1425,13 @@ class AsyncRawAnalyticsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def post(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[PostAnalytics]:
         """
         Answers with the counts of a post on each channel it went live on, over time. A post not published yet, or whose counts were not read yet, has no targets. Needs analytics:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1444,7 +1443,7 @@ class AsyncRawAnalyticsClient:
             PostAnalytics
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"api/workspaces/{encode_path_param(workspace_id)}/analytics/posts/{encode_path_param(post_id)}",
+            f"api/v1/analytics/posts/{encode_path_param(post_id)}",
             method="GET",
             request_options=request_options,
         )
@@ -1458,6 +1457,17 @@ class AsyncRawAnalyticsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 400:
+                raise BadRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,  # type: ignore
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
             if _response.status_code == 401:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),

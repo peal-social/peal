@@ -278,7 +278,7 @@ await client.credential.get();
 </details>
 
 ## apiKeys
-<details><summary><code>client.apiKeys.<a href="/src/api/resources/apiKeys/client/Client.ts">list</a>({ ...params }) -> Peal.ApiKey[]</code></summary>
+<details><summary><code>client.apiKeys.<a href="/src/api/resources/apiKeys/client/Client.ts">list</a>() -> Peal.ApiKey[]</code></summary>
 <dl>
 <dd>
 
@@ -305,9 +305,7 @@ Lists the workspace's API keys, with the member who made each. Needs apiKey:read
 <dd>
 
 ```typescript
-await client.apiKeys.list({
-    workspaceId: "workspaceId"
-});
+await client.apiKeys.list();
 
 ```
 </dd>
@@ -319,14 +317,6 @@ await client.apiKeys.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListApiKeysRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -371,7 +361,6 @@ Creates an API key for the workspace with some of the caller's permissions, and 
 
 ```typescript
 await client.apiKeys.create({
-    workspaceId: "workspaceId",
     name: "name",
     permissions: ["activity:read"]
 });
@@ -438,7 +427,6 @@ Revokes an API key of the workspace: it stops working at once. Needs apiKey:dele
 
 ```typescript
 await client.apiKeys.revoke({
-    workspaceId: "workspaceId",
     apiKeyId: "apiKeyId"
 });
 
@@ -477,7 +465,7 @@ await client.apiKeys.revoke({
 </details>
 
 ## channels
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client/Client.ts">list</a>({ ...params }) -> Peal.Channel[]</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client/Client.ts">list</a>() -> Peal.Channel[]</code></summary>
 <dl>
 <dd>
 
@@ -504,9 +492,7 @@ Lists the channels connected to the workspace, oldest first. Their tokens are ne
 <dd>
 
 ```typescript
-await client.channels.list({
-    workspaceId: "workspaceId"
-});
+await client.channels.list();
 
 ```
 </dd>
@@ -518,14 +504,6 @@ await client.channels.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListChannelsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -569,9 +547,7 @@ Lists the workspace's channels a page at a time, oldest first: 50 unless `limit`
 <dd>
 
 ```typescript
-await client.channels.find({
-    workspaceId: "workspaceId"
-});
+await client.channels.find();
 
 ```
 </dd>
@@ -607,7 +583,7 @@ await client.channels.find({
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="/src/api/resources/channels/client/Client.ts">platforms</a>({ ...params }) -> Peal.ConnectablePlatforms</code></summary>
+<details><summary><code>client.channels.<a href="/src/api/resources/channels/client/Client.ts">platforms</a>() -> Peal.ConnectablePlatforms</code></summary>
 <dl>
 <dd>
 
@@ -634,9 +610,7 @@ Lists the platforms this server can connect accounts of, in Peal's order. A plat
 <dd>
 
 ```typescript
-await client.channels.platforms({
-    workspaceId: "workspaceId"
-});
+await client.channels.platforms();
 
 ```
 </dd>
@@ -648,14 +622,6 @@ await client.channels.platforms({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.PlatformsChannelsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -700,7 +666,6 @@ Connects a website, to publish articles to it: a WordPress site, by its address,
 
 ```typescript
 await client.channels.connectSite({
-    workspaceId: "workspaceId",
     address: "address",
     applicationPassword: "applicationPassword",
     platform: "wordpress",
@@ -769,7 +734,6 @@ Connects an account on a publishing platform, to publish articles to it, with a 
 
 ```typescript
 await client.channels.connectSiteWithKey({
-    workspaceId: "workspaceId",
     apiKey: "apiKey",
     platform: "devto"
 });
@@ -836,11 +800,8 @@ Connects a chat, to post to it, with a secret its member pastes, no sign-in page
 
 ```typescript
 await client.channels.connectChat({
-    workspaceId: "workspaceId",
-    body: {
-        platform: "discord",
-        webhookUrl: "webhookUrl"
-    }
+    platform: "discord",
+    webhookUrl: "webhookUrl"
 });
 
 ```
@@ -857,7 +818,7 @@ await client.channels.connectChat({
 <dl>
 <dd>
 
-**request:** `Peal.ConnectChatChannelsRequest` 
+**request:** `Peal.ConnectChat` 
     
 </dd>
 </dl>
@@ -905,7 +866,6 @@ Starts connecting a website by signing in on its platform: on WordPress.com (`wo
 
 ```typescript
 await client.channels.startSiteSignIn({
-    workspaceId: "workspaceId",
     platform: "wordpressCom"
 });
 
@@ -971,7 +931,6 @@ Completes a website sign-in with what the platform sent back: the site becomes a
 
 ```typescript
 await client.channels.completeSiteSignIn({
-    workspaceId: "workspaceId",
     platform: "wordpressCom",
     state: "state"
 });
@@ -1038,7 +997,6 @@ Starts connecting an account of the platform: answers with the platform's sign-i
 
 ```typescript
 await client.channels.connect({
-    workspaceId: "workspaceId",
     platform: "x"
 });
 
@@ -1104,7 +1062,6 @@ Completes a connection with what the platform sent back: the account becomes a c
 
 ```typescript
 await client.channels.completeConnect({
-    workspaceId: "workspaceId",
     platform: "x",
     state: "state"
 });
@@ -1171,7 +1128,6 @@ Connects the accounts the member chose among those a completed sign-in listed: e
 
 ```typescript
 await client.channels.chooseAccounts({
-    workspaceId: "workspaceId",
     platform: "x",
     accountIds: ["accountIds"],
     selection: "selection"
@@ -1239,7 +1195,6 @@ Starts reconnecting a channel whose token stopped working or is about to: answer
 
 ```typescript
 await client.channels.reconnect({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -1305,7 +1260,6 @@ Disconnects a channel from the workspace: the channel and the tokens Peal holds 
 
 ```typescript
 await client.channels.disconnect({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -1371,7 +1325,6 @@ Gives the channel the name the workspace calls it by (`label`, 60 characters at 
 
 ```typescript
 await client.channels.update({
-    workspaceId: "workspaceId",
     channelId: "channelId",
     label: null
 });
@@ -1438,7 +1391,6 @@ Turns the channel off: nothing goes out on it until it is turned back on. It kee
 
 ```typescript
 await client.channels.disable({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -1504,7 +1456,6 @@ Turns a channel back on. It posts again at once, or has the status `refreshNeede
 
 ```typescript
 await client.channels.enable({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -1570,9 +1521,7 @@ Lists the workspace's drafts, newest first, 20 a page unless `limit` (at most 50
 <dd>
 
 ```typescript
-await client.posts.drafts({
-    workspaceId: "workspaceId"
-});
+await client.posts.drafts();
 
 ```
 </dd>
@@ -1636,7 +1585,6 @@ Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 
 
 ```typescript
 await client.posts.list({
-    workspaceId: "workspaceId",
     from: "from",
     to: "to"
 });
@@ -1703,20 +1651,17 @@ Creates a draft for some of the workspace's channels, possibly none yet, with op
 
 ```typescript
 await client.posts.create({
-    workspaceId: "workspaceId",
-    body: {
-        channelIds: ["channelIds"],
-        content: {
-            media: [{
-                    altText: "altText",
-                    mediaId: "mediaId"
-                }],
-            overrides: [{
-                    channelId: "channelId",
-                    text: "text"
-                }],
-            text: "text"
-        }
+    channelIds: ["channelIds"],
+    content: {
+        media: [{
+                altText: "altText",
+                mediaId: "mediaId"
+            }],
+        overrides: [{
+                channelId: "channelId",
+                text: "text"
+            }],
+        text: "text"
     }
 });
 
@@ -1734,7 +1679,7 @@ await client.posts.create({
 <dl>
 <dd>
 
-**request:** `Peal.CreatePostsRequest` 
+**request:** `Peal.PostDraft` 
     
 </dd>
 </dl>
@@ -1781,9 +1726,7 @@ Lists the workspace's posts, whatever their state, a page at a time: 20 unless `
 <dd>
 
 ```typescript
-await client.posts.search({
-    workspaceId: "workspaceId"
-});
+await client.posts.search();
 
 ```
 </dd>
@@ -1847,7 +1790,6 @@ Creates a post and sends it to some of the workspace's channels in one call: `wh
 
 ```typescript
 await client.posts.send({
-    workspaceId: "workspaceId",
     channelIds: ["channelIds"],
     content: {
         media: [{
@@ -1927,7 +1869,6 @@ Creates and sends up to 50 posts in one request, each as `send` would: one post 
 
 ```typescript
 await client.posts.bulk({
-    workspaceId: "workspaceId",
     posts: [{
             channelIds: ["channelIds"],
             content: {
@@ -2009,7 +1950,6 @@ Creates and sends the posts a CSV file lists, one per row, at most 100 rows unde
 
 ```typescript
 await client.posts.import({
-    workspaceId: "workspaceId",
     csv: "csv"
 });
 
@@ -2075,7 +2015,6 @@ Checks a post without making it, and changes nothing: send what `send` takes, or
 
 ```typescript
 await client.posts.validate({
-    workspaceId: "workspaceId",
     channelIds: ["channelIds"],
     content: {
         media: [{
@@ -2152,7 +2091,6 @@ Answers with a post of the workspace. Needs post:read.
 
 ```typescript
 await client.posts.get({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -2218,7 +2156,6 @@ Replaces a draft's content, channels and options: options left out are removed. 
 
 ```typescript
 await client.posts.update({
-    workspaceId: "workspaceId",
     postId: "postId",
     body: {
         channelIds: ["channelIds"],
@@ -2298,7 +2235,6 @@ Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Need
 
 ```typescript
 await client.posts.discard({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -2364,7 +2300,6 @@ Answers with a post once it has gone out: it waits up to `wait` seconds (60 at m
 
 ```typescript
 await client.posts.outcome({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -2430,7 +2365,6 @@ Lists every attempt Peal made at publishing the post, by channel, round and atte
 
 ```typescript
 await client.posts.attempts({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -2496,7 +2430,6 @@ Files a post under these tags of the workspace, 10 at most, instead of those it 
 
 ```typescript
 await client.posts.tag({
-    workspaceId: "workspaceId",
     postId: "postId",
     tagIds: ["tagIds"]
 });
@@ -2563,7 +2496,6 @@ Makes a new draft that says what the post says, whatever the post's status: its 
 
 ```typescript
 await client.posts.duplicate({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -2629,7 +2561,6 @@ Schedules a draft on some of the workspace's channels at an instant, kept with t
 
 ```typescript
 await client.posts.schedule({
-    workspaceId: "workspaceId",
     postId: "postId",
     at: "at",
     channelIds: ["channelIds"],
@@ -2698,7 +2629,6 @@ Moves a scheduled post, or one awaiting approval, to another instant, or schedul
 
 ```typescript
 await client.posts.reschedule({
-    workspaceId: "workspaceId",
     postId: "postId",
     body: {
         at: "at",
@@ -2768,7 +2698,6 @@ Puts a post on the next free slot of a queue (`queueId`, or the workspace's defa
 
 ```typescript
 await client.posts.enqueue({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -2834,7 +2763,6 @@ Takes a scheduled post back to draft, so its text and media can change: it goes 
 
 ```typescript
 await client.posts.unschedule({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -2900,7 +2828,6 @@ Sends the post again, now, on one channel where it failed or is unconfirmed: a n
 
 ```typescript
 await client.posts.repost({
-    workspaceId: "workspaceId",
     postId: "postId",
     targetId: "targetId"
 });
@@ -2967,7 +2894,6 @@ Takes one channel off a post that waits for its time (scheduled, or awaiting app
 
 ```typescript
 await client.posts.removeTarget({
-    workspaceId: "workspaceId",
     postId: "postId",
     targetId: "targetId"
 });
@@ -3034,7 +2960,6 @@ Says what you found on the platform for a post unconfirmed on one channel: `publ
 
 ```typescript
 await client.posts.confirm({
-    workspaceId: "workspaceId",
     postId: "postId",
     targetId: "targetId",
     body: {
@@ -3105,7 +3030,6 @@ Publishes the post on one channel without the parts that did not go out after it
 
 ```typescript
 await client.posts.leaveOutRest({
-    workspaceId: "workspaceId",
     postId: "postId",
     targetId: "targetId"
 });
@@ -3172,7 +3096,6 @@ Deletes the post from one channel's platform, for everyone: every part of a thre
 
 ```typescript
 await client.posts.unpublishTarget({
-    workspaceId: "workspaceId",
     postId: "postId",
     targetId: "targetId"
 });
@@ -3239,7 +3162,6 @@ Replaces the text of one part of the post (`part`, from 0, the post itself by de
 
 ```typescript
 await client.posts.editTarget({
-    workspaceId: "workspaceId",
     postId: "postId",
     targetId: "targetId",
     text: "text"
@@ -3307,7 +3229,6 @@ Deletes the post from every channel's platform where it can be, as unpublishing 
 
 ```typescript
 await client.posts.unpublish({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -3373,7 +3294,6 @@ Lists the changes asked of the post once it was live (deleting it from a channel
 
 ```typescript
 await client.posts.changes({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -3439,7 +3359,6 @@ Cancels a draft, a scheduled post or one awaiting approval. A post already publi
 
 ```typescript
 await client.posts.cancel({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -3505,9 +3424,7 @@ Lists the workspace's articles, newest first, 50 a page unless `limit` (at most 
 <dd>
 
 ```typescript
-await client.articles.list({
-    workspaceId: "workspaceId"
-});
+await client.articles.list();
 
 ```
 </dd>
@@ -3571,7 +3488,6 @@ Writes an article for one of the workspace's websites (a channel connected with 
 
 ```typescript
 await client.articles.create({
-    workspaceId: "workspaceId",
     body: {
         content: [],
         type: "doc"
@@ -3642,7 +3558,6 @@ Reads an article. Needs post:read.
 
 ```typescript
 await client.articles.get({
-    workspaceId: "workspaceId",
     articleId: "articleId"
 });
 
@@ -3708,7 +3623,6 @@ Deletes the article from Peal, and its job when it waits to go out; never while 
 
 ```typescript
 await client.articles.delete({
-    workspaceId: "workspaceId",
     articleId: "articleId"
 });
 
@@ -3774,7 +3688,6 @@ Replaces what a draft, a scheduled article or one that failed says. A scheduled 
 
 ```typescript
 await client.articles.update({
-    workspaceId: "workspaceId",
     articleId: "articleId",
     body: {
         body: {
@@ -3847,7 +3760,6 @@ Schedules a draft, moves a scheduled article, or schedules one that failed again
 
 ```typescript
 await client.articles.schedule({
-    workspaceId: "workspaceId",
     articleId: "articleId",
     body: {
         timeZone: "timeZone"
@@ -3916,7 +3828,6 @@ Takes a scheduled article back to draft: nothing is sent. Needs post:schedule.
 
 ```typescript
 await client.articles.unschedule({
-    workspaceId: "workspaceId",
     articleId: "articleId"
 });
 
@@ -3982,7 +3893,6 @@ Sends a failed article again now, or one that was unconfirmed once a member chec
 
 ```typescript
 await client.articles.retry({
-    workspaceId: "workspaceId",
     articleId: "articleId"
 });
 
@@ -4048,7 +3958,6 @@ Moves the article's post to the site's trash, where the site keeps it for a whil
 
 ```typescript
 await client.articles.unpublish({
-    workspaceId: "workspaceId",
     articleId: "articleId"
 });
 
@@ -4114,7 +4023,6 @@ Replaces what the article's post says on the site (title, body, excerpt, tags, c
 
 ```typescript
 await client.articles.updateOnSite({
-    workspaceId: "workspaceId",
     articleId: "articleId",
     body: {
         body: {
@@ -4187,9 +4095,7 @@ Lists the workspace's media, newest first, 30 a page unless `limit` (at most 100
 <dd>
 
 ```typescript
-await client.media.list({
-    workspaceId: "workspaceId"
-});
+await client.media.list();
 
 ```
 </dd>
@@ -4253,7 +4159,6 @@ Records pending media and signs the upload of its file: one PUT for an image or 
 
 ```typescript
 await client.media.create({
-    workspaceId: "workspaceId",
     byteSize: 1000000,
     contentType: "contentType"
 });
@@ -4320,7 +4225,6 @@ Fetches a file from a public address, stores it as media of the workspace and pr
 
 ```typescript
 await client.media.importFromUrl({
-    workspaceId: "workspaceId",
     url: "url"
 });
 
@@ -4386,7 +4290,6 @@ Shows one of the workspace's media. Needs media:read.
 
 ```typescript
 await client.media.get({
-    workspaceId: "workspaceId",
     mediaId: "mediaId"
 });
 
@@ -4452,7 +4355,6 @@ Deletes the media and its file, and cancels its upload if it is still pending. D
 
 ```typescript
 await client.media.delete({
-    workspaceId: "workspaceId",
     mediaId: "mediaId"
 });
 
@@ -4518,7 +4420,6 @@ Sets the media's description, which platforms show to people who cannot see it. 
 
 ```typescript
 await client.media.describe({
-    workspaceId: "workspaceId",
     mediaId: "mediaId",
     altText: null
 });
@@ -4585,7 +4486,6 @@ Checks that the file reached the store with the declared size and type, joining 
 
 ```typescript
 await client.media.complete({
-    workspaceId: "workspaceId",
     mediaId: "mediaId"
 });
 
@@ -4651,7 +4551,6 @@ Lists the posts that show the media: drafts, which lose it if it is deleted, and
 
 ```typescript
 await client.media.usage({
-    workspaceId: "workspaceId",
     mediaId: "mediaId"
 });
 
@@ -4718,7 +4617,6 @@ Asks the provider the workspace chose for voice-overs (`PUT .../assistant/models
 
 ```typescript
 await client.mediaAudio.createVoiceover({
-    workspaceId: "workspaceId",
     text: "text"
 });
 
@@ -4784,7 +4682,6 @@ Sends a ready audio or video file of the media library, of at most 25000000 byte
 
 ```typescript
 await client.mediaAudio.transcribe({
-    workspaceId: "workspaceId",
     mediaId: "mediaId"
 });
 
@@ -5181,7 +5078,7 @@ await client.notificationPreferences.update();
 </details>
 
 ## assistant
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">status</a>({ ...params }) -> Peal.AssistantStatus</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">status</a>() -> Peal.AssistantStatus</code></summary>
 <dl>
 <dd>
 
@@ -5208,9 +5105,7 @@ Tells whether the assistant writes for the workspace, so clients show it or hide
 <dd>
 
 ```typescript
-await client.assistant.status({
-    workspaceId: "workspaceId"
-});
+await client.assistant.status();
 
 ```
 </dd>
@@ -5222,14 +5117,6 @@ await client.assistant.status({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.StatusAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5274,7 +5161,6 @@ Asks the language model to rewrite, shorten or translate a post's text, to sugge
 
 ```typescript
 await client.assistant.suggest({
-    workspaceId: "workspaceId",
     action: {
         _tag: "rewrite",
         tone: "professional"
@@ -5344,7 +5230,6 @@ Asks for one image from the prompt, in the aspect asked for, and answers with it
 
 ```typescript
 await client.assistant.generateImage({
-    workspaceId: "workspaceId",
     aspect: "square",
     prompt: "prompt"
 });
@@ -5383,7 +5268,7 @@ await client.assistant.generateImage({
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">imageProvider</a>({ ...params }) -> Peal.ImageProviderSetting</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">imageProvider</a>() -> Peal.ImageProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -5410,9 +5295,7 @@ Reads the image provider the workspace brought, a provider Peal knows by name (O
 <dd>
 
 ```typescript
-await client.assistant.imageProvider({
-    workspaceId: "workspaceId"
-});
+await client.assistant.imageProvider();
 
 ```
 </dd>
@@ -5424,14 +5307,6 @@ await client.assistant.imageProvider({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ImageProviderAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5476,7 +5351,6 @@ Sets the image provider the workspace brings, a provider Peal knows by name (Ope
 
 ```typescript
 await client.assistant.setImageProvider({
-    workspaceId: "workspaceId",
     model: "model"
 });
 
@@ -5514,7 +5388,7 @@ await client.assistant.setImageProvider({
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">removeImageProvider</a>({ ...params }) -> void</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">removeImageProvider</a>() -> void</code></summary>
 <dl>
 <dd>
 
@@ -5541,9 +5415,7 @@ Removes the workspace's image provider and its key: images are made by the serve
 <dd>
 
 ```typescript
-await client.assistant.removeImageProvider({
-    workspaceId: "workspaceId"
-});
+await client.assistant.removeImageProvider();
 
 ```
 </dd>
@@ -5555,14 +5427,6 @@ await client.assistant.removeImageProvider({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.RemoveImageProviderAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5579,7 +5443,7 @@ await client.assistant.removeImageProvider({
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">textProvider</a>({ ...params }) -> Peal.TextProviderSetting</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">textProvider</a>() -> Peal.TextProviderSetting</code></summary>
 <dl>
 <dd>
 
@@ -5606,9 +5470,7 @@ Reads the text provider the workspace brought, Anthropic's Messages API or an en
 <dd>
 
 ```typescript
-await client.assistant.textProvider({
-    workspaceId: "workspaceId"
-});
+await client.assistant.textProvider();
 
 ```
 </dd>
@@ -5620,14 +5482,6 @@ await client.assistant.textProvider({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.TextProviderAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5672,7 +5526,6 @@ Sets the text provider the workspace brings, Anthropic's Messages API or an endp
 
 ```typescript
 await client.assistant.setTextProvider({
-    workspaceId: "workspaceId",
     model: "model"
 });
 
@@ -5710,7 +5563,7 @@ await client.assistant.setTextProvider({
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">removeTextProvider</a>({ ...params }) -> void</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">removeTextProvider</a>() -> void</code></summary>
 <dl>
 <dd>
 
@@ -5737,9 +5590,7 @@ Removes the workspace's text provider and its key: the server's language model w
 <dd>
 
 ```typescript
-await client.assistant.removeTextProvider({
-    workspaceId: "workspaceId"
-});
+await client.assistant.removeTextProvider();
 
 ```
 </dd>
@@ -5751,14 +5602,6 @@ await client.assistant.removeTextProvider({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.RemoveTextProviderAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5775,7 +5618,7 @@ await client.assistant.removeTextProvider({
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">testTextProvider</a>({ ...params }) -> void</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">testTextProvider</a>() -> void</code></summary>
 <dl>
 <dd>
 
@@ -5802,9 +5645,7 @@ Sends the workspace's text provider one short request, a rewrite of a fixed sent
 <dd>
 
 ```typescript
-await client.assistant.testTextProvider({
-    workspaceId: "workspaceId"
-});
+await client.assistant.testTextProvider();
 
 ```
 </dd>
@@ -5816,14 +5657,6 @@ await client.assistant.testTextProvider({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.TestTextProviderAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5840,7 +5673,7 @@ await client.assistant.testTextProvider({
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">providers</a>({ ...params }) -> Peal.AiProviderConnections</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">providers</a>() -> Peal.AiProviderConnections</code></summary>
 <dl>
 <dd>
 
@@ -5867,9 +5700,7 @@ Lists the AI providers the workspace connected with a key of its own: where each
 <dd>
 
 ```typescript
-await client.assistant.providers({
-    workspaceId: "workspaceId"
-});
+await client.assistant.providers();
 
 ```
 </dd>
@@ -5881,14 +5712,6 @@ await client.assistant.providers({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ProvidersAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -5933,7 +5756,6 @@ Connects a provider of Peal's catalogue (`peal-contract/ai-providers`), or `open
 
 ```typescript
 await client.assistant.connectProvider({
-    workspaceId: "workspaceId",
     provider: "anthropic"
 });
 
@@ -5999,7 +5821,6 @@ Removes the provider and its key, and the uses it served: the server's model wor
 
 ```typescript
 await client.assistant.disconnectProvider({
-    workspaceId: "workspaceId",
     provider: "anthropic"
 });
 
@@ -6065,7 +5886,6 @@ Sends a connected provider one short request for text, a rewrite of a fixed sent
 
 ```typescript
 await client.assistant.testProvider({
-    workspaceId: "workspaceId",
     provider: "anthropic"
 });
 
@@ -6103,7 +5923,7 @@ await client.assistant.testProvider({
 </dl>
 </details>
 
-<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">models</a>({ ...params }) -> Peal.AiCapabilityModels</code></summary>
+<details><summary><code>client.assistant.<a href="/src/api/resources/assistant/client/Client.ts">models</a>() -> Peal.AiCapabilityModels</code></summary>
 <dl>
 <dd>
 
@@ -6130,9 +5950,7 @@ Tells, for each use (text, images, videos, voice-overs, transcripts, slide video
 <dd>
 
 ```typescript
-await client.assistant.models({
-    workspaceId: "workspaceId"
-});
+await client.assistant.models();
 
 ```
 </dd>
@@ -6144,14 +5962,6 @@ await client.assistant.models({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ModelsAssistantRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6196,7 +6006,6 @@ Chooses the provider and the model for one use: the provider must be connected (
 
 ```typescript
 await client.assistant.setModel({
-    workspaceId: "workspaceId",
     capability: "text",
     provider: "anthropic"
 });
@@ -6263,7 +6072,6 @@ Leaves a use to the server's model, if it has one (`serverModel`), within the wo
 
 ```typescript
 await client.assistant.unsetModel({
-    workspaceId: "workspaceId",
     capability: "text"
 });
 
@@ -6329,9 +6137,7 @@ Lists the videos the workspace asked for, newest first, 50 at most, only those w
 <dd>
 
 ```typescript
-await client.videoGenerations.list({
-    workspaceId: "workspaceId"
-});
+await client.videoGenerations.list();
 
 ```
 </dd>
@@ -6395,7 +6201,6 @@ Asks the provider the workspace chose for videos (`PUT .../assistant/models/vide
 
 ```typescript
 await client.videoGenerations.create({
-    workspaceId: "workspaceId",
     aspect: "square",
     prompt: "prompt"
 });
@@ -6462,7 +6267,6 @@ Reads where a video stands: queued, running, succeeded with its file (`mediaId`)
 
 ```typescript
 await client.videoGenerations.get({
-    workspaceId: "workspaceId",
     generationId: "generationId"
 });
 
@@ -6528,9 +6332,7 @@ Lists the slide videos the workspace asked for, newest first, 50 at most, only t
 <dd>
 
 ```typescript
-await client.slideshows.list({
-    workspaceId: "workspaceId"
-});
+await client.slideshows.list();
 
 ```
 </dd>
@@ -6594,7 +6396,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```typescript
 await client.slideshows.create({
-    workspaceId: "workspaceId",
     aspect: "square",
     slides: [{
             mediaId: "mediaId"
@@ -6663,7 +6464,6 @@ Asks the service the workspace chose for slide videos (`PUT .../assistant/models
 
 ```typescript
 await client.slideshows.createFromEdit({
-    workspaceId: "workspaceId",
     edit: {
         "key": "value"
     }
@@ -6731,7 +6531,6 @@ Reads where a slide video stands: queued, running, succeeded with its file (`med
 
 ```typescript
 await client.slideshows.get({
-    workspaceId: "workspaceId",
     slideshowId: "slideshowId"
 });
 
@@ -6770,7 +6569,7 @@ await client.slideshows.get({
 </details>
 
 ## members
-<details><summary><code>client.members.<a href="/src/api/resources/members/client/Client.ts">list</a>({ ...params }) -> Peal.WorkspaceMember[]</code></summary>
+<details><summary><code>client.members.<a href="/src/api/resources/members/client/Client.ts">list</a>() -> Peal.WorkspaceMember[]</code></summary>
 <dl>
 <dd>
 
@@ -6797,9 +6596,7 @@ Lists the workspace's members, in the order they joined, with their name, email 
 <dd>
 
 ```typescript
-await client.members.list({
-    workspaceId: "workspaceId"
-});
+await client.members.list();
 
 ```
 </dd>
@@ -6811,14 +6608,6 @@ await client.members.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListMembersRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6836,7 +6625,7 @@ await client.members.list({
 </details>
 
 ## invitations
-<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client/Client.ts">list</a>({ ...params }) -> Peal.Invitation[]</code></summary>
+<details><summary><code>client.invitations.<a href="/src/api/resources/invitations/client/Client.ts">list</a>() -> Peal.Invitation[]</code></summary>
 <dl>
 <dd>
 
@@ -6863,9 +6652,7 @@ Lists the workspace's pending invitations, oldest first, expired ones included. 
 <dd>
 
 ```typescript
-await client.invitations.list({
-    workspaceId: "workspaceId"
-});
+await client.invitations.list();
 
 ```
 </dd>
@@ -6877,14 +6664,6 @@ await client.invitations.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListInvitationsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -6929,7 +6708,6 @@ Invites someone to the workspace with a role: Peal emails them a link that works
 
 ```typescript
 await client.invitations.create({
-    workspaceId: "workspaceId",
     email: "email",
     role: "owner"
 });
@@ -6996,7 +6774,6 @@ Revokes a pending invitation of the workspace: its link stops working at once. N
 
 ```typescript
 await client.invitations.revoke({
-    workspaceId: "workspaceId",
     invitationId: "invitationId"
 });
 
@@ -7035,7 +6812,7 @@ await client.invitations.revoke({
 </details>
 
 ## billing
-<details><summary><code>client.billing.<a href="/src/api/resources/billing/client/Client.ts">get</a>({ ...params }) -> Peal.Billing</code></summary>
+<details><summary><code>client.billing.<a href="/src/api/resources/billing/client/Client.ts">get</a>() -> Peal.Billing</code></summary>
 <dl>
 <dd>
 
@@ -7062,9 +6839,7 @@ Answers with the workspace's plan (`free`, `payAsYouGo`, or a plan priced by tie
 <dd>
 
 ```typescript
-await client.billing.get({
-    workspaceId: "workspaceId"
-});
+await client.billing.get();
 
 ```
 </dd>
@@ -7076,14 +6851,6 @@ await client.billing.get({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.GetBillingRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7100,7 +6867,7 @@ await client.billing.get({
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="/src/api/resources/billing/client/Client.ts">standing</a>({ ...params }) -> Peal.Standing</code></summary>
+<details><summary><code>client.billing.<a href="/src/api/resources/billing/client/Client.ts">standing</a>() -> Peal.Standing</code></summary>
 <dl>
 <dd>
 
@@ -7127,9 +6894,7 @@ Answers where the workspace stands against its plan: what it holds beyond it, as
 <dd>
 
 ```typescript
-await client.billing.standing({
-    workspaceId: "workspaceId"
-});
+await client.billing.standing();
 
 ```
 </dd>
@@ -7141,14 +6906,6 @@ await client.billing.standing({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.StandingBillingRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7193,9 +6950,7 @@ Answers what the workspace uses of its plan now, and day by day from `from` to `
 <dd>
 
 ```typescript
-await client.usage.get({
-    workspaceId: "workspaceId"
-});
+await client.usage.get();
 
 ```
 </dd>
@@ -7243,7 +6998,7 @@ await client.usage.get({
 <dl>
 <dd>
 
-Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/partner/usage`. Needs partner:read.
+Answers what the partner account uses across the workspaces it holds, from `from` to `to` (UTC days, both included, at most 92; by default the 30 days that end today), and per workspace. `current` is what it holds now: the workspaces it owns and the channels connected across them and its home workspace, which its plan's channel limit counts. Each day gives the workspaces it owned and the channels connected across them as the daily count found them at 23:41 UTC (null for a day without a count), and the posts that went out in the workspaces that still exist. `workspaces` is a page of its workspaces with each one's external id, the channels it connected itself now, and over the period its channel-days, posts by platform, requests to the writing assistant, latest media storage and, for each calendar month the period touches, posts on platforms that bill the server per post: newest first, 50 a page unless `limit` (at most 100) says otherwise, in the order and with the cursor of the list of the partner's workspaces (pass `next` as `before`; anything else is refused, 400); the home workspace comes first, on the first page only, one more than asked. `current`, `days` and `totals`, which cover the whole account, come with the first page only, and are null on the pages after it, which read their own workspaces alone. A workspace offboarded during the period is no longer listed, and its posts leave the sums, as its counts were erased with it; the daily `workspaces` and `channels` still count it for the days it existed. Kept 400 days. Counts only: nothing here is priced or limits anything. On a server that does not bill, `plan` and `allowances` are null. For the people of the partner's home workspace: a workspace with no partner account answers 404 `PartnerNotFound`. A partner key reads the same at `GET /api/v1/partner/usage`. Needs partner:read.
 </dd>
 </dl>
 </dd>
@@ -7258,9 +7013,7 @@ Answers what the partner account uses across the workspaces it holds, from `from
 <dd>
 
 ```typescript
-await client.usage.partner({
-    workspaceId: "workspaceId"
-});
+await client.usage.partner();
 
 ```
 </dd>
@@ -7325,7 +7078,6 @@ Sums up the posts published from `from` to `to`, both included and at most 366 d
 
 ```typescript
 await client.analytics.summary({
-    workspaceId: "workspaceId",
     from: "from",
     timeZone: "timeZone",
     to: "to"
@@ -7393,7 +7145,6 @@ Answers a workspace's analytics over a range in one call: the totals of the post
 
 ```typescript
 await client.analytics.dashboard({
-    workspaceId: "workspaceId",
     timeZone: "timeZone"
 });
 
@@ -7459,7 +7210,6 @@ Answers one channel's numbers day by day: its followers, the accounts it follows
 
 ```typescript
 await client.analytics.channel({
-    workspaceId: "workspaceId",
     channelId: "channelId",
     timeZone: "timeZone"
 });
@@ -7526,7 +7276,6 @@ Streams the workspace's analytics as a file: `kind=posts` lists each post publis
 
 ```typescript
 await client.analytics.export({
-    workspaceId: "workspaceId",
     timeZone: "timeZone",
     kind: "posts"
 });
@@ -7593,7 +7342,6 @@ Answers when one channel's posts did best, by weekday and hour as `timeZone` (an
 
 ```typescript
 await client.analytics.bestTimes({
-    workspaceId: "workspaceId",
     channelId: "channelId",
     timeZone: "timeZone"
 });
@@ -7660,7 +7408,6 @@ Answers with the counts of a post on each channel it went live on, over time. A 
 
 ```typescript
 await client.analytics.post({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -7727,7 +7474,6 @@ Reads a TikTok channel's creator from TikTok: their nickname, the audiences the 
 
 ```typescript
 await client.tiktok.creator({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -7766,7 +7512,7 @@ await client.tiktok.creator({
 </details>
 
 ## capabilities
-<details><summary><code>client.capabilities.<a href="/src/api/resources/capabilities/client/Client.ts">platforms</a>({ ...params }) -> Peal.PlatformCapabilities[]</code></summary>
+<details><summary><code>client.capabilities.<a href="/src/api/resources/capabilities/client/Client.ts">platforms</a>() -> Peal.PlatformCapabilities[]</code></summary>
 <dl>
 <dd>
 
@@ -7793,9 +7539,7 @@ Describes what a post may hold on every platform, in Peal's order, whether or no
 <dd>
 
 ```typescript
-await client.capabilities.platforms({
-    workspaceId: "workspaceId"
-});
+await client.capabilities.platforms();
 
 ```
 </dd>
@@ -7807,14 +7551,6 @@ await client.capabilities.platforms({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.PlatformsCapabilitiesRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -7859,7 +7595,6 @@ Describes what a post on this channel may hold: its platform's capabilities, and
 
 ```typescript
 await client.capabilities.channel({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -7926,7 +7661,6 @@ Lists the lookups the channel has: what its platform tells about the account tha
 
 ```typescript
 await client.lookups.list({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -7992,7 +7726,6 @@ Runs one of the channel's lookups: asks the platform now, with the channel's tok
 
 ```typescript
 await client.lookups.run({
-    workspaceId: "workspaceId",
     channelId: "channelId",
     name: "name"
 });
@@ -8032,7 +7765,7 @@ await client.lookups.run({
 </details>
 
 ## webhooks
-<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client/Client.ts">list</a>({ ...params }) -> Peal.WebhookEndpoint[]</code></summary>
+<details><summary><code>client.webhooks.<a href="/src/api/resources/webhooks/client/Client.ts">list</a>() -> Peal.WebhookEndpoint[]</code></summary>
 <dl>
 <dd>
 
@@ -8059,9 +7792,7 @@ Lists the workspace's webhook endpoints, oldest first. Needs webhook:read.
 <dd>
 
 ```typescript
-await client.webhooks.list({
-    workspaceId: "workspaceId"
-});
+await client.webhooks.list();
 
 ```
 </dd>
@@ -8073,14 +7804,6 @@ await client.webhooks.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListWebhooksRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -8125,7 +7848,6 @@ Adds a webhook endpoint to the workspace, and answers with its signing secret, w
 
 ```typescript
 await client.webhooks.create({
-    workspaceId: "workspaceId",
     eventTypes: ["post.scheduled"],
     url: "url"
 });
@@ -8191,9 +7913,7 @@ Lists the workspace's deliveries across its endpoints, newest first, 30 a page u
 <dd>
 
 ```typescript
-await client.webhooks.searchDeliveries({
-    workspaceId: "workspaceId"
-});
+await client.webhooks.searchDeliveries();
 
 ```
 </dd>
@@ -8257,10 +7977,7 @@ Sends many deliveries again, 100 a call at most: those named by `deliveryIds`, o
 
 ```typescript
 await client.webhooks.redeliverMany({
-    workspaceId: "workspaceId",
-    body: {
-        deliveryIds: ["deliveryIds"]
-    }
+    deliveryIds: ["deliveryIds"]
 });
 
 ```
@@ -8277,7 +7994,7 @@ await client.webhooks.redeliverMany({
 <dl>
 <dd>
 
-**request:** `Peal.RedeliverManyWebhooksRequest` 
+**request:** `Peal.WebhookRedeliveryRequest` 
     
 </dd>
 </dl>
@@ -8325,7 +8042,6 @@ Shows one of the workspace's webhook endpoints. Needs webhook:read.
 
 ```typescript
 await client.webhooks.get({
-    workspaceId: "workspaceId",
     endpointId: "endpointId"
 });
 
@@ -8391,7 +8107,6 @@ Deletes an endpoint, its secret and its delivery log: nothing more is sent to it
 
 ```typescript
 await client.webhooks.delete({
-    workspaceId: "workspaceId",
     endpointId: "endpointId"
 });
 
@@ -8457,7 +8172,6 @@ Changes an endpoint's address, description, events, filters or headers, or turns
 
 ```typescript
 await client.webhooks.update({
-    workspaceId: "workspaceId",
     endpointId: "endpointId"
 });
 
@@ -8523,7 +8237,6 @@ Replaces an endpoint's signing secret, and answers with the new one, which is no
 
 ```typescript
 await client.webhooks.rotateSecret({
-    workspaceId: "workspaceId",
     endpointId: "endpointId"
 });
 
@@ -8589,7 +8302,6 @@ Sends the endpoint a `webhook.test` event, or, with `eventType`, a sample of tha
 
 ```typescript
 await client.webhooks.sendTest({
-    workspaceId: "workspaceId",
     endpointId: "endpointId"
 });
 
@@ -8655,7 +8367,6 @@ Lists the endpoint's deliveries, newest first, of a `status` and an `eventType` 
 
 ```typescript
 await client.webhooks.listDeliveries({
-    workspaceId: "workspaceId",
     endpointId: "endpointId"
 });
 
@@ -8721,7 +8432,6 @@ Sends the delivery's event to the endpoint again, as a new delivery of the same 
 
 ```typescript
 await client.webhooks.redeliver({
-    workspaceId: "workspaceId",
     endpointId: "endpointId",
     deliveryId: "deliveryId"
 });
@@ -8788,9 +8498,7 @@ Lists the threads that have comments, one per post and channel: those with a com
 <dd>
 
 ```typescript
-await client.inbox.listThreads({
-    workspaceId: "workspaceId"
-});
+await client.inbox.listThreads();
 
 ```
 </dd>
@@ -8854,7 +8562,6 @@ Shows a thread whole: its comments, oldest first, the replies sent from Peal, an
 
 ```typescript
 await client.inbox.getThread({
-    workspaceId: "workspaceId",
     threadId: "threadId"
 });
 
@@ -8920,7 +8627,6 @@ Says what a channel can do about the comments under its posts, from its platform
 
 ```typescript
 await client.inbox.getAbilities({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -8986,7 +8692,6 @@ Answers a comment in public, as the channel's account: everyone who sees the pos
 
 ```typescript
 await client.inbox.reply({
-    workspaceId: "workspaceId",
     commentId: "commentId",
     text: "text"
 });
@@ -9053,7 +8758,6 @@ Says a comment needs no answer (`answered: true`), or waits for one again (`fals
 
 ```typescript
 await client.inbox.setAnswered({
-    workspaceId: "workspaceId",
     commentId: "commentId",
     answered: true
 });
@@ -9120,7 +8824,6 @@ Asks the channel's account to hide or show a comment, like it or take the like b
 
 ```typescript
 await client.inbox.moderate({
-    workspaceId: "workspaceId",
     commentId: "commentId",
     action: "hide"
 });
@@ -9187,7 +8890,6 @@ Records what someone found on the platform for an unconfirmed reply: it is there
 
 ```typescript
 await client.inbox.confirmReply({
-    workspaceId: "workspaceId",
     replyId: "replyId",
     sent: true
 });
@@ -9254,7 +8956,6 @@ Deletes a reply sent from Peal from its platform, and answers with it, `withdraw
 
 ```typescript
 await client.inbox.withdrawReply({
-    workspaceId: "workspaceId",
     replyId: "replyId"
 });
 
@@ -9320,9 +9021,7 @@ Lists the locations that have reviews, one per channel: those with a review wait
 <dd>
 
 ```typescript
-await client.inboxReviews.listReviewThreads({
-    workspaceId: "workspaceId"
-});
+await client.inboxReviews.listReviewThreads();
 
 ```
 </dd>
@@ -9386,7 +9085,6 @@ Shows a location's reviews whole, the latest first, the replies sent from Peal, 
 
 ```typescript
 await client.inboxReviews.getReviewThread({
-    workspaceId: "workspaceId",
     threadId: "threadId"
 });
 
@@ -9452,7 +9150,6 @@ Answers a review in public, as the location: the reply replaces the one the revi
 
 ```typescript
 await client.inboxReviews.replyToReview({
-    workspaceId: "workspaceId",
     reviewId: "reviewId",
     text: "text"
 });
@@ -9519,7 +9216,6 @@ Deletes the location's reply to a review from the platform, whoever wrote it, an
 
 ```typescript
 await client.inboxReviews.withdrawReviewReply({
-    workspaceId: "workspaceId",
     reviewId: "reviewId"
 });
 
@@ -9585,7 +9281,6 @@ Says a review needs no answer (`answered: true`), or waits for one again (`false
 
 ```typescript
 await client.inboxReviews.setReviewAnswered({
-    workspaceId: "workspaceId",
     reviewId: "reviewId",
     answered: true
 });
@@ -9652,9 +9347,7 @@ Lists the workspace's conversations, the latest message first, 30 a page unless 
 <dd>
 
 ```typescript
-await client.inboxMessages.listConversations({
-    workspaceId: "workspaceId"
-});
+await client.inboxMessages.listConversations();
 
 ```
 </dd>
@@ -9718,7 +9411,6 @@ Shows a conversation: a page of its messages (the latest 100 unless `limit` says
 
 ```typescript
 await client.inboxMessages.getConversation({
-    workspaceId: "workspaceId",
     conversationId: "conversationId"
 });
 
@@ -9784,7 +9476,6 @@ Answers a conversation privately, as the channel's account: the message goes to 
 
 ```typescript
 await client.inboxMessages.sendMessage({
-    workspaceId: "workspaceId",
     conversationId: "conversationId",
     text: "text"
 });
@@ -9851,7 +9542,6 @@ Sends the author of a comment under the workspace's post one private message, as
 
 ```typescript
 await client.inboxMessages.sendPrivateReply({
-    workspaceId: "workspaceId",
     commentId: "commentId",
     text: "text"
 });
@@ -9918,7 +9608,6 @@ Shows a private reply sent to a comment's author, and how it stands. Needs engag
 
 ```typescript
 await client.inboxMessages.getPrivateReply({
-    workspaceId: "workspaceId",
     privateReplyId: "privateReplyId"
 });
 
@@ -9984,7 +9673,6 @@ Records what someone found in the person's conversation for an unconfirmed priva
 
 ```typescript
 await client.inboxMessages.confirmPrivateReply({
-    workspaceId: "workspaceId",
     privateReplyId: "privateReplyId",
     went: true
 });
@@ -10051,7 +9739,6 @@ Says a conversation was read (`read: true`), or is unread again (`false`). Nothi
 
 ```typescript
 await client.inboxMessages.setConversationRead({
-    workspaceId: "workspaceId",
     conversationId: "conversationId",
     read: true
 });
@@ -10090,7 +9777,7 @@ await client.inboxMessages.setConversationRead({
 </dl>
 </details>
 
-<details><summary><code>client.inboxMessages.<a href="/src/api/resources/inboxMessages/client/Client.ts">getMessageSettings</a>({ ...params }) -> Peal.InboxMessageSettings</code></summary>
+<details><summary><code>client.inboxMessages.<a href="/src/api/resources/inboxMessages/client/Client.ts">getMessageSettings</a>() -> Peal.InboxMessageSettings</code></summary>
 <dl>
 <dd>
 
@@ -10117,9 +9804,7 @@ Lists the channels whose direct messages the workspace turned on, and the applic
 <dd>
 
 ```typescript
-await client.inboxMessages.getMessageSettings({
-    workspaceId: "workspaceId"
-});
+await client.inboxMessages.getMessageSettings();
 
 ```
 </dd>
@@ -10131,14 +9816,6 @@ await client.inboxMessages.getMessageSettings({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.GetMessageSettingsInboxMessagesRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10183,7 +9860,6 @@ Turns a channel's direct messages on (`enabled: true`): Peal reads its conversat
 
 ```typescript
 await client.inboxMessages.setChannelMessages({
-    workspaceId: "workspaceId",
     channelId: "channelId",
     enabled: true
 });
@@ -10250,7 +9926,6 @@ Lets an application connected through OAuth (by its client id) read and answer t
 
 ```typescript
 await client.inboxMessages.setMessageApplication({
-    workspaceId: "workspaceId",
     allowed: true,
     clientId: "clientId"
 });
@@ -10317,7 +9992,6 @@ Records what someone found on the platform for an unconfirmed message: it is the
 
 ```typescript
 await client.inboxMessages.confirmMessage({
-    workspaceId: "workspaceId",
     messageId: "messageId",
     sent: true
 });
@@ -10357,7 +10031,7 @@ await client.inboxMessages.confirmMessage({
 </details>
 
 ## ads
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client/Client.ts">status</a>({ ...params }) -> Peal.AdsStatus</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client/Client.ts">status</a>() -> Peal.AdsStatus</code></summary>
 <dl>
 <dd>
 
@@ -10384,9 +10058,7 @@ Says what this server offers of ads (`off`, `read` or `spend`) and on which netw
 <dd>
 
 ```typescript
-await client.ads.status({
-    workspaceId: "workspaceId"
-});
+await client.ads.status();
 
 ```
 </dd>
@@ -10398,14 +10070,6 @@ await client.ads.status({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.StatusAdsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10422,7 +10086,7 @@ await client.ads.status({
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client/Client.ts">listConnections</a>({ ...params }) -> Peal.AdConnection[]</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client/Client.ts">listConnections</a>() -> Peal.AdConnection[]</code></summary>
 <dl>
 <dd>
 
@@ -10449,9 +10113,7 @@ Lists the workspace's sign-ins to ad networks, oldest first: who signed in, whet
 <dd>
 
 ```typescript
-await client.ads.listConnections({
-    workspaceId: "workspaceId"
-});
+await client.ads.listConnections();
 
 ```
 </dd>
@@ -10463,14 +10125,6 @@ await client.ads.listConnections({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListConnectionsAdsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10515,7 +10169,6 @@ Starts a sign-in to an ad network and answers the page to send the member's brow
 
 ```typescript
 await client.ads.connect({
-    workspaceId: "workspaceId",
     network: "meta"
 });
 
@@ -10581,7 +10234,6 @@ Completes a sign-in with what the network's page sent back, and answers the ad a
 
 ```typescript
 await client.ads.completeConnect({
-    workspaceId: "workspaceId",
     network: "meta",
     state: "state"
 });
@@ -10648,7 +10300,6 @@ Lists the ad accounts a sign-in reaches now, as the network gives them: currency
 
 ```typescript
 await client.ads.reachableAccounts({
-    workspaceId: "workspaceId",
     connectionId: "connectionId"
 });
 
@@ -10714,7 +10365,6 @@ Connects some of the ad accounts a sign-in reaches, 25 at most, by the ids the n
 
 ```typescript
 await client.ads.connectAccounts({
-    workspaceId: "workspaceId",
     connectionId: "connectionId",
     externalIds: ["externalIds"]
 });
@@ -10781,7 +10431,6 @@ Removes a sign-in, its token, the ad accounts it connects and what was read of t
 
 ```typescript
 await client.ads.disconnect({
-    workspaceId: "workspaceId",
     connectionId: "connectionId"
 });
 
@@ -10819,7 +10468,7 @@ await client.ads.disconnect({
 </dl>
 </details>
 
-<details><summary><code>client.ads.<a href="/src/api/resources/ads/client/Client.ts">listAccounts</a>({ ...params }) -> Peal.AdAccount[]</code></summary>
+<details><summary><code>client.ads.<a href="/src/api/resources/ads/client/Client.ts">listAccounts</a>() -> Peal.AdAccount[]</code></summary>
 <dl>
 <dd>
 
@@ -10846,9 +10495,7 @@ Lists the workspace's connected ad accounts, oldest first, with whether each may
 <dd>
 
 ```typescript
-await client.ads.listAccounts({
-    workspaceId: "workspaceId"
-});
+await client.ads.listAccounts();
 
 ```
 </dd>
@@ -10860,14 +10507,6 @@ await client.ads.listAccounts({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListAccountsAdsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -10912,7 +10551,6 @@ Shows an ad account with what its boosts made through Peal commit in the current
 
 ```typescript
 await client.ads.getAccount({
-    workspaceId: "workspaceId",
     accountId: "accountId"
 });
 
@@ -10978,7 +10616,6 @@ Disconnects an ad account: what was read of it goes with it, and its boosts' rec
 
 ```typescript
 await client.ads.removeAccount({
-    workspaceId: "workspaceId",
     accountId: "accountId"
 });
 
@@ -11044,7 +10681,6 @@ Decides whether an ad account may spend through Peal, and how much: `enabled` wi
 
 ```typescript
 await client.ads.setSpending({
-    workspaceId: "workspaceId",
     accountId: "accountId",
     enabled: true
 });
@@ -11111,7 +10747,6 @@ Lists an ad account's campaigns as last read from its network (every hour on Met
 
 ```typescript
 await client.ads.listCampaigns({
-    workspaceId: "workspaceId",
     accountId: "accountId"
 });
 
@@ -11177,7 +10812,6 @@ Lists an ad account's ads as last read, those of one campaign with `campaignId` 
 
 ```typescript
 await client.ads.listAds({
-    workspaceId: "workspaceId",
     accountId: "accountId"
 });
 
@@ -11243,7 +10877,6 @@ Sums what an ad account's ads, or its campaigns on Google Ads, did each day: spe
 
 ```typescript
 await client.ads.listInsights({
-    workspaceId: "workspaceId",
     accountId: "accountId"
 });
 
@@ -11309,7 +10942,6 @@ Shows a published post's organic counts on each channel beside what the ads that
 
 ```typescript
 await client.ads.postPerformance({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -11375,24 +11007,21 @@ Checks a boost as `createBoost` would, and says what it would commit and the roo
 
 ```typescript
 await client.ads.quoteBoost({
-    workspaceId: "workspaceId",
-    body: {
-        accountId: "accountId",
-        audience: {
-            ageMax: 1,
-            ageMin: 1,
-            countries: ["countries"]
-        },
-        budget: {
-            amount: 1000000,
-            kind: "total"
-        },
-        channelId: "channelId",
-        currency: "currency",
-        endsAt: "endsAt",
-        postId: "postId",
-        specialAdCategory: "none"
-    }
+    accountId: "accountId",
+    audience: {
+        ageMax: 1,
+        ageMin: 1,
+        countries: ["countries"]
+    },
+    budget: {
+        amount: 1000000,
+        kind: "total"
+    },
+    channelId: "channelId",
+    currency: "currency",
+    endsAt: "endsAt",
+    postId: "postId",
+    specialAdCategory: "none"
 });
 
 ```
@@ -11409,7 +11038,7 @@ await client.ads.quoteBoost({
 <dl>
 <dd>
 
-**request:** `Peal.QuoteBoostAdsRequest` 
+**request:** `Peal.NewBoost` 
     
 </dd>
 </dl>
@@ -11456,9 +11085,7 @@ Lists the workspace's boosts, newest first, 50 a page, those of one post with `p
 <dd>
 
 ```typescript
-await client.ads.listBoosts({
-    workspaceId: "workspaceId"
-});
+await client.ads.listBoosts();
 
 ```
 </dd>
@@ -11523,7 +11150,6 @@ await client.ads.listBoosts({
 ```typescript
 await client.ads.createBoost({
     "idempotency-key": "idempotency-key",
-    workspaceId: "workspaceId",
     body: {
         accountId: "accountId",
         audience: {
@@ -11605,7 +11231,6 @@ Shows a boost and the journal of the requests Peal sent the network for it, each
 
 ```typescript
 await client.ads.getBoost({
-    workspaceId: "workspaceId",
     boostId: "boostId"
 });
 
@@ -11671,7 +11296,6 @@ Pauses a boost that runs or may run: its campaign is told to pause, and the boos
 
 ```typescript
 await client.ads.pauseBoost({
-    workspaceId: "workspaceId",
     boostId: "boostId"
 });
 
@@ -11737,7 +11361,6 @@ await client.ads.pauseBoost({
 
 ```typescript
 await client.ads.resumeBoost({
-    workspaceId: "workspaceId",
     boostId: "boostId"
 });
 
@@ -11803,7 +11426,6 @@ Stops a boost for good: its campaign is told to pause, and the boost is `stopped
 
 ```typescript
 await client.ads.stopBoost({
-    workspaceId: "workspaceId",
     boostId: "boostId"
 });
 
@@ -11868,9 +11490,7 @@ Lists the ads audit trail, newest first, 100 a page: every decision about spendi
 <dd>
 
 ```typescript
-await client.ads.auditTrail({
-    workspaceId: "workspaceId"
-});
+await client.ads.auditTrail();
 
 ```
 </dd>
@@ -11934,9 +11554,7 @@ Lists the requests that asked to change something in the workspace, newest first
 <dd>
 
 ```typescript
-await client.activity.list({
-    workspaceId: "workspaceId"
-});
+await client.activity.list();
 
 ```
 </dd>
@@ -12546,7 +12164,7 @@ await client.partnerUsage.get();
 </details>
 
 ## partnerAccount
-<details><summary><code>client.partnerAccount.<a href="/src/api/resources/partnerAccount/client/Client.ts">get</a>({ ...params }) -> Peal.PartnerStanding</code></summary>
+<details><summary><code>client.partnerAccount.<a href="/src/api/resources/partnerAccount/client/Client.ts">get</a>() -> Peal.PartnerStanding</code></summary>
 <dl>
 <dd>
 
@@ -12573,9 +12191,7 @@ The workspace's partner account and what it holds, null when it has none, and wh
 <dd>
 
 ```typescript
-await client.partnerAccount.get({
-    workspaceId: "workspaceId"
-});
+await client.partnerAccount.get();
 
 ```
 </dd>
@@ -12587,14 +12203,6 @@ await client.partnerAccount.get({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.GetPartnerAccountRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12639,7 +12247,6 @@ Opens a partner account for the workspace, which becomes its home workspace, und
 
 ```typescript
 await client.partnerAccount.open({
-    workspaceId: "workspaceId",
     name: "name"
 });
 
@@ -12677,7 +12284,7 @@ await client.partnerAccount.open({
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.<a href="/src/api/resources/partnerAccount/client/Client.ts">close</a>({ ...params }) -> void</code></summary>
+<details><summary><code>client.partnerAccount.<a href="/src/api/resources/partnerAccount/client/Client.ts">close</a>() -> void</code></summary>
 <dl>
 <dd>
 
@@ -12704,9 +12311,7 @@ Closes the workspace's partner account: its keys stop working at once. Refused w
 <dd>
 
 ```typescript
-await client.partnerAccount.close({
-    workspaceId: "workspaceId"
-});
+await client.partnerAccount.close();
 
 ```
 </dd>
@@ -12718,14 +12323,6 @@ await client.partnerAccount.close({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ClosePartnerAccountRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12769,9 +12366,7 @@ Changes the partner account's name, its logo (an HTTPS URL, shown from that addr
 <dd>
 
 ```typescript
-await client.partnerAccount.update({
-    workspaceId: "workspaceId"
-});
+await client.partnerAccount.update();
 
 ```
 </dd>
@@ -12807,7 +12402,7 @@ await client.partnerAccount.update({
 </dl>
 </details>
 
-<details><summary><code>client.partnerAccount.<a href="/src/api/resources/partnerAccount/client/Client.ts">listKeys</a>({ ...params }) -> Peal.PartnerKey[]</code></summary>
+<details><summary><code>client.partnerAccount.<a href="/src/api/resources/partnerAccount/client/Client.ts">listKeys</a>() -> Peal.PartnerKey[]</code></summary>
 <dl>
 <dd>
 
@@ -12834,9 +12429,7 @@ Lists the partner account's keys. Needs partner:read.
 <dd>
 
 ```typescript
-await client.partnerAccount.listKeys({
-    workspaceId: "workspaceId"
-});
+await client.partnerAccount.listKeys();
 
 ```
 </dd>
@@ -12848,14 +12441,6 @@ await client.partnerAccount.listKeys({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListKeysPartnerAccountRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -12900,7 +12485,6 @@ Creates a partner key, and answers with the key itself, which is not shown again
 
 ```typescript
 await client.partnerAccount.createKey({
-    workspaceId: "workspaceId",
     name: "name",
     permissions: ["activity:read"],
     scopes: ["workspaces:read"]
@@ -12968,7 +12552,6 @@ Revokes a partner key: it stops working at once. Needs partner:manage.
 
 ```typescript
 await client.partnerAccount.revokeKey({
-    workspaceId: "workspaceId",
     partnerKeyId: "partnerKeyId"
 });
 
@@ -13033,9 +12616,7 @@ Answers, for each workspace the partner owns, what needs attention: its channels
 <dd>
 
 ```typescript
-await client.partnerAccount.overview({
-    workspaceId: "workspaceId"
-});
+await client.partnerAccount.overview();
 
 ```
 </dd>
@@ -13098,9 +12679,7 @@ Lists the workspaces the partner account owns, newest first, each with the numbe
 <dd>
 
 ```typescript
-await client.partnerAccount.listWorkspaces({
-    workspaceId: "workspaceId"
-});
+await client.partnerAccount.listWorkspaces();
 
 ```
 </dd>
@@ -13137,7 +12716,7 @@ await client.partnerAccount.listWorkspaces({
 </details>
 
 ## connectLinks
-<details><summary><code>client.connectLinks.<a href="/src/api/resources/connectLinks/client/Client.ts">list</a>({ ...params }) -> Peal.ConnectLink[]</code></summary>
+<details><summary><code>client.connectLinks.<a href="/src/api/resources/connectLinks/client/Client.ts">list</a>() -> Peal.ConnectLink[]</code></summary>
 <dl>
 <dd>
 
@@ -13164,9 +12743,7 @@ Lists the workspace's connect links, newest first, the last 100: those waiting, 
 <dd>
 
 ```typescript
-await client.connectLinks.list({
-    workspaceId: "workspaceId"
-});
+await client.connectLinks.list();
 
 ```
 </dd>
@@ -13178,14 +12755,6 @@ await client.connectLinks.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListConnectLinksRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13229,9 +12798,7 @@ Creates a link to hand to whoever owns an account of `platform`, or accounts of 
 <dd>
 
 ```typescript
-await client.connectLinks.create({
-    workspaceId: "workspaceId"
-});
+await client.connectLinks.create();
 
 ```
 </dd>
@@ -13295,7 +12862,6 @@ One connect link of the workspace: where it stands, the channels it connected on
 
 ```typescript
 await client.connectLinks.get({
-    workspaceId: "workspaceId",
     linkId: "linkId"
 });
 
@@ -13361,7 +12927,6 @@ Takes a connect link back: it opens nothing more, and a sign-in in progress thro
 
 ```typescript
 await client.connectLinks.revoke({
-    workspaceId: "workspaceId",
     linkId: "linkId"
 });
 
@@ -13400,7 +12965,7 @@ await client.connectLinks.revoke({
 </details>
 
 ## review
-<details><summary><code>client.review.<a href="/src/api/resources/review/client/Client.ts">settings</a>({ ...params }) -> Peal.ReviewSettings</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client/Client.ts">settings</a>() -> Peal.ReviewSettings</code></summary>
 <dl>
 <dd>
 
@@ -13427,9 +12992,7 @@ Answers with the workspace's approval policy: which of its posts wait for an app
 <dd>
 
 ```typescript
-await client.review.settings({
-    workspaceId: "workspaceId"
-});
+await client.review.settings();
 
 ```
 </dd>
@@ -13441,14 +13004,6 @@ await client.review.settings({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.SettingsReviewRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13493,10 +13048,7 @@ Chooses the workspace's approval policy. It applies to posts scheduled from then
 
 ```typescript
 await client.review.updateSettings({
-    workspaceId: "workspaceId",
-    body: {
-        approvalPolicy: "never"
-    }
+    approvalPolicy: "never"
 });
 
 ```
@@ -13513,7 +13065,7 @@ await client.review.updateSettings({
 <dl>
 <dd>
 
-**request:** `Peal.UpdateSettingsReviewRequest` 
+**request:** `Peal.ReviewSettings` 
     
 </dd>
 </dl>
@@ -13533,7 +13085,7 @@ await client.review.updateSettings({
 </dl>
 </details>
 
-<details><summary><code>client.review.<a href="/src/api/resources/review/client/Client.ts">pending</a>({ ...params }) -> Peal.ApprovalRequest[]</code></summary>
+<details><summary><code>client.review.<a href="/src/api/resources/review/client/Client.ts">pending</a>() -> Peal.ApprovalRequest[]</code></summary>
 <dl>
 <dd>
 
@@ -13560,9 +13112,7 @@ Lists the approvals that wait in the workspace, oldest first, 100 at most. Needs
 <dd>
 
 ```typescript
-await client.review.pending({
-    workspaceId: "workspaceId"
-});
+await client.review.pending();
 
 ```
 </dd>
@@ -13574,14 +13124,6 @@ await client.review.pending({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.PendingReviewRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -13626,7 +13168,6 @@ Answers with a post's review: its comments, oldest first, and the approvals aske
 
 ```typescript
 await client.review.thread({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -13692,7 +13233,6 @@ Comments on a post, starts a thread about one of its channels or some words of i
 
 ```typescript
 await client.review.comment({
-    workspaceId: "workspaceId",
     postId: "postId",
     text: "text"
 });
@@ -13759,7 +13299,6 @@ Resolves the thread a comment started, or reopens it. An answer is not resolved:
 
 ```typescript
 await client.review.resolve({
-    workspaceId: "workspaceId",
     postId: "postId",
     commentId: "commentId",
     resolved: true
@@ -13827,7 +13366,6 @@ Approves a post that waits for an approval, as the reviewer was shown it: send t
 
 ```typescript
 await client.review.approve({
-    workspaceId: "workspaceId",
     postId: "postId",
     approvalId: "approvalId",
     subjectHash: "subjectHash"
@@ -13895,7 +13433,6 @@ Sends a post that waits for an approval back to draft, with a comment that says 
 
 ```typescript
 await client.review.requestChanges({
-    workspaceId: "workspaceId",
     postId: "postId",
     approvalId: "approvalId",
     subjectHash: "subjectHash",
@@ -13964,7 +13501,6 @@ Lists a post's review links, newest first, ended ones included. No token is show
 
 ```typescript
 await client.review.links({
-    workspaceId: "workspaceId",
     postId: "postId"
 });
 
@@ -14030,7 +13566,6 @@ Makes a link that shows a draft, a post that waits for an approval or a schedule
 
 ```typescript
 await client.review.createLink({
-    workspaceId: "workspaceId",
     postId: "postId",
     access: "view"
 });
@@ -14097,7 +13632,6 @@ Ends a review link at once: whoever opens it is told it was revoked. Needs post:
 
 ```typescript
 await client.review.revokeLink({
-    workspaceId: "workspaceId",
     linkId: "linkId"
 });
 
@@ -14136,7 +13670,7 @@ await client.review.revokeLink({
 </details>
 
 ## tags
-<details><summary><code>client.tags.<a href="/src/api/resources/tags/client/Client.ts">list</a>({ ...params }) -> Peal.Tag[]</code></summary>
+<details><summary><code>client.tags.<a href="/src/api/resources/tags/client/Client.ts">list</a>() -> Peal.Tag[]</code></summary>
 <dl>
 <dd>
 
@@ -14163,9 +13697,7 @@ Lists the workspace's tags, oldest first. A post names its tags by id (`tagIds`)
 <dd>
 
 ```typescript
-await client.tags.list({
-    workspaceId: "workspaceId"
-});
+await client.tags.list();
 
 ```
 </dd>
@@ -14177,14 +13709,6 @@ await client.tags.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListTagsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14229,11 +13753,8 @@ Adds a tag to the workspace: a name of 40 characters at most, on one line, which
 
 ```typescript
 await client.tags.create({
-    workspaceId: "workspaceId",
-    body: {
-        colour: "gray",
-        name: "name"
-    }
+    colour: "gray",
+    name: "name"
 });
 
 ```
@@ -14250,7 +13771,7 @@ await client.tags.create({
 <dl>
 <dd>
 
-**request:** `Peal.CreateTagsRequest` 
+**request:** `Peal.TagDetails` 
     
 </dd>
 </dl>
@@ -14298,7 +13819,6 @@ Deletes a tag, and takes it off every post that had it; the posts stay. Needs po
 
 ```typescript
 await client.tags.delete({
-    workspaceId: "workspaceId",
     tagId: "tagId"
 });
 
@@ -14364,7 +13884,6 @@ Gives a tag another name or colour. Its posts keep it. Needs post:update.
 
 ```typescript
 await client.tags.update({
-    workspaceId: "workspaceId",
     tagId: "tagId",
     body: {
         colour: "gray",
@@ -14407,7 +13926,7 @@ await client.tags.update({
 </details>
 
 ## signatures
-<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client/Client.ts">list</a>({ ...params }) -> Peal.Signature[]</code></summary>
+<details><summary><code>client.signatures.<a href="/src/api/resources/signatures/client/Client.ts">list</a>() -> Peal.Signature[]</code></summary>
 <dl>
 <dd>
 
@@ -14434,9 +13953,7 @@ Lists the workspace's signatures, oldest first. Needs post:read.
 <dd>
 
 ```typescript
-await client.signatures.list({
-    workspaceId: "workspaceId"
-});
+await client.signatures.list();
 
 ```
 </dd>
@@ -14448,14 +13965,6 @@ await client.signatures.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListSignaturesRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14500,11 +14009,8 @@ Adds a signature to the workspace: a name no other signature of the workspace ha
 
 ```typescript
 await client.signatures.create({
-    workspaceId: "workspaceId",
-    body: {
-        name: "name",
-        text: "text"
-    }
+    name: "name",
+    text: "text"
 });
 
 ```
@@ -14521,7 +14027,7 @@ await client.signatures.create({
 <dl>
 <dd>
 
-**request:** `Peal.CreateSignaturesRequest` 
+**request:** `Peal.SignatureDetails` 
     
 </dd>
 </dl>
@@ -14569,7 +14075,6 @@ Replaces a signature's name, text, scope and whether it is a default. Posts that
 
 ```typescript
 await client.signatures.update({
-    workspaceId: "workspaceId",
     signatureId: "signatureId",
     body: {
         name: "name",
@@ -14639,7 +14144,6 @@ Deletes a signature. Posts that already hold its text keep it. Needs post:update
 
 ```typescript
 await client.signatures.delete({
-    workspaceId: "workspaceId",
     signatureId: "signatureId"
 });
 
@@ -14678,7 +14182,7 @@ await client.signatures.delete({
 </details>
 
 ## channelSets
-<details><summary><code>client.channelSets.<a href="/src/api/resources/channelSets/client/Client.ts">list</a>({ ...params }) -> Peal.ChannelSet[]</code></summary>
+<details><summary><code>client.channelSets.<a href="/src/api/resources/channelSets/client/Client.ts">list</a>() -> Peal.ChannelSet[]</code></summary>
 <dl>
 <dd>
 
@@ -14705,9 +14209,7 @@ Lists the workspace's channel sets, oldest first, each with the channels it keep
 <dd>
 
 ```typescript
-await client.channelSets.list({
-    workspaceId: "workspaceId"
-});
+await client.channelSets.list();
 
 ```
 </dd>
@@ -14719,14 +14221,6 @@ await client.channelSets.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListChannelSetsRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -14771,11 +14265,8 @@ Saves a selection of the workspace's channels under a name no other set of the w
 
 ```typescript
 await client.channelSets.create({
-    workspaceId: "workspaceId",
-    body: {
-        channelIds: ["channelIds"],
-        name: "name"
-    }
+    channelIds: ["channelIds"],
+    name: "name"
 });
 
 ```
@@ -14792,7 +14283,7 @@ await client.channelSets.create({
 <dl>
 <dd>
 
-**request:** `Peal.CreateChannelSetsRequest` 
+**request:** `Peal.ChannelSetDetails` 
     
 </dd>
 </dl>
@@ -14840,7 +14331,6 @@ Replaces a set's name, channels and options: every channel must be connected now
 
 ```typescript
 await client.channelSets.update({
-    workspaceId: "workspaceId",
     channelSetId: "channelSetId",
     body: {
         channelIds: ["channelIds"],
@@ -14910,7 +14400,6 @@ Deletes a channel set. Its channels, and the posts made with it, stay. Needs pos
 
 ```typescript
 await client.channelSets.delete({
-    workspaceId: "workspaceId",
     channelSetId: "channelSetId"
 });
 
@@ -14949,7 +14438,7 @@ await client.channelSets.delete({
 </details>
 
 ## queues
-<details><summary><code>client.queues.<a href="/src/api/resources/queues/client/Client.ts">list</a>({ ...params }) -> Peal.Queue[]</code></summary>
+<details><summary><code>client.queues.<a href="/src/api/resources/queues/client/Client.ts">list</a>() -> Peal.Queue[]</code></summary>
 <dl>
 <dd>
 
@@ -14976,9 +14465,7 @@ Lists the workspace's queues, the default first, then by name, each with its slo
 <dd>
 
 ```typescript
-await client.queues.list({
-    workspaceId: "workspaceId"
-});
+await client.queues.list();
 
 ```
 </dd>
@@ -14990,14 +14477,6 @@ await client.queues.list({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.ListQueuesRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -15042,15 +14521,12 @@ Saves a queue. A slot is a weekday and a time of day (`HH:mm`) in the queue's IA
 
 ```typescript
 await client.queues.create({
-    workspaceId: "workspaceId",
-    body: {
-        name: "name",
-        slots: [{
-                day: "monday",
-                time: "time"
-            }],
-        timeZone: "timeZone"
-    }
+    name: "name",
+    slots: [{
+            day: "monday",
+            time: "time"
+        }],
+    timeZone: "timeZone"
 });
 
 ```
@@ -15067,7 +14543,7 @@ await client.queues.create({
 <dl>
 <dd>
 
-**request:** `Peal.CreateQueuesRequest` 
+**request:** `Peal.QueueDetails` 
     
 </dd>
 </dl>
@@ -15115,7 +14591,6 @@ Answers with a queue of the workspace. Needs post:read and channel:read.
 
 ```typescript
 await client.queues.get({
-    workspaceId: "workspaceId",
     queueId: "queueId"
 });
 
@@ -15181,7 +14656,6 @@ Replaces a queue's name, zone, slots and channels: every channel must be connect
 
 ```typescript
 await client.queues.update({
-    workspaceId: "workspaceId",
     queueId: "queueId",
     body: {
         name: "name",
@@ -15255,7 +14729,6 @@ Deletes a queue. The posts it placed stay scheduled at their times, and no longe
 
 ```typescript
 await client.queues.delete({
-    workspaceId: "workspaceId",
     queueId: "queueId"
 });
 
@@ -15321,7 +14794,6 @@ Lists the queue's next `count` slots after now (10 unless given, 50 at most), ea
 
 ```typescript
 await client.queues.slots({
-    workspaceId: "workspaceId",
     queueId: "queueId"
 });
 
@@ -15387,7 +14859,6 @@ Moves the posts that wait in the queue (scheduled or awaiting approval, after no
 
 ```typescript
 await client.queues.reshuffle({
-    workspaceId: "workspaceId",
     queueId: "queueId"
 });
 
@@ -15453,9 +14924,7 @@ Lists the workspace's recycling rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```typescript
-await client.recycling.list({
-    workspaceId: "workspaceId"
-});
+await client.recycling.list();
 
 ```
 </dd>
@@ -15519,7 +14988,6 @@ Starts a rule that repeats a post that is scheduled, publishing or went out (del
 
 ```typescript
 await client.recycling.create({
-    workspaceId: "workspaceId",
     every: {
         count: 1,
         unit: "days"
@@ -15589,7 +15057,6 @@ Answers with a rule of the workspace and its next 3 posts to come, each with the
 
 ```typescript
 await client.recycling.get({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -15655,7 +15122,6 @@ Stops a rule: it makes no more posts and ends `stopped`; the posts it made stay 
 
 ```typescript
 await client.recycling.delete({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -15721,7 +15187,6 @@ Changes a rule's variants, its `count` or `until` (null takes it away), or pause
 
 ```typescript
 await client.recycling.update({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -15787,7 +15252,6 @@ Sets a paused rule going again, or one that ended for a reason that can be put r
 
 ```typescript
 await client.recycling.resume({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -15853,9 +15317,7 @@ Lists the workspace's follow-up rules, oldest first, 50 a page unless `limit` (a
 <dd>
 
 ```typescript
-await client.followUps.list({
-    workspaceId: "workspaceId"
-});
+await client.followUps.list();
 
 ```
 </dd>
@@ -15919,7 +15381,6 @@ Starts a rule on a post (`postId`) or on every post a channel publishes from now
 
 ```typescript
 await client.followUps.create({
-    workspaceId: "workspaceId",
     likes: 1
 });
 
@@ -15985,7 +15446,6 @@ Answers with a rule of the workspace, what its channels can carry and its latest
 
 ```typescript
 await client.followUps.get({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -16051,7 +15511,6 @@ Stops a rule: it ends `stopped`, what it armed and did not send is given up, and
 
 ```typescript
 await client.followUps.delete({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -16117,7 +15576,6 @@ Changes a rule's `likes`, its `comment` (null takes it away) or whether it repos
 
 ```typescript
 await client.followUps.update({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -16183,7 +15641,6 @@ Approves what a rule sends, for a rule whose starter's posts wait for an approva
 
 ```typescript
 await client.followUps.approve({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -16249,9 +15706,7 @@ Lists the workspace's comment rules, oldest first, 50 a page unless `limit` (at 
 <dd>
 
 ```typescript
-await client.inboxRules.listCommentRules({
-    workspaceId: "workspaceId"
-});
+await client.inboxRules.listCommentRules();
 
 ```
 </dd>
@@ -16315,7 +15770,6 @@ Starts a rule on the comments of a post that went out (`postId`) or of every pos
 
 ```typescript
 await client.inboxRules.createCommentRule({
-    workspaceId: "workspaceId",
     keywords: ["keywords"],
     reply: "reply"
 });
@@ -16382,7 +15836,6 @@ Answers a comment rule of the workspace, what its channels can carry and what it
 
 ```typescript
 await client.inboxRules.getCommentRule({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -16448,7 +15901,6 @@ Stops a rule: it answers nothing more; the replies it sent stay, and the inbox w
 
 ```typescript
 await client.inboxRules.deleteCommentRule({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -16514,7 +15966,6 @@ Changes a rule's keywords, reply or private reply (`privateReply` null takes it 
 
 ```typescript
 await client.inboxRules.updateCommentRule({
-    workspaceId: "workspaceId",
     ruleId: "ruleId"
 });
 
@@ -16580,9 +16031,7 @@ Lists the workspace's feeds, oldest first, 50 a page unless `limit` (at most 100
 <dd>
 
 ```typescript
-await client.feeds.list({
-    workspaceId: "workspaceId"
-});
+await client.feeds.list();
 
 ```
 </dd>
@@ -16646,7 +16095,6 @@ Follows a feed at `url`: it is read once, and refused when it is not a feed; eve
 
 ```typescript
 await client.feeds.create({
-    workspaceId: "workspaceId",
     url: "url"
 });
 
@@ -16712,7 +16160,6 @@ Reads an address and answers its title and its 3 newest items, each with what `t
 
 ```typescript
 await client.feeds.preview({
-    workspaceId: "workspaceId",
     url: "url"
 });
 
@@ -16778,7 +16225,6 @@ Answers with a feed of the workspace: its state, when it was last read and is ne
 
 ```typescript
 await client.feeds.get({
-    workspaceId: "workspaceId",
     feedId: "feedId"
 });
 
@@ -16844,7 +16290,6 @@ Stops following a feed and forgets what it read; the drafts and posts it made st
 
 ```typescript
 await client.feeds.delete({
-    workspaceId: "workspaceId",
     feedId: "feedId"
 });
 
@@ -16910,7 +16355,6 @@ Changes a feed; what the request leaves out stays. A new `url` is read at once, 
 
 ```typescript
 await client.feeds.update({
-    workspaceId: "workspaceId",
     feedId: "feedId"
 });
 
@@ -16976,7 +16420,6 @@ Lists a feed's 50 newest items, newest first: when each was seen, the date it ga
 
 ```typescript
 await client.feeds.items({
-    workspaceId: "workspaceId",
     feedId: "feedId"
 });
 
@@ -17043,7 +16486,6 @@ Answers the options new posts take on the channel when they give none there, or 
 
 ```typescript
 await client.channelDefaults.get({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -17109,7 +16551,6 @@ Keeps these as the channel's default options, instead of any it had: options of 
 
 ```typescript
 await client.channelDefaults.set({
-    workspaceId: "workspaceId",
     channelId: "channelId",
     options: {
         platform: "youtube"
@@ -17178,7 +16619,6 @@ Leaves the channel without default options. Posts already made keep theirs. Need
 
 ```typescript
 await client.channelDefaults.clear({
-    workspaceId: "workspaceId",
     channelId: "channelId"
 });
 
@@ -17217,7 +16657,7 @@ await client.channelDefaults.clear({
 </details>
 
 ## shortLinks
-<details><summary><code>client.shortLinks.<a href="/src/api/resources/shortLinks/client/Client.ts">status</a>({ ...params }) -> Peal.ShortLinkStatus</code></summary>
+<details><summary><code>client.shortLinks.<a href="/src/api/resources/shortLinks/client/Client.ts">status</a>() -> Peal.ShortLinkStatus</code></summary>
 <dl>
 <dd>
 
@@ -17244,9 +16684,7 @@ Answers whether this server shortens links (`available`), what a short address s
 <dd>
 
 ```typescript
-await client.shortLinks.status({
-    workspaceId: "workspaceId"
-});
+await client.shortLinks.status();
 
 ```
 </dd>
@@ -17258,14 +16696,6 @@ await client.shortLinks.status({
 
 <dl>
 <dd>
-
-<dl>
-<dd>
-
-**request:** `Peal.StatusShortLinksRequest` 
-    
-</dd>
-</dl>
 
 <dl>
 <dd>
@@ -17310,7 +16740,6 @@ Sets whether the workspace's new posts ask for short links unless they say other
 
 ```typescript
 await client.shortLinks.setDefault({
-    workspaceId: "workspaceId",
     byDefault: true
 });
 
@@ -17375,9 +16804,7 @@ Lists the workspace's short links, newest first, 50 a page unless `limit` (at mo
 <dd>
 
 ```typescript
-await client.shortLinks.list({
-    workspaceId: "workspaceId"
-});
+await client.shortLinks.list();
 
 ```
 </dd>
@@ -17441,7 +16868,6 @@ Answers one short link with its clicks each day from `from` to `to` (UTC days, b
 
 ```typescript
 await client.shortLinks.get({
-    workspaceId: "workspaceId",
     linkId: "linkId"
 });
 

@@ -21,12 +21,12 @@ import social.peal.core.PealClientException;
 import social.peal.core.PealClientHttpResponse;
 import social.peal.core.RequestOptions;
 import social.peal.core.RetryInterceptor;
+import social.peal.errors.BadRequestError;
 import social.peal.errors.ForbiddenError;
 import social.peal.errors.NotFoundError;
 import social.peal.errors.TooManyRequestsError;
 import social.peal.errors.UnauthorizedError;
 import social.peal.resources.capabilities.requests.ChannelCapabilitiesRequest;
-import social.peal.resources.capabilities.requests.PlatformsCapabilitiesRequest;
 import social.peal.types.ChannelCapabilities;
 import social.peal.types.PlatformCapabilities;
 import social.peal.types.UnauthenticatedEncoded;
@@ -41,48 +41,28 @@ public class RawCapabilitiesClient {
     /**
      * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
      */
-    public PealClientHttpResponse<List<PlatformCapabilities>> platforms(String workspaceId) {
-        return platforms(workspaceId, PlatformsCapabilitiesRequest.builder().build());
+    public PealClientHttpResponse<List<PlatformCapabilities>> platforms() {
+        return platforms(null);
     }
 
     /**
      * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
      */
-    public PealClientHttpResponse<List<PlatformCapabilities>> platforms(
-            String workspaceId, RequestOptions requestOptions) {
-        return platforms(workspaceId, PlatformsCapabilitiesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
-     */
-    public PealClientHttpResponse<List<PlatformCapabilities>> platforms(
-            String workspaceId, PlatformsCapabilitiesRequest request) {
-        return platforms(workspaceId, request, null);
-    }
-
-    /**
-     * Describes what a post may hold on every platform, in Peal's order, whether or not the workspace has a channel there: how its text is counted and limited, the images and videos it takes, its options field by field, the lookups that answer their values, and whether Peal reads each post's counts. These are the rules Peal checks when a post is scheduled; a null limit is one Peal does not check, which the platform may still apply. Needs channel:read.
-     */
-    public PealClientHttpResponse<List<PlatformCapabilities>> platforms(
-            String workspaceId, PlatformsCapabilitiesRequest request, RequestOptions requestOptions) {
+    public PealClientHttpResponse<List<PlatformCapabilities>> platforms(RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("platforms")
-                .addPathSegments("capabilities");
+                .addPathSegments("api/v1/platforms/capabilities");
         if (requestOptions != null) {
             requestOptions.getQueryParameters().forEach((_key, _value) -> {
                 httpUrl.addQueryParameter(_key, _value);
             });
         }
-        Request.Builder _requestBuilder = new Request.Builder()
+        Request okhttpRequest = new Request.Builder()
                 .url(httpUrl.build())
                 .method("GET", null)
                 .headers(Headers.of(clientOptions.headers(requestOptions)))
-                .addHeader("Accept", "application/json");
-        Request okhttpRequest = _requestBuilder.build();
+                .addHeader("Accept", "application/json")
+                .build();
         OkHttpClient client = clientOptions.httpClient();
         if (requestOptions != null && requestOptions.getTimeout().isPresent()) {
             client = clientOptions.httpClientWithTimeout(requestOptions);
@@ -107,6 +87,9 @@ public class RawCapabilitiesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),
@@ -137,38 +120,32 @@ public class RawCapabilitiesClient {
     /**
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
-    public PealClientHttpResponse<ChannelCapabilities> channel(String workspaceId, String channelId) {
-        return channel(
-                workspaceId, channelId, ChannelCapabilitiesRequest.builder().build());
+    public PealClientHttpResponse<ChannelCapabilities> channel(String channelId) {
+        return channel(channelId, ChannelCapabilitiesRequest.builder().build());
+    }
+
+    /**
+     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
+     */
+    public PealClientHttpResponse<ChannelCapabilities> channel(String channelId, RequestOptions requestOptions) {
+        return channel(channelId, ChannelCapabilitiesRequest.builder().build(), requestOptions);
+    }
+
+    /**
+     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
+     */
+    public PealClientHttpResponse<ChannelCapabilities> channel(String channelId, ChannelCapabilitiesRequest request) {
+        return channel(channelId, request, null);
     }
 
     /**
      * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
      */
     public PealClientHttpResponse<ChannelCapabilities> channel(
-            String workspaceId, String channelId, RequestOptions requestOptions) {
-        return channel(
-                workspaceId, channelId, ChannelCapabilitiesRequest.builder().build(), requestOptions);
-    }
-
-    /**
-     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
-     */
-    public PealClientHttpResponse<ChannelCapabilities> channel(
-            String workspaceId, String channelId, ChannelCapabilitiesRequest request) {
-        return channel(workspaceId, channelId, request, null);
-    }
-
-    /**
-     * Describes what a post on this channel may hold: its platform's capabilities, and what its own account narrows in them, read from the platform now (a TikTok creator's audiences, the interactions they turned off, their longest video). When the platform cannot be asked, <code>account</code> says why and the platform's capabilities are answered alone. Needs channel:read.
-     */
-    public PealClientHttpResponse<ChannelCapabilities> channel(
-            String workspaceId, String channelId, ChannelCapabilitiesRequest request, RequestOptions requestOptions) {
+            String channelId, ChannelCapabilitiesRequest request, RequestOptions requestOptions) {
         HttpUrl.Builder httpUrl = HttpUrl.parse(this.clientOptions.environment().getUrl())
                 .newBuilder()
-                .addPathSegments("api/workspaces")
-                .addPathSegment(PathSegments.validate(workspaceId))
-                .addPathSegments("channels")
+                .addPathSegments("api/v1/channels")
                 .addPathSegment(PathSegments.validate(channelId))
                 .addPathSegments("capabilities");
         if (requestOptions != null) {
@@ -204,6 +181,9 @@ public class RawCapabilitiesClient {
             }
             try {
                 switch (response.code()) {
+                    case 400:
+                        throw new BadRequestError(
+                                ObjectMappers.JSON_MAPPER.readValue(responseBodyString, Object.class), response);
                     case 401:
                         throw new UnauthorizedError(
                                 ObjectMappers.JSON_MAPPER.readValue(responseBodyString, UnauthenticatedEncoded.class),

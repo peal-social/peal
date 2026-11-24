@@ -57,7 +57,7 @@ public class ListTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/slideshows")
+                    .WithPath("/api/v1/media/slideshows")
                     .UsingGet()
             )
             .RespondWith(
@@ -67,9 +67,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Slideshows.ListAsync(
-            new ListSlideshowsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Slideshows.ListAsync(new ListSlideshowsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 
@@ -103,7 +101,7 @@ public class ListTest : BaseMockServerTest
             .Given(
                 WireMock
                     .RequestBuilders.Request.Create()
-                    .WithPath("/api/workspaces/workspaceId/media/slideshows")
+                    .WithPath("/api/v1/media/slideshows")
                     .UsingGet()
             )
             .RespondWith(
@@ -113,9 +111,7 @@ public class ListTest : BaseMockServerTest
                     .WithBody(mockResponse)
             );
 
-        var response = await Client.Slideshows.ListAsync(
-            new ListSlideshowsRequest { WorkspaceId = "workspaceId" }
-        );
+        var response = await Client.Slideshows.ListAsync(new ListSlideshowsRequest());
         JsonAssert.AreEqual(response, mockResponse);
     }
 }

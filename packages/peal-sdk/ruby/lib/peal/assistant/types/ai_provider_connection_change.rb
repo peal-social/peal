@@ -4,8 +4,6 @@ module Peal
   module Assistant
     module Types
       class AiProviderConnectionChange < Internal::Types::Model
-        field :workspace_id, -> { String }, optional: false, nullable: false, api_name: "workspaceId"
-
         field :provider, -> { Peal::Types::AiProvider }, optional: false, nullable: false
 
         field :api_key, -> { String }, optional: true, nullable: false, api_name: "apiKey"

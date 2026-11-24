@@ -48,7 +48,6 @@ class PostsClient:
 
     def drafts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -59,8 +58,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -78,25 +75,22 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.posts.drafts(
-            workspace_id="workspaceId",
-        )
+        client.posts.drafts()
         """
-        _response = self._raw_client.drafts(workspace_id, cursor=cursor, limit=limit, request_options=request_options)
+        _response = self._raw_client.drafts(cursor=cursor, limit=limit, request_options=request_options)
         return _response.data
 
     def list(
-        self, workspace_id: str, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
+        self, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[Post]:
         """
         Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : str
 
         to : str
@@ -114,20 +108,19 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.list(
-            workspace_id="workspaceId",
             from_="from",
             to="to",
         )
         """
-        _response = self._raw_client.list(workspace_id, from_=from_, to=to, request_options=request_options)
+        _response = self._raw_client.list(from_=from_, to=to, request_options=request_options)
         return _response.data
 
     def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -144,8 +137,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -175,10 +166,10 @@ class PostsClient:
         from peal import MediaAttachment, Peal, PostContent, TextOverride
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.create(
-            workspace_id="workspaceId",
             channel_ids=["channelIds"],
             content=PostContent(
                 media=[
@@ -198,7 +189,6 @@ class PostsClient:
         )
         """
         _response = self._raw_client.create(
-            workspace_id,
             channel_ids=channel_ids,
             content=content,
             channel_sets=channel_sets,
@@ -213,7 +203,6 @@ class PostsClient:
 
     def search(
         self,
-        workspace_id: str,
         *,
         author_id: typing.Optional[str] = None,
         channel_id: typing.Optional[str] = None,
@@ -237,8 +226,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         author_id : typing.Optional[str]
 
         channel_id : typing.Optional[str]
@@ -282,14 +269,12 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
-        client.posts.search(
-            workspace_id="workspaceId",
-        )
+        client.posts.search()
         """
         _response = self._raw_client.search(
-            workspace_id,
             author_id=author_id,
             channel_id=channel_id,
             created_via=created_via,
@@ -311,7 +296,6 @@ class PostsClient:
 
     def send(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -332,8 +316,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -377,10 +359,10 @@ class PostsClient:
         )
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.send(
-            workspace_id="workspaceId",
             channel_ids=["channelIds"],
             content=PostContent(
                 media=[
@@ -401,7 +383,6 @@ class PostsClient:
         )
         """
         _response = self._raw_client.send(
-            workspace_id,
             channel_ids=channel_ids,
             content=content,
             when=when,
@@ -420,7 +401,6 @@ class PostsClient:
 
     def bulk(
         self,
-        workspace_id: str,
         *,
         posts: typing.Sequence[BulkPost],
         idempotency_key: typing.Optional[str] = None,
@@ -431,8 +411,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         posts : typing.Sequence[BulkPost]
 
         idempotency_key : typing.Optional[str]
@@ -457,10 +435,10 @@ class PostsClient:
         )
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.bulk(
-            workspace_id="workspaceId",
             posts=[
                 BulkPost(
                     channel_ids=["channelIds"],
@@ -484,14 +462,11 @@ class PostsClient:
             ],
         )
         """
-        _response = self._raw_client.bulk(
-            workspace_id, posts=posts, idempotency_key=idempotency_key, request_options=request_options
-        )
+        _response = self._raw_client.bulk(posts=posts, idempotency_key=idempotency_key, request_options=request_options)
         return _response.data
 
     def import_(
         self,
-        workspace_id: str,
         *,
         csv: str,
         idempotency_key: typing.Optional[str] = None,
@@ -503,8 +478,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         csv : str
 
         idempotency_key : typing.Optional[str]
@@ -524,21 +497,20 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.import_(
-            workspace_id="workspaceId",
             csv="csv",
         )
         """
         _response = self._raw_client.import_(
-            workspace_id, csv=csv, idempotency_key=idempotency_key, dry_run=dry_run, request_options=request_options
+            csv=csv, idempotency_key=idempotency_key, dry_run=dry_run, request_options=request_options
         )
         return _response.data
 
     def validate(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -556,8 +528,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -589,10 +559,10 @@ class PostsClient:
         from peal import MediaAttachment, Peal, PostContent, TextOverride
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.validate(
-            workspace_id="workspaceId",
             channel_ids=["channelIds"],
             content=PostContent(
                 media=[
@@ -612,7 +582,6 @@ class PostsClient:
         )
         """
         _response = self._raw_client.validate(
-            workspace_id,
             channel_ids=channel_ids,
             content=content,
             allow_duplicate=allow_duplicate,
@@ -626,14 +595,12 @@ class PostsClient:
         )
         return _response.data
 
-    def get(self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
+    def get(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Answers with a post of the workspace. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -649,19 +616,18 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.get(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.get(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.get(post_id, request_options=request_options)
         return _response.data
 
     def update(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -679,8 +645,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Sequence[str]
@@ -712,10 +676,10 @@ class PostsClient:
         from peal import MediaAttachment, Peal, PostContent, TextOverride
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.update(
-            workspace_id="workspaceId",
             post_id="postId",
             channel_ids=["channelIds"],
             content=PostContent(
@@ -736,7 +700,6 @@ class PostsClient:
         )
         """
         _response = self._raw_client.update(
-            workspace_id,
             post_id,
             channel_ids=channel_ids,
             content=content,
@@ -750,16 +713,12 @@ class PostsClient:
         )
         return _response.data
 
-    def discard(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    def discard(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -774,19 +733,18 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.discard(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.discard(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.discard(post_id, request_options=request_options)
         return _response.data
 
     def outcome(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         wait: typing.Optional[str] = None,
@@ -797,8 +755,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         wait : typing.Optional[str]
@@ -816,26 +772,24 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.outcome(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.outcome(workspace_id, post_id, wait=wait, request_options=request_options)
+        _response = self._raw_client.outcome(post_id, wait=wait, request_options=request_options)
         return _response.data
 
     def attempts(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[PublicationAttempt]:
         """
         Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -851,31 +805,24 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.attempts(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.attempts(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.attempts(post_id, request_options=request_options)
         return _response.data
 
     def tag(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        tag_ids: typing.Sequence[str],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         tag_ids : typing.Sequence[str]
@@ -893,27 +840,23 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.tag(
-            workspace_id="workspaceId",
             post_id="postId",
             tag_ids=["tagIds"],
         )
         """
-        _response = self._raw_client.tag(workspace_id, post_id, tag_ids=tag_ids, request_options=request_options)
+        _response = self._raw_client.tag(post_id, tag_ids=tag_ids, request_options=request_options)
         return _response.data
 
-    def duplicate(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Post:
+    def duplicate(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -929,19 +872,18 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.duplicate(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.duplicate(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.duplicate(post_id, request_options=request_options)
         return _response.data
 
     def schedule(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         at: str,
@@ -954,8 +896,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -977,10 +917,10 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.schedule(
-            workspace_id="workspaceId",
             post_id="postId",
             at="at",
             channel_ids=["channelIds"],
@@ -988,26 +928,18 @@ class PostsClient:
         )
         """
         _response = self._raw_client.schedule(
-            workspace_id, post_id, at=at, channel_ids=channel_ids, time_zone=time_zone, request_options=request_options
+            post_id, at=at, channel_ids=channel_ids, time_zone=time_zone, request_options=request_options
         )
         return _response.data
 
     def reschedule(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        at: str,
-        time_zone: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, at: str, time_zone: str, request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Moves a scheduled post, or one awaiting approval, to another instant, or schedules a draft on the channels it has. A post that needs an approval it does not have waits for it (`awaitingApproval`). Moved to another month, or scheduled, it must fit that month's posts in the workspace's plan (PlanLimitReached). Needs post:schedule, and channel:read for a draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -1027,23 +959,20 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.reschedule(
-            workspace_id="workspaceId",
             post_id="postId",
             at="at",
             time_zone="timeZone",
         )
         """
-        _response = self._raw_client.reschedule(
-            workspace_id, post_id, at=at, time_zone=time_zone, request_options=request_options
-        )
+        _response = self._raw_client.reschedule(post_id, at=at, time_zone=time_zone, request_options=request_options)
         return _response.data
 
     def enqueue(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -1055,8 +984,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -1076,28 +1003,24 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.enqueue(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
         _response = self._raw_client.enqueue(
-            workspace_id, post_id, channel_ids=channel_ids, queue_id=queue_id, request_options=request_options
+            post_id, channel_ids=channel_ids, queue_id=queue_id, request_options=request_options
         )
         return _response.data
 
-    def unschedule(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Post:
+    def unschedule(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1113,31 +1036,22 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.unschedule(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.unschedule(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.unschedule(post_id, request_options=request_options)
         return _response.data
 
-    def repost(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
-    ) -> Post:
+    def repost(self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as `partsNotSent` is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -1155,32 +1069,25 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.repost(
-            workspace_id="workspaceId",
             post_id="postId",
             target_id="targetId",
         )
         """
-        _response = self._raw_client.repost(workspace_id, post_id, target_id, request_options=request_options)
+        _response = self._raw_client.repost(post_id, target_id, request_options=request_options)
         return _response.data
 
     def remove_target(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is `cancelled` with `dropped`, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear `post.cancelled` naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -1198,20 +1105,19 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.remove_target(
-            workspace_id="workspaceId",
             post_id="postId",
             target_id="targetId",
         )
         """
-        _response = self._raw_client.remove_target(workspace_id, post_id, target_id, request_options=request_options)
+        _response = self._raw_client.remove_target(post_id, target_id, request_options=request_options)
         return _response.data
 
     def confirm(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -1223,8 +1129,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -1244,35 +1148,26 @@ class PostsClient:
         from peal import Peal, TargetConfirmation_Published
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.confirm(
-            workspace_id="workspaceId",
             post_id="postId",
             target_id="targetId",
             request=TargetConfirmation_Published(),
         )
         """
-        _response = self._raw_client.confirm(
-            workspace_id, post_id, target_id, request=request, request_options=request_options
-        )
+        _response = self._raw_client.confirm(post_id, target_id, request=request, request_options=request_options)
         return _response.data
 
     def leave_out_rest(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (`parts.live`); it becomes `published`, as that part, with `partsLeftOut`, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -1290,20 +1185,19 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.leave_out_rest(
-            workspace_id="workspaceId",
             post_id="postId",
             target_id="targetId",
         )
         """
-        _response = self._raw_client.leave_out_rest(workspace_id, post_id, target_id, request_options=request_options)
+        _response = self._raw_client.leave_out_rest(post_id, target_id, request_options=request_options)
         return _response.data
 
     def unpublish_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -1315,8 +1209,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -1336,22 +1228,19 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.unpublish_target(
-            workspace_id="workspaceId",
             post_id="postId",
             target_id="targetId",
         )
         """
-        _response = self._raw_client.unpublish_target(
-            workspace_id, post_id, target_id, wait=wait, request_options=request_options
-        )
+        _response = self._raw_client.unpublish_target(post_id, target_id, wait=wait, request_options=request_options)
         return _response.data
 
     def edit_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -1365,8 +1254,6 @@ class PostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -1390,30 +1277,26 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.edit_target(
-            workspace_id="workspaceId",
             post_id="postId",
             target_id="targetId",
             text="text",
         )
         """
         _response = self._raw_client.edit_target(
-            workspace_id, post_id, target_id, text=text, wait=wait, part=part, request_options=request_options
+            post_id, target_id, text=text, wait=wait, part=part, request_options=request_options
         )
         return _response.data
 
-    def unpublish(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> PostUnpublish:
+    def unpublish(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> PostUnpublish:
         """
         Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (`changes`) and, beside them, why it could not be on the others (`refused`, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1429,26 +1312,22 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.unpublish(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.unpublish(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.unpublish(post_id, request_options=request_options)
         return _response.data
 
-    def changes(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> LivePostChanges:
+    def changes(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> LivePostChanges:
         """
         Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its `kind` and where it stands: `pending`, `done` or `failed` with its `code`. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1464,26 +1343,22 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.changes(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.changes(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.changes(post_id, request_options=request_options)
         return _response.data
 
-    def cancel(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Post:
+    def cancel(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -1499,14 +1374,14 @@ class PostsClient:
         from peal import Peal
 
         client = Peal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
         client.posts.cancel(
-            workspace_id="workspaceId",
             post_id="postId",
         )
         """
-        _response = self._raw_client.cancel(workspace_id, post_id, request_options=request_options)
+        _response = self._raw_client.cancel(post_id, request_options=request_options)
         return _response.data
 
 
@@ -1527,7 +1402,6 @@ class AsyncPostsClient:
 
     async def drafts(
         self,
-        workspace_id: str,
         *,
         cursor: typing.Optional[str] = None,
         limit: typing.Optional[str] = None,
@@ -1538,8 +1412,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         cursor : typing.Optional[str]
 
         limit : typing.Optional[str]
@@ -1559,33 +1431,28 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.posts.drafts(
-                workspace_id="workspaceId",
-            )
+            await client.posts.drafts()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.drafts(
-            workspace_id, cursor=cursor, limit=limit, request_options=request_options
-        )
+        _response = await self._raw_client.drafts(cursor=cursor, limit=limit, request_options=request_options)
         return _response.data
 
     async def list(
-        self, workspace_id: str, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
+        self, *, from_: str, to: str, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[Post]:
         """
         Lists the posts scheduled from `from` (included) to `to` (excluded), at most 62 days apart, by scheduled instant, with their channels and how each went. Drafts have no time and are not listed; cancelled posts are, with the time they had. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         from_ : str
 
         to : str
@@ -1605,13 +1472,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.list(
-                workspace_id="workspaceId",
                 from_="from",
                 to="to",
             )
@@ -1619,12 +1486,11 @@ class AsyncPostsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(workspace_id, from_=from_, to=to, request_options=request_options)
+        _response = await self._raw_client.list(from_=from_, to=to, request_options=request_options)
         return _response.data
 
     async def create(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -1641,8 +1507,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -1674,13 +1538,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal, MediaAttachment, PostContent, TextOverride
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.create(
-                workspace_id="workspaceId",
                 channel_ids=["channelIds"],
                 content=PostContent(
                     media=[
@@ -1703,7 +1567,6 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.create(
-            workspace_id,
             channel_ids=channel_ids,
             content=content,
             channel_sets=channel_sets,
@@ -1718,7 +1581,6 @@ class AsyncPostsClient:
 
     async def search(
         self,
-        workspace_id: str,
         *,
         author_id: typing.Optional[str] = None,
         channel_id: typing.Optional[str] = None,
@@ -1742,8 +1604,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         author_id : typing.Optional[str]
 
         channel_id : typing.Optional[str]
@@ -1789,20 +1649,18 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
-            await client.posts.search(
-                workspace_id="workspaceId",
-            )
+            await client.posts.search()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.search(
-            workspace_id,
             author_id=author_id,
             channel_id=channel_id,
             created_via=created_via,
@@ -1824,7 +1682,6 @@ class AsyncPostsClient:
 
     async def send(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -1845,8 +1702,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -1892,13 +1747,13 @@ class AsyncPostsClient:
         )
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.send(
-                workspace_id="workspaceId",
                 channel_ids=["channelIds"],
                 content=PostContent(
                     media=[
@@ -1922,7 +1777,6 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.send(
-            workspace_id,
             channel_ids=channel_ids,
             content=content,
             when=when,
@@ -1941,7 +1795,6 @@ class AsyncPostsClient:
 
     async def bulk(
         self,
-        workspace_id: str,
         *,
         posts: typing.Sequence[BulkPost],
         idempotency_key: typing.Optional[str] = None,
@@ -1952,8 +1805,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         posts : typing.Sequence[BulkPost]
 
         idempotency_key : typing.Optional[str]
@@ -1980,13 +1831,13 @@ class AsyncPostsClient:
         )
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.bulk(
-                workspace_id="workspaceId",
                 posts=[
                     BulkPost(
                         channel_ids=["channelIds"],
@@ -2014,13 +1865,12 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.bulk(
-            workspace_id, posts=posts, idempotency_key=idempotency_key, request_options=request_options
+            posts=posts, idempotency_key=idempotency_key, request_options=request_options
         )
         return _response.data
 
     async def import_(
         self,
-        workspace_id: str,
         *,
         csv: str,
         idempotency_key: typing.Optional[str] = None,
@@ -2032,8 +1882,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         csv : str
 
         idempotency_key : typing.Optional[str]
@@ -2055,13 +1903,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.import_(
-                workspace_id="workspaceId",
                 csv="csv",
             )
 
@@ -2069,13 +1917,12 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.import_(
-            workspace_id, csv=csv, idempotency_key=idempotency_key, dry_run=dry_run, request_options=request_options
+            csv=csv, idempotency_key=idempotency_key, dry_run=dry_run, request_options=request_options
         )
         return _response.data
 
     async def validate(
         self,
-        workspace_id: str,
         *,
         channel_ids: typing.Sequence[str],
         content: PostContent,
@@ -2093,8 +1940,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         channel_ids : typing.Sequence[str]
 
         content : PostContent
@@ -2128,13 +1973,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal, MediaAttachment, PostContent, TextOverride
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.validate(
-                workspace_id="workspaceId",
                 channel_ids=["channelIds"],
                 content=PostContent(
                     media=[
@@ -2157,7 +2002,6 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.validate(
-            workspace_id,
             channel_ids=channel_ids,
             content=content,
             allow_duplicate=allow_duplicate,
@@ -2171,16 +2015,12 @@ class AsyncPostsClient:
         )
         return _response.data
 
-    async def get(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Post:
+    async def get(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Answers with a post of the workspace. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2198,25 +2038,24 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.get(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.get(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.get(post_id, request_options=request_options)
         return _response.data
 
     async def update(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Sequence[str],
@@ -2234,8 +2073,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Sequence[str]
@@ -2269,13 +2106,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal, MediaAttachment, PostContent, TextOverride
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.update(
-                workspace_id="workspaceId",
                 post_id="postId",
                 channel_ids=["channelIds"],
                 content=PostContent(
@@ -2299,7 +2136,6 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            workspace_id,
             post_id,
             channel_ids=channel_ids,
             content=content,
@@ -2313,16 +2149,12 @@ class AsyncPostsClient:
         )
         return _response.data
 
-    async def discard(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> None:
+    async def discard(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
         """
         Deletes a draft. A post scheduled or sent is a conflict: cancel it instead. Needs post:delete, or post:update for the user who created the draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2339,25 +2171,24 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.discard(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.discard(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.discard(post_id, request_options=request_options)
         return _response.data
 
     async def outcome(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         wait: typing.Optional[str] = None,
@@ -2368,8 +2199,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         wait : typing.Optional[str]
@@ -2389,32 +2218,30 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.outcome(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.outcome(workspace_id, post_id, wait=wait, request_options=request_options)
+        _response = await self._raw_client.outcome(post_id, wait=wait, request_options=request_options)
         return _response.data
 
     async def attempts(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> typing.List[PublicationAttempt]:
         """
         Lists every attempt Peal made at publishing the post, by channel, round and attempt, with how each ended. An attempt still in progress is not listed yet. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2432,37 +2259,30 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.attempts(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.attempts(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.attempts(post_id, request_options=request_options)
         return _response.data
 
     async def tag(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        tag_ids: typing.Sequence[str],
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, tag_ids: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Files a post under these tags of the workspace, 10 at most, instead of those it had; an empty list takes them all off. Tags say nothing to the platforms, so a post takes them whatever its status, sent or not. Needs post:update.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         tag_ids : typing.Sequence[str]
@@ -2482,13 +2302,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.tag(
-                workspace_id="workspaceId",
                 post_id="postId",
                 tag_ids=["tagIds"],
             )
@@ -2496,19 +2316,15 @@ class AsyncPostsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.tag(workspace_id, post_id, tag_ids=tag_ids, request_options=request_options)
+        _response = await self._raw_client.tag(post_id, tag_ids=tag_ids, request_options=request_options)
         return _response.data
 
-    async def duplicate(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Post:
+    async def duplicate(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Makes a new draft that says what the post says, whatever the post's status: its text, its media, its channels with their text and options, and its tags. What the workspace no longer has is left out rather than refused: a channel disconnected since, with the text the post had there, media deleted since, a tag deleted since. The copy has no time, and its author is whoever asked; the post itself is not changed. Needs post:read and post:create, and channel:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2526,25 +2342,24 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.duplicate(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.duplicate(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.duplicate(post_id, request_options=request_options)
         return _response.data
 
     async def schedule(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         at: str,
@@ -2557,8 +2372,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -2582,13 +2395,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.schedule(
-                workspace_id="workspaceId",
                 post_id="postId",
                 at="at",
                 channel_ids=["channelIds"],
@@ -2599,26 +2412,18 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.schedule(
-            workspace_id, post_id, at=at, channel_ids=channel_ids, time_zone=time_zone, request_options=request_options
+            post_id, at=at, channel_ids=channel_ids, time_zone=time_zone, request_options=request_options
         )
         return _response.data
 
     async def reschedule(
-        self,
-        workspace_id: str,
-        post_id: str,
-        *,
-        at: str,
-        time_zone: str,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, *, at: str, time_zone: str, request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Moves a scheduled post, or one awaiting approval, to another instant, or schedules a draft on the channels it has. A post that needs an approval it does not have waits for it (`awaitingApproval`). Moved to another month, or scheduled, it must fit that month's posts in the workspace's plan (PlanLimitReached). Needs post:schedule, and channel:read for a draft.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         at : str
@@ -2640,13 +2445,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.reschedule(
-                workspace_id="workspaceId",
                 post_id="postId",
                 at="at",
                 time_zone="timeZone",
@@ -2656,13 +2461,12 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.reschedule(
-            workspace_id, post_id, at=at, time_zone=time_zone, request_options=request_options
+            post_id, at=at, time_zone=time_zone, request_options=request_options
         )
         return _response.data
 
     async def enqueue(
         self,
-        workspace_id: str,
         post_id: str,
         *,
         channel_ids: typing.Optional[typing.Sequence[str]] = OMIT,
@@ -2674,8 +2478,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         channel_ids : typing.Optional[typing.Sequence[str]]
@@ -2697,13 +2499,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.enqueue(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
@@ -2711,20 +2513,16 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.enqueue(
-            workspace_id, post_id, channel_ids=channel_ids, queue_id=queue_id, request_options=request_options
+            post_id, channel_ids=channel_ids, queue_id=queue_id, request_options=request_options
         )
         return _response.data
 
-    async def unschedule(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Post:
+    async def unschedule(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Takes a scheduled post back to draft, so its text and media can change: it goes out at no time until it is scheduled again. A post already publishing is a conflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -2742,37 +2540,30 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.unschedule(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.unschedule(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.unschedule(post_id, request_options=request_options)
         return _response.data
 
     async def repost(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Sends the post again, now, on one channel where it failed or is unconfirmed: a new round, with its own attempts. Check the platform first when it is unconfirmed, as it may be live already. A post of several parts goes on from the part after the last that is live; one failed as `partsNotSent` is refused (TargetStatusConflict), as Peal has no post to send the rest under: a part found by hand has no id, or the part to reply to is gone. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2792,13 +2583,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.repost(
-                workspace_id="workspaceId",
                 post_id="postId",
                 target_id="targetId",
             )
@@ -2806,24 +2597,17 @@ class AsyncPostsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.repost(workspace_id, post_id, target_id, request_options=request_options)
+        _response = await self._raw_client.repost(post_id, target_id, request_options=request_options)
         return _response.data
 
     async def remove_target(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Takes one channel off a post that waits for its time (scheduled, or awaiting approval): it goes out on its other channels, at its time, and never on this one, whose target is `cancelled` with `dropped`, and the texts and media its parts had there go with it. The post keeps its time and its queue slot. A channel already taken off answers the post as it is, so sending the request again is safe. Refused for a post that is publishing or done, or a draft, whose channels change with an update (PostStatusConflict), for a channel cancelled with its post (TargetStatusConflict), and for the last channel the post still goes out on (LastTargetLeft: cancel the post instead). It is an edit of the post: when your posts need an approval, the approval given no longer covers it, and it waits for one again; a post awaiting approval keeps its request, which covers what it now is. A post taken back to draft keeps the channels it still had. Webhooks hear `post.cancelled` naming this channel alone. Needs post:schedule, or, for a post awaiting approval, leave to ask for posts to go out.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2843,13 +2627,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.remove_target(
-                workspace_id="workspaceId",
                 post_id="postId",
                 target_id="targetId",
             )
@@ -2857,14 +2641,11 @@ class AsyncPostsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.remove_target(
-            workspace_id, post_id, target_id, request_options=request_options
-        )
+        _response = await self._raw_client.remove_target(post_id, target_id, request_options=request_options)
         return _response.data
 
     async def confirm(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -2876,8 +2657,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2899,13 +2678,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal, TargetConfirmation_Published
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.confirm(
-                workspace_id="workspaceId",
                 post_id="postId",
                 target_id="targetId",
                 request=TargetConfirmation_Published(),
@@ -2914,26 +2693,17 @@ class AsyncPostsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.confirm(
-            workspace_id, post_id, target_id, request=request, request_options=request_options
-        )
+        _response = await self._raw_client.confirm(post_id, target_id, request=request, request_options=request_options)
         return _response.data
 
     async def leave_out_rest(
-        self,
-        workspace_id: str,
-        post_id: str,
-        target_id: str,
-        *,
-        request_options: typing.Optional[RequestOptions] = None,
+        self, post_id: str, target_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> Post:
         """
         Publishes the post on one channel without the parts that did not go out after its first: a first comment the platform refused, or the rest of a thread. The target must be failed or unconfirmed with its first part live (`parts.live`); it becomes `published`, as that part, with `partsLeftOut`, and the post's outcome follows. Its notifications are marked read. Anything else is TargetStatusConflict. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -2953,13 +2723,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.leave_out_rest(
-                workspace_id="workspaceId",
                 post_id="postId",
                 target_id="targetId",
             )
@@ -2967,14 +2737,11 @@ class AsyncPostsClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.leave_out_rest(
-            workspace_id, post_id, target_id, request_options=request_options
-        )
+        _response = await self._raw_client.leave_out_rest(post_id, target_id, request_options=request_options)
         return _response.data
 
     async def unpublish_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -2986,8 +2753,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -3009,13 +2774,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.unpublish_target(
-                workspace_id="workspaceId",
                 post_id="postId",
                 target_id="targetId",
             )
@@ -3024,13 +2789,12 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.unpublish_target(
-            workspace_id, post_id, target_id, wait=wait, request_options=request_options
+            post_id, target_id, wait=wait, request_options=request_options
         )
         return _response.data
 
     async def edit_target(
         self,
-        workspace_id: str,
         post_id: str,
         target_id: str,
         *,
@@ -3044,8 +2808,6 @@ class AsyncPostsClient:
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         target_id : str
@@ -3071,13 +2833,13 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.edit_target(
-                workspace_id="workspaceId",
                 post_id="postId",
                 target_id="targetId",
                 text="text",
@@ -3087,20 +2849,18 @@ class AsyncPostsClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.edit_target(
-            workspace_id, post_id, target_id, text=text, wait=wait, part=part, request_options=request_options
+            post_id, target_id, text=text, wait=wait, part=part, request_options=request_options
         )
         return _response.data
 
     async def unpublish(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> PostUnpublish:
         """
         Deletes the post from every channel's platform where it can be, as unpublishing it on each channel does, and answers the change made on each (`changes`) and, beside them, why it could not be on the others (`refused`, each with the target and the reason LivePostNotChangeable gives): one channel that cannot never fails the whole request. It cannot be undone from Peal. Needs post:publish; an OAuth client needs the scope workspace:publish.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3118,32 +2878,30 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.unpublish(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.unpublish(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.unpublish(post_id, request_options=request_options)
         return _response.data
 
     async def changes(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
+        self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> LivePostChanges:
         """
         Lists the changes asked of the post once it was live (deleting it from a channel's platform, or editing its text there), newest first, each with its `kind` and where it stands: `pending`, `done` or `failed` with its `code`. Needs post:read.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3161,32 +2919,28 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.changes(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.changes(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.changes(post_id, request_options=request_options)
         return _response.data
 
-    async def cancel(
-        self, workspace_id: str, post_id: str, *, request_options: typing.Optional[RequestOptions] = None
-    ) -> Post:
+    async def cancel(self, post_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> Post:
         """
         Cancels a draft, a scheduled post or one awaiting approval. A post already publishing finishes with what its channels did: those not yet sent are cancelled. Needs post:schedule.
 
         Parameters
         ----------
-        workspace_id : str
-
         post_id : str
 
         request_options : typing.Optional[RequestOptions]
@@ -3204,18 +2958,18 @@ class AsyncPostsClient:
         from peal import AsyncPeal
 
         client = AsyncPeal(
+            workspace="YOUR_WORKSPACE",
             token="YOUR_TOKEN",
         )
 
 
         async def main() -> None:
             await client.posts.cancel(
-                workspace_id="workspaceId",
                 post_id="postId",
             )
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.cancel(workspace_id, post_id, request_options=request_options)
+        _response = await self._raw_client.cancel(post_id, request_options=request_options)
         return _response.data

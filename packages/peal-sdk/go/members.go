@@ -10,33 +10,6 @@ import (
 )
 
 var (
-	listMembersRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListMembersRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListMembersRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListMembersRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listMembersRequestFieldWorkspaceID)
-}
-
-var (
 	aPIKeysAtStakeFieldRemoval = big.NewInt(1 << 0)
 	aPIKeysAtStakeFieldRoles   = big.NewInt(1 << 1)
 )

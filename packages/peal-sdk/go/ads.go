@@ -10,13 +10,11 @@ import (
 )
 
 var (
-	auditTrailAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	auditTrailAdsRequestFieldCursor      = big.NewInt(1 << 1)
+	auditTrailAdsRequestFieldCursor = big.NewInt(1 << 0)
 )
 
 type AuditTrailAdsRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Cursor      *string `json:"-" url:"cursor,omitempty"`
+	Cursor *string `json:"-" url:"cursor,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -31,13 +29,6 @@ func (a *AuditTrailAdsRequest) require(field *big.Int) {
 	a.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AuditTrailAdsRequest) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(auditTrailAdsRequestFieldWorkspaceID)
-}
-
 // SetCursor sets the Cursor field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (a *AuditTrailAdsRequest) SetCursor(cursor *string) {
@@ -46,19 +37,17 @@ func (a *AuditTrailAdsRequest) SetCursor(cursor *string) {
 }
 
 var (
-	adSignInCallbackFieldWorkspaceID = big.NewInt(1 << 0)
-	adSignInCallbackFieldNetwork     = big.NewInt(1 << 1)
-	adSignInCallbackFieldCode        = big.NewInt(1 << 2)
-	adSignInCallbackFieldError       = big.NewInt(1 << 3)
-	adSignInCallbackFieldState       = big.NewInt(1 << 4)
+	adSignInCallbackFieldNetwork = big.NewInt(1 << 0)
+	adSignInCallbackFieldCode    = big.NewInt(1 << 1)
+	adSignInCallbackFieldError   = big.NewInt(1 << 2)
+	adSignInCallbackFieldState   = big.NewInt(1 << 3)
 )
 
 type AdSignInCallback struct {
-	WorkspaceID string    `json:"-" url:"-"`
-	Network     AdNetwork `json:"-" url:"-"`
-	Code        *string   `json:"code,omitempty" url:"-"`
-	Error       *string   `json:"error,omitempty" url:"-"`
-	State       string    `json:"state" url:"-"`
+	Network AdNetwork `json:"-" url:"-"`
+	Code    *string   `json:"code,omitempty" url:"-"`
+	Error   *string   `json:"error,omitempty" url:"-"`
+	State   string    `json:"state" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -71,13 +60,6 @@ func (a *AdSignInCallback) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AdSignInCallback) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(adSignInCallbackFieldWorkspaceID)
 }
 
 // SetNetwork sets the Network field and marks it as non-optional;
@@ -130,13 +112,11 @@ func (a *AdSignInCallback) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	connectAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	connectAdsRequestFieldNetwork     = big.NewInt(1 << 1)
+	connectAdsRequestFieldNetwork = big.NewInt(1 << 0)
 )
 
 type ConnectAdsRequest struct {
-	WorkspaceID string    `json:"-" url:"-"`
-	Network     AdNetwork `json:"-" url:"-"`
+	Network AdNetwork `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -151,13 +131,6 @@ func (c *ConnectAdsRequest) require(field *big.Int) {
 	c.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *ConnectAdsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(connectAdsRequestFieldWorkspaceID)
-}
-
 // SetNetwork sets the Network field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (c *ConnectAdsRequest) SetNetwork(network AdNetwork) {
@@ -166,13 +139,11 @@ func (c *ConnectAdsRequest) SetNetwork(network AdNetwork) {
 }
 
 var (
-	adAccountsToConnectFieldWorkspaceID  = big.NewInt(1 << 0)
-	adAccountsToConnectFieldConnectionID = big.NewInt(1 << 1)
-	adAccountsToConnectFieldExternalIDs  = big.NewInt(1 << 2)
+	adAccountsToConnectFieldConnectionID = big.NewInt(1 << 0)
+	adAccountsToConnectFieldExternalIDs  = big.NewInt(1 << 1)
 )
 
 type AdAccountsToConnect struct {
-	WorkspaceID  string   `json:"-" url:"-"`
 	ConnectionID string   `json:"-" url:"-"`
 	ExternalIDs  []string `json:"externalIds" url:"-"`
 
@@ -187,13 +158,6 @@ func (a *AdAccountsToConnect) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AdAccountsToConnect) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(adAccountsToConnectFieldWorkspaceID)
 }
 
 // SetConnectionID sets the ConnectionID field and marks it as non-optional;
@@ -233,12 +197,10 @@ func (a *AdAccountsToConnect) MarshalJSON() ([]byte, error) {
 
 var (
 	createBoostAdsRequestFieldIdempotencyKey = big.NewInt(1 << 0)
-	createBoostAdsRequestFieldWorkspaceID    = big.NewInt(1 << 1)
 )
 
 type CreateBoostAdsRequest struct {
 	IdempotencyKey string    `json:"-" url:"-"`
-	WorkspaceID    string    `json:"-" url:"-"`
 	Body           *NewBoost `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -261,13 +223,6 @@ func (c *CreateBoostAdsRequest) SetIdempotencyKey(idempotencyKey string) {
 	c.require(createBoostAdsRequestFieldIdempotencyKey)
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (c *CreateBoostAdsRequest) SetWorkspaceID(workspaceID string) {
-	c.WorkspaceID = workspaceID
-	c.require(createBoostAdsRequestFieldWorkspaceID)
-}
-
 func (c *CreateBoostAdsRequest) UnmarshalJSON(data []byte) error {
 	body := new(NewBoost)
 	if err := json.Unmarshal(data, &body); err != nil {
@@ -282,12 +237,10 @@ func (c *CreateBoostAdsRequest) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	disconnectAdsRequestFieldWorkspaceID  = big.NewInt(1 << 0)
-	disconnectAdsRequestFieldConnectionID = big.NewInt(1 << 1)
+	disconnectAdsRequestFieldConnectionID = big.NewInt(1 << 0)
 )
 
 type DisconnectAdsRequest struct {
-	WorkspaceID  string `json:"-" url:"-"`
 	ConnectionID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -303,13 +256,6 @@ func (d *DisconnectAdsRequest) require(field *big.Int) {
 	d.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (d *DisconnectAdsRequest) SetWorkspaceID(workspaceID string) {
-	d.WorkspaceID = workspaceID
-	d.require(disconnectAdsRequestFieldWorkspaceID)
-}
-
 // SetConnectionID sets the ConnectionID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (d *DisconnectAdsRequest) SetConnectionID(connectionID string) {
@@ -318,13 +264,11 @@ func (d *DisconnectAdsRequest) SetConnectionID(connectionID string) {
 }
 
 var (
-	getAccountAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getAccountAdsRequestFieldAccountID   = big.NewInt(1 << 1)
+	getAccountAdsRequestFieldAccountID = big.NewInt(1 << 0)
 )
 
 type GetAccountAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	AccountID   string `json:"-" url:"-"`
+	AccountID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -339,13 +283,6 @@ func (g *GetAccountAdsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetAccountAdsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getAccountAdsRequestFieldWorkspaceID)
-}
-
 // SetAccountID sets the AccountID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetAccountAdsRequest) SetAccountID(accountID string) {
@@ -354,13 +291,11 @@ func (g *GetAccountAdsRequest) SetAccountID(accountID string) {
 }
 
 var (
-	getBoostAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	getBoostAdsRequestFieldBoostID     = big.NewInt(1 << 1)
+	getBoostAdsRequestFieldBoostID = big.NewInt(1 << 0)
 )
 
 type GetBoostAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	BoostID     string `json:"-" url:"-"`
+	BoostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -375,13 +310,6 @@ func (g *GetBoostAdsRequest) require(field *big.Int) {
 	g.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (g *GetBoostAdsRequest) SetWorkspaceID(workspaceID string) {
-	g.WorkspaceID = workspaceID
-	g.require(getBoostAdsRequestFieldWorkspaceID)
-}
-
 // SetBoostID sets the BoostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (g *GetBoostAdsRequest) SetBoostID(boostID string) {
@@ -390,46 +318,17 @@ func (g *GetBoostAdsRequest) SetBoostID(boostID string) {
 }
 
 var (
-	listAccountsAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListAccountsAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListAccountsAdsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListAccountsAdsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listAccountsAdsRequestFieldWorkspaceID)
-}
-
-var (
-	listAdsAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listAdsAdsRequestFieldAccountID   = big.NewInt(1 << 1)
-	listAdsAdsRequestFieldFrom        = big.NewInt(1 << 2)
-	listAdsAdsRequestFieldTo          = big.NewInt(1 << 3)
-	listAdsAdsRequestFieldCampaignID  = big.NewInt(1 << 4)
+	listAdsAdsRequestFieldAccountID  = big.NewInt(1 << 0)
+	listAdsAdsRequestFieldFrom       = big.NewInt(1 << 1)
+	listAdsAdsRequestFieldTo         = big.NewInt(1 << 2)
+	listAdsAdsRequestFieldCampaignID = big.NewInt(1 << 3)
 )
 
 type ListAdsAdsRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	AccountID   string       `json:"-" url:"-"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
-	CampaignID  *string      `json:"-" url:"campaignId,omitempty"`
+	AccountID  string       `json:"-" url:"-"`
+	From       *CalendarDay `json:"-" url:"from,omitempty"`
+	To         *CalendarDay `json:"-" url:"to,omitempty"`
+	CampaignID *string      `json:"-" url:"campaignId,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -442,13 +341,6 @@ func (l *ListAdsAdsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListAdsAdsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listAdsAdsRequestFieldWorkspaceID)
 }
 
 // SetAccountID sets the AccountID field and marks it as non-optional;
@@ -480,15 +372,13 @@ func (l *ListAdsAdsRequest) SetCampaignID(campaignID *string) {
 }
 
 var (
-	listBoostsAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listBoostsAdsRequestFieldCursor      = big.NewInt(1 << 1)
-	listBoostsAdsRequestFieldPostID      = big.NewInt(1 << 2)
+	listBoostsAdsRequestFieldCursor = big.NewInt(1 << 0)
+	listBoostsAdsRequestFieldPostID = big.NewInt(1 << 1)
 )
 
 type ListBoostsAdsRequest struct {
-	WorkspaceID string  `json:"-" url:"-"`
-	Cursor      *string `json:"-" url:"cursor,omitempty"`
-	PostID      *string `json:"-" url:"postId,omitempty"`
+	Cursor *string `json:"-" url:"cursor,omitempty"`
+	PostID *string `json:"-" url:"postId,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -501,13 +391,6 @@ func (l *ListBoostsAdsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListBoostsAdsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listBoostsAdsRequestFieldWorkspaceID)
 }
 
 // SetCursor sets the Cursor field and marks it as non-optional;
@@ -525,17 +408,15 @@ func (l *ListBoostsAdsRequest) SetPostID(postID *string) {
 }
 
 var (
-	listCampaignsAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listCampaignsAdsRequestFieldAccountID   = big.NewInt(1 << 1)
-	listCampaignsAdsRequestFieldFrom        = big.NewInt(1 << 2)
-	listCampaignsAdsRequestFieldTo          = big.NewInt(1 << 3)
+	listCampaignsAdsRequestFieldAccountID = big.NewInt(1 << 0)
+	listCampaignsAdsRequestFieldFrom      = big.NewInt(1 << 1)
+	listCampaignsAdsRequestFieldTo        = big.NewInt(1 << 2)
 )
 
 type ListCampaignsAdsRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	AccountID   string       `json:"-" url:"-"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
+	AccountID string       `json:"-" url:"-"`
+	From      *CalendarDay `json:"-" url:"from,omitempty"`
+	To        *CalendarDay `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -548,13 +429,6 @@ func (l *ListCampaignsAdsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListCampaignsAdsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listCampaignsAdsRequestFieldWorkspaceID)
 }
 
 // SetAccountID sets the AccountID field and marks it as non-optional;
@@ -579,44 +453,15 @@ func (l *ListCampaignsAdsRequest) SetTo(to *CalendarDay) {
 }
 
 var (
-	listConnectionsAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type ListConnectionsAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (l *ListConnectionsAdsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if l.explicitFields != nil {
-		next.Set(l.explicitFields)
-	}
-	next.Or(next, field)
-	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListConnectionsAdsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listConnectionsAdsRequestFieldWorkspaceID)
-}
-
-var (
-	listInsightsAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	listInsightsAdsRequestFieldAccountID   = big.NewInt(1 << 1)
-	listInsightsAdsRequestFieldFrom        = big.NewInt(1 << 2)
-	listInsightsAdsRequestFieldTo          = big.NewInt(1 << 3)
+	listInsightsAdsRequestFieldAccountID = big.NewInt(1 << 0)
+	listInsightsAdsRequestFieldFrom      = big.NewInt(1 << 1)
+	listInsightsAdsRequestFieldTo        = big.NewInt(1 << 2)
 )
 
 type ListInsightsAdsRequest struct {
-	WorkspaceID string       `json:"-" url:"-"`
-	AccountID   string       `json:"-" url:"-"`
-	From        *CalendarDay `json:"-" url:"from,omitempty"`
-	To          *CalendarDay `json:"-" url:"to,omitempty"`
+	AccountID string       `json:"-" url:"-"`
+	From      *CalendarDay `json:"-" url:"from,omitempty"`
+	To        *CalendarDay `json:"-" url:"to,omitempty"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -629,13 +474,6 @@ func (l *ListInsightsAdsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	l.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (l *ListInsightsAdsRequest) SetWorkspaceID(workspaceID string) {
-	l.WorkspaceID = workspaceID
-	l.require(listInsightsAdsRequestFieldWorkspaceID)
 }
 
 // SetAccountID sets the AccountID field and marks it as non-optional;
@@ -660,13 +498,11 @@ func (l *ListInsightsAdsRequest) SetTo(to *CalendarDay) {
 }
 
 var (
-	pauseBoostAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	pauseBoostAdsRequestFieldBoostID     = big.NewInt(1 << 1)
+	pauseBoostAdsRequestFieldBoostID = big.NewInt(1 << 0)
 )
 
 type PauseBoostAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	BoostID     string `json:"-" url:"-"`
+	BoostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -681,13 +517,6 @@ func (p *PauseBoostAdsRequest) require(field *big.Int) {
 	p.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PauseBoostAdsRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(pauseBoostAdsRequestFieldWorkspaceID)
-}
-
 // SetBoostID sets the BoostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (p *PauseBoostAdsRequest) SetBoostID(boostID string) {
@@ -696,13 +525,11 @@ func (p *PauseBoostAdsRequest) SetBoostID(boostID string) {
 }
 
 var (
-	postPerformanceAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	postPerformanceAdsRequestFieldPostID      = big.NewInt(1 << 1)
+	postPerformanceAdsRequestFieldPostID = big.NewInt(1 << 0)
 )
 
 type PostPerformanceAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	PostID      string `json:"-" url:"-"`
+	PostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -717,13 +544,6 @@ func (p *PostPerformanceAdsRequest) require(field *big.Int) {
 	p.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (p *PostPerformanceAdsRequest) SetWorkspaceID(workspaceID string) {
-	p.WorkspaceID = workspaceID
-	p.require(postPerformanceAdsRequestFieldWorkspaceID)
-}
-
 // SetPostID sets the PostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (p *PostPerformanceAdsRequest) SetPostID(postID string) {
@@ -732,53 +552,10 @@ func (p *PostPerformanceAdsRequest) SetPostID(postID string) {
 }
 
 var (
-	quoteBoostAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type QuoteBoostAdsRequest struct {
-	WorkspaceID string    `json:"-" url:"-"`
-	Body        *NewBoost `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (q *QuoteBoostAdsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if q.explicitFields != nil {
-		next.Set(q.explicitFields)
-	}
-	next.Or(next, field)
-	q.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (q *QuoteBoostAdsRequest) SetWorkspaceID(workspaceID string) {
-	q.WorkspaceID = workspaceID
-	q.require(quoteBoostAdsRequestFieldWorkspaceID)
-}
-
-func (q *QuoteBoostAdsRequest) UnmarshalJSON(data []byte) error {
-	body := new(NewBoost)
-	if err := json.Unmarshal(data, &body); err != nil {
-		return err
-	}
-	q.Body = body
-	return nil
-}
-
-func (q *QuoteBoostAdsRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(q.Body)
-}
-
-var (
-	reachableAccountsAdsRequestFieldWorkspaceID  = big.NewInt(1 << 0)
-	reachableAccountsAdsRequestFieldConnectionID = big.NewInt(1 << 1)
+	reachableAccountsAdsRequestFieldConnectionID = big.NewInt(1 << 0)
 )
 
 type ReachableAccountsAdsRequest struct {
-	WorkspaceID  string `json:"-" url:"-"`
 	ConnectionID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
@@ -794,13 +571,6 @@ func (r *ReachableAccountsAdsRequest) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ReachableAccountsAdsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(reachableAccountsAdsRequestFieldWorkspaceID)
-}
-
 // SetConnectionID sets the ConnectionID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (r *ReachableAccountsAdsRequest) SetConnectionID(connectionID string) {
@@ -809,13 +579,11 @@ func (r *ReachableAccountsAdsRequest) SetConnectionID(connectionID string) {
 }
 
 var (
-	removeAccountAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	removeAccountAdsRequestFieldAccountID   = big.NewInt(1 << 1)
+	removeAccountAdsRequestFieldAccountID = big.NewInt(1 << 0)
 )
 
 type RemoveAccountAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	AccountID   string `json:"-" url:"-"`
+	AccountID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -830,13 +598,6 @@ func (r *RemoveAccountAdsRequest) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *RemoveAccountAdsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(removeAccountAdsRequestFieldWorkspaceID)
-}
-
 // SetAccountID sets the AccountID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (r *RemoveAccountAdsRequest) SetAccountID(accountID string) {
@@ -845,13 +606,11 @@ func (r *RemoveAccountAdsRequest) SetAccountID(accountID string) {
 }
 
 var (
-	resumeBoostAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	resumeBoostAdsRequestFieldBoostID     = big.NewInt(1 << 1)
+	resumeBoostAdsRequestFieldBoostID = big.NewInt(1 << 0)
 )
 
 type ResumeBoostAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	BoostID     string `json:"-" url:"-"`
+	BoostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -866,13 +625,6 @@ func (r *ResumeBoostAdsRequest) require(field *big.Int) {
 	r.explicitFields = next
 }
 
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (r *ResumeBoostAdsRequest) SetWorkspaceID(workspaceID string) {
-	r.WorkspaceID = workspaceID
-	r.require(resumeBoostAdsRequestFieldWorkspaceID)
-}
-
 // SetBoostID sets the BoostID field and marks it as non-optional;
 // this prevents an empty or null value for this field from being omitted during serialization.
 func (r *ResumeBoostAdsRequest) SetBoostID(boostID string) {
@@ -881,14 +633,12 @@ func (r *ResumeBoostAdsRequest) SetBoostID(boostID string) {
 }
 
 var (
-	adSpendingDecisionFieldWorkspaceID    = big.NewInt(1 << 0)
-	adSpendingDecisionFieldAccountID      = big.NewInt(1 << 1)
-	adSpendingDecisionFieldEnabled        = big.NewInt(1 << 2)
-	adSpendingDecisionFieldMonthlyCeiling = big.NewInt(1 << 3)
+	adSpendingDecisionFieldAccountID      = big.NewInt(1 << 0)
+	adSpendingDecisionFieldEnabled        = big.NewInt(1 << 1)
+	adSpendingDecisionFieldMonthlyCeiling = big.NewInt(1 << 2)
 )
 
 type AdSpendingDecision struct {
-	WorkspaceID    string   `json:"-" url:"-"`
 	AccountID      string   `json:"-" url:"-"`
 	Enabled        bool     `json:"enabled" url:"-"`
 	MonthlyCeiling *AdMoney `json:"monthlyCeiling,omitempty" url:"-"`
@@ -904,13 +654,6 @@ func (a *AdSpendingDecision) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	a.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (a *AdSpendingDecision) SetWorkspaceID(workspaceID string) {
-	a.WorkspaceID = workspaceID
-	a.require(adSpendingDecisionFieldWorkspaceID)
 }
 
 // SetAccountID sets the AccountID field and marks it as non-optional;
@@ -956,40 +699,11 @@ func (a *AdSpendingDecision) MarshalJSON() ([]byte, error) {
 }
 
 var (
-	statusAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-)
-
-type StatusAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-
-	// Private bitmask of fields set to an explicit value and therefore not to be omitted
-	explicitFields *big.Int `json:"-" url:"-"`
-}
-
-func (s *StatusAdsRequest) require(field *big.Int) {
-	next := new(big.Int)
-	if s.explicitFields != nil {
-		next.Set(s.explicitFields)
-	}
-	next.Or(next, field)
-	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *StatusAdsRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(statusAdsRequestFieldWorkspaceID)
-}
-
-var (
-	stopBoostAdsRequestFieldWorkspaceID = big.NewInt(1 << 0)
-	stopBoostAdsRequestFieldBoostID     = big.NewInt(1 << 1)
+	stopBoostAdsRequestFieldBoostID = big.NewInt(1 << 0)
 )
 
 type StopBoostAdsRequest struct {
-	WorkspaceID string `json:"-" url:"-"`
-	BoostID     string `json:"-" url:"-"`
+	BoostID string `json:"-" url:"-"`
 
 	// Private bitmask of fields set to an explicit value and therefore not to be omitted
 	explicitFields *big.Int `json:"-" url:"-"`
@@ -1002,13 +716,6 @@ func (s *StopBoostAdsRequest) require(field *big.Int) {
 	}
 	next.Or(next, field)
 	s.explicitFields = next
-}
-
-// SetWorkspaceID sets the WorkspaceID field and marks it as non-optional;
-// this prevents an empty or null value for this field from being omitted during serialization.
-func (s *StopBoostAdsRequest) SetWorkspaceID(workspaceID string) {
-	s.WorkspaceID = workspaceID
-	s.require(stopBoostAdsRequestFieldWorkspaceID)
 }
 
 // SetBoostID sets the BoostID field and marks it as non-optional;

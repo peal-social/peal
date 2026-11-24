@@ -6,7 +6,6 @@ public partial interface IInvitationsClient
     /// Lists the workspace's pending invitations, oldest first, expired ones included. Needs invitation:create, as an invitation's id opens its link, and a member rather than an API key; invitations to the owner role are listed to owners only.
     /// </summary>
     WithRawResponseTask<IEnumerable<Invitation>> ListAsync(
-        ListInvitationsRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

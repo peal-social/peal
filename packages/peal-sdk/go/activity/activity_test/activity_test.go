@@ -88,9 +88,7 @@ func TestActivityListWithWireMock(
 		option.WithBaseURL(WireMockBaseURL),
 		option.WithToken("test-token"),
 	)
-	request := &peal.ListActivityRequest{
-		WorkspaceID: "workspaceId",
-	}
+	request := &peal.ListActivityRequest{}
 	_, invocationErr := client.Activity.List(
 		context.TODO(),
 		request,
@@ -100,5 +98,5 @@ func TestActivityListWithWireMock(
 	)
 
 	require.NoError(t, invocationErr, "Client method call should succeed")
-	VerifyRequestCount(t, "TestActivityListWithWireMock", "GET", "/api/workspaces/workspaceId/activity", nil, 1)
+	VerifyRequestCount(t, "TestActivityListWithWireMock", "GET", "/api/v1/activity", nil, 1)
 }

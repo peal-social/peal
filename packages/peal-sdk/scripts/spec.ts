@@ -134,6 +134,52 @@ const withSdkName = (
   ]);
 };
 
+/**
+ * The header a request names its workspace in (the contract's
+ * `workspaceHeader`). Every workspace endpoint takes it, optional: the SDKs
+ * set it once, on the client (`workspace`, a global header), rather than as
+ * an argument of every method.
+ */
+const workspaceHeader = "peal-workspace";
+
+const isWorkspaceHeader = (parameter: Json): boolean =>
+  isJsonObject(parameter) &&
+  parameter["in"] === "header" &&
+  isString(parameter["name"]) &&
+  parameter["name"].toLowerCase() === workspaceHeader;
+
+/** The operation without the workspace header, which the client sends. */
+const withoutWorkspaceHeader = (operation: JsonObject): JsonObject => {
+  const { parameters } = operation;
+
+  if (!isJsonArray(parameters) || !parameters.some(isWorkspaceHeader)) {
+    return operation;
+  }
+
+  // The client sends it only when given a workspace: an operation that
+  // could not answer without one would fail every client made with a key.
+  if (
+    parameters.some(
+      (parameter) =>
+        isWorkspaceHeader(parameter) &&
+        isJsonObject(parameter) &&
+        parameter["required"] === true
+    )
+  ) {
+    throw new Error(
+      `${JSON.stringify(operation["operationId"])} requires the Peal-Workspace header, which the SDKs send only as an optional client option: keep it optional in the contract (workspaceHeaders).`
+    );
+  }
+
+  const kept = parameters.filter((parameter) => !isWorkspaceHeader(parameter));
+
+  return kept.length === 0
+    ? Object.fromEntries(
+        Object.entries(operation).filter(([key]) => key !== "parameters")
+      )
+    : withEntries(operation, [["parameters", kept]]);
+};
+
 /** The operation as the SDKs see it, or undefined when a token cannot call it. */
 const keepOperation = (operation: JsonObject): JsonObject | undefined => {
   const { security = globalSecurity, tags = [] } = decodeOperation(operation);
@@ -147,7 +193,7 @@ const keepOperation = (operation: JsonObject): JsonObject | undefined => {
   }
 
   return withSdkName(
-    withEntries(operation, [
+    withEntries(withoutWorkspaceHeader(operation), [
       ["security", security.filter((requirement) => "bearer" in requirement)],
     ]),
     tags
@@ -510,12 +556,21 @@ if (!isString(apiVersion) || !/^\d{4}-\d{2}-\d{2}$/u.test(apiVersion)) {
 }
 
 // Each SDK sends the version of the API it was generated against on every
-// request (`Peal-Version`), a literal its users never have to set.
+// request (`Peal-Version`), a literal its users never have to set; and the
+// workspace its client acts in (`Peal-Workspace`), when its user gives one:
+// an API key and a bound token act in their own without it.
 const globalHeaders: Json = [
   {
     header: "Peal-Version",
     name: "pealVersion",
     type: `literal<"${apiVersion}">`,
+  },
+  {
+    header: "Peal-Workspace",
+    name: "workspace",
+    // No `type`: the generators read one as the header's whole type, and
+    // the header would no longer be optional.
+    optional: true,
   },
 ];
 

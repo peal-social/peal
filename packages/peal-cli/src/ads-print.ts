@@ -109,8 +109,8 @@ const amountsOf =
  * The workspace's ad accounts, to write amounts with. A member who may not
  * list them reads amounts as the API counts them.
  */
-export const amountsIn = (client: SignedInClient, workspaceId: string) =>
-  client.ads.listAccounts({ params: { workspaceId } }).pipe(
+export const amountsIn = (client: SignedInClient) =>
+  client.ads.listAccounts({ headers: {} }).pipe(
     Effect.orElseSucceed((): readonly AdAccount[] => []),
     Effect.map(amountsOf)
   );

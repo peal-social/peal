@@ -1,3 +1,4 @@
+import { forWorkspace } from "peal-contract";
 import type { CalendarDay, ExportKind } from "peal-contract";
 
 import { PealApi } from "#api/client.ts";
@@ -17,7 +18,8 @@ export interface SummaryRange {
 /** A post's counts on each of its channels, over time. */
 export const postAnalytics = (workspaceId: string, postId: string) =>
   PealApi.query("analytics", "post", {
-    params: { postId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { postId },
     reactivityKeys: analyticsKeys,
   });
 
@@ -26,7 +28,9 @@ export const postAnalytics = (workspaceId: string, postId: string) =>
  * reads each post's counts. It changes with the server's settings only.
  */
 export const platformCapabilities = (workspaceId: string) =>
-  PealApi.query("capabilities", "platforms", { params: { workspaceId } });
+  PealApi.query("capabilities", "platforms", {
+    headers: forWorkspace(workspaceId),
+  });
 
 /**
  * The workspace's analytics over the range beside the range before it,
@@ -34,20 +38,21 @@ export const platformCapabilities = (workspaceId: string) =>
  */
 export const analyticsDashboard = (workspaceId: string, range: SummaryRange) =>
   PealApi.query("analytics", "dashboard", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: range,
     reactivityKeys: analyticsKeys,
   });
 
-/** Where the browser downloads an export of the range from, as CSV. */
-export const exportUrl = (
-  workspaceId: string,
-  kind: ExportKind,
-  range: SummaryRange
-): string =>
-  `/api/workspaces/${encodeURIComponent(workspaceId)}/analytics/export?${new URLSearchParams(
-    { ...range, format: "csv", kind }
-  ).toString()}`;
+/**
+ * The address of an export of the range, as CSV. It names no workspace:
+ * the request does, in its `Peal-Workspace` header (`downloadExport`).
+ */
+export const exportUrl = (kind: ExportKind, range: SummaryRange): string =>
+  `/api/v1/analytics/export?${new URLSearchParams({
+    ...range,
+    format: "csv",
+    kind,
+  }).toString()}`;
 
 /** When one channel's posts did best over the last `days`, in the zone. */
 export const bestTimes = (
@@ -57,7 +62,7 @@ export const bestTimes = (
   timeZone: string
 ) =>
   PealApi.query("analytics", "bestTimes", {
-    params: { workspaceId },
+    headers: forWorkspace(workspaceId),
     query: { channelId, days, timeZone },
     reactivityKeys: analyticsKeys,
   });
@@ -69,7 +74,8 @@ export const analyticsChannel = (
   range: SummaryRange
 ) =>
   PealApi.query("analytics", "channel", {
-    params: { channelId, workspaceId },
+    headers: forWorkspace(workspaceId),
+    params: { channelId },
     query: range,
     reactivityKeys: analyticsKeys,
   });

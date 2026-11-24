@@ -7,9 +7,6 @@ namespace Peal;
 public record GetUsageRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public string? From { get; set; }
 
     [JsonIgnore]

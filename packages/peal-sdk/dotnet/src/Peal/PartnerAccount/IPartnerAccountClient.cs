@@ -6,7 +6,6 @@ public partial interface IPartnerAccountClient
     /// The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (`canOpen`). Needs partner:read.
     /// </summary>
     WithRawResponseTask<PartnerStanding> GetAsync(
-        GetPartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -24,7 +23,6 @@ public partial interface IPartnerAccountClient
     /// Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 `PartnerOwnsWorkspaces`): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
     /// </summary>
     WithRawResponseTask CloseAsync(
-        ClosePartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );
@@ -42,7 +40,6 @@ public partial interface IPartnerAccountClient
     /// Lists the partner account's keys. Needs partner:read.
     /// </summary>
     WithRawResponseTask<IEnumerable<PartnerKey>> ListKeysAsync(
-        ListKeysPartnerAccountRequest request,
         RequestOptions? options = null,
         CancellationToken cancellationToken = default
     );

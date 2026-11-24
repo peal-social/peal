@@ -11,9 +11,6 @@ public record InvalidDateRangeEncoded : IJsonOnDeserialized
     private readonly IDictionary<string, JsonElement> _extensionData =
         new Dictionary<string, JsonElement>();
 
-    [JsonPropertyName("_tag")]
-    public required InvalidDateRangeEncodedTag Tag { get; set; }
-
     [JsonPropertyName("code")]
     public string? Code { get; set; }
 

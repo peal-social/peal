@@ -39,7 +39,6 @@ func NewClient(options *core.RequestOptions) *Client {
 // Example:
 //
 //	request := &peal.ListLookupsRequest{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	}
 //	_, err := client.Lookups.List(
@@ -67,7 +66,6 @@ func (c *Client) List(
 // Example:
 //
 //	request := &peal.LookupInput{
-//	    WorkspaceID: "workspaceId",
 //	    ChannelID: "channelId",
 //	    Name: "name",
 //	}

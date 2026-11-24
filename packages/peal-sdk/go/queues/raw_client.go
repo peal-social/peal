@@ -34,7 +34,6 @@ func NewRawClient(options *core.RequestOptions) *RawClient {
 
 func (r *RawClient) List(
 	ctx context.Context,
-	request *peal.ListQueuesRequest,
 	opts ...option.RequestOption,
 ) (*core.Response[[]*peal.Queue], error) {
 	options := core.NewRequestOptions(opts...)
@@ -43,10 +42,7 @@ func (r *RawClient) List(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/queues",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/queues"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
@@ -79,7 +75,7 @@ func (r *RawClient) List(
 
 func (r *RawClient) Create(
 	ctx context.Context,
-	request *peal.CreateQueuesRequest,
+	request *peal.QueueDetails,
 	opts ...option.RequestOption,
 ) (*core.Response[*peal.Queue], error) {
 	options := core.NewRequestOptions(opts...)
@@ -88,15 +84,11 @@ func (r *RawClient) Create(
 		r.baseURL,
 		"https://app.peal.social",
 	)
-	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/queues",
-		request.WorkspaceID,
-	)
+	endpointURL := baseURL + "/api/v1/queues"
 	headers := internal.MergeHeaders(
 		r.options.ToHeader(),
 		options.ToHeader(),
 	)
-	headers.Add("Content-Type", "application/json")
 	var response *peal.Queue
 	raw, err := r.caller.Call(
 		ctx,
@@ -136,8 +128,7 @@ func (r *RawClient) Get(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/queues/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/queues/%v",
 		request.QueueID,
 	)
 	headers := internal.MergeHeaders(
@@ -182,8 +173,7 @@ func (r *RawClient) Update(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/queues/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/queues/%v",
 		request.QueueID,
 	)
 	headers := internal.MergeHeaders(
@@ -230,8 +220,7 @@ func (r *RawClient) Delete(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/queues/%v",
-		request.WorkspaceID,
+		baseURL+"/api/v1/queues/%v",
 		request.QueueID,
 	)
 	headers := internal.MergeHeaders(
@@ -274,8 +263,7 @@ func (r *RawClient) Slots(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/queues/%v/slots",
-		request.WorkspaceID,
+		baseURL+"/api/v1/queues/%v/slots",
 		request.QueueID,
 	)
 	queryParams, err := internal.QueryValues(request)
@@ -327,8 +315,7 @@ func (r *RawClient) Reshuffle(
 		"https://app.peal.social",
 	)
 	endpointURL := internal.EncodeURL(
-		baseURL+"/api/workspaces/%v/queues/%v/reshuffle",
-		request.WorkspaceID,
+		baseURL+"/api/v1/queues/%v/reshuffle",
 		request.QueueID,
 	)
 	headers := internal.MergeHeaders(

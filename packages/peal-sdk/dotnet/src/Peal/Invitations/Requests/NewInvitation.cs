@@ -6,9 +6,6 @@ namespace Peal;
 [Serializable]
 public record NewInvitation
 {
-    [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
     [JsonPropertyName("email")]
     public required string Email { get; set; }
 

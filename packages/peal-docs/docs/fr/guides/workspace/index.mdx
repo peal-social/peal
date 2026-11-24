@@ -244,7 +244,7 @@ Seuls les propriétaires peuvent lire le journal. Il demande la permission `acti
 
 Le journal n’a pas encore de page dans l’application web. Vous pouvez le lire de trois façons :
 
-- par l’API, avec `GET /api/workspaces/{workspaceId}/activity`, les plus récents d’abord, page par page ([Pagination](/developers/conventions/paging#paging) montre une réponse)
+- par l’API, avec `GET /api/v1/activity`, les plus récents d’abord, page par page ([Pagination](/developers/conventions/paging#paging) montre une réponse)
 - depuis la [ligne de commande](/developers/cli/workspace#activity), avec `peal activity list`
 - depuis un client MCP, avec l’outil `list_activity`.
 
@@ -341,7 +341,7 @@ Ces points d’accès gèrent votre espace de travail et votre compte :
 
 | Point d’accès                            | Ce qu’il fait                                                        |
 | ---------------------------------------- | -------------------------------------------------------------------- |
-| `DELETE /api/workspaces/{workspaceId}`   | Supprime l’espace de travail, avec son nom en `name` (propriétaires) |
+| `DELETE /api/v1/workspace`               | Supprime l’espace de travail, avec son nom en `name` (propriétaires) |
 | `GET /api/me/export`                     | Répond vos données sous forme de fichier JSON                        |
 | `DELETE /api/me`                         | Supprime votre compte, avec son mot de passe en `password`           |
 | `GET /api/me/connected-apps`             | Liste vos applications connectées                                    |
@@ -351,13 +351,13 @@ Ils ne répondent qu’à vous, connecté à l’application web avec votre prop
 
 Ces points d’accès gèrent les membres et les invitations :
 
-| Point d’accès                                                   | Ce qu’il fait                                                    |
-| --------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `GET /api/workspaces/{workspaceId}/members`                     | Liste les membres, à chaque membre                               |
-| `GET /api/workspaces/{workspaceId}/invitations`                 | Liste les invitations en attente, à qui peut inviter             |
-| `POST /api/workspaces/{workspaceId}/invitations`                | Invite un `email` avec un `role`, comme **Envoyer l’invitation** |
-| `DELETE /api/workspaces/{workspaceId}/invitations/{invitation}` | Révoque une invitation en attente                                |
+| Point d’accès                             | Ce qu’il fait                                                    |
+| ----------------------------------------- | ---------------------------------------------------------------- |
+| `GET /api/v1/members`                     | Liste les membres, à chaque membre                               |
+| `GET /api/v1/invitations`                 | Liste les invitations en attente, à qui peut inviter             |
+| `POST /api/v1/invitations`                | Invite un `email` avec un `role`, comme **Envoyer l’invitation** |
+| `DELETE /api/v1/invitations/{invitation}` | Révoque une invitation en attente                                |
 
 Ils répondent aux membres en personne, par l’application web, la ligne de commande ou un client MCP autorisé. Ils ne répondent jamais à une clé d’API ni à l’équipe qui agit à votre place.
 
-Renommer un espace de travail, changer le rôle d’un membre et retirer un membre passent par les routes du service de connexion sous `/api/auth/organization/`. Les clés d’API passent par `/api/workspaces/{workspaceId}/api-keys`.
+Renommer un espace de travail, changer le rôle d’un membre et retirer un membre passent par les routes du service de connexion sous `/api/auth/organization/`. Les clés d’API passent par `/api/v1/api-keys`.

@@ -166,7 +166,7 @@ const create = Command.make(
 
     const created = yield* client.connectLinks
       .create({
-        params: { workspaceId: workspace.id },
+        headers: {},
         payload: {
           ...(known.length === 1 && known[0] !== undefined
             ? { platform: known[0] }
@@ -225,7 +225,7 @@ const list = Command.make(
     const { client, url, workspace } = yield* inWorkspace(choice);
 
     const links = yield* client.connectLinks
-      .list({ params: { workspaceId: workspace.id } })
+      .list({ headers: {} })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -263,10 +263,10 @@ const show = Command.make(
   "show",
   { json: jsonFlag, link: linkArgument, workspace: workspaceFlag },
   Effect.fn("links.show")(function* show({ json, link, workspace: choice }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const found = yield* client.connectLinks
-      .get({ params: { linkId: link, workspaceId: workspace.id } })
+      .get({ headers: {}, params: { linkId: link } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {
@@ -295,10 +295,10 @@ const revoke = Command.make(
     link,
     workspace: choice,
   }) {
-    const { client, url, workspace } = yield* inWorkspace(choice);
+    const { client, url } = yield* inWorkspace(choice);
 
     const revoked = yield* client.connectLinks
-      .revoke({ params: { linkId: link, workspaceId: workspace.id } })
+      .revoke({ headers: {}, params: { linkId: link } })
       .pipe(Effect.mapError(explain(url)));
 
     if (json) {

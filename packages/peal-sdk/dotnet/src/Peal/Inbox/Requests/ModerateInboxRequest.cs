@@ -7,9 +7,6 @@ namespace Peal;
 public record ModerateInboxRequest
 {
     [JsonIgnore]
-    public required string WorkspaceId { get; set; }
-
-    [JsonIgnore]
     public required string CommentId { get; set; }
 
     [JsonPropertyName("action")]

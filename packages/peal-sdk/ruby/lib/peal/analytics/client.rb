@@ -22,14 +22,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [Peal::Types::CalendarDay] :from
       # @option params [String] :time_zone
       # @option params [Peal::Types::CalendarDay] :to
       #
       # @example
       #   client.analytics.summary(
-      #     workspace_id: "workspaceId",
       #     from: "from",
       #     time_zone: "timeZone",
       #     to: "to"
@@ -46,7 +44,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/analytics/summary",
+          path: "api/v1/analytics/summary",
           query: query_params,
           request_options: request_options
         )
@@ -83,7 +81,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :days
       # @option params [String, nil] :from
       # @option params [String] :time_zone
@@ -91,10 +88,7 @@ module Peal
       # @option params [String, nil] :top_posts
       #
       # @example
-      #   client.analytics.dashboard(
-      #     workspace_id: "workspaceId",
-      #     time_zone: "timeZone"
-      #   )
+      #   client.analytics.dashboard(time_zone: "timeZone")
       #
       # @return [Peal::Types::AnalyticsDashboard]
       def dashboard(request_options: {}, **params)
@@ -109,7 +103,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/analytics/dashboard",
+          path: "api/v1/analytics/dashboard",
           query: query_params,
           request_options: request_options
         )
@@ -144,7 +138,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       # @option params [String, nil] :days
       # @option params [String, nil] :from
@@ -153,7 +146,6 @@ module Peal
       #
       # @example
       #   client.analytics.channel(
-      #     workspace_id: "workspaceId",
       #     channel_id: "channelId",
       #     time_zone: "timeZone"
       #   )
@@ -170,7 +162,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/analytics/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}",
+          path: "api/v1/analytics/channels/#{URI.encode_uri_component(params[:channel_id].to_s)}",
           query: query_params,
           request_options: request_options
         )
@@ -206,7 +198,6 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String, nil] :days
       # @option params [String, nil] :from
       # @option params [String] :time_zone
@@ -216,7 +207,6 @@ module Peal
       #
       # @example
       #   client.analytics.export(
-      #     workspace_id: "workspaceId",
       #     time_zone: "timeZone",
       #     kind: "posts"
       #   )
@@ -235,7 +225,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/analytics/export",
+          path: "api/v1/analytics/export",
           query: query_params,
           request_options: request_options
         )
@@ -271,14 +261,12 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :channel_id
       # @option params [String, nil] :days
       # @option params [String] :time_zone
       #
       # @example
       #   client.analytics.best_times(
-      #     workspace_id: "workspaceId",
       #     channel_id: "channelId",
       #     time_zone: "timeZone"
       #   )
@@ -294,7 +282,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/analytics/best-times",
+          path: "api/v1/analytics/best-times",
           query: query_params,
           request_options: request_options
         )
@@ -326,14 +314,10 @@ module Peal
       # @option request_options [Hash{String => Object}] :additional_query_parameters
       # @option request_options [Hash{String => Object}] :additional_body_parameters
       # @option request_options [Integer] :timeout_in_seconds
-      # @option params [String] :workspace_id
       # @option params [String] :post_id
       #
       # @example
-      #   client.analytics.post(
-      #     workspace_id: "workspaceId",
-      #     post_id: "postId"
-      #   )
+      #   client.analytics.post(post_id: "postId")
       #
       # @return [Peal::Types::PostAnalytics]
       def post(request_options: {}, **params)
@@ -341,7 +325,7 @@ module Peal
         request = Peal::Internal::JSON::Request.new(
           base_url: request_options[:base_url],
           method: "GET",
-          path: "api/workspaces/#{URI.encode_uri_component(params[:workspace_id].to_s)}/analytics/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
+          path: "api/v1/analytics/posts/#{URI.encode_uri_component(params[:post_id].to_s)}",
           request_options: request_options
         )
         begin

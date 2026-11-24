@@ -28,9 +28,9 @@ export class PartnerAccountClient {
     /**
      * The workspace's partner account and what it holds, null when it has none, and whether its people may open one themselves on this server (`canOpen`). Needs partner:read.
      *
-     * @param {Peal.GetPartnerAccountRequest} request
      * @param {PartnerAccountClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -39,20 +39,17 @@ export class PartnerAccountClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.partnerAccount.get({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.partnerAccount.get()
      */
-    public get(request: Peal.GetPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerStanding> {
-        return core.HttpResponsePromise.fromPromise(this.__get(request, requestOptions));
+    public get(requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerStanding> {
+        return core.HttpResponsePromise.fromPromise(this.__get(requestOptions));
     }
 
-    private async __get(request: Peal.GetPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerStanding>> {
-        const { workspaceId } = request;
+    private async __get(requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerStanding>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -68,6 +65,7 @@ export class PartnerAccountClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -80,7 +78,7 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/partner");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/partner-account");
     }
 
     /**
@@ -89,6 +87,7 @@ export class PartnerAccountClient {
      * @param {Peal.OpenPartner} request
      * @param {PartnerAccountClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -99,7 +98,6 @@ export class PartnerAccountClient {
      *
      * @example
      *     await client.partnerAccount.open({
-     *         workspaceId: "workspaceId",
      *         name: "name"
      *     })
      */
@@ -108,17 +106,16 @@ export class PartnerAccountClient {
     }
 
     private async __open(request: Peal.OpenPartner, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.Partner>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -131,6 +128,7 @@ export class PartnerAccountClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -144,15 +142,15 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/partner");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/partner-account");
     }
 
     /**
      * Closes the workspace's partner account: its keys stop working at once. Refused while it owns workspaces (409 `PartnerOwnsWorkspaces`): delete each through the partner API first. Needs partner:manage, and a signed-in member rather than an API key or an OAuth client.
      *
-     * @param {Peal.ClosePartnerAccountRequest} request
      * @param {PartnerAccountClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -162,20 +160,17 @@ export class PartnerAccountClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.partnerAccount.close({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.partnerAccount.close()
      */
-    public close(request: Peal.ClosePartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<void> {
-        return core.HttpResponsePromise.fromPromise(this.__close(request, requestOptions));
+    public close(requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<void> {
+        return core.HttpResponsePromise.fromPromise(this.__close(requestOptions));
     }
 
-    private async __close(request: Peal.ClosePartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId } = request;
+    private async __close(requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<void>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account"),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -191,6 +186,7 @@ export class PartnerAccountClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -204,7 +200,7 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/partner");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/partner-account");
     }
 
     /**
@@ -213,6 +209,7 @@ export class PartnerAccountClient {
      * @param {Peal.PartnerChange} request
      * @param {PartnerAccountClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -222,26 +219,23 @@ export class PartnerAccountClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.partnerAccount.update({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.partnerAccount.update()
      */
-    public update(request: Peal.PartnerChange, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.Partner> {
+    public update(request: Peal.PartnerChange = {}, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.Partner> {
         return core.HttpResponsePromise.fromPromise(this.__update(request, requestOptions));
     }
 
-    private async __update(request: Peal.PartnerChange, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.Partner>> {
-        const { workspaceId, ..._body } = request;
+    private async __update(request: Peal.PartnerChange = {}, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.Partner>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account"),
             method: "PATCH",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -254,6 +248,7 @@ export class PartnerAccountClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -267,15 +262,15 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/workspaces/{workspaceId}/partner");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "PATCH", "/api/v1/partner-account");
     }
 
     /**
      * Lists the partner account's keys. Needs partner:read.
      *
-     * @param {Peal.ListKeysPartnerAccountRequest} request
      * @param {PartnerAccountClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -284,20 +279,17 @@ export class PartnerAccountClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.partnerAccount.listKeys({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.partnerAccount.listKeys()
      */
-    public listKeys(request: Peal.ListKeysPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerKey[]> {
-        return core.HttpResponsePromise.fromPromise(this.__listKeys(request, requestOptions));
+    public listKeys(requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerKey[]> {
+        return core.HttpResponsePromise.fromPromise(this.__listKeys(requestOptions));
     }
 
-    private async __listKeys(request: Peal.ListKeysPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerKey[]>> {
-        const { workspaceId } = request;
+    private async __listKeys(requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerKey[]>> {
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner/keys`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account/keys"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -313,6 +305,7 @@ export class PartnerAccountClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -325,7 +318,7 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/partner/keys");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/partner-account/keys");
     }
 
     /**
@@ -334,6 +327,7 @@ export class PartnerAccountClient {
      * @param {Peal.NewPartnerKey} request
      * @param {PartnerAccountClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -344,7 +338,6 @@ export class PartnerAccountClient {
      *
      * @example
      *     await client.partnerAccount.createKey({
-     *         workspaceId: "workspaceId",
      *         name: "name",
      *         permissions: ["activity:read"],
      *         scopes: ["workspaces:read"]
@@ -355,17 +348,16 @@ export class PartnerAccountClient {
     }
 
     private async __createKey(request: Peal.NewPartnerKey, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.CreatedPartnerKey>> {
-        const { workspaceId, ..._body } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner/keys`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account/keys"),
             method: "POST",
             headers: _headers,
             contentType: "application/json",
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
             requestType: "json",
-            body: mergeAdditionalBodyParameters(_body, requestOptions?.additionalBodyParameters),
+            body: mergeAdditionalBodyParameters(request, requestOptions?.additionalBodyParameters),
             timeoutMs: (requestOptions?.timeoutInSeconds ?? this._options?.timeoutInSeconds ?? 60) * 1000,
             maxRetries: 0,
             abortSignal: requestOptions?.abortSignal,
@@ -378,6 +370,7 @@ export class PartnerAccountClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -391,7 +384,7 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/workspaces/{workspaceId}/partner/keys");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "POST", "/api/v1/partner-account/keys");
     }
 
     /**
@@ -400,6 +393,7 @@ export class PartnerAccountClient {
      * @param {Peal.RevokeKeyPartnerAccountRequest} request
      * @param {PartnerAccountClient.RequestOptions} requestOptions - Request-specific configuration.
      *
+     * @throws {@link Peal.BadRequestError}
      * @throws {@link Peal.UnauthorizedError}
      * @throws {@link Peal.ForbiddenError}
      * @throws {@link Peal.NotFoundError}
@@ -409,7 +403,6 @@ export class PartnerAccountClient {
      *
      * @example
      *     await client.partnerAccount.revokeKey({
-     *         workspaceId: "workspaceId",
      *         partnerKeyId: "partnerKeyId"
      *     })
      */
@@ -418,11 +411,11 @@ export class PartnerAccountClient {
     }
 
     private async __revokeKey(request: Peal.RevokeKeyPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<void>> {
-        const { workspaceId, partnerKeyId } = request;
+        const { partnerKeyId } = request;
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner/keys/${core.url.encodePathParam(partnerKeyId, errors.PealError)}`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/v1/partner-account/keys/${core.url.encodePathParam(partnerKeyId, errors.PealError)}`),
             method: "DELETE",
             headers: _headers,
             queryString: core.url.queryBuilder().mergeAdditional(requestOptions?.queryParams).build(),
@@ -438,6 +431,7 @@ export class PartnerAccountClient {
 
         if (_response.error.reason === "status-code") {
             switch (_response.error.statusCode) {
+                case 400: throw new Peal.BadRequestError(_response.error.body as unknown, _response.rawResponse);
                 case 401: throw new Peal.UnauthorizedError(_response.error.body as Peal.UnauthenticatedEncoded, _response.rawResponse);
                 case 403: throw new Peal.ForbiddenError(_response.error.body as unknown, _response.rawResponse);
                 case 404: throw new Peal.NotFoundError(_response.error.body as unknown, _response.rawResponse);
@@ -450,7 +444,7 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/workspaces/{workspaceId}/partner/keys/{partnerKeyId}");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "DELETE", "/api/v1/partner-account/keys/{partnerKeyId}");
     }
 
     /**
@@ -468,24 +462,22 @@ export class PartnerAccountClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.partnerAccount.overview({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.partnerAccount.overview()
      */
-    public overview(request: Peal.OverviewPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerHealth> {
+    public overview(request: Peal.OverviewPartnerAccountRequest = {}, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.PartnerHealth> {
         return core.HttpResponsePromise.fromPromise(this.__overview(request, requestOptions));
     }
 
-    private async __overview(request: Peal.OverviewPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerHealth>> {
-        const { workspaceId, before, limit } = request;
+    private async __overview(request: Peal.OverviewPartnerAccountRequest = {}, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.PartnerHealth>> {
+        const { before, limit } = request;
         const _queryParams: Record<string, unknown> = {
             before,
             limit
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner/overview`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account/overview"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -514,7 +506,7 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/partner/overview");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/partner-account/overview");
     }
 
     /**
@@ -532,16 +524,14 @@ export class PartnerAccountClient {
      * @throws {@link errors.PealTimeoutError}
      *
      * @example
-     *     await client.partnerAccount.listWorkspaces({
-     *         workspaceId: "workspaceId"
-     *     })
+     *     await client.partnerAccount.listWorkspaces()
      */
-    public listWorkspaces(request: Peal.ListWorkspacesPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.CustomerWorkspacePage> {
+    public listWorkspaces(request: Peal.ListWorkspacesPartnerAccountRequest = {}, requestOptions?: PartnerAccountClient.RequestOptions): core.HttpResponsePromise<Peal.CustomerWorkspacePage> {
         return core.HttpResponsePromise.fromPromise(this.__listWorkspaces(request, requestOptions));
     }
 
-    private async __listWorkspaces(request: Peal.ListWorkspacesPartnerAccountRequest, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.CustomerWorkspacePage>> {
-        const { workspaceId, before, externalId, limit, name } = request;
+    private async __listWorkspaces(request: Peal.ListWorkspacesPartnerAccountRequest = {}, requestOptions?: PartnerAccountClient.RequestOptions): Promise<core.WithRawResponse<Peal.CustomerWorkspacePage>> {
+        const { before, externalId, limit, name } = request;
         const _queryParams: Record<string, unknown> = {
             before,
             externalId,
@@ -549,9 +539,9 @@ export class PartnerAccountClient {
             name
         };
         const _authRequest: core.AuthRequest = await this._options.authProvider.getAuthRequest();
-        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09" }), requestOptions?.headers);
+        let _headers: core.Fetcher.Args["headers"] = mergeHeaders(_authRequest.headers, this._options?.headers, mergeOnlyDefinedHeaders({ "Peal-Version": requestOptions?.pealVersion ?? "2026-11-09", "Peal-Workspace": requestOptions?.workspace ?? this._options?.workspace }), requestOptions?.headers);
         const _response = await core.fetcher({
-            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), `api/workspaces/${core.url.encodePathParam(workspaceId, errors.PealError)}/partner/workspaces`),
+            url: core.url.join(await core.Supplier.get(this._options.baseUrl) ?? (await core.Supplier.get(this._options.environment) ?? environments.PealEnvironment.Default), "api/v1/partner-account/workspaces"),
             method: "GET",
             headers: _headers,
             queryString: core.url.queryBuilder().addMany(_queryParams).mergeAdditional(requestOptions?.queryParams).build(),
@@ -580,6 +570,6 @@ export class PartnerAccountClient {
             }
         }
 
-        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/workspaces/{workspaceId}/partner/workspaces");
+        return handleNonStatusCodeError(_response.error, _response.rawResponse, "GET", "/api/v1/partner-account/workspaces");
     }
 }

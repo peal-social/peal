@@ -29,7 +29,7 @@ export class TextProviderRefused extends Schema.TaggedError<TextProviderRefused>
   },
   {
     description:
-      "The workspace's own text provider refused its key, its account, its model or its address, answered with a redirect, which Peal never follows (the address is not the API's), or its key must be typed again (`reason`, and the provider's `status` when it answered). Nothing was spent of Peal's assistant requests. Fix the settings in the workspace's assistant settings (`PUT /api/workspaces/{workspaceId}/assistant/text-provider`, which needs assistant:configure), or remove them to write with the server's model again.",
+      "The workspace's own text provider refused its key, its account, its model or its address, answered with a redirect, which Peal never follows (the address is not the API's), or its key must be typed again (`reason`, and the provider's `status` when it answered). Nothing was spent of Peal's assistant requests. Fix the settings in the workspace's assistant settings (`PUT /api/v1/assistant/text-provider`, which needs assistant:configure), or remove them to write with the server's model again.",
     httpApiStatus: 502,
   }
 ) {}
