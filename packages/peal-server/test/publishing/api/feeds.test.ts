@@ -7,7 +7,7 @@ import { SqlClient } from "effect/sql";
 import { Api, forWorkspace } from "peal-contract";
 import type { Member } from "peal-contract";
 
-import { FeedsHandlers } from "#publishing/api/feeds.ts";
+import { FeedsHandlers } from "#publishing/api/feeds/feeds.ts";
 import { ApprovalGate } from "#publishing/application/approval-gate.ts";
 import { PostEvents } from "#publishing/application/post-events.ts";
 import { newId } from "#shared/application/ids.ts";

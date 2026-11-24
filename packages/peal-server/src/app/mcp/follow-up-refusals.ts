@@ -2,8 +2,8 @@ import { Effect, Option, Schema } from "effect";
 import type { FollowUpRefusal } from "peal-contract";
 
 import { refuse } from "#app/mcp/refusals.ts";
-import type { FollowUpNotPossible } from "#publishing/application/follow-up-not-possible.ts";
-import { FollowUpRuleIdSchema } from "#publishing/domain/follow-up-rule-id.ts";
+import type { FollowUpNotPossible } from "#publishing/application/follow-ups/follow-up-not-possible.ts";
+import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
 
 // What the follow-up tools are refused with, in words the user acts on.
 

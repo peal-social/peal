@@ -39,6 +39,7 @@ import { MeterErrorsLive } from "#app/meter-errors/route.ts";
 import { ObservabilityLive } from "#app/observability.ts";
 import { PlatformEventsLive } from "#app/platform-events/route.ts";
 import { ProductAnalyticsLive } from "#app/product-analytics.ts";
+import { publishingWorkers } from "#app/publishing-workers.ts";
 import { countRequests } from "#app/request-metrics.ts";
 import { ShortLinkRedirectsLive } from "#app/short-links/redirects.ts";
 import { httpShutdownTimeout } from "#app/shutdown.ts";
@@ -49,6 +50,12 @@ import {
   UntracedPathsLive,
 } from "#app/untraced-paths.ts";
 import { DigestUnsubscribeLive } from "#app/weekly-digest/unsubscribe.ts";
+import {
+  ArticleWorkersLive,
+  ArticlesApiLive,
+  ArticlesLive,
+  MediaInArticlesLive,
+} from "#articles/container.ts";
 import {
   AssistantApiLive,
   AssistantLive,
@@ -83,7 +90,13 @@ import {
   ConnectLinkJournalLive,
   ConnectLinksApiLive,
   DataDeletionApiLive,
+  GatedCommentSource,
+  GatedMessages,
+  GatedMetricsReader,
+  GatedReplySender,
+  GatedReviews,
   TokenCipherLive,
+  UnreadComments,
 } from "#channels/container.ts";
 import {
   engagementLive,
@@ -112,23 +125,17 @@ import {
 } from "#notifications/container.ts";
 import {
   CapabilitiesApiLive,
-  GatedCommentSource,
   ChannelDefaultsApiLive,
   ChannelSetsApiLive,
-  GatedMetricsReader,
-  GatedReplySender,
-  GatedMessages,
-  GatedReviews,
-  UnreadComments,
+  FollowUpPlatformsLive,
+  LivePostPlatformsLive,
   LookupsApiLive,
   MediaInPostsLive,
   PostAttentionLive,
   PlatformQuotaLive,
+  PlatformsLive,
   PostDraftsApiLive,
   PostsApiLive,
-  ArticlesApiLive,
-  ArticleWorkersLive,
-  ArticlesLive,
   PublishingLive,
   QueuesApiLive,
   RecyclingApiLive,
@@ -137,7 +144,7 @@ import {
   SignaturesApiLive,
   TagsApiLive,
   TikTokApiLive,
-  publishingWorkersReading,
+  PostingServicesLive,
 } from "#publishing/container.ts";
 import {
   ReviewApiLive,
@@ -351,13 +358,14 @@ const ChannelsWithNoticesLive = ChannelsLive.pipe(
   Layer.provideMerge(NoticesContextLive)
 );
 
-// The media context, which asks publishing which posts show an asset before
-// deleting it, and billing how much a workspace may store, and tells the
-// webhooks how uploads end.
+// The media context, which asks which articles and posts show an asset
+// before deleting it, and billing how much a workspace may store, and tells
+// the webhooks how uploads end.
 const MediaContextLive = MediaLive.pipe(
   Layer.provide(
     Layer.mergeAll(
       MediaInPostsLive,
+      MediaInArticlesLive,
       BillingContextsLive,
       ChannelsWithNoticesLive
     )
@@ -371,29 +379,39 @@ const ReviewGateContextLive = ReviewGateLive.pipe(
   Layer.provide(ChannelsWithNoticesLive)
 );
 
+// What posts go out under, which articles are given too: the channels,
+// the media, the review context's gate, billing's meters, and what
+// analytics, the inbox, the ads and the short links say of posts.
+const PostingDependenciesLive = Layer.mergeAll(
+  // X's posts claimed on billing's meters, which scheduling reads.
+  MetersContextLive,
+  BillingXPassThroughLive,
+  ChannelsWithNoticesLive,
+  MediaContextLive,
+  ReviewGateContextLive,
+  AnalyticsRecordsLive,
+  // The likes follow-up rules wait for, as analytics read them.
+  PostLikesLive,
+  EngagementRecordsContextLive,
+  PostBoostsLive,
+  ShortLinkSettingsLive
+);
+
 // Publishing posts to the channels the channels context lists, with the
 // media the media context holds, once the review context's gate admits
 // them.
 // A post deleted from its platform is no longer followed by analytics
 // nor the inbox, and none is while a boost of the ads context shows it. A
 // new post that does not say takes the workspace's short links default.
-const PublishingContextLive = Layer.merge(PublishingLive, ArticlesLive).pipe(
-  Layer.provide(
-    Layer.mergeAll(
-      // X's posts claimed on billing's meters, which scheduling reads.
-      MetersContextLive,
-      BillingXPassThroughLive,
-      ChannelsWithNoticesLive,
-      MediaContextLive,
-      ReviewGateContextLive,
-      AnalyticsRecordsLive,
-      // The likes follow-up rules wait for, as analytics read them.
-      PostLikesLive,
-      EngagementRecordsContextLive,
-      PostBoostsLive,
-      ShortLinkSettingsLive
-    )
-  )
+const PublishingContextLive = PublishingLive.pipe(
+  Layer.provide(PostingDependenciesLive)
+);
+
+// Articles go to websites under what posts go out under: the approval
+// policy, the plan, the library and the server's upload slots.
+const ArticlesContextLive = ArticlesLive.pipe(
+  Layer.provide(PostingServicesLive),
+  Layer.provide(PostingDependenciesLive)
 );
 
 // Short links, which answer only while the part of the post that holds
@@ -493,6 +511,7 @@ const SettingsContextLive = WorkspaceSettingsLive.pipe(
     Layer.mergeAll(
       ChannelsWithNoticesLive,
       PublishingContextLive,
+      ArticlesContextLive,
       MediaContextLive,
       AssistantContextLive,
       AnalyticsLive,
@@ -510,6 +529,7 @@ const SettingsContextLive = WorkspaceSettingsLive.pipe(
 const ErasedContextsLive = Layer.mergeAll(
   ChannelsWithNoticesLive,
   PublishingContextLive,
+  ArticlesContextLive,
   MediaContextLive,
   AssistantContextLive,
   AnalyticsLive,
@@ -645,6 +665,7 @@ const JobsWithoutWorkersLive = Layer.mergeAll(
 const ServicesLive = Layer.mergeAll(
   ChannelsWithNoticesLive,
   PublishingContextLive,
+  ArticlesContextLive,
   MediaContextLive,
   AssistantContextLive,
   SettingsContextLive,
@@ -704,16 +725,22 @@ const HttpServerLive = Layer.unwrap(
 );
 
 // The durable jobs: workflows, cluster entities and crons. The channels'
-// gates publish, read analytics' counts with the platforms' readers, and
-// read and answer comments with engagement's.
+// gates publish, change live posts and carry follow-ups out with
+// publishing's platforms, read analytics' counts with the platforms'
+// readers, and read and answer comments with engagement's.
 const WorkersLive = Layer.mergeAll(
-  publishingWorkersReading(
+  publishingWorkers(
+    PlatformsLive,
     PlatformMetricsReaderLive,
     // YouTube's comment reads count their units in the server's ledger of
     // the project's day, which publishing keeps.
-    PlatformEngagementLive.pipe(Layer.provide(PlatformQuotaLive))
+    PlatformEngagementLive.pipe(Layer.provide(PlatformQuotaLive)),
+    LivePostPlatformsLive,
+    FollowUpPlatformsLive
   ),
-  ArticleWorkersLive,
+  // Articles' job sends the files on the server's one limiter of
+  // large uploads, as posts do.
+  ArticleWorkersLive.pipe(Layer.provide(PostingServicesLive)),
   NotificationsWorkersLive,
   EngagementWorkersLive,
   WebhooksWorkersLive,
@@ -741,6 +768,7 @@ const AnalyticsContextLive = Layer.merge(
 export const ContextsLive = Layer.mergeAll(
   ChannelsWithNoticesLive,
   PublishingContextLive,
+  ArticlesContextLive,
   MediaContextLive,
   AssistantContextLive,
   SettingsContextLive,

@@ -17,13 +17,13 @@ import {
   scheduledThrough,
   schedulePost,
 } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { Actor } from "#shared/domain/access.ts";
 import {
   PostIdSchema,
   UserIdSchema,
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import { permissionsFor } from "#workspace/domain/roles.ts";
 

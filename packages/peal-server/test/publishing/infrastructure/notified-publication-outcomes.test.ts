@@ -3,6 +3,7 @@ import { DateTime, Effect, Layer, Metric, Option } from "effect";
 import type { Scope } from "effect";
 import { MessageStorage } from "effect/cluster";
 
+import { publishingWorkers } from "#app/publishing-workers.ts";
 import { ChannelRepository } from "#channels/application/channel-repository.ts";
 import { ListChannels } from "#channels/application/list-channels.ts";
 import { DrizzleChannelRepository } from "#channels/infrastructure/drizzle-channel-repository.ts";
@@ -22,7 +23,7 @@ import { PostRepository } from "#publishing/application/post-repository.ts";
 import { PostScheduling } from "#publishing/application/post-scheduling.ts";
 import { PublicationOutcomes } from "#publishing/application/publication-outcomes.ts";
 import { ShortLinkDefaults } from "#publishing/application/short-link-defaults.ts";
-import { publishingWith, publishingWorkers } from "#publishing/container.ts";
+import { publishingWith } from "#publishing/container.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
 import { PostTarget } from "#publishing/domain/post-target.ts";
 import { DrizzlePostRepository } from "#publishing/infrastructure/drizzle-post-repository.ts";

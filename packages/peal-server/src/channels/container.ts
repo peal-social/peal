@@ -226,6 +226,48 @@ export { TokenCipherLive } from "#channels/infrastructure/web-crypto-token-ciphe
 export { ChannelsCronsLive } from "#channels/infrastructure/crons.ts";
 
 /**
+ * The channels' gates (`ChannelGate`, one cluster entity per channel),
+ * which run every platform call of a channel in the order it came with the
+ * platform adapters the composition root gives them: publishing's
+ * PlatformPublisher, LivePostClients and FollowUpPublisher, analytics'
+ * MetricsReader, and engagement's sources and senders. Needs the cluster.
+ */
+export { ChannelGateLive } from "#channels/infrastructure/channel-gate-live.ts";
+
+/**
+ * For gates without some platforms: every read answers that the platform
+ * is unavailable, and nothing is sent. `UnreadMetrics` stands for
+ * analytics' readers, `UnreadComments` for all of engagement's sources and
+ * senders, `UnreadReviews` and `UnreadMessages` for some of them.
+ */
+export {
+  UnreadComments,
+  UnreadMessages,
+  UnreadMetrics,
+  UnreadReviews,
+} from "#channels/infrastructure/channel-gate-live.ts";
+
+/**
+ * The ports other contexts call the platforms through, each call sent
+ * through its channel's gate: publishing's PlatformPublisher,
+ * LivePostClients and FollowUpPublisher, analytics' MetricsReader, and
+ * engagement's CommentSource and ReplySender, the ReviewSource and
+ * ReviewReplySender (GatedReviews), and the MessageSource, MessageSender
+ * and PrivateReplySender (GatedMessages). Provide ChannelGateLive beside
+ * them, on the same cluster.
+ */
+export {
+  GatedCommentSource,
+  GatedFollowUpPublisher,
+  GatedLivePostClients,
+  GatedMessages,
+  GatedMetricsReader,
+  GatedPlatformPublisher,
+  GatedReplySender,
+  GatedReviews,
+} from "#channels/infrastructure/gated-clients.ts";
+
+/**
  * ConnectLinkJournal in the workspaces' activity logs. Needs the activity
  * context's ActivityLog.
  */

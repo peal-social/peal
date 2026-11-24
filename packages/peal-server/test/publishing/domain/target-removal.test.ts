@@ -11,7 +11,6 @@ import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
 import type { PostTargetStatus } from "#publishing/domain/post-target-status.ts";
 import { isDropped, PostTarget } from "#publishing/domain/post-target.ts";
 import { outcomeOf, Post } from "#publishing/domain/post.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { dropTarget } from "#publishing/domain/target-removal.ts";
 import {
   ChannelIdSchema,
@@ -19,6 +18,7 @@ import {
   WorkspaceIdSchema,
 } from "#shared/domain/ids.ts";
 import { PlatformPostIdSchema } from "#shared/domain/publish-result.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 
 const postId = PostIdSchema.make("00000000-0000-7000-8000-000000000001");

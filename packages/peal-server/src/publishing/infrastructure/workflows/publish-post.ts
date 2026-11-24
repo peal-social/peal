@@ -13,11 +13,11 @@ import {
 } from "#publishing/domain/publication-claims.ts";
 import type { PostRunOutcome } from "#publishing/domain/publication-claims.ts";
 import { PostIdSchema } from "#shared/domain/ids.ts";
+import { retryingDatabase } from "#shared/infrastructure/workflows/activity-retry.ts";
+import { sleepUntil } from "#shared/infrastructure/workflows/sleep-until.ts";
 
-import { retryingDatabase } from "./activity-retry.ts";
 import { PublishTargetV2 } from "./publish-parts.ts";
 import { PublishTargetV1 } from "./publish-target.ts";
-import { sleepUntil } from "./sleep-until.ts";
 
 // Persisted contract. Executions sleep for as long as posts wait, often weeks,
 // and replay from their stored history with the code deployed when they wake.
@@ -36,7 +36,6 @@ export const persistedWorkflowTags = [
   "PublishTargetV1",
   "PublishTargetV2",
   "ChangeLivePostV1",
-  "PublishArticleV1",
 ];
 
 /**

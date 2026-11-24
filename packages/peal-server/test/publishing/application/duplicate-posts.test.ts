@@ -16,12 +16,12 @@ import {
   nextOccurrences,
   RecurringSchedule,
 } from "#publishing/domain/recurring-schedule.ts";
-import { Schedule } from "#publishing/domain/schedule.ts";
 import { FakePlatform } from "#publishing/infrastructure/fake-platform-publisher.ts";
 import { newId } from "#shared/application/ids.ts";
 import { BadRequest } from "#shared/domain/bad-request.ts";
 import { WorkspaceIdSchema } from "#shared/domain/ids.ts";
 import type { ChannelId, WorkspaceId } from "#shared/domain/ids.ts";
+import { Schedule } from "#shared/domain/schedule.ts";
 import { TimeZoneIdSchema } from "#shared/domain/time-zone.ts";
 import {
   callsOn,

@@ -3,14 +3,17 @@ import { DateTime, Effect, Layer, Option, Result } from "effect";
 
 import { Notify } from "#notifications/application/notify.ts";
 import type { NoticeRequest } from "#notifications/application/notify.ts";
-import { FollowUpNotices } from "#publishing/application/follow-up-notices.ts";
-import { FollowUpIdSchema } from "#publishing/domain/follow-up-id.ts";
-import { FollowUpRuleIdSchema } from "#publishing/domain/follow-up-rule-id.ts";
-import { startFollowUpRule } from "#publishing/domain/follow-up-rule.ts";
-import { armFollowUp, expireFollowUp } from "#publishing/domain/follow-up.ts";
-import type { FollowUp } from "#publishing/domain/follow-up.ts";
+import { FollowUpNotices } from "#publishing/application/follow-ups/follow-up-notices.ts";
+import { FollowUpIdSchema } from "#publishing/domain/follow-ups/follow-up-id.ts";
+import { FollowUpRuleIdSchema } from "#publishing/domain/follow-ups/follow-up-rule-id.ts";
+import { startFollowUpRule } from "#publishing/domain/follow-ups/follow-up-rule.ts";
+import {
+  armFollowUp,
+  expireFollowUp,
+} from "#publishing/domain/follow-ups/follow-up.ts";
+import type { FollowUp } from "#publishing/domain/follow-ups/follow-up.ts";
 import { PostTargetIdSchema } from "#publishing/domain/post-target-id.ts";
-import { NotifiedFollowUpNotices } from "#publishing/infrastructure/notified-follow-up-notices.ts";
+import { NotifiedFollowUpNotices } from "#publishing/infrastructure/follow-ups/notified-follow-up-notices.ts";
 import {
   ChannelIdSchema,
   PostIdSchema,
