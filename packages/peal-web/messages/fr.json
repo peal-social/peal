@@ -549,7 +549,7 @@
       "close": "Fermer",
       "queuedToast": "La vidéo de diapositives est en route : elle apparaît dans la médiathèque une fois créée.",
       "doneToast": "Une vidéo de diapositives est dans la médiathèque.",
-      "failedToast": "Une vidéo de diapositives n’a pas pu être créée : {reason}",
+      "failedToast": "Une vidéo n’a pas pu être créée : {reason}",
       "jobs": "Vidéos de diapositives en route",
       "state": "{status, select, queued {En attente} running {En cours de création} other {{status}}}",
       "tile": "{aspect}, {slides, plural, one {# image} other {# images}}",
@@ -4668,6 +4668,7 @@
     }
   },
   "Studio": {
+    "captionsLackSource": "La vidéo ou le son des sous-titres a été supprimé. Choisissez-en un autre dans leur barre, sous Source, ou supprimez-les.",
     "generateVideo": "Générer une vidéo",
     "videoPrompt": "Des vagues sur une plage, vues d’en haut",
     "generateVoice": "Générer une voix off",

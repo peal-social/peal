@@ -1,7 +1,7 @@
 import { describe, expect, it } from "@effect/vitest";
 import { editSchema } from "@shotstack/schemas/zod";
 
-import { captionClipOf } from "#studio/captions.ts";
+import { captionClipOf, captionsLackSource } from "#studio/captions.ts";
 import { emptyEdit, mediaRefOf, textClipOf } from "#studio/edit-document.ts";
 import type { StudioClip, StudioEdit } from "#studio/edit-document.ts";
 
@@ -41,6 +41,18 @@ describe("the editor's captions", () => {
       caption?.length,
       editSchema.safeParse(structuredClone(edit)).success,
     ]).toStrictEqual(["rich-caption", 2, 6, true]);
+  });
+
+  it("are known to lack the clip they name", () => {
+    const edit = withCaptions(emptyEdit([film]));
+
+    const alone = emptyEdit(edit.timeline.tracks[0]?.clips ?? []);
+
+    expect([
+      captionsLackSource(edit),
+      captionsLackSource(alone),
+      captionsLackSource(emptyEdit([film])),
+    ]).toStrictEqual([false, true, false]);
   });
 
   it("need a sound or a film", () => {

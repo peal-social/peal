@@ -23,6 +23,7 @@ import { MediaPicker } from "#components/posts/media-picker.tsx";
 import { PageActions, useFullWindow } from "#components/shell/frame-view.tsx";
 import { useWorkspaceHref } from "#components/shell/workspace-addresses.tsx";
 import { Link } from "#i18n/navigation.ts";
+import { captionsLackSource } from "#studio/captions.ts";
 import { clearDraft, readDraft, writeDraft } from "#studio/draft.ts";
 import {
   clipPreviewOf,
@@ -368,6 +369,8 @@ const LoadedStudio = ({
 
       if (waitsToBeGenerated(edit)) {
         toast.error(t("generateFirst"));
+      } else if (captionsLackSource(edit)) {
+        toast.error(t("captionsLackSource"));
       } else {
         exporting.exportVideo(renderedOf(edit));
       }

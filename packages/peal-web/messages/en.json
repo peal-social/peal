@@ -549,7 +549,7 @@
       "close": "Close",
       "queuedToast": "The slide video is on its way: it shows in the media library once made.",
       "doneToast": "A slide video is in the media library.",
-      "failedToast": "A slide video could not be made: {reason}",
+      "failedToast": "A video could not be made: {reason}",
       "jobs": "Slide videos on the way",
       "state": "{status, select, queued {Waiting its turn} running {Being made} other {{status}}}",
       "tile": "{aspect}, {slides, plural, one {# image} other {# images}}",
@@ -4668,6 +4668,7 @@
     }
   },
   "Studio": {
+    "captionsLackSource": "The captions' video or sound was deleted. Choose another one in their toolbar, under Source, or delete them.",
     "generateVideo": "Generate a video",
     "videoPrompt": "Waves rolling on a beach, seen from above",
     "generateVoice": "Generate a voice-over",
