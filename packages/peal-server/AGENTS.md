@@ -12,6 +12,7 @@ change crosses several:
 | `publishing`            | [`src/publishing/AGENTS.md`](src/publishing/AGENTS.md)                                               |
 | publishing's feeds      | [`src/publishing/application/feeds/AGENTS.md`](src/publishing/application/feeds/AGENTS.md)           |
 | publishing's follow-ups | [`src/publishing/application/follow-ups/AGENTS.md`](src/publishing/application/follow-ups/AGENTS.md) |
+| publishing's recycling  | [`src/publishing/application/recycling/AGENTS.md`](src/publishing/application/recycling/AGENTS.md)   |
 | `media`                 | [`src/media/AGENTS.md`](src/media/AGENTS.md)                                                         |
 | `notifications`         | [`src/notifications/AGENTS.md`](src/notifications/AGENTS.md)                                         |
 | `assistant`             | [`src/assistant/AGENTS.md`](src/assistant/AGENTS.md)                                                 |
@@ -77,7 +78,7 @@ and no socket, for tests.
 - A context may hold modules: a part that speaks the context's language
   and acts in its transactions, kept apart inside it as a folder of the
   same name in each layer (`src/<context>/<layer>/<module>/`; publishing's
-  `feeds` and `follow-ups`). A module's files keep their layer's rules and may import the
+  `feeds`, `follow-ups`, `recycling`). A module's files keep their layer's rules and may import the
   rest of the context; the rest of the context imports a module only from
   the container and the seams `oxlint.config.ts` names, each with its
   reason, and modules never import each other. A file in a module reaches
