@@ -266,7 +266,7 @@ const newestFirst = (items: readonly FeedEntry[]) =>
  * Feeds to posts: a workspace follows web feeds (RSS 2.0, Atom 1.0, JSON
  * Feed 1.1), and every item that appears in one after it was added
  * becomes a draft, or a post on a queue's next free slot, as its template
- * writes it (`#publishing/domain/feed.ts`).
+ * writes it (`#publishing/domain/feeds/feed.ts`).
  *
  * Reading feeds needs post:read; creating, changing, pausing, resuming and
  * deleting one needs post:create, with post:schedule too for a feed that
