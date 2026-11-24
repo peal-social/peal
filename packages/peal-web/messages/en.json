@@ -93,6 +93,7 @@
       "notCounted": "{platform} gives no likes, reposts, replies or quotes, so there is nothing to weigh.",
       "notEnough": "{posts, plural, one {# post} other {# posts}} in the range: {minimum} are needed to rank its hours.",
       "best": "Best hours",
+      "views": "Show the hours as",
       "none": "No hour has {minimum} posts yet.",
       "slot": "{weekday, select, monday {Monday} tuesday {Tuesday} wednesday {Wednesday} thursday {Thursday} friday {Friday} saturday {Saturday} sunday {Sunday} other {{weekday}}} at {hour}:00",
       "weekday": "{weekday, select, monday {Mon} tuesday {Tue} wednesday {Wed} thursday {Thu} friday {Fri} saturday {Sat} sunday {Sun} other {{weekday}}}",
