@@ -1,4 +1,13 @@
-import { DateTime, Effect, Layer, Option, Ref, Result, Stream } from "effect";
+import {
+  DateTime,
+  Effect,
+  Layer,
+  Option,
+  Ref,
+  Result,
+  Schema,
+  Stream,
+} from "effect";
 import { HttpServerRequest } from "effect/http";
 import { HttpApiBuilder, HttpApiError, HttpApiSchema } from "effect/http-api";
 import {
@@ -7011,6 +7020,9 @@ export const studioGroupsLive = (studio: Studio) =>
     )
   );
 
+// The shape of a workspace's id, as the server decodes the header's.
+const isUuid = Schema.is(Schema.String.check(Schema.isUUID()));
+
 // The workspace a credential belongs to, which its requests act in when
 // they name none: a key's, or the one an application's token is bound to.
 const ownWorkspaceOf = (principal: Principal): Option.Option<string> => {
@@ -7037,12 +7049,22 @@ export const studioAccessLive = (studio: Studio) =>
         const principal = yield* CurrentPrincipal;
         const request = yield* HttpServerRequest.HttpServerRequest;
 
+        // A blank header names nothing, as on the server.
         const named = Option.fromUndefinedOr(
           request.headers[workspaceHeader]
-        ).pipe(Option.orElse(() => ownWorkspaceOf(principal)));
+        ).pipe(
+          Option.map((value) => value.trim()),
+          Option.filter((value) => value !== ""),
+          Option.orElse(() => ownWorkspaceOf(principal))
+        );
 
         if (Option.isNone(named)) {
           return yield* new WorkspaceRequired();
+        }
+
+        // A value that is no workspace's id names no workspace.
+        if (!isUuid(named.value)) {
+          return yield* new WorkspaceNotFound();
         }
 
         // A key acts in its own workspace alone, with its own permissions.
@@ -7058,6 +7080,30 @@ export const studioAccessLive = (studio: Studio) =>
               workspaceId: principal.workspaceId,
             })
           );
+        }
+
+        // A partner key acts in its partner's customers alone, with its
+        // own permissions; any other workspace, its home's included, is
+        // none.
+        if (principal._tag === "partnerKey") {
+          if (!customers.some(({ id }) => id === named.value)) {
+            return yield* new WorkspaceNotFound();
+          }
+
+          return yield* httpEffect.pipe(
+            Effect.provideService(CurrentMember, {
+              permissions: principal.permissions,
+              principal,
+              workspaceId: named.value,
+            })
+          );
+        }
+
+        // An application's token bound to a workspace acts there alone.
+        const bound = principal.oauth?.workspaceId;
+
+        if (bound !== undefined && bound !== null && bound !== named.value) {
+          return yield* wrongWorkspace;
         }
 
         const workspace = studio.me.workspaces.find(
