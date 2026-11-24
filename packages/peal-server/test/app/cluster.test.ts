@@ -643,6 +643,55 @@ const forgetTicks = SqlClient.SqlClient.use((sql) =>
   )
 );
 
+// The rows of every job whose payload names one of `ids` (a post, a
+// channel) or a target of those posts: their runs, the runs they started,
+// their clocks, and the replies to them.
+const forgetJobsOf = (ids: readonly string[]) =>
+  SqlClient.SqlClient.use((sql) =>
+    sql.withTransaction(
+      Effect.gen(function* forgetJobs() {
+        const listed = ids.join(",");
+
+        const targets = yield* sql<{
+          readonly id: string;
+        }>`SELECT id::text AS id FROM publishing.post_targets WHERE post_id::text = ANY(string_to_array(${listed}, ','))`;
+
+        const named = [...ids, ...targets.map(({ id }) => id)]
+          .map((id) => `%${id}%`)
+          .join(",");
+
+        yield* sql`DELETE FROM cluster_replies WHERE request_id IN (SELECT id FROM cluster_messages WHERE entity_id IN (SELECT entity_id FROM cluster_messages WHERE entity_type LIKE 'Workflow/%' AND payload LIKE ANY(string_to_array(${named}, ','))))`;
+        yield* sql`DELETE FROM cluster_messages WHERE entity_id IN (SELECT entity_id FROM cluster_messages WHERE entity_type LIKE 'Workflow/%' AND payload LIKE ANY(string_to_array(${named}, ',')))`;
+      })
+    )
+  );
+
+/**
+ * Runs `test`, which says the posts and channels it starts jobs for
+ * (`started`), and once it ended and its server stopped, deletes what is
+ * left of those jobs, however it ended: a test that failed or timed out
+ * part way leaves a job due, which the next server on this database runs,
+ * the next test's (a post published twice) or a dev server's.
+ */
+const forgettingJobs = <A, E, R>(
+  test: (started: Ref.Ref<readonly string[]>) => Effect.Effect<A, E, R>
+) =>
+  Effect.gen(function* forgetting() {
+    const started = yield* Ref.make<readonly string[]>([]);
+
+    return yield* test(started).pipe(
+      Effect.ensuring(
+        Ref.get(started).pipe(
+          Effect.flatMap((ids) =>
+            ids.length === 0 ? Effect.void : forgetJobsOf(ids)
+          ),
+          Effect.provide(Database),
+          Effect.orDie
+        )
+      )
+    );
+  });
+
 const isFinished = (postId: PostId) =>
   PostRepository.use((posts) => posts.find(postId)).pipe(
     Effect.map(
@@ -651,7 +700,10 @@ const isFinished = (postId: PostId) =>
     )
   );
 
-const scheduleSoon = (delay: Duration.Duration) =>
+const scheduleSoon = (
+  delay: Duration.Duration,
+  started: Ref.Ref<readonly string[]>
+) =>
   Effect.gen(function* schedulingSoon() {
     const workspaceId = yield* newId(WorkspaceIdSchema);
     const channelId = yield* newId(ChannelIdSchema);
@@ -667,6 +719,8 @@ const scheduleSoon = (delay: Duration.Duration) =>
         }),
       })
     );
+
+    yield* Ref.update(started, (ids) => [...ids, post.id]);
 
     const execution = yield* PostRepository.use((posts) =>
       posts.find(post.id)
@@ -730,73 +784,80 @@ describe("the cluster on Postgres", () => {
   it.live(
     "commits a post and the start of its job together, or neither",
     () =>
-      live(
-        Effect.gen(function* outbox() {
-          const { transaction } = yield* TransactionRunner;
-          const posts = yield* PostRepository;
-          const scheduler = yield* PublicationScheduler;
-          const platform = yield* FakePlatform;
+      forgettingJobs((started) =>
+        live(
+          Effect.gen(function* outbox() {
+            const { transaction } = yield* TransactionRunner;
+            const posts = yield* PostRepository;
+            const scheduler = yield* PublicationScheduler;
+            const platform = yield* FakePlatform;
 
-          const now = yield* DateTime.now;
-          const postId = yield* newId(PostIdSchema);
-          const at = DateTime.addDuration(now, Duration.seconds(1));
+            const now = yield* DateTime.now;
+            const postId = yield* newId(PostIdSchema);
+            const at = DateTime.addDuration(now, Duration.seconds(1));
 
-          const post = yield* Effect.fromResult(
-            schedulePost(
-              createDraft(
-                postId,
-                yield* newId(WorkspaceIdSchema),
-                syntheticContent,
-                Option.none()
-              ),
-              new Schedule({
-                at,
-                timeZone: TimeZoneIdSchema.make("Europe/Paris"),
-              }),
-              now
+            const post = yield* Effect.fromResult(
+              schedulePost(
+                createDraft(
+                  postId,
+                  yield* newId(WorkspaceIdSchema),
+                  syntheticContent,
+                  Option.none()
+                ),
+                new Schedule({
+                  at,
+                  timeZone: TimeZoneIdSchema.make("Europe/Paris"),
+                }),
+                now
+              )
+            );
+
+            const target = createTarget(
+              yield* newId(PostTargetIdSchema),
+              postId,
+              yield* newId(ChannelIdSchema)
+            );
+
+            const execution = yield* PublishPostV1.executionId({
+              codeVersion: 1,
+              postId,
+              revision: post.scheduleRevision,
+              scheduledAt: at,
+            });
+
+            const rolledBack = yield* transaction(
+              Effect.gen(function* insertStartAndFail() {
+                yield* posts.insert(post, [target]);
+                yield* scheduler.schedule({
+                  postId,
+                  revision: post.scheduleRevision,
+                  scheduledAt: at,
+                });
+
+                return yield* Effect.fail<"rolledBack">("rolledBack");
+              })
+            ).pipe(Effect.flip);
+
+            assert.strictEqual(rolledBack, "rolledBack");
+            assert.isTrue(Option.isNone(yield* posts.find(postId)));
+            assert.strictEqual(yield* messagesOf(execution), 0);
+
+            const scheduled = yield* scheduleSoon(Duration.seconds(1), started);
+
+            assert.isAbove(yield* messagesOf(scheduled.execution), 0);
+
+            yield* waitUntil(
+              "the post finishes",
+              isFinished(scheduled.post.id)
+            );
+
+            assert.lengthOf(yield* platform.calls, 1);
+          }).pipe(
+            Effect.provide(
+              serverWith(FakePlatformPublisher).pipe(
+                Layer.provideMerge(Database)
+              )
             )
-          );
-
-          const target = createTarget(
-            yield* newId(PostTargetIdSchema),
-            postId,
-            yield* newId(ChannelIdSchema)
-          );
-
-          const execution = yield* PublishPostV1.executionId({
-            codeVersion: 1,
-            postId,
-            revision: post.scheduleRevision,
-            scheduledAt: at,
-          });
-
-          const rolledBack = yield* transaction(
-            Effect.gen(function* insertStartAndFail() {
-              yield* posts.insert(post, [target]);
-              yield* scheduler.schedule({
-                postId,
-                revision: post.scheduleRevision,
-                scheduledAt: at,
-              });
-
-              return yield* Effect.fail<"rolledBack">("rolledBack");
-            })
-          ).pipe(Effect.flip);
-
-          assert.strictEqual(rolledBack, "rolledBack");
-          assert.isTrue(Option.isNone(yield* posts.find(postId)));
-          assert.strictEqual(yield* messagesOf(execution), 0);
-
-          const scheduled = yield* scheduleSoon(Duration.seconds(1));
-
-          assert.isAbove(yield* messagesOf(scheduled.execution), 0);
-
-          yield* waitUntil("the post finishes", isFinished(scheduled.post.id));
-
-          assert.lengthOf(yield* platform.calls, 1);
-        }).pipe(
-          Effect.provide(
-            serverWith(FakePlatformPublisher).pipe(Layer.provideMerge(Database))
           )
         )
       ),
@@ -806,55 +867,64 @@ describe("the cluster on Postgres", () => {
   it.live(
     "publishes a due post once, across a restart while it sleeps",
     () =>
-      live(
-        Effect.gen(function* survivesRestart() {
-          const database = yield* Layer.build(Database);
-          const platforms = yield* Layer.build(FakePlatformPublisher);
-          const server = serverWith(Layer.succeedContext(platforms));
+      forgettingJobs((started) =>
+        live(
+          Effect.gen(function* survivesRestart() {
+            const database = yield* Layer.build(Database);
+            const platforms = yield* Layer.build(FakePlatformPublisher);
+            const server = serverWith(Layer.succeedContext(platforms));
 
-          const platform = yield* FakePlatform.pipe(
-            Effect.provideContext(platforms)
-          );
+            const platform = yield* FakePlatform.pipe(
+              Effect.provideContext(platforms)
+            );
 
-          const before = yield* Scope.make();
+            // Each server stops with the test, however it ends, before the
+            // database it runs on.
+            const before = yield* Scope.make();
 
-          const first = yield* Layer.buildWithScope(server, before).pipe(
-            Effect.provideContext(database)
-          );
+            yield* Effect.addFinalizer(() => Scope.close(before, Exit.void));
 
-          const { execution, post } = yield* scheduleSoon(
-            Duration.seconds(2)
-          ).pipe(Effect.provideContext(first));
-
-          // Its wake-up is stored: the job sleeps durably.
-          yield* waitUntil(
-            "the job sleeps",
-            SqlClient.SqlClient.use((sql) =>
-              count(
-                sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_type = 'Workflow/-/DurableClock' AND entity_id = ${execution}`
-              )
-            ).pipe(
-              Effect.map((clocks) => clocks === 1),
+            const first = yield* Layer.buildWithScope(server, before).pipe(
               Effect.provideContext(database)
-            )
-          );
-          yield* Scope.close(before, Exit.void);
+            );
 
-          const after = yield* Scope.make();
+            const { execution, post } = yield* scheduleSoon(
+              Duration.seconds(2),
+              started
+            ).pipe(Effect.provideContext(first));
 
-          const second = yield* Layer.buildWithScope(server, after).pipe(
-            Effect.provideContext(database)
-          );
+            // Its wake-up is stored: the job sleeps durably.
+            yield* waitUntil(
+              "the job sleeps",
+              SqlClient.SqlClient.use((sql) =>
+                count(
+                  sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_type = 'Workflow/-/DurableClock' AND entity_id = ${execution}`
+                )
+              ).pipe(
+                Effect.map((clocks) => clocks === 1),
+                Effect.provideContext(database)
+              )
+            );
+            yield* Scope.close(before, Exit.void);
 
-          yield* waitUntil(
-            "the post finishes",
-            isFinished(post.id).pipe(Effect.provideContext(second))
-          );
+            const after = yield* Scope.make();
 
-          assert.lengthOf(yield* platform.calls, 1);
+            yield* Effect.addFinalizer(() => Scope.close(after, Exit.void));
 
-          yield* Scope.close(after, Exit.void);
-        }).pipe(Effect.scoped)
+            const second = yield* Layer.buildWithScope(server, after).pipe(
+              Effect.provideContext(database)
+            );
+
+            yield* waitUntil(
+              "the post finishes",
+              isFinished(post.id).pipe(Effect.provideContext(second))
+            );
+
+            assert.lengthOf(yield* platform.calls, 1);
+
+            yield* Scope.close(after, Exit.void);
+          }).pipe(Effect.scoped)
+        )
       ),
     30_000
   );
@@ -862,79 +932,81 @@ describe("the cluster on Postgres", () => {
   it.live(
     "purges finished executions and cron runs, and keeps what still waits",
     () =>
-      live(
-        Effect.gen(function* purges() {
-          const gate = yield* tickGate;
+      forgettingJobs((started) =>
+        live(
+          Effect.gen(function* purges() {
+            const gate = yield* tickGate;
 
-          yield* Effect.gen(function* purging() {
-            const finished = yield* scheduleSoon(Duration.zero);
-            const waiting = yield* scheduleSoon(Duration.hours(1));
+            yield* Effect.gen(function* purging() {
+              const finished = yield* scheduleSoon(Duration.zero, started);
+              const waiting = yield* scheduleSoon(Duration.hours(1), started);
 
-            yield* waitUntil("a post finishes", isFinished(finished.post.id));
-            yield* waitUntil("its job ends", hasEnded(finished.execution));
-            yield* waitUntil(
-              "a cron run is processed",
-              cronRuns(true).pipe(Effect.map((runs) => runs > 0))
-            );
+              yield* waitUntil("a post finishes", isFinished(finished.post.id));
+              yield* waitUntil("its job ends", hasEnded(finished.execution));
+              yield* waitUntil(
+                "a cron run is processed",
+                cronRuns(true).pipe(Effect.map((runs) => runs > 0))
+              );
 
-            // The ticks stop: the next run waits at the gate, the one before
-            // it is processed, and none is until the test ends, however long
-            // a loaded machine takes between the purges and their counts.
-            yield* Ref.set(gate.open, false);
-            yield* Deferred.await(gate.held);
-            yield* waitUntil(
-              "only the held run is left to process",
-              cronRuns(false).pipe(Effect.map((runs) => runs === 1))
-            );
+              // The ticks stop: the next run waits at the gate, the one before
+              // it is processed, and none is until the test ends, however long
+              // a loaded machine takes between the purges and their counts.
+              yield* Ref.set(gate.open, false);
+              yield* Deferred.await(gate.held);
+              yield* waitUntil(
+                "only the held run is left to process",
+                cronRuns(false).pipe(Effect.map((runs) => runs === 1))
+              );
 
-            // Younger than a day: kept.
-            yield* purgeFinishedClusterRows(Duration.days(1));
+              // Younger than a day: kept.
+              yield* purgeFinishedClusterRows(Duration.days(1));
 
-            assert.isAbove(yield* messagesOf(finished.execution), 0);
-            assert.isAbove(yield* cronRuns(true), 0);
+              assert.isAbove(yield* messagesOf(finished.execution), 0);
+              assert.isAbove(yield* cronRuns(true), 0);
 
-            const purged = yield* purgeFinishedClusterRows(Duration.zero);
+              const purged = yield* purgeFinishedClusterRows(Duration.zero);
 
-            assert.isAtLeast(purged.executions, 1);
-            assert.isAtLeast(purged.cronRuns, 1);
-            assert.strictEqual(yield* messagesOf(finished.execution), 0);
-            assert.isAbove(yield* messagesOf(waiting.execution), 0);
-            assert.strictEqual(yield* cronRuns(true), 0);
-            // The next run of each cron is still scheduled.
-            assert.isAbove(yield* cronRuns(false), 0);
+              assert.isAtLeast(purged.executions, 1);
+              assert.isAtLeast(purged.cronRuns, 1);
+              assert.strictEqual(yield* messagesOf(finished.execution), 0);
+              assert.isAbove(yield* messagesOf(waiting.execution), 0);
+              assert.strictEqual(yield* cronRuns(true), 0);
+              // The next run of each cron is still scheduled.
+              assert.isAbove(yield* cronRuns(false), 0);
 
-            const retention = yield* SqlClient.SqlClient.use((sql) =>
-              count(
-                sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_type = 'ClusterCron/cluster.retention' AND NOT processed`
-              )
-            );
+              const retention = yield* SqlClient.SqlClient.use((sql) =>
+                count(
+                  sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_type = 'ClusterCron/cluster.retention' AND NOT processed`
+                )
+              );
 
-            assert.isAbove(retention, 0);
+              assert.isAbove(retention, 0);
 
-            // Leaves no job waiting for a dev server to run.
-            yield* PostScheduling.use((scheduling) =>
-              scheduling.cancel(
-                actorIn(waiting.post.workspaceId),
-                waiting.post.id
+              // Leaves no job waiting for a dev server to run.
+              yield* PostScheduling.use((scheduling) =>
+                scheduling.cancel(
+                  actorIn(waiting.post.workspaceId),
+                  waiting.post.id
+                )
+              );
+            }).pipe(
+              // The held run goes on before the server stops.
+              Effect.ensuring(Deferred.succeed(gate.released, true)),
+              Effect.provide(
+                serverWith(
+                  FakePlatformPublisher,
+                  Layer.merge(CronsTest, ticksThrough(gate))
+                )
               )
             );
           }).pipe(
-            // The held run goes on before the server stops.
-            Effect.ensuring(Deferred.succeed(gate.released, true)),
-            Effect.provide(
-              serverWith(
-                FakePlatformPublisher,
-                Layer.merge(CronsTest, ticksThrough(gate))
-              )
-            )
-          );
-        }).pipe(
-          // What a run stopped part way left of the ticks first, as a
-          // second chain of them would tick on; this run's once the server
-          // has stopped.
-          (test) => Effect.orDie(forgetTicks).pipe(Effect.andThen(test)),
-          Effect.ensuring(Effect.orDie(forgetTicks)),
-          Effect.provide(Database)
+            // What a run stopped part way left of the ticks first, as a
+            // second chain of them would tick on; this run's once the server
+            // has stopped.
+            (test) => Effect.orDie(forgetTicks).pipe(Effect.andThen(test)),
+            Effect.ensuring(Effect.orDie(forgetTicks)),
+            Effect.provide(Database)
+          )
         )
       ),
     30_000
@@ -943,52 +1015,59 @@ describe("the cluster on Postgres", () => {
   it.live(
     "starts a box's read in the event's transaction, once a channel and slot",
     () =>
-      live(
-        Effect.gen(function* boxReads() {
-          const { transaction } = yield* TransactionRunner;
-          const jobs = yield* MessageJobs;
-          const channelId = yield* newId(ChannelIdSchema);
+      forgettingJobs((started) =>
+        live(
+          Effect.gen(function* boxReads() {
+            const { transaction } = yield* TransactionRunner;
+            const jobs = yield* MessageJobs;
+            const channelId = yield* newId(ChannelIdSchema);
 
-          // A slot over already: the job reads at once (a box it finds
-          // missing), and leaves nothing waiting.
-          const slot = slotOf(
-            DateTime.subtractDuration(yield* DateTime.now, Duration.minutes(1))
-          );
+            yield* Ref.update(started, (ids) => [...ids, channelId]);
 
-          const execution = yield* ReadMessageBoxV1.executionId({
-            channelId,
-            slot,
-          });
+            // A slot over already: the job reads at once (a box it finds
+            // missing), and leaves nothing waiting.
+            const slot = slotOf(
+              DateTime.subtractDuration(
+                yield* DateTime.now,
+                Duration.minutes(1)
+              )
+            );
 
-          const rolledBack = yield* transaction(
-            jobs
-              .readBox(channelId, slot)
-              .pipe(Effect.andThen(Effect.fail("rolledBack" as const)))
-          ).pipe(Effect.flip);
+            const execution = yield* ReadMessageBoxV1.executionId({
+              channelId,
+              slot,
+            });
 
-          assert.strictEqual(rolledBack, "rolledBack");
-          assert.strictEqual(yield* messagesOf(execution), 0);
+            const rolledBack = yield* transaction(
+              jobs
+                .readBox(channelId, slot)
+                .pipe(Effect.andThen(Effect.fail("rolledBack" as const)))
+            ).pipe(Effect.flip);
 
-          // The execution's own requests to run, which a second start of
-          // the same slot would add to: the run may write others meanwhile.
-          const runs = SqlClient.SqlClient.use((sql) =>
-            count(
-              sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_id = ${execution} AND kind = 0 AND tag = 'run'`
-            )
-          );
+            assert.strictEqual(rolledBack, "rolledBack");
+            assert.strictEqual(yield* messagesOf(execution), 0);
 
-          yield* transaction(jobs.readBox(channelId, slot));
-          yield* transaction(jobs.readBox(channelId, slot));
-          yield* jobs.readBox(channelId, slot);
+            // The execution's own requests to run, which a second start of
+            // the same slot would add to: the run may write others meanwhile.
+            const runs = SqlClient.SqlClient.use((sql) =>
+              count(
+                sql`SELECT count(*)::int AS count FROM cluster_messages WHERE entity_id = ${execution} AND kind = 0 AND tag = 'run'`
+              )
+            );
 
-          assert.strictEqual(yield* runs, 1);
+            yield* transaction(jobs.readBox(channelId, slot));
+            yield* transaction(jobs.readBox(channelId, slot));
+            yield* jobs.readBox(channelId, slot);
 
-          yield* waitUntil("the read ends", hasEnded(execution));
-        }).pipe(
-          Effect.provide(
-            Layer.mergeAll(ReadMessageBoxV1Live, WorkflowMessageJobs).pipe(
-              Layer.provideMerge(serverWith(FakePlatformPublisher)),
-              Layer.provideMerge(Database)
+            assert.strictEqual(yield* runs, 1);
+
+            yield* waitUntil("the read ends", hasEnded(execution));
+          }).pipe(
+            Effect.provide(
+              Layer.mergeAll(ReadMessageBoxV1Live, WorkflowMessageJobs).pipe(
+                Layer.provideMerge(serverWith(FakePlatformPublisher)),
+                Layer.provideMerge(Database)
+              )
             )
           )
         )
